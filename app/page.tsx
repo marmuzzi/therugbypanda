@@ -17,23 +17,17 @@ export default function Home() {
         <Image
           src="/rugby-panda-logo.png"
           alt="The Rugby Panda logo"
-          width={450}
-          height={450}
+          width={380}
+          height={380}
           priority
-          className="mb-6 drop-shadow-2xl"
+          className="mb-2 drop-shadow-[0_0_24px_rgba(255,255,255,0.45)]"
         />
-
-        <p className="mb-3 text-sm font-bold uppercase tracking-[0.45em] text-[#2E7D32]">
-          Digital Rugby Newsroom
-        </p>
 
         <h1 className="text-5xl font-black uppercase tracking-tight md:text-8xl">
           The Rugby Panda
         </h1>
 
-        <div className="my-4 h-px w-24 bg-[#2E7D32]" />
-
-        <p className="max-w-3xl text-lg leading-8 text-gray-100 md:text-2xl">
+        <p className="mt-6 max-w-3xl text-lg leading-8 text-gray-100 md:text-2xl">
           Digital rugby newsroom delivering{" "}
           <span className="font-bold text-[#4CAF50]">
             independent coverage, insight and analysis
