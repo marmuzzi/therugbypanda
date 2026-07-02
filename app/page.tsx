@@ -3,38 +3,31 @@ import Image from "next/image";
 export default function Home() {
   return (
     <main className="relative h-screen w-screen overflow-hidden bg-black">
-      {/* Desktop */}
       <Image
-        src="/coming-soon-desktop.png"
-        alt="The Rugby Panda"
+        src="/landing-page.png"
+        alt="The Rugby Panda - Digital Rugby Newsroom"
         fill
         priority
-        className="hidden md:block object-cover object-center"
+        className="object-cover object-center"
       />
 
-      {/* Mobile */}
-      <Image
-        src="/coming-soon-mobile.png"
-        alt="The Rugby Panda"
-        fill
-        priority
-        className="block md:hidden object-cover object-top"
-      />
+      {/* Clickable social links */}
+      <div className="absolute left-1/2 bottom-[4.5%] flex -translate-x-1/2 gap-[62px] md:gap-[76px]">
+        <a
+          href="https://www.facebook.com/TheRugbyPanda"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="The Rugby Panda on Facebook"
+          className="h-10 w-10 md:h-12 md:w-12"
+        />
 
-      <div className="absolute inset-0 bg-black/5" />
-
-      {/* Desktop social links */}
-      <div className="hidden md:flex absolute left-1/2 top-[73%] -translate-x-1/2 gap-[135px]">
-        <a href="https://instagram.com/therugbypanda" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="h-16 w-16" />
-        <a href="https://x.com/therugbypanda" target="_blank" rel="noopener noreferrer" aria-label="X" className="h-16 w-16" />
-        <a href="https://facebook.com/therugbypanda" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="h-16 w-16" />
-      </div>
-
-      {/* Mobile social links */}
-      <div className="flex md:hidden absolute left-1/2 top-[74%] -translate-x-1/2 gap-[74px]">
-        <a href="https://instagram.com/therugbypanda" target="_blank" rel="noopener noreferrer" aria-label="Instagram" className="h-12 w-12" />
-        <a href="https://x.com/therugbypanda" target="_blank" rel="noopener noreferrer" aria-label="X" className="h-12 w-12" />
-        <a href="https://facebook.com/therugbypanda" target="_blank" rel="noopener noreferrer" aria-label="Facebook" className="h-12 w-12" />
+        <a
+          href="https://www.instagram.com/rugbypandamedia"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="The Rugby Panda on Instagram"
+          className="h-10 w-10 md:h-12 md:w-12"
+        />
       </div>
     </main>
   );
