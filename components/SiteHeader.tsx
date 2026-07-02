@@ -38,29 +38,29 @@ function SearchIcon() {
 export default function SiteHeader() {
   return (
     <header className="border-b border-zinc-200 bg-white">
-      <div className="mx-auto grid max-w-7xl grid-cols-[104px_minmax(0,1fr)] items-center gap-4 px-4 py-5 sm:grid-cols-[144px_minmax(0,1fr)] sm:gap-6 sm:px-6 md:grid-cols-[188px_minmax(0,1fr)_180px] md:gap-8 md:px-8 md:py-7 lg:grid-cols-[220px_minmax(0,1fr)_220px] lg:py-8">
-        <Link href="/" aria-label="The Rugby Panda home" className="block">
+      <div className="mx-auto grid max-w-7xl grid-cols-[112px_minmax(0,1fr)] items-center gap-3 px-4 py-5 sm:grid-cols-[152px_minmax(0,1fr)] sm:gap-6 sm:px-6 md:grid-cols-[188px_minmax(0,1fr)_180px] md:gap-8 md:px-8 md:py-7 lg:grid-cols-[220px_minmax(0,1fr)_220px] lg:py-8">
+        <Link href="/" aria-label="The Rugby Panda home" className="block justify-self-end md:justify-self-start">
           <Image
             src="/rugby-panda-logo.png"
             alt="The Rugby Panda"
             width={260}
             height={260}
             priority
-            sizes="(max-width: 640px) 104px, (max-width: 768px) 144px, (max-width: 1024px) 188px, 220px"
-            className="h-[104px] w-[104px] object-contain sm:h-36 sm:w-36 md:h-[188px] md:w-[188px] lg:h-[220px] lg:w-[220px]"
+            sizes="(max-width: 640px) 112px, (max-width: 768px) 152px, (max-width: 1024px) 188px, 220px"
+            className="h-28 w-28 object-contain sm:h-38 sm:w-38 md:h-[188px] md:w-[188px] lg:h-[220px] lg:w-[220px]"
           />
         </Link>
 
-        <Link href="/" aria-label="The Rugby Panda home" className="min-w-0">
-          <p className="font-black uppercase leading-[0.78] tracking-tight text-[#003D2B]">
-            <span className="block text-[1.8rem] leading-none sm:text-[2.45rem] md:text-[3.1rem] lg:text-[3.8rem]">
+        <Link href="/" aria-label="The Rugby Panda home" className="min-w-0 overflow-hidden">
+          <p className="font-black uppercase leading-[0.8] tracking-tight text-[#003D2B]">
+            <span className="block text-[1.85rem] leading-none sm:text-[2.65rem] md:text-[3.1rem] lg:text-[3.8rem]">
               The
             </span>
-            <span className="block text-[2.95rem] leading-[0.78] sm:text-[4rem] md:text-[5.35rem] lg:text-[6.7rem]">
+            <span className="block text-[2.7rem] leading-[0.8] sm:text-[4.25rem] md:text-[5.35rem] lg:text-[6.7rem]">
               Rugby Panda
             </span>
           </p>
-          <p className="mt-3 text-[0.68rem] font-black uppercase tracking-[0.22em] text-[#005C2F] sm:text-xs md:text-sm md:tracking-[0.28em] lg:text-base">
+          <p className="mt-2 text-[0.64rem] font-black uppercase leading-4 tracking-[0.16em] text-[#005C2F] sm:mt-3 sm:text-xs md:text-sm md:tracking-[0.28em] lg:text-base">
             Independent rugby news. Insight. Analysis.
           </p>
         </Link>
@@ -91,7 +91,7 @@ export default function SiteHeader() {
       </div>
 
       <nav aria-label="Primary navigation" className="bg-[#003D2B] text-white">
-        <div className="mx-auto flex max-w-7xl items-center gap-7 overflow-x-auto px-4 py-4 text-sm font-black uppercase tracking-wider sm:px-6 md:gap-10 md:px-8 md:text-base">
+        <div className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-4 text-sm font-black uppercase tracking-wide sm:px-6 md:gap-10 md:px-8 md:text-base md:tracking-wider">
           <Link href="/" aria-label="Home" className="shrink-0 transition hover:text-[#9BE564]">
             Home
           </Link>
