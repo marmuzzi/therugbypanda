@@ -1,3 +1,5 @@
+import Image from "next/image";
+
 type ArticleHeaderProps = {
   category: string;
   title: string;
@@ -16,27 +18,37 @@ export default function ArticleHeader({
   readingTime,
 }: ArticleHeaderProps) {
   return (
-    <header className="mx-auto max-w-5xl px-6 pt-24 pb-16 text-center">
-      <p className="mb-5 text-sm font-black uppercase tracking-[0.3em] text-[#4CAF50]">
+    <header className="mx-auto max-w-5xl px-5 pt-16 pb-12 md:px-6 md:pt-20 md:pb-16">
+      <p className="mb-5 text-sm font-black uppercase tracking-[0.3em] text-[#2E7D32]">
         {category}
       </p>
 
-      <h1 className="mx-auto max-w-4xl text-4xl font-black leading-none tracking-tight text-zinc-950 md:text-6xl">
+      <h1 className="max-w-4xl text-4xl font-black leading-none tracking-tight text-zinc-950 md:text-6xl">
         {title}
       </h1>
 
-      <p className="mx-auto mt-6 max-w-3xl text-xl leading-8 text-zinc-600">
+      <p className="mt-6 max-w-3xl text-xl leading-8 text-zinc-600">
         {subtitle}
       </p>
 
-      <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-zinc-500">
-        <span>Published {published}</span>
-        <span>•</span>
-        <span>Updated {updated}</span>
-        <span>•</span>
-        <span>{readingTime}</span>
-        <span>•</span>
-        <span className="font-semibold text-zinc-800">The Rugby Panda</span>
+      <div className="mt-8 flex flex-wrap items-center gap-4 text-sm text-zinc-500">
+        <Image
+          src="/rugby-panda-logo.png"
+          alt="The Rugby Panda"
+          width={56}
+          height={56}
+          className="h-12 w-12 rounded-full object-contain"
+        />
+        <div>
+          <p className="font-black text-zinc-950">By The Rugby Panda</p>
+          <div className="mt-1 flex flex-wrap items-center gap-2">
+            <span>{published}</span>
+            <span>•</span>
+            <span>Updated {updated}</span>
+            <span>•</span>
+            <span>{readingTime}</span>
+          </div>
+        </div>
       </div>
     </header>
   );
