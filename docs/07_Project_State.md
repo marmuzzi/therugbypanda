@@ -22,6 +22,19 @@ v0.2 — Newsroom Foundation
 - `app/articles/[slug]/page.tsx` route created
 - `components/ArticleHeader.tsx` created
 - Article page header working
+- `components/SiteHeader.tsx` created
+- `components/KeyPoints.tsx` created
+- `components/ArticleBody.tsx` created
+- `components/ContinueReading.tsx` created
+- `components/TagList.tsx` created
+- `components/ReaderSupport.tsx` created
+- `components/ArticleCard.tsx` created
+- Full sample article page template built
+- Homepage converted from landing page to newsroom-style homepage
+- Masthead updated with larger panda logo treatment
+- Header social links limited to Instagram and Facebook
+- X/Twitter removed from the site UI
+- Article byline now uses panda logo signature
 
 ## Current GitHub structure
 
@@ -34,12 +47,22 @@ app/
       page.tsx
 
 components/
+  ArticleBody.tsx
+  ArticleCard.tsx
   ArticleHeader.tsx
+  ContinueReading.tsx
+  KeyPoints.tsx
+  ReaderSupport.tsx
+  SiteHeader.tsx
+  TagList.tsx
 
 public/
   landing-bg.png
   rugby-panda-logo.png
   favicon.png
+
+branding/
+  rugby-panda-logo.png
 ```
 
 ## Current article URL
@@ -50,27 +73,28 @@ https://therugbypanda.ie/articles/leinster-season-preview-2026
 
 ## Current task
 
-Build the full article page template.
+Build out the v0.2 newsroom foundation using reusable components and GitHub as the working source of truth.
 
 ## Next task
 
-Create reusable components:
+Create additional newsroom foundation pages and layout components:
 
-1. `components/SiteHeader.tsx`
-2. `components/KeyPoints.tsx`
-3. `components/ArticleBody.tsx`
-4. `components/SponsorBlock.tsx`
-5. `components/ContinueReading.tsx`
-6. `components/TagList.tsx`
+1. `components/SiteFooter.tsx`
+2. `app/categories/[slug]/page.tsx`
+3. `app/about/page.tsx`
+4. Shared content/data structure for sample articles and categories
+5. Basic SEO metadata for homepage and article page
+6. Responsive polish for mobile navigation and article sidebar
 
 ## Known issues
 
-- Homepage newsroom not built yet
 - Category pages not built yet
-- Search not built yet
+- Search route not built yet
 - CMS not built yet
 - Sponsorship slots not implemented yet
+- Newsletter sign-up not implemented yet
 - The `.com` redirect may still need final confirmation
+- The approved uploaded panda logo should be committed as the canonical `public/rugby-panda-logo.png` asset if binary file replacement is available through the development workflow
 
 ## Working principles
 
@@ -81,3 +105,4 @@ Create reusable components:
 - Mobile-first design.
 - Reader-first advertising.
 - No public AI references.
+- Update project documentation as development progresses.
