@@ -9,13 +9,19 @@ type ArticleBodyProps = {
 
 export default function ArticleBody({ sections }: ArticleBodyProps) {
   return (
-    <article className="prose prose-zinc max-w-none prose-p:text-lg prose-p:leading-8 prose-p:text-zinc-700 prose-h2:mt-12 prose-h2:text-2xl prose-h2:font-black prose-h2:tracking-tight prose-h2:text-zinc-950">
+    <article className="space-y-10">
       {sections.map((section, sectionIndex) => (
-        <section key={`${section.heading ?? "intro"}-${sectionIndex}`}>
-          {section.heading ? <h2>{section.heading}</h2> : null}
+        <section key={`${section.heading ?? "intro"}-${sectionIndex}`} className="space-y-5">
+          {section.heading ? (
+            <h2 className="text-2xl font-black leading-tight tracking-tight text-zinc-950 md:text-3xl">
+              {section.heading}
+            </h2>
+          ) : null}
 
           {section.paragraphs.map((paragraph) => (
-            <p key={paragraph}>{paragraph}</p>
+            <p key={paragraph} className="text-lg leading-8 text-zinc-700">
+              {paragraph}
+            </p>
           ))}
         </section>
       ))}
