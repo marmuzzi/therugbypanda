@@ -16,49 +16,76 @@ Completed:
 
 ## v0.2 — Newsroom Foundation
 
-Status: In progress
+Status: Sprint 2 closing
 
-Goals:
-- Article page
+Completed:
+- Publication-style masthead
+- Responsive header/navigation
+- Logo as home link
+- Mobile navigation simplified
+- Search entry point and placeholder search page
+- About page
+- Provinces category page
+- Site footer
+- Article page route
 - Reusable article components
-- Homepage
-- Category pages
+- Complete sample article template
+- Panda logo byline/signature
+- Editorial homepage structure
+- Lead story section
+- Latest stories section
+- Province coverage section
+- Analysis section
+- Reader support section
+- Expanded sample article data
 
-Current work:
-- Article page route created
-- ArticleHeader component created
-- Article page header working
+Remaining before v0.2 can be considered fully complete:
+- Review live Sprint 2 deployment
+- Add image-ready card system or CMS-backed image fields
+- Add dynamic category route beyond the current provinces page
+- Add basic SEO metadata across homepage, article and section pages
 
-Next tasks:
-1. Create SiteHeader component
-2. Create KeyPoints component
-3. Build complete article template
-4. Add sample article body
-5. Add Continue Reading
-6. Add TagList
-7. Build homepage
+## v0.3 — CMS and Publishing Platform
 
-## v0.3 — Discovery
+Status: Ready to begin
 
 Planned:
-- Category pages
-- Search
+- Install and configure Sanity
+- Add Sanity Studio route or workspace
+- Create content schemas:
+  - Article
+  - Author
+  - Category
+  - Province
+  - Competition
+  - Tag
+  - Image metadata
+- Add SEO fields
+- Add draft/publish workflow
+- Connect Next.js to Sanity queries
+- Replace `lib/articles.ts` temporary sample data with CMS content
+- Add CMS-powered article pages
+- Add CMS-powered category pages
+- Prepare image pipeline with captions, alt text, credits and rights/source fields
+
+## v0.4 — Discovery
+
+Planned:
+- Search implementation
 - Tags
+- Author pages
 - Entity pages foundation
+- Related articles
+- Archive pages
 
-## v0.4 — Editorial Workflow
+## v0.5 — Editorial Workflow and Growth
 
 Planned:
-- CMS
-- Draft/publish workflow
+- Newsletter sign-up
+- Reader support blocks
+- Sponsorship slots
 - Preview mode
-- Image handling
-- SEO metadata
-
-## v0.5 — Automation
-
-Planned:
-- AI-assisted drafting workflow
+- Editorial checks
 - Social caption generation
 - Tag suggestions
 - SEO suggestions
@@ -70,6 +97,7 @@ Criteria:
 - Article pages complete
 - Category pages complete
 - Search working
+- CMS publishing workflow working
 - 10–20 quality articles published
 - About page
 - Editorial principles page

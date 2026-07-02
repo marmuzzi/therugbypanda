@@ -19,22 +19,35 @@ v0.2 — Newsroom Foundation
 - Instagram profile created: https://www.instagram.com/rugbypandamedia
 - Facebook page created: https://www.facebook.com/profile.php?id=61591161347126
 - Favicon created
+- Approved panda logo in use for the masthead and article signature
+- `components/BrandLockup.tsx` created
+- `components/HeaderNav.tsx` created
+- `components/SearchButton.tsx` created
+- `components/SiteHeader.tsx` created and composed from brand/navigation components
+- Masthead rebuilt as a publication-style brand lockup
+- Mobile navigation simplified to News, Provinces, Ireland, URC, Europe and Search
+- Desktop navigation includes About
+- Header social links limited to Instagram and Facebook
+- X/Twitter removed from the site UI
+- `app/search/page.tsx` created as a search placeholder
+- `components/SiteFooter.tsx` created
+- `app/about/page.tsx` created
+- `app/categories/provinces/page.tsx` created
 - `app/articles/[slug]/page.tsx` route created
-- `components/ArticleHeader.tsx` created
-- Article page header working
-- `components/SiteHeader.tsx` created
+- `components/ArticleHeader.tsx` created and polished
 - `components/KeyPoints.tsx` created
 - `components/ArticleBody.tsx` created
 - `components/ContinueReading.tsx` created
 - `components/TagList.tsx` created
 - `components/ReaderSupport.tsx` created
 - `components/ArticleCard.tsx` created
+- `lib/articles.ts` expanded with richer sample editorial data
 - Full sample article page template built
-- Homepage converted from landing page to newsroom-style homepage
-- Masthead updated with larger panda logo treatment
-- Header social links limited to Instagram and Facebook
-- X/Twitter removed from the site UI
+- Homepage converted from landing page to editorial newsroom-style homepage
+- Homepage now includes lead story, editor note, latest stories, province coverage, analysis, reader support and sections grid
 - Article byline now uses panda logo signature
+- Sanity project prepared externally with project ID `hvg4b508` and dataset `production`
+- Vercel environment variables configured for Sanity project access
 
 ## Current GitHub structure
 
@@ -42,6 +55,13 @@ v0.2 — Newsroom Foundation
 app/
   page.tsx
   layout.tsx
+  about/
+    page.tsx
+  search/
+    page.tsx
+  categories/
+    provinces/
+      page.tsx
   articles/
     [slug]/
       page.tsx
@@ -50,11 +70,18 @@ components/
   ArticleBody.tsx
   ArticleCard.tsx
   ArticleHeader.tsx
+  BrandLockup.tsx
   ContinueReading.tsx
+  HeaderNav.tsx
   KeyPoints.tsx
   ReaderSupport.tsx
+  SearchButton.tsx
+  SiteFooter.tsx
   SiteHeader.tsx
   TagList.tsx
+
+lib/
+  articles.ts
 
 public/
   landing-bg.png
@@ -73,35 +100,38 @@ https://therugbypanda.ie/articles/leinster-season-preview-2026
 
 ## Current task
 
-Build out the v0.2 newsroom foundation using reusable components and GitHub as the working source of truth.
+Close Sprint 2 by merging the editorial homepage and article header polish to `main`, then use the live deployment for review.
 
 ## Next task
 
-Create additional newsroom foundation pages and layout components:
+Begin Sprint 3 — CMS and Publishing Platform:
 
-1. `components/SiteFooter.tsx`
-2. `app/categories/[slug]/page.tsx`
-3. `app/about/page.tsx`
-4. Shared content/data structure for sample articles and categories
-5. Basic SEO metadata for homepage and article page
-6. Responsive polish for mobile navigation and article sidebar
+1. Add Sanity dependencies and configuration
+2. Create Sanity Studio route or studio workspace
+3. Create schemas for articles, authors, categories, provinces, competitions, tags and images
+4. Add SEO fields and image metadata fields
+5. Connect Next.js pages to Sanity queries
+6. Replace temporary `lib/articles.ts` sample data with CMS content
+7. Create seed content or migration script
+8. Prepare dynamic category/article routes from CMS data
 
 ## Known issues
 
-- Category pages not built yet
-- Search route not built yet
-- CMS not built yet
+- Dynamic category route not built yet
+- Search is a placeholder and not connected to an index yet
+- CMS schema and Studio not yet committed
 - Sponsorship slots not implemented yet
 - Newsletter sign-up not implemented yet
 - The `.com` redirect may still need final confirmation
-- The approved uploaded panda logo should be committed as the canonical `public/rugby-panda-logo.png` asset if binary file replacement is available through the development workflow
+- Article and homepage images currently need a proper CMS-backed image pipeline
 
 ## Working principles
 
+- Project documentation is the source of truth at the start of each session.
 - Full file replacements are preferred over partial snippets.
-- Build incrementally.
-- Test after each small step.
-- Reusable components only.
+- Build incrementally, but merge completed milestones into `main`.
+- Keep `main` deployable.
+- Use reusable components only.
 - Mobile-first design.
 - Reader-first advertising.
 - No public AI references.
