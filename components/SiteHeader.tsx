@@ -38,22 +38,26 @@ function SearchIcon() {
 export default function SiteHeader() {
   return (
     <header className="z-50 border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-5 py-5 md:px-8 md:py-6 lg:py-7">
-        <Link href="/" className="flex min-w-0 items-center gap-5 md:gap-7" aria-label="The Rugby Panda home">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-4 py-4 sm:px-5 md:px-8 md:py-6 lg:py-7">
+        <Link
+          href="/"
+          className="flex w-full min-w-0 items-center gap-3 sm:gap-5 md:w-auto md:gap-7"
+          aria-label="The Rugby Panda home"
+        >
           <Image
             src="/rugby-panda-logo.png"
             alt="The Rugby Panda"
             width={176}
             height={176}
             priority
-            className="h-24 w-24 shrink-0 object-contain sm:h-32 sm:w-32 md:h-40 md:w-40 lg:h-44 lg:w-44"
+            className="h-16 w-16 shrink-0 object-contain sm:h-24 sm:w-24 md:h-40 md:w-40 lg:h-44 lg:w-44"
           />
           <div className="min-w-0 pt-1">
-            <p className="text-2xl font-black uppercase leading-[0.82] tracking-tight text-[#003D2B] sm:text-4xl md:text-5xl lg:text-7xl">
+            <p className="text-[2rem] font-black uppercase leading-[0.82] tracking-tight text-[#003D2B] min-[390px]:text-[2.3rem] sm:text-5xl md:text-5xl lg:text-7xl">
               <span className="block text-[0.42em] leading-none tracking-normal">The</span>
               <span className="block whitespace-nowrap">Rugby Panda</span>
             </p>
-            <p className="mt-3 hidden text-sm font-black uppercase tracking-[0.28em] text-[#005C2F] md:block lg:text-base">
+            <p className="mt-2 hidden text-sm font-black uppercase tracking-[0.28em] text-[#005C2F] sm:block md:mt-3 lg:text-base">
               Independent rugby news. Insight. Analysis.
             </p>
           </div>
@@ -85,7 +89,7 @@ export default function SiteHeader() {
       </div>
 
       <nav aria-label="Primary navigation" className="bg-[#003D2B] text-white">
-        <div className="mx-auto flex max-w-7xl items-center gap-8 overflow-x-auto px-5 py-4 text-sm font-black uppercase tracking-wider md:px-8 md:text-base">
+        <div className="mx-auto flex max-w-7xl items-center gap-6 overflow-x-auto px-4 py-3 text-xs font-black uppercase tracking-wider sm:px-5 sm:text-sm md:gap-8 md:px-8 md:py-4 md:text-base">
           <Link href="/" aria-label="Home" className="shrink-0 transition hover:text-[#9BE564]">
             Home
           </Link>
