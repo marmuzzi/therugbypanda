@@ -3,6 +3,7 @@ import ArticleHeader from "@/components/ArticleHeader";
 import ContinueReading from "@/components/ContinueReading";
 import KeyPoints from "@/components/KeyPoints";
 import ReaderSupport from "@/components/ReaderSupport";
+import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import TagList from "@/components/TagList";
 
@@ -118,6 +119,8 @@ export default function ArticlePage() {
           </div>
         </aside>
       </div>
+
+      <SiteFooter />
     </main>
   );
 }
