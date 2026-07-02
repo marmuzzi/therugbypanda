@@ -11,7 +11,7 @@ export default function Home() {
       <SiteHeader />
 
       <section className="border-b border-zinc-200 bg-zinc-950 text-white">
-        <div className="mx-auto max-w-6xl px-5 py-16 md:px-6 md:py-24">
+        <div className="mx-auto max-w-6xl px-5 py-12 md:px-6 md:py-20">
           <p className="text-sm font-black uppercase tracking-[0.3em] text-[#4CAF50]">
             Independent Irish and European rugby coverage
           </p>
