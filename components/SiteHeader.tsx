@@ -2,11 +2,11 @@ import Image from "next/image";
 import Link from "next/link";
 
 const navigationItems = [
-  { label: "Provinces", href: "#" },
-  { label: "Ireland", href: "#" },
-  { label: "URC", href: "#" },
-  { label: "Europe", href: "#" },
-  { label: "About", href: "#" },
+  { label: "Provinces", href: "/categories/provinces" },
+  { label: "Ireland", href: "/categories/ireland" },
+  { label: "URC", href: "/categories/urc" },
+  { label: "Europe", href: "/categories/europe" },
+  { label: "About", href: "/about" },
 ];
 
 export default function SiteHeader() {
@@ -39,7 +39,7 @@ export default function SiteHeader() {
         </nav>
 
         <Link
-          href="#"
+          href="/categories/provinces"
           className="rounded-full border border-zinc-300 px-4 py-2 text-xs font-black uppercase tracking-wider text-zinc-800 transition hover:border-[#2E7D32] hover:text-[#2E7D32] md:hidden"
         >
           Menu
