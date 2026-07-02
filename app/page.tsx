@@ -1,70 +1,115 @@
-import Image from "next/image";
+import ArticleCard from "@/components/ArticleCard";
+import SiteHeader from "@/components/SiteHeader";
+
+const latestArticles = [
+  {
+    category: "Provinces • Leinster",
+    title: "Leinster season preview: building towards another defining campaign",
+    excerpt:
+      "A first look at the storylines, selection questions and European ambitions shaping Leinster’s 2026/27 season.",
+    href: "/articles/leinster-season-preview-2026",
+    meta: "6 min read • 2 July 2026",
+    featured: true,
+  },
+  {
+    category: "Ireland",
+    title: "Ireland’s depth chart questions before the autumn window",
+    excerpt:
+      "The early selection debates that could matter most once the international calendar returns.",
+    href: "#",
+    meta: "Preview",
+  },
+  {
+    category: "URC",
+    title: "The URC storylines that could shape the opening month",
+    excerpt:
+      "Fixture rhythm, squad rotation and early momentum will define how contenders settle into the campaign.",
+    href: "#",
+    meta: "Preview",
+  },
+  {
+    category: "Europe",
+    title: "Why game management still decides the biggest European nights",
+    excerpt:
+      "Control matters, but knockout rugby often turns on adaptation, pressure and precision after momentum swings.",
+    href: "#",
+    meta: "Analysis",
+  },
+];
+
+const sections = [
+  "Leinster",
+  "Munster",
+  "Ulster",
+  "Connacht",
+  "Ireland",
+  "URC",
+  "Europe",
+];
 
 export default function Home() {
+  const [featuredArticle, ...secondaryArticles] = latestArticles;
+
   return (
-    <main className="relative min-h-screen overflow-hidden bg-black text-white">
-      <Image
-        src="/landing-bg.png"
-        alt=""
-        fill
-        priority
-        className="object-cover object-center opacity-100"
-      />
+    <main className="min-h-screen bg-white text-zinc-950">
+      <SiteHeader />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/55" />
+      <section className="border-b border-zinc-200 bg-zinc-950 text-white">
+        <div className="mx-auto max-w-6xl px-5 py-16 md:px-6 md:py-24">
+          <p className="text-sm font-black uppercase tracking-[0.3em] text-[#4CAF50]">
+            Independent Irish and European rugby coverage
+          </p>
+          <h1 className="mt-5 max-w-4xl text-5xl font-black leading-none tracking-tight md:text-7xl">
+            The Rugby Panda newsroom is taking shape.
+          </h1>
+          <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300 md:text-xl">
+            Context, analysis and match understanding across the four Irish provinces, Ireland, the URC and European rugby.
+          </p>
+        </div>
+      </section>
 
-      <section className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-10 text-center">
-        <Image
-          src="/rugby-panda-logo.png"
-          alt="The Rugby Panda logo"
-          width={380}
-          height={380}
-          priority
-          className="mb-2 drop-shadow-[0_0_24px_rgba(255,255,255,0.45)]"
-        />
+      <section className="mx-auto max-w-6xl px-5 py-12 md:px-6 md:py-16">
+        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
+              Latest
+            </p>
+            <h2 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 md:text-4xl">
+              Rugby coverage with context
+            </h2>
+          </div>
+          <p className="max-w-2xl text-sm leading-6 text-zinc-500">
+            This v0.2 homepage uses sample editorial cards while the newsroom structure, CMS and publishing workflow are built out.
+          </p>
+        </div>
 
-        <h1 className="text-5xl font-black uppercase tracking-tight md:text-8xl">
-          The Rugby Panda
-        </h1>
+        <div className="grid gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(320px,1fr)]">
+          <ArticleCard {...featuredArticle} />
 
-        <p className="mt-6 max-w-3xl text-lg leading-8 text-gray-100 md:text-2xl">
-          Digital rugby newsroom delivering{" "}
-          <span className="font-bold text-[#4CAF50]">
-            independent coverage, insight and analysis
-          </span>{" "}
-          of Irish and European rugby.
-        </p>
+          <div className="grid gap-6">
+            {secondaryArticles.map((article) => (
+              <ArticleCard key={article.title} {...article} />
+            ))}
+          </div>
+        </div>
+      </section>
 
-        <div className="my-10 h-px w-80 max-w-full bg-[#2E7D32]/70" />
-
-        <p className="text-xl font-black uppercase tracking-[0.25em] text-[#4CAF50] md:text-3xl">
-          Launching for the 2026/27 season
-        </p>
-
-        <div className="mt-10 flex items-center gap-8">
-          <a
-            href="https://www.instagram.com/rugbypandamedia"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Instagram"
-            className="flex h-14 w-14 items-center justify-center rounded-full border border-[#2E7D32]/80 transition hover:bg-[#2E7D32]"
-          >
-            <svg viewBox="0 0 24 24" className="h-7 w-7 fill-white">
-              <path d="M7 2h10a5 5 0 0 1 5 5v10a5 5 0 0 1-5 5H7a5 5 0 0 1-5-5V7a5 5 0 0 1 5-5Zm0 2a3 3 0 0 0-3 3v10a3 3 0 0 0 3 3h10a3 3 0 0 0 3-3V7a3 3 0 0 0-3-3H7Zm5 3.5A4.5 4.5 0 1 1 12 16.5 4.5 4.5 0 0 1 12 7.5Zm0 2A2.5 2.5 0 1 0 12 14.5 2.5 2.5 0 0 0 12 9.5ZM17.5 6.5a1 1 0 1 1-1 1 1 1 0 0 1 1-1Z" />
-            </svg>
-          </a>
-
-          <a
-            href="https://www.facebook.com/profile.php?id=61591161347126"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="Facebook"
-            className="flex h-14 w-14 items-center justify-center rounded-full border border-[#2E7D32]/80 transition hover:bg-[#2E7D32]"
-          >
-            <svg viewBox="0 0 24 24" className="h-7 w-7 fill-white">
-              <path d="M13.5 22v-8h2.7l.4-3h-3.1V9.1c0-.9.2-1.5 1.5-1.5h1.7V4.9c-.3 0-1.3-.1-2.4-.1-2.4 0-4.1 1.5-4.1 4.2V11H8v3h2.7v8h2.8Z" />
-            </svg>
-          </a>
+      <section className="border-t border-zinc-200 bg-zinc-50">
+        <div className="mx-auto max-w-6xl px-5 py-12 md:px-6 md:py-16">
+          <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
+            Sections
+          </p>
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {sections.map((section) => (
+              <a
+                key={section}
+                href="#"
+                className="rounded-2xl border border-zinc-200 bg-white px-5 py-4 text-lg font-black text-zinc-950 transition hover:border-[#2E7D32] hover:text-[#2E7D32]"
+              >
+                {section}
+              </a>
+            ))}
+          </div>
         </div>
       </section>
     </main>
