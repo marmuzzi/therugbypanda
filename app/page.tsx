@@ -1,51 +1,7 @@
 import ArticleCard from "@/components/ArticleCard";
+import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-
-const latestArticles = [
-  {
-    category: "Provinces • Leinster",
-    title: "Leinster season preview: building towards another defining campaign",
-    excerpt:
-      "A first look at the storylines, selection questions and European ambitions shaping Leinster’s 2026/27 season.",
-    href: "/articles/leinster-season-preview-2026",
-    meta: "6 min read • 2 July 2026",
-    featured: true,
-  },
-  {
-    category: "Ireland",
-    title: "Ireland’s depth chart questions before the autumn window",
-    excerpt:
-      "The early selection debates that could matter most once the international calendar returns.",
-    href: "#",
-    meta: "Preview",
-  },
-  {
-    category: "URC",
-    title: "The URC storylines that could shape the opening month",
-    excerpt:
-      "Fixture rhythm, squad rotation and early momentum will define how contenders settle into the campaign.",
-    href: "#",
-    meta: "Preview",
-  },
-  {
-    category: "Europe",
-    title: "Why game management still decides the biggest European nights",
-    excerpt:
-      "Control matters, but knockout rugby often turns on adaptation, pressure and precision after momentum swings.",
-    href: "#",
-    meta: "Analysis",
-  },
-];
-
-const sections = [
-  "Leinster",
-  "Munster",
-  "Ulster",
-  "Connacht",
-  "Ireland",
-  "URC",
-  "Europe",
-];
+import { latestArticles, sections } from "@/lib/articles";
 
 export default function Home() {
   const [featuredArticle, ...secondaryArticles] = latestArticles;
@@ -103,7 +59,7 @@ export default function Home() {
             {sections.map((section) => (
               <a
                 key={section}
-                href="#"
+                href={`/categories/${section.toLowerCase()}`}
                 className="rounded-2xl border border-zinc-200 bg-white px-5 py-4 text-lg font-black text-zinc-950 transition hover:border-[#2E7D32] hover:text-[#2E7D32]"
               >
                 {section}
@@ -112,6 +68,8 @@ export default function Home() {
           </div>
         </div>
       </section>
+
+      <SiteFooter />
     </main>
   );
 }
