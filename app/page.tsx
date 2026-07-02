@@ -17,8 +17,8 @@ export default function Home() {
         <Image
           src="/rugby-panda-logo.png"
           alt="The Rugby Panda logo"
-          width={150}
-          height={150}
+          width={450}
+          height={450}
           priority
           className="mb-6 drop-shadow-2xl"
         />
