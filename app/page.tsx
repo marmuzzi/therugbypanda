@@ -8,10 +8,10 @@ export default function Home() {
         alt=""
         fill
         priority
-        className="object-cover object-center opacity-80"
+        className="object-cover object-center opacity-100"
       />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/55 via-black/30 to-black/80" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/10 to-black/55" />
 
       <section className="relative z-10 flex min-h-screen flex-col items-center justify-center px-6 py-10 text-center">
         <Image
