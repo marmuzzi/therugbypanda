@@ -37,27 +37,32 @@ function SearchIcon() {
 
 export default function SiteHeader() {
   return (
-    <header className="z-50 border-b border-zinc-200 bg-white">
-      <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-4 py-4 sm:px-5 md:px-8 md:py-6 lg:py-7">
+    <header className="border-b border-zinc-200 bg-white">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-8 px-4 py-5 sm:px-5 md:px-8 md:py-7 lg:py-8">
         <Link
           href="/"
-          className="flex w-full min-w-0 items-center gap-3 sm:gap-5 md:w-auto md:gap-7"
+          className="flex w-full min-w-0 items-center gap-4 sm:gap-6 md:w-auto md:gap-8"
           aria-label="The Rugby Panda home"
         >
           <Image
             src="/rugby-panda-logo.png"
             alt="The Rugby Panda"
-            width={176}
-            height={176}
+            width={220}
+            height={220}
             priority
-            className="h-16 w-16 shrink-0 object-contain sm:h-24 sm:w-24 md:h-40 md:w-40 lg:h-44 lg:w-44"
+            sizes="(max-width: 640px) 96px, (max-width: 768px) 128px, 176px"
+            className="h-24 w-24 shrink-0 object-contain sm:h-32 sm:w-32 md:h-44 md:w-44 lg:h-48 lg:w-48"
           />
-          <div className="min-w-0 pt-1">
-            <p className="text-[2rem] font-black uppercase leading-[0.82] tracking-tight text-[#003D2B] min-[390px]:text-[2.3rem] sm:text-5xl md:text-5xl lg:text-7xl">
-              <span className="block text-[0.42em] leading-none tracking-normal">The</span>
-              <span className="block whitespace-nowrap">Rugby Panda</span>
+          <div className="min-w-0">
+            <p className="font-black uppercase leading-[0.82] tracking-tight text-[#003D2B]">
+              <span className="block text-2xl leading-none sm:text-3xl md:text-4xl lg:text-5xl">
+                The
+              </span>
+              <span className="block whitespace-nowrap text-[2.65rem] leading-[0.82] sm:text-6xl md:text-7xl lg:text-8xl">
+                Rugby Panda
+              </span>
             </p>
-            <p className="mt-2 hidden text-sm font-black uppercase tracking-[0.28em] text-[#005C2F] sm:block md:mt-3 lg:text-base">
+            <p className="mt-3 hidden text-sm font-black uppercase tracking-[0.28em] text-[#005C2F] sm:block md:text-base lg:text-lg">
               Independent rugby news. Insight. Analysis.
             </p>
           </div>
