@@ -1,30 +1,35 @@
 {
-  "name": "nextjs",
-  "version": "0.1.0",
+  "name": "therugbypanda",
+  "version": "0.3.0",
   "private": true,
+  "engines": {
+    "node": ">=22.12"
+  },
   "scripts": {
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "studio": "sanity dev",
+    "deploy-studio": "sanity deploy"
   },
   "dependencies": {
-    "@portabletext/react": "^3.2.1",
-    "@sanity/image-url": "^1.1.0",
-    "next": "16.2.4",
-    "next-sanity": "^11.0.0",
-    "react": "19.2.4",
-    "react-dom": "19.2.4",
-    "sanity": "^4.0.0"
+    "@portabletext/react": "latest",
+    "@sanity/image-url": "latest",
+    "next": "latest",
+    "next-sanity": "latest",
+    "react": "latest",
+    "react-dom": "latest",
+    "sanity": "latest"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.2.4",
-    "tailwindcss": "^4",
-    "typescript": "^5"
+    "@tailwindcss/postcss": "latest",
+    "@types/node": "latest",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "latest",
+    "eslint-config-next": "latest",
+    "tailwindcss": "latest",
+    "typescript": "latest"
   }
 }
