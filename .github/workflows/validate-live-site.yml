@@ -1,0 +1,30 @@
+name: Validate Live Site
+
+on:
+  workflow_dispatch:
+
+jobs:
+  validate-live-site:
+    name: Check deployed pages
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Check homepage
+        run: |
+          curl --fail --silent --show-error --location https://therugbypanda.ie/ | grep -q "Leinster season preview"
+
+      - name: Check lead article
+        run: |
+          curl --fail --silent --show-error --location https://therugbypanda.ie/articles/leinster-season-preview-2026 | grep -q "Leinster season preview"
+
+      - name: Check category pages
+        run: |
+          curl --fail --silent --show-error --location https://therugbypanda.ie/categories/provinces | grep -q "Provinces"
+          curl --fail --silent --show-error --location https://therugbypanda.ie/categories/ireland | grep -q "Ireland"
+          curl --fail --silent --show-error --location https://therugbypanda.ie/categories/urc | grep -q "URC"
+          curl --fail --silent --show-error --location https://therugbypanda.ie/categories/europe | grep -q "Europe"
+
+      - name: Check generated icon route
+        run: |
+          curl --fail --silent --show-error --location --head https://therugbypanda.ie/icon.png?v=3
