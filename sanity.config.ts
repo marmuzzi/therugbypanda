@@ -5,7 +5,7 @@ import { dataset, projectId, studioUrl } from "./sanity/env";
 import { schemaTypes } from "./sanity/schemaTypes";
 
 export default defineConfig({
-  name: "the-rugby-panda",
+  name: "default",
   title: "The Rugby Panda",
   projectId,
   dataset,
