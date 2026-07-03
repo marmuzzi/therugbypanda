@@ -20,7 +20,8 @@
     "next-sanity": "latest",
     "react": "latest",
     "react-dom": "latest",
-    "sanity": "latest"
+    "sanity": "latest",
+    "styled-components": "latest"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "latest",
