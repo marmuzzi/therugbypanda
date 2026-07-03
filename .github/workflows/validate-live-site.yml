@@ -27,4 +27,4 @@ jobs:
 
       - name: Check favicon asset
         run: |
-          curl --fail --silent --show-error --location --head https://therugbypanda.ie/favicon.png?v=3
+          curl --fail --silent --show-error --location --head https://therugbypanda.ie/rugby-panda-logo.png?v=5
