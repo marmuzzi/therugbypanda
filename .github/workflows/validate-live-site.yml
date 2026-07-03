@@ -25,6 +25,10 @@ jobs:
           curl --fail --silent --show-error --location https://therugbypanda.ie/categories/urc | grep -q "URC"
           curl --fail --silent --show-error --location https://therugbypanda.ie/categories/europe | grep -q "Europe"
 
-      - name: Check favicon asset
+      - name: Check favicon ico route
         run: |
-          curl --fail --silent --show-error --location --head https://therugbypanda.ie/rugby-panda-logo.png?v=5
+          curl --fail --silent --show-error --location --head https://therugbypanda.ie/favicon.ico?v=7
+
+      - name: Check approved logo asset
+        run: |
+          curl --fail --silent --show-error --location --head https://therugbypanda.ie/rugby-panda-logo.png?v=7
