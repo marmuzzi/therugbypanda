@@ -2,16 +2,17 @@ import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://therugbypanda.ie"),
   title: "The Rugby Panda",
   description:
     "Digital rugby newsroom delivering independent coverage, insight and analysis of Irish and European rugby.",
   icons: {
     icon: [
-      { url: "/favicon.png", type: "image/png" },
-      { url: "/rugby-panda-logo.png", type: "image/png" },
+      { url: "/icon.png", type: "image/png", sizes: "32x32" },
+      { url: "/favicon.png?v=2", type: "image/png", sizes: "any" },
     ],
-    shortcut: "/favicon.png",
-    apple: "/rugby-panda-logo.png",
+    shortcut: "/icon.png",
+    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
   },
 };
 
