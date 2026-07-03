@@ -7,9 +7,12 @@ export const metadata: Metadata = {
   description:
     "Digital rugby newsroom delivering independent coverage, insight and analysis of Irish and European rugby.",
   icons: {
-    icon: [{ url: "/rugby-panda-logo.png?v=6", type: "image/png", sizes: "any" }],
-    shortcut: "/rugby-panda-logo.png?v=6",
-    apple: [{ url: "/rugby-panda-logo.png?v=6", type: "image/png", sizes: "180x180" }],
+    icon: [
+      { url: "/favicon.ico?v=7", sizes: "any" },
+      { url: "/rugby-panda-logo.png?v=7", type: "image/png", sizes: "any" },
+    ],
+    shortcut: "/favicon.ico?v=7",
+    apple: [{ url: "/rugby-panda-logo.png?v=7", type: "image/png", sizes: "180x180" }],
   },
 };
 
