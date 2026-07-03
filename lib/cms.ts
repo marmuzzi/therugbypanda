@@ -82,6 +82,14 @@ export type FeedArticle = {
   category?: string;
 };
 
+const primarySections: SectionLink[] = [
+  { label: "News", href: "/" },
+  { label: "Provinces", href: "/categories/provinces" },
+  { label: "Ireland", href: "/categories/ireland" },
+  { label: "URC", href: "/categories/urc" },
+  { label: "Europe", href: "/categories/europe" },
+];
+
 const articleSummaryFields = `
   title,
   "slug": slug.current,
@@ -201,14 +209,14 @@ export async function getContinueReading(slug: string) {
 
 export async function getSectionLinks(): Promise<SectionLink[]> {
   const categories = await sanityFetch<Array<{ title: string; slug: string }>>({ query: categoryLinksQuery });
-
-  return [
-    { label: "News", href: "/" },
-    ...(categories?.map((category) => ({
+  const cmsSections =
+    categories?.map((category) => ({
       label: category.title,
-      href: `/categories/${category.slug}`,
-    })) ?? []),
-  ];
+      href: category.slug === "news" ? "/" : `/categories/${category.slug}`,
+    })) ?? [];
+  const byHref = new Map(cmsSections.map((section) => [section.href, section]));
+
+  return primarySections.map((section) => byHref.get(section.href) ?? section);
 }
 
 export async function getCategoryPage(slug: string) {
