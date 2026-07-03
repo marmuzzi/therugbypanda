@@ -1,17 +1,17 @@
 import ArticleCard from "@/components/ArticleCard";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import {
-  analysisArticles,
-  featuredArticle,
-  latestArticles,
-  provinceArticles,
-  sections,
-} from "@/lib/articles";
+import { getHomepageArticles } from "@/lib/cms";
+import { sections } from "@/lib/articles";
 
-export default function Home() {
-  const secondaryArticles = latestArticles.filter(
-    (article) => article.title !== featuredArticle.title,
+export default async function Home() {
+  const { featured, latest } = await getHomepageArticles();
+  const secondaryArticles = latest.filter((article) => article.title !== featured.title);
+  const provinceArticles = latest.filter((article) =>
+    ["Leinster", "Munster", "Ulster", "Connacht"].includes(article.section ?? ""),
+  );
+  const analysisArticles = latest.filter((article) =>
+    ["Analysis", "Column", "Notebook"].some((label) => article.meta.includes(label)),
   );
 
   return (
@@ -25,13 +25,13 @@ export default function Home() {
               Lead story
             </p>
             <h1 className="mt-5 max-w-4xl text-5xl font-black leading-none tracking-tight md:text-7xl">
-              {featuredArticle.title}
+              {featured.title}
             </h1>
             <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300 md:text-xl">
-              {featuredArticle.excerpt}
+              {featured.excerpt}
             </p>
             <a
-              href={featuredArticle.href}
+              href={featured.href}
               className="mt-8 inline-flex rounded-full bg-[#4CAF50] px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564]"
             >
               Read the preview
@@ -71,7 +71,7 @@ export default function Home() {
             </h2>
           </div>
           <p className="max-w-2xl text-sm leading-6 text-zinc-500">
-            Sample editorial cards are being used while the publishing workflow and content index are built.
+            Articles now read from Sanity when published content is available, with sample editorial cards preserved as a safe fallback.
           </p>
         </div>
 
