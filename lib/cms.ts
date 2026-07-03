@@ -114,6 +114,8 @@ const categoryBySlugQuery = `*[_type == "category" && slug.current == $slug][0]{
 
 const categoryArticlesQuery = `*[_type == "article" && defined(slug.current) && category->slug.current == $slug] | order(publishedAt desc)[0...24]{${articleSummaryFields}}`;
 
+const primarySectionOrder = ["Provinces", "Ireland", "URC", "Europe"];
+
 function formatDate(date?: string) {
   if (!date) return undefined;
 
@@ -124,8 +126,19 @@ function formatDate(date?: string) {
   }).format(new Date(date));
 }
 
+function uniqueLabels(labels: Array<string | undefined>) {
+  const seen = new Set<string>();
+
+  return labels.filter((label): label is string => {
+    if (!label || seen.has(label)) return false;
+
+    seen.add(label);
+    return true;
+  });
+}
+
 function formatCategory(article: SanityArticleSummary | CmsArticle) {
-  return [article.category, article.province ?? article.competition].filter(Boolean).join(" • ");
+  return uniqueLabels([article.category, article.province, article.competition]).join(" • ");
 }
 
 function imageUrl(image?: SanityImage) {
@@ -169,13 +182,25 @@ export async function getContinueReading(slug: string) {
 
 export async function getSectionLinks(): Promise<SectionLink[]> {
   const categories = await sanityFetch<Array<{ title: string; slug: string }>>({ query: categoryLinksQuery });
+  const categoryLinks =
+    categories?.map((category) => ({
+      label: category.title,
+      href: `/categories/${category.slug}`,
+    })) ?? [];
+  const sortedCategoryLinks = categoryLinks.sort((a, b) => {
+    const aIndex = primarySectionOrder.indexOf(a.label);
+    const bIndex = primarySectionOrder.indexOf(b.label);
+
+    if (aIndex !== -1 || bIndex !== -1) {
+      return (aIndex === -1 ? Number.MAX_SAFE_INTEGER : aIndex) - (bIndex === -1 ? Number.MAX_SAFE_INTEGER : bIndex);
+    }
+
+    return a.label.localeCompare(b.label);
+  });
 
   return [
     { label: "News", href: "/" },
-    ...(categories?.map((category) => ({
-      label: category.title,
-      href: `/categories/${category.slug}`,
-    })) ?? []),
+    ...sortedCategoryLinks.filter((section) => section.href !== "/categories/news"),
   ];
 }
 
