@@ -2,7 +2,7 @@
 
 ## Current Version
 
-v0.2 — Newsroom Foundation
+v0.3 — CMS Foundation
 
 ## Last Updated
 
@@ -18,14 +18,15 @@ v0.2 — Newsroom Foundation
 - Landing page live
 - Instagram profile created: https://www.instagram.com/rugbypandamedia
 - Facebook page created: https://www.facebook.com/profile.php?id=61591161347126
-- Favicon asset created, but live browser favicon still needs follow-up
 - Approved panda logo in use for the masthead and article signature
+- `app/icon.tsx` and `app/apple-icon.tsx` generated icon routes created for branded browser/app icons
+- Root metadata now points to cache-busted generated brand icons
 - `components/BrandLockup.tsx` created
 - `components/HeaderNav.tsx` created
 - `components/SearchButton.tsx` created
 - `components/SiteHeader.tsx` created and composed from brand/navigation components
 - Masthead rebuilt as a publication-style brand lockup
-- Masthead has had one desktop proportion polish pass, but desktop title still feels too large and needs another refinement
+- Desktop masthead has had a second proportion polish pass: smaller panda mark, reduced wordmark scale and tighter vertical spacing
 - Mobile navigation simplified to News, Provinces, Ireland, URC, Europe and Search
 - Desktop navigation includes About
 - Header social links limited to Instagram and Facebook
@@ -35,6 +36,7 @@ v0.2 — Newsroom Foundation
 - `app/about/page.tsx` created
 - `app/categories/provinces/page.tsx` created
 - `app/articles/[slug]/page.tsx` route created
+- Article route now attempts to read article content from Sanity by slug and falls back to the sample Leinster article
 - `components/ArticleHeader.tsx` created and polished
 - `components/KeyPoints.tsx` created
 - `components/ArticleBody.tsx` created
@@ -47,10 +49,17 @@ v0.2 — Newsroom Foundation
 - Full sample article page template built
 - Homepage converted from landing page to editorial newsroom-style homepage
 - Homepage now includes lead story, editor note, latest stories, province coverage, analysis, reader support and sections grid
+- Homepage now reads published Sanity articles when available and falls back to local sample article data when CMS content is empty or unavailable
 - Bottom homepage section grid now matches top-level nav: News, Provinces, Ireland, URC, Europe
 - Article byline now uses panda logo signature
 - Sanity project prepared externally with project ID `hvg4b508` and dataset `production`
 - Vercel environment variables configured for Sanity project access
+- Sanity dependencies added in `package.json`
+- `sanity.config.ts` and `sanity.cli.ts` added
+- `/studio` route added through `app/studio/[[...tool]]/page.tsx`
+- Sanity schemas added for articles, authors, categories, provinces, competitions and tags
+- Article schema includes SEO fields, featured image metadata, key points and Portable Text body content
+- `lib/sanity.ts` and `lib/cms.ts` added for Sanity client, homepage queries, article-by-slug queries and safe sample-content fallback
 
 ## Current GitHub structure
 
@@ -58,10 +67,15 @@ v0.2 — Newsroom Foundation
 app/
   page.tsx
   layout.tsx
+  icon.tsx
+  apple-icon.tsx
   about/
     page.tsx
   search/
     page.tsx
+  studio/
+    [[...tool]]/
+      page.tsx
   categories/
     provinces/
       page.tsx
@@ -85,6 +99,13 @@ components/
 
 lib/
   articles.ts
+  cms.ts
+  sanity.ts
+
+sanity/
+  env.ts
+  schemaTypes/
+    index.ts
 
 public/
   landing-bg.png
@@ -103,40 +124,41 @@ https://therugbypanda.ie/articles/leinster-season-preview-2026
 
 ## Current task
 
-Prepare next chat handoff. The live site looks good on mobile and has temporary imagery on the homepage cards, but desktop branding still needs refinement.
+Continue Sprint 3 — CMS and Publishing Platform. Brand polish is committed, and CMS foundation is in place with safe fallback content.
 
 ## Immediate next tasks
 
-Before starting CMS work, complete this short visual/brand polish pass:
-
-1. Fix the live favicon properly. The browser tab still shows the generic Vercel/placeholder icon even on a first-time desktop load.
-2. Further reduce and rebalance the desktop masthead title. The wordmark is still too large compared with the panda logo and takes too much vertical space.
-3. Keep current navigation structure unchanged.
-4. After brand polish, begin Sprint 3 — CMS and Publishing Platform.
+1. Verify the deployed favicon after Vercel finishes the latest deployment. The generated `/icon.png` route and metadata update are committed, but the live browser tab still needs visual confirmation.
+2. Verify desktop masthead proportions on the deployed site after the latest deployment.
+3. Create seed content or a migration script for Sanity.
+4. Prepare dynamic category routes from CMS data.
+5. Add featured image rendering to the article page once CMS image content is available.
+6. Replace temporary Unsplash/sample imagery with CMS-backed images.
 
 ## Sprint 3 — CMS and Publishing Platform
 
-1. Add Sanity dependencies and configuration
-2. Create Sanity Studio route or studio workspace
-3. Create schemas for articles, authors, categories, provinces, competitions, tags and images
-4. Add SEO fields and image metadata fields
-5. Connect Next.js pages to Sanity queries
-6. Replace temporary `lib/articles.ts` sample data with CMS content
-7. Create seed content or migration script
-8. Prepare dynamic category/article routes from CMS data
-9. Build image management with featured image, caption, photographer, rights/source and alt text
+1. Add Sanity dependencies and configuration — done
+2. Create Sanity Studio route or studio workspace — done
+3. Create schemas for articles, authors, categories, provinces, competitions, tags and images — done
+4. Add SEO fields and image metadata fields — done
+5. Connect Next.js pages to Sanity queries — in progress; homepage and article-by-slug now query Sanity with safe fallbacks
+6. Replace temporary `lib/articles.ts` sample data with CMS content — in progress; fallback remains until seed/published content exists
+7. Create seed content or migration script — next
+8. Prepare dynamic category/article routes from CMS data — article route started; category route still pending
+9. Build image management with featured image, caption, photographer, rights/source and alt text — schema done; front-end rendering still pending
 
 ## Known issues
 
-- Browser favicon is still not working correctly after metadata update
-- Desktop masthead title is still too large and needs another design pass
+- Live favicon needs deployment/browser verification after generated icon route update
+- Desktop masthead proportions need deployment/browser verification after latest polish pass
 - Dynamic category route not built yet
 - Search is a placeholder and not connected to an index yet
-- CMS schema and Studio not yet committed
+- Seed content/migration script not created yet
+- Article featured image rendering is not wired into the article page yet
 - Sponsorship slots not implemented yet
 - Newsletter sign-up not implemented yet
 - The `.com` redirect may still need final confirmation
-- Article and homepage images currently use temporary stock/placeholder URLs and need a CMS-backed image pipeline
+- Homepage can read CMS content, but temporary local sample data remains as fallback until real CMS content is seeded/published
 
 ## Working principles
 
