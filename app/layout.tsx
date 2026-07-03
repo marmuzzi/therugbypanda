@@ -6,11 +6,6 @@ export const metadata: Metadata = {
   title: "The Rugby Panda",
   description:
     "Digital rugby newsroom delivering independent coverage, insight and analysis of Irish and European rugby.",
-  icons: {
-    icon: [{ url: "/rugby-panda-logo.png?v=5", type: "image/png", sizes: "any" }],
-    shortcut: "/rugby-panda-logo.png?v=5",
-    apple: [{ url: "/rugby-panda-logo.png?v=5", type: "image/png", sizes: "180x180" }],
-  },
 };
 
 export const viewport: Viewport = {
