@@ -7,9 +7,9 @@ export const metadata: Metadata = {
   description:
     "Digital rugby newsroom delivering independent coverage, insight and analysis of Irish and European rugby.",
   icons: {
-    icon: [{ url: "/favicon.png?v=4", type: "image/png", sizes: "any" }],
-    shortcut: "/favicon.png?v=4",
-    apple: [{ url: "/favicon.png?v=4", type: "image/png", sizes: "180x180" }],
+    icon: [{ url: "/favicon.svg?v=5", type: "image/svg+xml", sizes: "any" }],
+    shortcut: "/favicon.svg?v=5",
+    apple: [{ url: "/favicon.svg?v=5", type: "image/svg+xml", sizes: "any" }],
   },
 };
 
