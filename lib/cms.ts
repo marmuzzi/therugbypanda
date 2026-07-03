@@ -2,7 +2,10 @@ import { featuredArticle, latestArticles, type ArticleSummary } from "@/lib/arti
 import { sanityFetch, urlForImage } from "@/lib/sanity";
 
 type SanityImage = {
-  asset?: unknown;
+  asset?: {
+    _ref?: string;
+    _type?: "reference";
+  };
   alt?: string;
 };
 
@@ -78,7 +81,9 @@ function formatCategory(article: SanityArticleSummary) {
 
 function mapArticleSummary(article: SanityArticleSummary): ArticleSummary {
   const published = formatDate(article.publishedAt);
-  const image = article.featuredImage?.asset ? urlForImage(article.featuredImage).width(1200).height(800).url() : undefined;
+  const image = article.featuredImage?.asset?._ref
+    ? urlForImage(article.featuredImage).width(1200).height(800).url()
+    : undefined;
 
   return {
     category: formatCategory(article) || "News",
