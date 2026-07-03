@@ -22,5 +22,11 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Ensure Studio peer dependencies
+        run: npm install styled-components@latest --no-save
+
+      - name: Verify Studio dependencies
+        run: npm list styled-components sanity
+
       - name: Deploy Sanity Studio
         run: npx sanity deploy --url therugbypanda --yes
