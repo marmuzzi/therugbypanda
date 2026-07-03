@@ -6,7 +6,7 @@ v0.2 — Newsroom Foundation
 
 ## Last Updated
 
-2 July 2026
+3 July 2026
 
 ## Completed
 
@@ -18,13 +18,14 @@ v0.2 — Newsroom Foundation
 - Landing page live
 - Instagram profile created: https://www.instagram.com/rugbypandamedia
 - Facebook page created: https://www.facebook.com/profile.php?id=61591161347126
-- Favicon created
+- Favicon asset created, but live browser favicon still needs follow-up
 - Approved panda logo in use for the masthead and article signature
 - `components/BrandLockup.tsx` created
 - `components/HeaderNav.tsx` created
 - `components/SearchButton.tsx` created
 - `components/SiteHeader.tsx` created and composed from brand/navigation components
 - Masthead rebuilt as a publication-style brand lockup
+- Masthead has had one desktop proportion polish pass, but desktop title still feels too large and needs another refinement
 - Mobile navigation simplified to News, Provinces, Ireland, URC, Europe and Search
 - Desktop navigation includes About
 - Header social links limited to Instagram and Facebook
@@ -41,10 +42,12 @@ v0.2 — Newsroom Foundation
 - `components/TagList.tsx` created
 - `components/ReaderSupport.tsx` created
 - `components/ArticleCard.tsx` created
-- `lib/articles.ts` expanded with richer sample editorial data
+- Article cards now support temporary image URLs
+- `lib/articles.ts` expanded with richer sample editorial data and temporary stock/placeholder imagery
 - Full sample article page template built
 - Homepage converted from landing page to editorial newsroom-style homepage
 - Homepage now includes lead story, editor note, latest stories, province coverage, analysis, reader support and sections grid
+- Bottom homepage section grid now matches top-level nav: News, Provinces, Ireland, URC, Europe
 - Article byline now uses panda logo signature
 - Sanity project prepared externally with project ID `hvg4b508` and dataset `production`
 - Vercel environment variables configured for Sanity project access
@@ -100,11 +103,18 @@ https://therugbypanda.ie/articles/leinster-season-preview-2026
 
 ## Current task
 
-Close Sprint 2 by merging the editorial homepage and article header polish to `main`, then use the live deployment for review.
+Prepare next chat handoff. The live site looks good on mobile and has temporary imagery on the homepage cards, but desktop branding still needs refinement.
 
-## Next task
+## Immediate next tasks
 
-Begin Sprint 3 — CMS and Publishing Platform:
+Before starting CMS work, complete this short visual/brand polish pass:
+
+1. Fix the live favicon properly. The browser tab still shows the generic Vercel/placeholder icon even on a first-time desktop load.
+2. Further reduce and rebalance the desktop masthead title. The wordmark is still too large compared with the panda logo and takes too much vertical space.
+3. Keep current navigation structure unchanged.
+4. After brand polish, begin Sprint 3 — CMS and Publishing Platform.
+
+## Sprint 3 — CMS and Publishing Platform
 
 1. Add Sanity dependencies and configuration
 2. Create Sanity Studio route or studio workspace
@@ -114,16 +124,19 @@ Begin Sprint 3 — CMS and Publishing Platform:
 6. Replace temporary `lib/articles.ts` sample data with CMS content
 7. Create seed content or migration script
 8. Prepare dynamic category/article routes from CMS data
+9. Build image management with featured image, caption, photographer, rights/source and alt text
 
 ## Known issues
 
+- Browser favicon is still not working correctly after metadata update
+- Desktop masthead title is still too large and needs another design pass
 - Dynamic category route not built yet
 - Search is a placeholder and not connected to an index yet
 - CMS schema and Studio not yet committed
 - Sponsorship slots not implemented yet
 - Newsletter sign-up not implemented yet
 - The `.com` redirect may still need final confirmation
-- Article and homepage images currently need a proper CMS-backed image pipeline
+- Article and homepage images currently use temporary stock/placeholder URLs and need a CMS-backed image pipeline
 
 ## Working principles
 
