@@ -8,124 +8,78 @@ v0.3 — CMS Foundation
 
 3 July 2026
 
+## Source of truth
+
+Read these files first in future sessions:
+
+1. `docs/07_Project_State.md`
+2. `docs/08_Issue_Log.md`
+3. `docs/09_Publishing_Workflow.md`
+
+Do not rely on chat history for current status.
+
+## Available connectors
+
+Expected and verified connectors:
+
+- GitHub — available and used for repository work.
+- Vercel — available and verified on 2026-07-03. Use it to check deployments, production commit, build logs and runtime errors before asking the user to configure Vercel.
+
+Not currently available in this chat:
+
+- Sanity MCP — installed on the user's account but not exposed to the current conversation tools.
+- Cloudflare.
+- Google Search Console.
+
+Always check available connectors before asking the user to configure one.
+
 ## Completed
 
-- The Rugby Panda brand created
-- Mission defined
+- The Rugby Panda brand created.
 - Domain live: https://therugbypanda.ie
-- Cloudflare DNS working
-- Vercel deployment working
-- Landing page live
+- Cloudflare DNS working.
+- Vercel deployment working.
 - Instagram profile created: https://www.instagram.com/rugbypandamedia
 - Facebook page created: https://www.facebook.com/profile.php?id=61591161347126
-- Approved panda logo in use for the masthead and article signature
-- `app/icon.tsx` and `app/apple-icon.tsx` generated icon routes created for branded browser/app icons
-- Root metadata now points to cache-busted generated brand icons
-- `components/BrandLockup.tsx` created
-- `components/HeaderNav.tsx` created
-- `components/SearchButton.tsx` created
-- `components/SiteHeader.tsx` created and composed from brand/navigation components
-- Masthead rebuilt as a publication-style brand lockup
-- Desktop masthead has had a second proportion polish pass: smaller panda mark, reduced wordmark scale and tighter vertical spacing
-- Mobile navigation simplified to News, Provinces, Ireland, URC, Europe and Search
-- Desktop navigation includes About
-- Header social links limited to Instagram and Facebook
-- X/Twitter removed from the site UI
-- `app/search/page.tsx` created as a search placeholder
-- `components/SiteFooter.tsx` created
-- `app/about/page.tsx` created
-- `app/categories/provinces/page.tsx` created
-- `app/articles/[slug]/page.tsx` route created
-- Article route now reads article content from Sanity by slug and 404s when CMS content is missing
-- `components/ArticleHeader.tsx` created and polished
-- `components/KeyPoints.tsx` created
-- `components/ArticleBody.tsx` created
-- `components/ContinueReading.tsx` created
-- `components/TagList.tsx` created
-- `components/ReaderSupport.tsx` created
-- `components/ArticleCard.tsx` created
-- Article cards support CMS-backed image URLs
-- Homepage converted from landing page to editorial newsroom-style homepage
-- Homepage now includes lead story, editor note, latest stories, province coverage, analysis, reader support and sections grid
-- Homepage now reads live Sanity content as the canonical source and no longer falls back to local sample articles
-- Bottom homepage section grid now reads category links from Sanity and includes News plus CMS categories
-- Article byline now uses panda logo signature
-- Sanity project prepared externally with project ID `hvg4b508` and dataset `production`
-- Vercel environment variables configured for Sanity project access
-- Sanity dependencies added in `package.json`
-- `sanity.config.ts` and `sanity.cli.ts` added
-- `/studio` route added through `app/studio/[[...tool]]/page.tsx`
-- Sanity schemas added for articles, authors, categories, provinces, competitions and tags
-- Article schema includes SEO fields, featured image metadata, key points and Portable Text body content
-- `lib/sanity.ts` and `lib/cms.ts` added for Sanity client, homepage queries, article-by-slug queries and category queries
-- `scripts/seed-sanity.mjs` added to seed the canonical hosted Sanity CMS with starter taxonomy and article content
-- `npm run seed:sanity` script added; requires `SANITY_API_TOKEN` with write access
-- Dynamic category route added at `app/categories/[slug]/page.tsx`
-- Article featured image rendering wired into article pages using CMS image metadata
-- Local article mock data removed from frontend page rendering
-- Hosted Sanity `production` dataset verified with published starter content: 7 articles, 5 categories, 1 author, 4 provinces, 2 competitions and 9 tags
-- Live homepage verified returning 200 and rendering Sanity-powered story content
-- CMS category label rendering polished to avoid duplicate labels such as `URC • URC`
-- Homepage section links polished to keep the canonical News link and avoid duplicate `/categories/news`
+- Approved panda logo in use for masthead and article signature.
+- Site header, navigation, footer, article cards and article page components created.
+- Homepage converted from landing page to editorial newsroom-style homepage.
+- Hosted Sanity project prepared with project ID `hvg4b508` and dataset `production`.
+- Sanity Studio route added at `/studio`.
+- Sanity schemas added for articles, authors, categories, provinces, competitions and tags.
+- `lib/sanity.ts` and `lib/cms.ts` added for frontend CMS queries.
+- Homepage now reads live Sanity content.
+- Article pages now read Sanity content by slug.
+- Category pages now read Sanity content.
+- Local article mock data removed from frontend rendering.
+- `scripts/seed-sanity.mjs` added.
+- GitHub Actions workflow added to seed Sanity without a local terminal.
+- Seed workflow successfully populated starter CMS content.
+- GitHub Actions workflow added to validate live site.
+- Favicon audit completed and merged in PR #21, pending production verification.
 
-## Current GitHub structure
+## Current branch work
 
-```text
-app/
-  page.tsx
-  layout.tsx
-  icon.tsx
-  apple-icon.tsx
-  about/
-    page.tsx
-  search/
-    page.tsx
-  studio/
-    [[...tool]]/
-      page.tsx
-  categories/
-    [slug]/
-      page.tsx
-    provinces/
-      page.tsx
-  articles/
-    [slug]/
-      page.tsx
+### `sprint-3-seo-publishing-polish`
 
-components/
-  ArticleBody.tsx
-  ArticleCard.tsx
-  ArticleHeader.tsx
-  BrandLockup.tsx
-  ContinueReading.tsx
-  HeaderNav.tsx
-  KeyPoints.tsx
-  ReaderSupport.tsx
-  SearchButton.tsx
-  SiteFooter.tsx
-  SiteHeader.tsx
-  TagList.tsx
+Implemented on branch but not merged:
 
-lib/
-  cms.ts
-  sanity.ts
+- CMS-backed `/sitemap.xml`.
+- CMS-backed `/robots.txt`.
+- CMS-backed `/rss.xml`.
+- Article SEO metadata.
+- Article `NewsArticle` JSON-LD.
+- Category SEO metadata.
+- Homepage bottom section order fix: News, Provinces, Ireland, URC, Europe.
+- Duplicate News section fix.
 
-scripts/
-  seed-sanity.mjs
+### `docs-project-state-issue-log`
 
-sanity/
-  env.ts
-  schemaTypes/
-    index.ts
+Documentation branch currently in progress:
 
-public/
-  landing-bg.png
-  rugby-panda-logo.png
-  favicon.png
-
-branding/
-  rugby-panda-logo.png
-```
+- `docs/08_Issue_Log.md` created.
+- `docs/09_Publishing_Workflow.md` created.
+- `docs/07_Project_State.md` updated.
 
 ## Current article URL
 
@@ -135,50 +89,66 @@ https://therugbypanda.ie/articles/leinster-season-preview-2026
 
 ## Current task
 
-Continue Sprint 3 — CMS and Publishing Platform. Hosted Sanity Studio is the canonical CMS. Starter content is published and the live homepage is rendering CMS content. Next step is to verify the latest main deployment after the category label and section-link polish, then validate article and category pages end to end.
+Continue Sprint 3 — CMS and Publishing Platform. The hosted Sanity Studio is the canonical CMS. Sprint 3 implementation is mostly complete, but deployment and production verification are still pending for several items.
+
+## Sprint 3 status
+
+Estimated completion: 90–95%.
+
+Completed:
+
+1. Sanity dependencies and configuration.
+2. Sanity Studio route.
+3. Schemas for articles, authors, categories, provinces, competitions and tags.
+4. SEO fields and image metadata fields in schema.
+5. Homepage connected to Sanity.
+6. Article pages connected to Sanity.
+7. Category pages connected to Sanity.
+8. Local mock data removed from frontend rendering.
+9. Seed script and no-terminal seed workflow.
+10. Live validation workflow.
+11. Starter CMS content seeded.
+
+Pending deployment or verification:
+
+1. Favicon production verification.
+2. SEO endpoints and metadata branch merge/deploy/verification.
+3. Homepage bottom section duplicate/order fix deploy/verification.
+4. Featured image uploads and metadata in Sanity.
+5. Search remains placeholder.
 
 ## Immediate next tasks
 
-1. Verify the deployed homepage after Vercel finishes the latest main deployment.
-2. Verify `/articles/leinster-season-preview-2026` on production.
-3. Verify dynamic category pages such as `/categories/provinces`, `/categories/ireland`, `/categories/urc` and `/categories/europe`.
-4. Upload proper CMS featured images and image metadata in Sanity to replace empty image states.
-5. Verify the deployed favicon and desktop masthead proportions in Chrome after the latest favicon audit fixes.
-6. Confirm whether the `.com` redirect is fully configured.
-
-## Sprint 3 — CMS and Publishing Platform
-
-1. Add Sanity dependencies and configuration — done
-2. Create Sanity Studio route or studio workspace — done
-3. Create schemas for articles, authors, categories, provinces, competitions, tags and images — done
-4. Add SEO fields and image metadata fields — done
-5. Connect Next.js pages to Sanity queries — done for homepage, article pages and category pages
-6. Replace temporary `lib/articles.ts` sample data with CMS content — done in frontend rendering
-7. Create seed content or migration script — done with `scripts/seed-sanity.mjs`
-8. Prepare dynamic category/article routes from CMS data — article and category routes done
-9. Build image management with featured image, caption, photographer, rights/source and alt text — schema done; article/page/card rendering done for CMS image URLs
-10. Validate hosted CMS starter content and live rendering — done
-11. Polish CMS section link ordering and duplicate category labels — done
+1. Commit documentation branch and open PR.
+2. Confirm production deployment commit using Vercel connector.
+3. Run Validate Live Site after successful deployment.
+4. Verify favicon in Chrome incognito.
+5. Merge and deploy `sprint-3-seo-publishing-polish` when deployment pressure is acceptable.
+6. Verify `/sitemap.xml`, `/robots.txt` and `/rss.xml` after deployment.
+7. Upload proper CMS featured images in Sanity.
 
 ## Known issues
 
-- Latest main deployment needs verification after CMS section-link and label polish
-- Live favicon needs deployment/browser verification after generated icon route and favicon audit updates
-- Desktop masthead proportions need deployment/browser verification after latest polish pass
-- Search is a placeholder and not connected to an index yet
-- CMS starter content currently has no uploaded featured image assets; image fields are supported once assets are added in Studio
-- Sponsorship slots not implemented yet
-- Newsletter sign-up not implemented yet
-- The `.com` redirect may still need final confirmation
+Track all issues in `docs/08_Issue_Log.md`.
+
+Current important issues:
+
+- `INF-001` — Vercel deployment rate limit and deployment verification.
+- `WEB-001` — Favicon pending production verification.
+- `WEB-002` — Duplicate homepage section links fixed on branch, pending deployment.
+- `DOC-001` — Documentation source of truth in progress.
 
 ## Working principles
 
 - Project documentation is the source of truth at the start of each session.
 - Full file replacements are preferred over partial snippets.
-- Build incrementally, but merge completed milestones into `main`.
+- Batch related changes to reduce Vercel deployment pressure.
+- Always distinguish implemented, committed, merged, deployed and verified in production.
+- A feature is not complete until verified in production.
+- Every meaningful change must update documentation.
+- Every issue must stay in `docs/08_Issue_Log.md` until closed.
 - Keep `main` deployable.
 - Use reusable components only.
 - Mobile-first design.
 - Reader-first advertising.
 - No public AI references.
-- Update project documentation as development progresses.
