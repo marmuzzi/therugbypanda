@@ -37,20 +37,20 @@ export default function ArticleCard({
         </div>
       ) : null}
 
-      <div className={`${featured ? "p-6 md:p-8" : "p-6"}`}>
+      <div className={`${featured ? "p-6 md:p-7" : "p-6"}`}>
         <p className="text-xs font-black uppercase tracking-[0.25em] text-[#2E7D32]">
           {category}
         </p>
 
         <h2
           className={`mt-4 font-black leading-tight tracking-tight text-zinc-950 group-hover:text-[#2E7D32] ${
-            featured ? "text-3xl md:text-5xl" : "text-2xl"
+            featured ? "text-3xl md:text-4xl" : "text-2xl"
           }`}
         >
           {title}
         </h2>
 
-        <p className="mt-4 text-base leading-7 text-zinc-600">{excerpt}</p>
+        <p className={`${featured ? "mt-5 text-base leading-7" : "mt-4 text-base leading-7"} text-zinc-600`}>{excerpt}</p>
 
         {meta ? (
           <p className="mt-6 text-sm font-semibold text-zinc-500">{meta}</p>
