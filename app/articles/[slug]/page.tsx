@@ -1,3 +1,5 @@
+import { notFound } from "next/navigation";
+
 import ArticleBody from "@/components/ArticleBody";
 import ArticleHeader from "@/components/ArticleHeader";
 import ContinueReading from "@/components/ContinueReading";
@@ -6,6 +8,9 @@ import ReaderSupport from "@/components/ReaderSupport";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import TagList from "@/components/TagList";
+import { articleDateLabel, getArticleBySlug, portableTextToSections } from "@/lib/cms";
+
+const sampleSlug = "leinster-season-preview-2026";
 
 const keyPoints = [
   "Leinster enter the 2026/27 season with familiar expectations and a squad still built to compete on multiple fronts.",
@@ -70,29 +75,45 @@ const continueReading = [
 
 const tags = ["Leinster", "URC", "European rugby", "Season preview"];
 
-export default function ArticlePage() {
+type ArticlePageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+export default async function ArticlePage({ params }: ArticlePageProps) {
+  const { slug } = await params;
+  const cmsArticle = await getArticleBySlug(slug);
+
+  if (!cmsArticle && slug !== sampleSlug) {
+    notFound();
+  }
+
+  const category = [cmsArticle?.category, cmsArticle?.province ?? cmsArticle?.competition]
+    .filter(Boolean)
+    .join(" • ");
+  const sections = cmsArticle ? portableTextToSections(cmsArticle.body) : articleSections;
+
   return (
     <main className="min-h-screen bg-white text-zinc-950">
       <SiteHeader />
 
       <ArticleHeader
-        category="Provinces • Leinster"
-        title="Leinster season preview: building towards another defining campaign"
-        subtitle="A first look at the storylines, selection questions and European ambitions shaping Leinster’s 2026/27 season."
-        published="2 July 2026"
-        updated="2 July 2026"
-        readingTime="6 min read"
+        category={category || "Provinces • Leinster"}
+        title={cmsArticle?.title ?? "Leinster season preview: building towards another defining campaign"}
+        subtitle={cmsArticle?.standfirst ?? "A first look at the storylines, selection questions and European ambitions shaping Leinster’s 2026/27 season."}
+        published={cmsArticle ? articleDateLabel(cmsArticle.publishedAt) : "2 July 2026"}
+        updated={cmsArticle ? articleDateLabel(cmsArticle.updatedAt ?? cmsArticle.publishedAt) : "2 July 2026"}
+        readingTime={cmsArticle?.readingTime ?? "6 min read"}
       />
 
       <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-20 md:grid-cols-[minmax(0,1fr)_320px] md:px-6">
         <div className="min-w-0 space-y-12">
-          <KeyPoints points={keyPoints} />
-          <ArticleBody sections={articleSections} />
+          <KeyPoints points={cmsArticle?.keyPoints?.length ? cmsArticle.keyPoints : keyPoints} />
+          <ArticleBody sections={sections.length ? sections : articleSections} />
           <ReaderSupport
             title="Independent rugby coverage takes time."
             body="Future partner placements will sit clearly outside the editorial copy, helping support the newsroom without interrupting the reader experience."
           />
-          <TagList tags={tags} />
+          <TagList tags={cmsArticle?.tags?.length ? cmsArticle.tags : tags} />
           <ContinueReading articles={continueReading} />
         </div>
 
