@@ -63,6 +63,10 @@ v0.3 — CMS Foundation
 - Dynamic category route added at `app/categories/[slug]/page.tsx`
 - Article featured image rendering wired into article pages using CMS image metadata
 - Local article mock data removed from frontend page rendering
+- Hosted Sanity `production` dataset verified with published starter content: 7 articles, 5 categories, 1 author, 4 provinces, 2 competitions and 9 tags
+- Live homepage verified returning 200 and rendering Sanity-powered story content
+- CMS category label rendering polished to avoid duplicate labels such as `URC • URC`
+- Homepage section links polished to keep the canonical News link and avoid duplicate `/categories/news`
 
 ## Current GitHub structure
 
@@ -131,16 +135,16 @@ https://therugbypanda.ie/articles/leinster-season-preview-2026
 
 ## Current task
 
-Continue Sprint 3 — CMS and Publishing Platform. Hosted Sanity Studio is the canonical CMS. Seed content script and live content wiring are now in place; next step is to run the seed script against the hosted project and verify the deployed pages.
+Continue Sprint 3 — CMS and Publishing Platform. Hosted Sanity Studio is the canonical CMS. Starter content is published and the live homepage is rendering CMS content. Next step is to verify the latest main deployment after the category label and section-link polish, then validate article and category pages end to end.
 
 ## Immediate next tasks
 
-1. Run `SANITY_API_TOKEN=... npm run seed:sanity` locally or in a trusted environment with a write token for the hosted Sanity project.
-2. Verify the deployed homepage after seeding Sanity content.
-3. Verify `/articles/leinster-season-preview-2026` after seeding Sanity content.
-4. Verify dynamic category pages such as `/categories/provinces`, `/categories/ireland`, `/categories/urc` and `/categories/europe`.
-5. Upload proper CMS featured images and image metadata in Sanity to replace empty image states.
-6. Verify the deployed favicon and desktop masthead proportions after Vercel finishes deployment.
+1. Verify the deployed homepage after Vercel finishes the latest main deployment.
+2. Verify `/articles/leinster-season-preview-2026` on production.
+3. Verify dynamic category pages such as `/categories/provinces`, `/categories/ireland`, `/categories/urc` and `/categories/europe`.
+4. Upload proper CMS featured images and image metadata in Sanity to replace empty image states.
+5. Verify the deployed favicon and desktop masthead proportions in Chrome after the latest favicon audit fixes.
+6. Confirm whether the `.com` redirect is fully configured.
 
 ## Sprint 3 — CMS and Publishing Platform
 
@@ -153,13 +157,15 @@ Continue Sprint 3 — CMS and Publishing Platform. Hosted Sanity Studio is the c
 7. Create seed content or migration script — done with `scripts/seed-sanity.mjs`
 8. Prepare dynamic category/article routes from CMS data — article and category routes done
 9. Build image management with featured image, caption, photographer, rights/source and alt text — schema done; article/page/card rendering done for CMS image URLs
+10. Validate hosted CMS starter content and live rendering — done
+11. Polish CMS section link ordering and duplicate category labels — done
 
 ## Known issues
 
-- Live favicon needs deployment/browser verification after generated icon route update
+- Latest main deployment needs verification after CMS section-link and label polish
+- Live favicon needs deployment/browser verification after generated icon route and favicon audit updates
 - Desktop masthead proportions need deployment/browser verification after latest polish pass
 - Search is a placeholder and not connected to an index yet
-- Seed script still needs to be run against the hosted Sanity dataset with a write token
 - CMS starter content currently has no uploaded featured image assets; image fields are supported once assets are added in Studio
 - Sponsorship slots not implemented yet
 - Newsletter sign-up not implemented yet
