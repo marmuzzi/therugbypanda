@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="The Rugby Panda favicon">
+  <rect width="64" height="64" rx="16" fill="#003D2B"/>
+  <circle cx="32" cy="31" r="19" fill="#F8FAFC"/>
+  <circle cx="21" cy="23" r="8" fill="#111827"/>
+  <circle cx="43" cy="23" r="8" fill="#111827"/>
+  <circle cx="25" cy="31" r="3" fill="#111827"/>
+  <circle cx="39" cy="31" r="3" fill="#111827"/>
+  <ellipse cx="32" cy="39" rx="8" ry="6" fill="#111827"/>
+  <path d="M28 39c2 2 6 2 8 0" fill="none" stroke="#F8FAFC" stroke-width="2" stroke-linecap="round"/>
+  <path d="M18 50c8 7 20 7 28 0" fill="none" stroke="#9BE564" stroke-width="4" stroke-linecap="round"/>
+</svg>
