@@ -139,14 +139,14 @@ export default function Home() {
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
             Sections
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {sections.map((section) => (
               <a
-                key={section}
-                href={`/categories/${section.toLowerCase()}`}
+                key={section.label}
+                href={section.href}
                 className="rounded-2xl border border-zinc-200 bg-white px-5 py-4 text-lg font-black text-zinc-950 transition hover:border-[#2E7D32] hover:text-[#2E7D32]"
               >
-                {section}
+                {section.label}
               </a>
             ))}
           </div>

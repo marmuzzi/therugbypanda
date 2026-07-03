@@ -10,6 +10,11 @@ export type ArticleSummary = {
   imageAlt?: string;
 };
 
+export type SectionLink = {
+  label: string;
+  href: string;
+};
+
 export const featuredArticle: ArticleSummary = {
   category: "Provinces • Leinster",
   title: "Leinster season preview: building towards another defining campaign",
@@ -108,12 +113,10 @@ export const analysisArticles = latestArticles.filter((article) =>
   ["Analysis", "Column", "Notebook"].some((label) => article.meta.includes(label)),
 );
 
-export const sections = [
-  "Leinster",
-  "Munster",
-  "Ulster",
-  "Connacht",
-  "Ireland",
-  "URC",
-  "Europe",
+export const sections: SectionLink[] = [
+  { label: "News", href: "/" },
+  { label: "Provinces", href: "/categories/provinces" },
+  { label: "Ireland", href: "/categories/ireland" },
+  { label: "URC", href: "/categories/urc" },
+  { label: "Europe", href: "/categories/europe" },
 ];
