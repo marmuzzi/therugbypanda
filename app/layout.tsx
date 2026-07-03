@@ -8,11 +8,11 @@ export const metadata: Metadata = {
     "Digital rugby newsroom delivering independent coverage, insight and analysis of Irish and European rugby.",
   icons: {
     icon: [
-      { url: "/icon.png", type: "image/png", sizes: "32x32" },
-      { url: "/favicon.png?v=2", type: "image/png", sizes: "any" },
+      { url: "/icon.png?v=3", type: "image/png", sizes: "32x32" },
+      { url: "/favicon.png?v=3", type: "image/png", sizes: "any" },
     ],
-    shortcut: "/icon.png",
-    apple: [{ url: "/apple-icon.png", type: "image/png", sizes: "180x180" }],
+    shortcut: "/icon.png?v=3",
+    apple: [{ url: "/apple-icon.png?v=3", type: "image/png", sizes: "180x180" }],
   },
 };
 
