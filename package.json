@@ -11,7 +11,8 @@
     "start": "next start",
     "lint": "eslint",
     "studio": "sanity dev",
-    "deploy-studio": "sanity deploy"
+    "deploy-studio": "sanity deploy",
+    "seed:sanity": "node scripts/seed-sanity.mjs"
   },
   "dependencies": {
     "@portabletext/react": "^3.2.1",

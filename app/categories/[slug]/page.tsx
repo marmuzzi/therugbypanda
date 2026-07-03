@@ -1,10 +1,21 @@
+import { notFound } from "next/navigation";
+
 import ArticleCard from "@/components/ArticleCard";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { getCategoryPage } from "@/lib/cms";
 
-export default async function ProvincesCategoryPage() {
-  const { category, articles } = await getCategoryPage("provinces");
+type CategoryPageProps = {
+  params: Promise<{ slug: string }>;
+};
+
+export default async function CategoryPage({ params }: CategoryPageProps) {
+  const { slug } = await params;
+  const { category, articles } = await getCategoryPage(slug);
+
+  if (!category) {
+    notFound();
+  }
 
   return (
     <main className="min-h-screen bg-white text-zinc-950">
@@ -16,11 +27,13 @@ export default async function ProvincesCategoryPage() {
             Category
           </p>
           <h1 className="mt-4 text-5xl font-black leading-none tracking-tight md:text-7xl">
-            {category?.title ?? "Provinces"}
+            {category.title}
           </h1>
-          <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300">
-            {category?.description ?? "Coverage and analysis across Leinster, Munster, Ulster and Connacht."}
-          </p>
+          {category.description ? (
+            <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300">
+              {category.description}
+            </p>
+          ) : null}
         </div>
       </section>
 
@@ -33,7 +46,7 @@ export default async function ProvincesCategoryPage() {
           </div>
         ) : (
           <p className="rounded-3xl border border-dashed border-zinc-300 p-8 text-sm font-semibold text-zinc-500">
-            No published province articles yet.
+            No published articles in this category yet.
           </p>
         )}
       </section>
