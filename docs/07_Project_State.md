@@ -36,7 +36,7 @@ v0.3 — CMS Foundation
 - `app/about/page.tsx` created
 - `app/categories/provinces/page.tsx` created
 - `app/articles/[slug]/page.tsx` route created
-- Article route now attempts to read article content from Sanity by slug and falls back to the sample Leinster article
+- Article route now reads article content from Sanity by slug and 404s when CMS content is missing
 - `components/ArticleHeader.tsx` created and polished
 - `components/KeyPoints.tsx` created
 - `components/ArticleBody.tsx` created
@@ -44,13 +44,11 @@ v0.3 — CMS Foundation
 - `components/TagList.tsx` created
 - `components/ReaderSupport.tsx` created
 - `components/ArticleCard.tsx` created
-- Article cards now support temporary image URLs
-- `lib/articles.ts` expanded with richer sample editorial data and temporary stock/placeholder imagery
-- Full sample article page template built
+- Article cards support CMS-backed image URLs
 - Homepage converted from landing page to editorial newsroom-style homepage
 - Homepage now includes lead story, editor note, latest stories, province coverage, analysis, reader support and sections grid
-- Homepage now reads published Sanity articles when available and falls back to local sample article data when CMS content is empty or unavailable
-- Bottom homepage section grid now matches top-level nav: News, Provinces, Ireland, URC, Europe
+- Homepage now reads live Sanity content as the canonical source and no longer falls back to local sample articles
+- Bottom homepage section grid now reads category links from Sanity and includes News plus CMS categories
 - Article byline now uses panda logo signature
 - Sanity project prepared externally with project ID `hvg4b508` and dataset `production`
 - Vercel environment variables configured for Sanity project access
@@ -59,7 +57,12 @@ v0.3 — CMS Foundation
 - `/studio` route added through `app/studio/[[...tool]]/page.tsx`
 - Sanity schemas added for articles, authors, categories, provinces, competitions and tags
 - Article schema includes SEO fields, featured image metadata, key points and Portable Text body content
-- `lib/sanity.ts` and `lib/cms.ts` added for Sanity client, homepage queries, article-by-slug queries and safe sample-content fallback
+- `lib/sanity.ts` and `lib/cms.ts` added for Sanity client, homepage queries, article-by-slug queries and category queries
+- `scripts/seed-sanity.mjs` added to seed the canonical hosted Sanity CMS with starter taxonomy and article content
+- `npm run seed:sanity` script added; requires `SANITY_API_TOKEN` with write access
+- Dynamic category route added at `app/categories/[slug]/page.tsx`
+- Article featured image rendering wired into article pages using CMS image metadata
+- Local article mock data removed from frontend page rendering
 
 ## Current GitHub structure
 
@@ -77,6 +80,8 @@ app/
     [[...tool]]/
       page.tsx
   categories/
+    [slug]/
+      page.tsx
     provinces/
       page.tsx
   articles/
@@ -98,9 +103,11 @@ components/
   TagList.tsx
 
 lib/
-  articles.ts
   cms.ts
   sanity.ts
+
+scripts/
+  seed-sanity.mjs
 
 sanity/
   env.ts
@@ -124,16 +131,16 @@ https://therugbypanda.ie/articles/leinster-season-preview-2026
 
 ## Current task
 
-Continue Sprint 3 — CMS and Publishing Platform. Brand polish is committed, and CMS foundation is in place with safe fallback content.
+Continue Sprint 3 — CMS and Publishing Platform. Hosted Sanity Studio is the canonical CMS. Seed content script and live content wiring are now in place; next step is to run the seed script against the hosted project and verify the deployed pages.
 
 ## Immediate next tasks
 
-1. Verify the deployed favicon after Vercel finishes the latest deployment. The generated `/icon.png` route and metadata update are committed, but the live browser tab still needs visual confirmation.
-2. Verify desktop masthead proportions on the deployed site after the latest deployment.
-3. Create seed content or a migration script for Sanity.
-4. Prepare dynamic category routes from CMS data.
-5. Add featured image rendering to the article page once CMS image content is available.
-6. Replace temporary Unsplash/sample imagery with CMS-backed images.
+1. Run `SANITY_API_TOKEN=... npm run seed:sanity` locally or in a trusted environment with a write token for the hosted Sanity project.
+2. Verify the deployed homepage after seeding Sanity content.
+3. Verify `/articles/leinster-season-preview-2026` after seeding Sanity content.
+4. Verify dynamic category pages such as `/categories/provinces`, `/categories/ireland`, `/categories/urc` and `/categories/europe`.
+5. Upload proper CMS featured images and image metadata in Sanity to replace empty image states.
+6. Verify the deployed favicon and desktop masthead proportions after Vercel finishes deployment.
 
 ## Sprint 3 — CMS and Publishing Platform
 
@@ -141,24 +148,22 @@ Continue Sprint 3 — CMS and Publishing Platform. Brand polish is committed, an
 2. Create Sanity Studio route or studio workspace — done
 3. Create schemas for articles, authors, categories, provinces, competitions, tags and images — done
 4. Add SEO fields and image metadata fields — done
-5. Connect Next.js pages to Sanity queries — in progress; homepage and article-by-slug now query Sanity with safe fallbacks
-6. Replace temporary `lib/articles.ts` sample data with CMS content — in progress; fallback remains until seed/published content exists
-7. Create seed content or migration script — next
-8. Prepare dynamic category/article routes from CMS data — article route started; category route still pending
-9. Build image management with featured image, caption, photographer, rights/source and alt text — schema done; front-end rendering still pending
+5. Connect Next.js pages to Sanity queries — done for homepage, article pages and category pages
+6. Replace temporary `lib/articles.ts` sample data with CMS content — done in frontend rendering
+7. Create seed content or migration script — done with `scripts/seed-sanity.mjs`
+8. Prepare dynamic category/article routes from CMS data — article and category routes done
+9. Build image management with featured image, caption, photographer, rights/source and alt text — schema done; article/page/card rendering done for CMS image URLs
 
 ## Known issues
 
 - Live favicon needs deployment/browser verification after generated icon route update
 - Desktop masthead proportions need deployment/browser verification after latest polish pass
-- Dynamic category route not built yet
 - Search is a placeholder and not connected to an index yet
-- Seed content/migration script not created yet
-- Article featured image rendering is not wired into the article page yet
+- Seed script still needs to be run against the hosted Sanity dataset with a write token
+- CMS starter content currently has no uploaded featured image assets; image fields are supported once assets are added in Studio
 - Sponsorship slots not implemented yet
 - Newsletter sign-up not implemented yet
 - The `.com` redirect may still need final confirmation
-- Homepage can read CMS content, but temporary local sample data remains as fallback until real CMS content is seeded/published
 
 ## Working principles
 
