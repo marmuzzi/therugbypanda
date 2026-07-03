@@ -6,6 +6,8 @@ export type ArticleSummary = {
   meta: string;
   featured?: boolean;
   section?: string;
+  image?: string;
+  imageAlt?: string;
 };
 
 export const featuredArticle: ArticleSummary = {
@@ -17,6 +19,9 @@ export const featuredArticle: ArticleSummary = {
   meta: "6 min read • 2 July 2026",
   featured: true,
   section: "Leinster",
+  image:
+    "https://images.unsplash.com/photo-1540747913346-19e32dc3e97e?auto=format&fit=crop&w=1600&q=80",
+  imageAlt: "Rugby stadium with players on the pitch",
 };
 
 export const latestArticles: ArticleSummary[] = [
@@ -29,6 +34,9 @@ export const latestArticles: ArticleSummary[] = [
     href: "#",
     meta: "Preview",
     section: "Ireland",
+    image:
+      "https://images.unsplash.com/photo-1521412644187-c49fa049e84d?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Rugby ball on grass",
   },
   {
     category: "URC",
@@ -38,6 +46,9 @@ export const latestArticles: ArticleSummary[] = [
     href: "#",
     meta: "Preview",
     section: "URC",
+    image:
+      "https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Stadium lights over a sports field",
   },
   {
     category: "Europe",
@@ -47,6 +58,9 @@ export const latestArticles: ArticleSummary[] = [
     href: "#",
     meta: "Analysis",
     section: "Europe",
+    image:
+      "https://images.unsplash.com/photo-1461896836934-ffe607ba8211?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Athletes competing under stadium lights",
   },
   {
     category: "Provinces • Munster",
@@ -56,6 +70,9 @@ export const latestArticles: ArticleSummary[] = [
     href: "#",
     meta: "Analysis",
     section: "Munster",
+    image:
+      "https://images.unsplash.com/photo-1517649763962-0c623066013b?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Team sport action on grass",
   },
   {
     category: "Provinces • Ulster",
@@ -65,6 +82,9 @@ export const latestArticles: ArticleSummary[] = [
     href: "#",
     meta: "Column",
     section: "Ulster",
+    image:
+      "https://images.unsplash.com/photo-1509027572446-af8401acfdc3?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Sports field from above",
   },
   {
     category: "Provinces • Connacht",
@@ -74,6 +94,9 @@ export const latestArticles: ArticleSummary[] = [
     href: "#",
     meta: "Notebook",
     section: "Connacht",
+    image:
+      "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80",
+    imageAlt: "Sports stadium with green pitch",
   },
 ];
 
