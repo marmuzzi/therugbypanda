@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import ArticleBody from "@/components/ArticleBody";
@@ -16,9 +17,46 @@ import {
   portableTextToSections,
 } from "@/lib/cms";
 
+const baseUrl = "https://therugbypanda.ie";
+
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await getArticleBySlug(slug);
+
+  if (!article) {
+    return { title: "Article not found | The Rugby Panda" };
+  }
+
+  const description = article.standfirst ?? "Independent Irish and European rugby coverage from The Rugby Panda.";
+  const image = getFeaturedImage(article);
+
+  return {
+    title: `${article.title} | The Rugby Panda`,
+    description,
+    alternates: {
+      canonical: `/articles/${slug}`,
+    },
+    openGraph: {
+      title: article.title,
+      description,
+      type: "article",
+      url: `${baseUrl}/articles/${slug}`,
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt ?? article.publishedAt,
+      images: image ? [{ url: image.src, alt: image.alt }] : undefined,
+    },
+    twitter: {
+      card: image ? "summary_large_image" : "summary",
+      title: article.title,
+      description,
+      images: image ? [image.src] : undefined,
+    },
+  };
+}
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
@@ -36,9 +74,35 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     .join(" • ");
   const sections = portableTextToSections(cmsArticle.body);
   const featuredImage = getFeaturedImage(cmsArticle);
+  const articleJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: cmsArticle.title,
+    description: cmsArticle.standfirst,
+    datePublished: cmsArticle.publishedAt,
+    dateModified: cmsArticle.updatedAt ?? cmsArticle.publishedAt,
+    mainEntityOfPage: `${baseUrl}/articles/${slug}`,
+    image: featuredImage ? [featuredImage.src] : undefined,
+    author: {
+      "@type": "Organization",
+      name: "The Rugby Panda",
+    },
+    publisher: {
+      "@type": "Organization",
+      name: "The Rugby Panda",
+      logo: {
+        "@type": "ImageObject",
+        url: `${baseUrl}/rugby-panda-logo.png`,
+      },
+    },
+  };
 
   return (
     <main className="min-h-screen bg-white text-zinc-950">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(articleJsonLd) }}
+      />
       <SiteHeader />
 
       <ArticleHeader
