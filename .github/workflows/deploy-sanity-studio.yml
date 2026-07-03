@@ -6,8 +6,10 @@ on:
 jobs:
   deploy-studio:
     runs-on: ubuntu-latest
+
     env:
       SANITY_AUTH_TOKEN: ${{ secrets.SANITY_AUTH_TOKEN }}
+
     steps:
       - name: Check out repository
         uses: actions/checkout@v4
@@ -15,10 +17,10 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "22.12"
+          node-version: "24"
 
       - name: Install dependencies
         run: npm install
 
-      - name: Deploy Studio
-        run: npx sanity deploy therugbypanda --yes
+      - name: Deploy Sanity Studio
+        run: npx sanity deploy --url therugbypanda --yes
