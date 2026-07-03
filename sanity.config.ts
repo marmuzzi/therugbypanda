@@ -1,7 +1,7 @@
 import { defineConfig } from "sanity";
 import { structureTool } from "sanity/structure";
 
-import { apiVersion, dataset, projectId, studioUrl } from "./sanity/env";
+import { dataset, projectId, studioUrl } from "./sanity/env";
 import { schemaTypes } from "./sanity/schemaTypes";
 
 export default defineConfig({
@@ -14,9 +14,6 @@ export default defineConfig({
   schema: {
     types: schemaTypes,
   },
-  scheduledPublishing: {
-    enabled: true,
-  },
   document: {
     productionUrl: async (prev, context) => {
       const slug = (context.document?.slug as { current?: string } | undefined)?.current;
@@ -28,5 +25,4 @@ export default defineConfig({
       return prev;
     },
   },
-  apiVersion,
 });
