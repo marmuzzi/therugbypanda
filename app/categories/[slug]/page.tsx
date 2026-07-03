@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import ArticleCard from "@/components/ArticleCard";
@@ -5,9 +6,36 @@ import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import { getCategoryPage } from "@/lib/cms";
 
+const baseUrl = "https://therugbypanda.ie";
+
 type CategoryPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const { category } = await getCategoryPage(slug);
+
+  if (!category) {
+    return { title: "Category not found | The Rugby Panda" };
+  }
+
+  const description = category.description ?? `${category.title} rugby coverage from The Rugby Panda.`;
+
+  return {
+    title: `${category.title} | The Rugby Panda`,
+    description,
+    alternates: {
+      canonical: `/categories/${slug}`,
+    },
+    openGraph: {
+      title: `${category.title} | The Rugby Panda`,
+      description,
+      url: `${baseUrl}/categories/${slug}`,
+      type: "website",
+    },
+  };
+}
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;
