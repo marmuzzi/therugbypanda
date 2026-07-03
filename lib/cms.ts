@@ -34,6 +34,7 @@ type SanityArticleSummary = {
   slug?: string;
   standfirst?: string;
   publishedAt?: string;
+  updatedAt?: string;
   readingTime?: string;
   isLead?: boolean;
   category?: string;
@@ -66,11 +67,27 @@ export type CmsCategory = {
   description?: string;
 };
 
+export type SitemapArticle = {
+  slug: string;
+  updatedAt?: string;
+  publishedAt?: string;
+};
+
+export type FeedArticle = {
+  title: string;
+  slug: string;
+  standfirst?: string;
+  publishedAt?: string;
+  updatedAt?: string;
+  category?: string;
+};
+
 const articleSummaryFields = `
   title,
   "slug": slug.current,
   standfirst,
   publishedAt,
+  updatedAt,
   readingTime,
   isLead,
   "category": category->title,
@@ -113,6 +130,21 @@ const categoryBySlugQuery = `*[_type == "category" && slug.current == $slug][0]{
 }`;
 
 const categoryArticlesQuery = `*[_type == "article" && defined(slug.current) && category->slug.current == $slug] | order(publishedAt desc)[0...24]{${articleSummaryFields}}`;
+
+const sitemapArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(publishedAt desc){
+  "slug": slug.current,
+  updatedAt,
+  publishedAt
+}`;
+
+const feedArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(publishedAt desc)[0...20]{
+  title,
+  "slug": slug.current,
+  standfirst,
+  publishedAt,
+  updatedAt,
+  "category": category->title
+}`;
 
 function formatDate(date?: string) {
   if (!date) return undefined;
@@ -189,6 +221,14 @@ export async function getCategoryPage(slug: string) {
     category,
     articles: articles?.map(mapArticleSummary) ?? [],
   };
+}
+
+export async function getSitemapArticles() {
+  return sanityFetch<SitemapArticle[]>({ query: sitemapArticlesQuery });
+}
+
+export async function getFeedArticles() {
+  return sanityFetch<FeedArticle[]>({ query: feedArticlesQuery });
 }
 
 export function portableTextToSections(body: CmsArticle["body"] = []) {
