@@ -22,6 +22,7 @@ const lifecycleStatusOptions = [
   { title: "Pending Validation", value: "pending-validation" },
   { title: "Approved", value: "approved" },
   { title: "Published", value: "published" },
+  { title: "Rejected", value: "rejected" },
   { title: "Archived", value: "archived" },
 ];
 
@@ -293,6 +294,7 @@ export const editorialImageType = defineType({
       group: "editorial",
       options: { list: lifecycleStatusOptions, layout: "radio" },
       initialValue: "candidate",
+      description: "Use Rejected to remove an image from the normal review queue without deleting its source record.",
     }),
     defineField({ name: "usageApproved", title: "Usage approved", type: "boolean", group: "editorial", initialValue: false }),
     defineField({
@@ -312,7 +314,18 @@ export const editorialImageType = defineType({
       validation: (rule) => rule.min(1).max(5),
     }),
     defineField({ name: "editorialCategory", title: "Editorial category", type: "string", group: "editorial", options: { list: editorialCategoryOptions } }),
-    defineField({ name: "photoType", title: "Photo type", type: "string", group: "editorial", options: { list: photoTypeOptions } }),
+    defineField({
+      name: "photoType",
+      title: "Photo type",
+      type: "array",
+      group: "editorial",
+      of: [{ type: "string" }],
+      options: { list: photoTypeOptions, layout: "tags" },
+      description: "Optional. Add one or more visual types when useful; imports should not be blocked when this is blank.",
+    }),
+    defineField({ name: "eventAlbum", title: "Event / album", type: "string", group: "editorial", description: "Groups related images, e.g. Aviva Stadium Internationals or Sevilla Veterans Rugby." }),
+    defineField({ name: "venue", title: "Venue", type: "string", group: "editorial" }),
+    defineField({ name: "teams", title: "Teams", type: "array", group: "editorial", of: [{ type: "string" }], options: { layout: "tags" } }),
     defineField({ name: "tags", title: "Tags", type: "array", group: "editorial", of: [{ type: "string" }], options: { layout: "tags" } }),
     defineField({ name: "editorialValue", title: "Editorial value", type: "string", group: "editorial", options: { list: editorialValueOptions } }),
     defineField({ name: "suggestedUse", title: "Suggested use", type: "array", group: "editorial", of: [{ type: "string" }], options: { list: suggestedUseOptions } }),
