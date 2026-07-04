@@ -4,13 +4,36 @@ import { structureTool } from "sanity/structure";
 import { dataset, projectId, studioUrl } from "./sanity/env";
 import { schemaTypes } from "./sanity/schemaTypes";
 
+const singletonHiddenTypes = new Set(["editorialImage"]);
+
 export default defineConfig({
   name: "default",
   title: "The Rugby Panda",
   projectId,
   dataset,
   basePath: studioUrl,
-  plugins: [structureTool()],
+  plugins: [
+    structureTool({
+      structure: (S) =>
+        S.list()
+          .title("The Rugby Panda")
+          .items([
+            S.listItem()
+              .title("Editorial Images")
+              .schemaType("editorialImage")
+              .child(
+                S.documentTypeList("editorialImage")
+                  .title("Editorial Images")
+                  .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+              ),
+            S.divider(),
+            ...S.documentTypeListItems().filter((item) => {
+              const id = item.getId();
+              return id ? !singletonHiddenTypes.has(id) : true;
+            }),
+          ]),
+    }),
+  ],
   schema: {
     types: schemaTypes,
   },

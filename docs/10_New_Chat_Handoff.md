@@ -80,36 +80,44 @@ Original Rugby Panda archive:
 
 Starter external editorial library:
 
-- Candidates found: 27
-- Pending licence validation: 26
-- Verified and ready: 1 / 100
+- 16 `editorialImage` candidate records imported into the Sanity production dataset by the Apify → GitHub → Sanity pipeline.
+- Imported records still need Studio review and approval.
 
-All external candidates must be revalidated before import into Sanity.
+## Current branch work
 
-## Image acquisition next step
+Branch: `feature/editorial-image-studio`
 
-Use Apify if available in the new chat.
+Implemented on branch, pending PR/merge/deployment/verification:
 
-Recommended sources/actors are documented in `docs/11_Editorial_Image_Archive.md`.
+- `editorialImage` schema registered in `schemaTypes`.
+- Dedicated `Editorial Images` section added to Sanity Studio structure.
+- Thumbnail previews added for Sanity-uploaded images and imported image URLs.
+- Editable review fields added: `lifecycleStatus`, `usageApproved`, `editorialRating`, `editorialCategory`, `photoType`, `tags`.
+- Manual uploads supported in the same collection as imported records.
+- Imported Apify/source/licence metadata preserved.
+- Rugby Panda Original validation added for:
+  - `Photo: The Rugby Panda`
+  - `© The Rugby Panda`
 
-Goal:
+## Required verification after merge/deploy
 
-1. Generate structured image candidates.
-2. Validate licence and attribution.
-3. Reject unsafe or unsuitable assets.
-4. Generate Rugby Panda metadata.
-5. Prepare Sanity import data.
-6. Add proper featured images to current CMS articles.
+1. Verify Sanity Studio loads.
+2. Verify the `Editorial Images` section is visible.
+3. Verify the 16 imported `editorialImage` records are visible.
+4. Verify thumbnails render for imported URL records.
+5. Verify an imported record can be moved to approved by editing `lifecycleStatus` and `usageApproved`.
+6. Verify manual uploads appear alongside imported images.
+7. Verify Rugby Panda Original public credit/copyright validation works.
 
 ## Important open issues
 
 See `docs/08_Issue_Log.md` for current status. Key pending work:
 
 - `CMS-002`: CMS article images missing.
-- `MEDIA-001`: Editorial Image Archive.
-- `MEDIA-002`: image acquisition workflow.
+- `MEDIA-001`: Editorial Image Archive Studio visibility and review workflow.
+- `MEDIA-002`: starter editorial image library review and approval.
 - `WEB-005`: Search remains placeholder.
 
 ## Recommended next session prompt
 
-Continue The Rugby Panda. Read docs 07, 08, 09, 10 and 11 from the repository, then continue with the Apify image acquisition pipeline and CMS image archive work.
+Continue The Rugby Panda. Read docs 07, 08, 09, 10 and 11 from the repository, then continue with the editorial image Studio verification and CMS image archive work.

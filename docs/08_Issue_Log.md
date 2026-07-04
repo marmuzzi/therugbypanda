@@ -11,8 +11,8 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | CMS-002 | Open | High | CMS / Visual content | Hosted Sanity articles need proper featured images and metadata. | — | Not implemented | Pending CMS image upload and page verification | — |
-| MEDIA-001 | Planned | High | Media / CMS | Create The Rugby Panda Editorial Image Archive with tagging, ratings, lifecycle states and source attribution. | — | Not implemented | Pending design and CMS implementation | — |
-| MEDIA-002 | Planned | High | Media / Workflow | Build the starter editorial image library with rights validation and CMS import metadata. | — | Not implemented | Pending validation and CMS import | — |
+| MEDIA-001 | Implemented | High | Media / CMS | Editorial Images Studio schema and structure implemented on branch. | Pending PR | Not deployed | Pending Studio verification | — |
+| MEDIA-002 | In Progress | High | Media / Workflow | Starter editorial image library has 16 imported Sanity candidate records awaiting Studio review. | Pending PR | Imported data exists | Pending Studio review and approval verification | — |
 | WEB-005 | Open | Medium | Frontend | Search remains a placeholder. | — | Not implemented | Pending search implementation and production verification | — |
 | INF-001 | Closed | High | Infrastructure | Vercel deployment rate limit caused production verification risk. | #20, #21, #23, #24 | Latest production verified on commit `61fb43ea513e7f56d90244051c7a03a66e09c0c8`. | Production deployment verified | 2026-07-04 |
 | WEB-001 | Closed | High | Frontend | Dedicated favicon implemented and verified. | #23, #24 | Deployed to production | User verified favicon looks great | 2026-07-04 |
@@ -22,28 +22,29 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | DOC-001 | Closed | High | Documentation | Project state, issue log and publishing workflow added as source of truth. | #22 | Merged to main | Repository files verified | 2026-07-04 |
 | CMS-001 | Closed | High | CMS | Homepage and article pages use hosted Sanity content. | #14 | Deployed | Verified by live validation workflow | 2026-07-03 |
 
-## MEDIA-001 — Editorial Image Archive
+## MEDIA-001 — Editorial Image Archive Studio
 
-- **Status:** Planned
+- **Status:** Implemented
 - **Priority:** High
 - **Root cause:** The project needs a structured media library so original Rugby Panda photos and approved external images can be reused safely and quickly.
+- **Implementation:** `editorialImage` schema and Studio structure implemented on `feature/editorial-image-studio`.
 - **Scope:** Store image metadata, source attribution, category tags, editorial ratings, lifecycle status, suggested use and search fields.
 - **Public attribution rule:** Original images must be credited publicly as `Photo: The Rugby Panda` and `© The Rugby Panda`. Do not expose the user's personal identity.
 - **Related PRs:** Pending
-- **Deployment status:** Not implemented
-- **Verification steps:** Confirm CMS can store, search and display image metadata; verify article and homepage images render correctly.
+- **Deployment status:** Not deployed
+- **Verification steps:** Confirm Studio shows Editorial Images section, imported records are visible, images can be approved, and manual uploads appear alongside imported images.
 - **Resolution date:** Pending
 
 ## MEDIA-002 — Starter editorial image library
 
-- **Status:** Planned
+- **Status:** In Progress
 - **Priority:** High
 - **Root cause:** The site needs a starter library of reusable images while original Rugby Panda photography grows.
+- **Current state:** Apify → GitHub → Sanity import pipeline imported 16 `editorialImage` candidate records into the Sanity production dataset.
 - **Target:** 100 approved starter images.
-- **Current tracker:** 27 candidates found, 26 pending validation, 1 verified/ready from chat-based discovery. Revalidate all external candidates before CMS import.
 - **Related PRs:** Pending
-- **Deployment status:** Not implemented
-- **Verification steps:** Validate rights metadata, reject unsafe images, generate metadata and import approved images into Sanity.
+- **Deployment status:** Imported data exists; Studio visibility pending deployment.
+- **Verification steps:** Verify the 16 imported images are visible and can be moved through lifecycle review in Studio.
 - **Resolution date:** Pending
 
 ## CMS-002 — CMS article images missing
