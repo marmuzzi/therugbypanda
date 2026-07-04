@@ -6,7 +6,7 @@ const navItems = [
   { label: "Provinces", href: "/categories/provinces" },
   { label: "Ireland", href: "/categories/ireland" },
   { label: "URC", href: "/categories/urc" },
-  { label: "Europe", href: "/categories/europe" },
+  { label: "International", href: "/categories/international" },
   { label: "About", href: "/about", desktopOnly: true },
 ];
 
