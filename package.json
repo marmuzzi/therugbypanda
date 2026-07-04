@@ -12,7 +12,8 @@
     "lint": "eslint",
     "studio": "sanity dev",
     "deploy-studio": "sanity deploy",
-    "seed:sanity": "node scripts/seed-sanity.mjs"
+    "seed:sanity": "node scripts/seed-sanity.mjs",
+    "media:import-originals": "node scripts/import-rugby-panda-originals.mjs"
   },
   "dependencies": {
     "@portabletext/react": "^3.2.1",
