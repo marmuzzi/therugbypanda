@@ -1,0 +1,14 @@
+{
+  "name": "the-rugby-panda-image-acquisition",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "The Rugby Panda editorial image acquisition actor for Openverse and Wikimedia candidate metadata.",
+  "scripts": {
+    "start": "node src/main.js"
+  },
+  "dependencies": {
+    "apify": "^3.4.4"
+  },
+  "devDependencies": {}
+}
