@@ -1,10 +1,22 @@
-import { defineConfig } from "sanity";
+import { defineConfig, definePlugin } from "sanity";
 import { structureTool } from "sanity/structure";
 
+import { EditorialImageReviewTool } from "./sanity/components/EditorialImageReviewTool";
 import { dataset, projectId, studioUrl } from "./sanity/env";
 import { schemaTypes } from "./sanity/schemaTypes";
 
 const singletonHiddenTypes = new Set(["editorialImage"]);
+
+const editorialImageReviewTool = definePlugin({
+  name: "editorial-image-review-tool",
+  tools: [
+    {
+      name: "editorial-image-review",
+      title: "Image Review",
+      component: EditorialImageReviewTool,
+    },
+  ],
+});
 
 export default defineConfig({
   name: "default",
@@ -13,6 +25,7 @@ export default defineConfig({
   dataset,
   basePath: studioUrl,
   plugins: [
+    editorialImageReviewTool(),
     structureTool({
       structure: (S) =>
         S.list()
