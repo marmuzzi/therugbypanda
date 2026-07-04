@@ -32,7 +32,7 @@ export default defineConfig({
                         S.documentList()
                           .title("Needs Review")
                           .schemaType("editorialImage")
-                          .filter('_type == "editorialImage" && (!defined(lifecycleStatus) || lifecycleStatus in ["candidate", "pending-validation"])')
+                          .filter('_type == "editorialImage" && (!defined(lifecycleStatus) || lifecycleStatus in ["candidate", "Candidate", "pending-validation", "Pending Validation"])')
                           .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
                       ),
                     S.listItem()
@@ -42,7 +42,7 @@ export default defineConfig({
                         S.documentList()
                           .title("Approved Editorial Images")
                           .schemaType("editorialImage")
-                          .filter('_type == "editorialImage" && lifecycleStatus == "approved"')
+                          .filter('_type == "editorialImage" && lifecycleStatus in ["approved", "Approved"]')
                           .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
                       ),
                     S.listItem()
@@ -52,7 +52,7 @@ export default defineConfig({
                         S.documentList()
                           .title("Published Editorial Images")
                           .schemaType("editorialImage")
-                          .filter('_type == "editorialImage" && lifecycleStatus == "published"')
+                          .filter('_type == "editorialImage" && lifecycleStatus in ["published", "Published"]')
                           .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
                       ),
                     S.listItem()
@@ -62,7 +62,7 @@ export default defineConfig({
                         S.documentList()
                           .title("Rugby Panda Originals")
                           .schemaType("editorialImage")
-                          .filter('_type == "editorialImage" && sourceClassification == "the-rugby-panda-original"')
+                          .filter('_type == "editorialImage" && sourceClassification in ["the-rugby-panda-original", "The Rugby Panda Original"]')
                           .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
                       ),
                     S.listItem()
@@ -72,7 +72,7 @@ export default defineConfig({
                         S.documentList()
                           .title("Rejected Editorial Images")
                           .schemaType("editorialImage")
-                          .filter('_type == "editorialImage" && lifecycleStatus == "rejected"')
+                          .filter('_type == "editorialImage" && lifecycleStatus in ["rejected", "Rejected"]')
                           .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
                       ),
                     S.divider(),
