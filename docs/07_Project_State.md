@@ -46,22 +46,31 @@ Latest verified production deployment:
 - Social profiles are created.
 - Main site header, footer, homepage, article page, category pages and search placeholder exist.
 - Hosted Sanity Studio is the canonical CMS.
-- Sanity schemas exist for articles, authors, categories, provinces, competitions and tags.
 - Homepage, article pages and category pages read from Sanity.
 - Local article mock data was removed from frontend rendering.
 - Seed script and no-terminal GitHub Actions seed workflow exist and have been run successfully.
 - Live validation workflow exists.
 - Documentation source-of-truth structure exists.
-- `docs/10_New_Chat_Handoff.md` exists.
-- CMS-backed `/sitemap.xml` is implemented, merged, deployed and verified in production.
-- CMS-backed `/robots.txt` is implemented, merged, deployed and verified in production.
-- CMS-backed `/rss.xml` is implemented, merged, deployed and verified in production.
-- Article SEO metadata is implemented, merged, deployed and verified in production.
-- Article `NewsArticle` JSON-LD is implemented, merged, deployed and verified in production.
-- Category SEO metadata is implemented, merged, deployed and verified in production.
-- Homepage bottom section ordering and News de-duplication are implemented, merged, deployed and verified in production.
-- Masthead proportions were improved and verified in production by the user.
-- Dedicated small-size favicon was implemented and verified in production by the user.
+- CMS-backed `/sitemap.xml`, `/robots.txt`, and `/rss.xml` are implemented, merged, deployed and verified in production.
+- Article SEO metadata, article `NewsArticle` JSON-LD and category SEO metadata are implemented, merged, deployed and verified in production.
+- Homepage section ordering, masthead proportions and dedicated favicon are implemented, merged, deployed and verified in production.
+- Apify → GitHub → Sanity import pipeline imported 16 `editorialImage` candidate records into the Sanity production dataset.
+
+## Current branch work
+
+### `feature/editorial-image-studio`
+
+Implemented on branch, pending PR/merge/deployment/verification:
+
+- Registers `editorialImage` in `schemaTypes`.
+- Adds an `Editorial Images` section to the Sanity Studio structure.
+- Adds thumbnail previews for manually uploaded Sanity images and imported image URLs.
+- Preserves imported Apify metadata fields such as image URLs, thumbnails, source, creator, licence, attribution, dimensions and import details.
+- Allows editors to edit lifecycle status, usage approval, editorial rating, editorial category, photo type and tags.
+- Supports manual uploads in the same `editorialImage` collection.
+- Enforces public attribution rules for original Rugby Panda images:
+  - `Photo: The Rugby Panda`
+  - `© The Rugby Panda`
 
 ## Current article URL
 
@@ -70,24 +79,6 @@ Latest verified production deployment:
 ## Sprint 3 status
 
 Sprint 3 — CMS and Publishing Platform is effectively complete.
-
-Completed and verified:
-
-1. Sanity dependencies and configuration.
-2. Sanity Studio route.
-3. CMS schemas.
-4. Homepage connected to Sanity.
-5. Article pages connected to Sanity.
-6. Category pages connected to Sanity.
-7. Local mock data removed from frontend rendering.
-8. Seed script and no-terminal seed workflow.
-9. Live validation workflow.
-10. Starter CMS content seeded.
-11. Documentation structure and issue log created.
-12. SEO and publishing endpoints.
-13. Article/category metadata and article JSON-LD.
-14. Header masthead proportions.
-15. Dedicated favicon.
 
 Pending after Sprint 3:
 
@@ -98,7 +89,7 @@ Pending after Sprint 3:
 
 ## Editorial Media Library strategy
 
-The Rugby Panda now treats images as a first-class product asset, not as decoration.
+The Rugby Panda treats images as a first-class product asset.
 
 Primary principles:
 
@@ -121,36 +112,8 @@ Original Rugby Panda photos uploaded in chat:
 
 Starter external editorial image library:
 
-- Candidates found: 27
-- Pending licence validation: 26
-- Verified and ready: 1 / 100
-
-Important: the external image counts came from chat-based discovery and must be revalidated using Apify or direct source checks before CMS import.
-
-## Apify image acquisition strategy
-
-Use Apify to collect open-licence image candidates. Preferred actors:
-
-1. `shahidirfan/OpenVerse-Image-Scraper`
-2. `parseforge/openverse-media-scraper`
-3. `parseforge/wikimedia-commons-media-scraper`
-4. `solidcode/google-images-scraper` only for discovery, never automatic approval
-
-Allowed licences for automatic approval consideration:
-
-- `cc0`
-- `pdm`
-- `by`
-- `by-sa`
-
-Avoid for commercial safety:
-
-- `by-nc`
-- `by-nc-sa`
-- `by-nc-nd`
-- `by-nd` for hero/article images because cropping, resizing or design treatment may conflict with no-derivatives restrictions.
-
-Target: build a starter library of 100 approved images with source URL, creator, licence, attribution and metadata stored in Sanity.
+- 16 editorial image candidate records imported into Sanity production dataset.
+- These are not yet considered approved until reviewed in Studio.
 
 ## Deployment budget rule
 
@@ -169,13 +132,13 @@ Only create isolated hotfix PRs for genuine production issues.
 
 ## Immediate next tasks
 
-1. In the new chat, read docs 07, 08, 09, 10 and 11 first.
-2. Confirm available connectors, especially Apify.
-3. Use Apify to generate external image candidates.
-4. Validate licences and reject unsafe images.
-5. Generate Rugby Panda metadata for approved images.
-6. Prepare Sanity import structure for the image archive.
-7. Add proper featured images to the current CMS articles.
+1. Open PR for `feature/editorial-image-studio`.
+2. Confirm preview/build status.
+3. Merge when clean.
+4. Verify Sanity Studio shows the 16 imported `editorialImage` records.
+5. Verify an imported image can be approved by editing `lifecycleStatus` and `usageApproved`.
+6. Verify a manual upload appears alongside imported images.
+7. Add proper featured images to current CMS articles.
 8. Begin Sprint 4 planning: search, newsletter capture and editorial workflow polish.
 
 ## Known issues
@@ -185,8 +148,8 @@ Track all issues in `docs/08_Issue_Log.md`.
 Current important issues:
 
 - `CMS-002` — CMS article images missing.
-- `MEDIA-001` — Editorial Image Archive planned and partially defined.
-- `MEDIA-002` — Apify image acquisition pipeline planned.
+- `MEDIA-001` — Editorial Image Archive Studio visibility and review workflow.
+- `MEDIA-002` — starter editorial image library review and approval.
 - `WEB-005` — Search remains placeholder.
 
 ## Working principles
