@@ -20,14 +20,19 @@ Sanity MCP may be installed on the user's account, but it has not consistently a
 
 ## Current production status at handoff
 
-Latest verified Vercel production deployment was on `main` commit `61fb43ea513e7f56d90244051c7a03a66e09c0c8`.
+Latest Vercel production deployment checked by connector:
 
-Related production work:
+- Commit: `655133feca8aefd6f87e84f04cc27b2b9759e375`
+- PR: #26
+- Vercel deployment: `dpl_5zSXYucBJPguQ6ZKanVJkUxrGS3d`
+- Deployment state: READY
+
+Earlier verified production work:
 
 - PR #23: Sprint 3 publishing polish.
 - PR #24: favicon response fix.
 
-Production verified:
+Production verified before PR #26:
 
 - `/sitemap.xml`
 - `/robots.txt`
@@ -38,6 +43,36 @@ Production verified:
 - homepage section ordering
 - masthead proportions
 - favicon
+
+## PR #26 — Editorial Images in Sanity Studio
+
+PR #26 is merged and deployed.
+
+Implemented:
+
+- `editorialImage` schema registered in `schemaTypes`.
+- Dedicated `Editorial Images` section added to Sanity Studio structure.
+- Thumbnail previews added for Sanity-uploaded images and imported image URLs.
+- Editable review fields added: `lifecycleStatus`, `usageApproved`, `editorialRating`, `editorialCategory`, `photoType`, `tags`.
+- Manual uploads supported in the same collection as imported records.
+- Imported Apify/source/licence metadata preserved.
+- Rugby Panda Original validation added for:
+  - `Photo: The Rugby Panda`
+  - `© The Rugby Panda`
+
+Important limitation: the assistant could verify that the Vercel deployment is READY, but could not inspect the authenticated Studio UI because the fetch tool was redirected to Vercel SSO.
+
+## Required authenticated Studio verification
+
+The next chat or the user must verify in the authenticated Sanity Studio:
+
+1. Sanity Studio loads.
+2. The `Editorial Images` section is visible.
+3. The 16 imported `editorialImage` records are visible.
+4. Thumbnails render for imported URL records.
+5. An imported record can be moved to approved by editing `lifecycleStatus` and `usageApproved`.
+6. Manual uploads appear alongside imported images.
+7. Rugby Panda Original public credit/copyright validation works.
 
 ## Deployment budget rule
 
@@ -56,7 +91,7 @@ Only create isolated hotfix PRs for genuine production issues.
 
 ## Editorial Image Archive
 
-The project now treats the image archive as a first-class product feature.
+The project treats the image archive as a first-class product feature.
 
 Important decisions:
 
@@ -83,32 +118,6 @@ Starter external editorial library:
 - 16 `editorialImage` candidate records imported into the Sanity production dataset by the Apify → GitHub → Sanity pipeline.
 - Imported records still need Studio review and approval.
 
-## Current branch work
-
-Branch: `feature/editorial-image-studio`
-
-Implemented on branch, pending PR/merge/deployment/verification:
-
-- `editorialImage` schema registered in `schemaTypes`.
-- Dedicated `Editorial Images` section added to Sanity Studio structure.
-- Thumbnail previews added for Sanity-uploaded images and imported image URLs.
-- Editable review fields added: `lifecycleStatus`, `usageApproved`, `editorialRating`, `editorialCategory`, `photoType`, `tags`.
-- Manual uploads supported in the same collection as imported records.
-- Imported Apify/source/licence metadata preserved.
-- Rugby Panda Original validation added for:
-  - `Photo: The Rugby Panda`
-  - `© The Rugby Panda`
-
-## Required verification after merge/deploy
-
-1. Verify Sanity Studio loads.
-2. Verify the `Editorial Images` section is visible.
-3. Verify the 16 imported `editorialImage` records are visible.
-4. Verify thumbnails render for imported URL records.
-5. Verify an imported record can be moved to approved by editing `lifecycleStatus` and `usageApproved`.
-6. Verify manual uploads appear alongside imported images.
-7. Verify Rugby Panda Original public credit/copyright validation works.
-
 ## Important open issues
 
 See `docs/08_Issue_Log.md` for current status. Key pending work:
@@ -120,4 +129,4 @@ See `docs/08_Issue_Log.md` for current status. Key pending work:
 
 ## Recommended next session prompt
 
-Continue The Rugby Panda. Read docs 07, 08, 09, 10 and 11 from the repository, then continue with the editorial image Studio verification and CMS image archive work.
+Continue The Rugby Panda. Read docs 07, 08, 09, 10 and 11 from the repository. PR #26 is merged and deployed; verify the authenticated Sanity Studio Editorial Images section, the 16 imported records, approval workflow and manual upload workflow, then continue with CMS image archive work.
