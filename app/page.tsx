@@ -61,7 +61,7 @@ export default async function Home() {
               Built for Irish rugby readers who want context.
             </h2>
             <p className="mt-4 text-base leading-7 text-zinc-600">
-              The Rugby Panda is taking shape as an independent newsroom for the four provinces, Ireland, the URC and Europe.
+              The Rugby Panda is taking shape as an independent newsroom for the four provinces, Ireland, the URC and international rugby.
             </p>
             <div className="mt-6 rounded-2xl bg-zinc-100 p-5">
               <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
