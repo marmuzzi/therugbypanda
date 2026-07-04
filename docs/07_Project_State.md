@@ -2,7 +2,7 @@
 
 ## Current Version
 
-v0.3 — CMS Foundation
+v0.4 — Publishing Foundation + Editorial Media Archive
 
 ## Last Updated
 
@@ -16,17 +16,29 @@ Read these files first in future sessions:
 2. `docs/08_Issue_Log.md`
 3. `docs/09_Publishing_Workflow.md`
 4. `docs/10_New_Chat_Handoff.md`
+5. `docs/11_Editorial_Image_Archive.md`
 
 Do not rely on chat history for current status.
 
 ## Connectors
 
-Expected and verified connectors:
+Expected connectors:
 
 - GitHub
 - Vercel
+- Apify, when available in the active chat
 
-Sanity MCP was installed on the user's account but was not exposed to the previous chat tools. Always check available connectors before asking the user to configure one.
+Sanity MCP may be installed on the user's account but has not consistently appeared in available tools. Always check available connectors before asking the user to configure one.
+
+## Current production deployment
+
+Latest verified production deployment:
+
+- Project: `therugbypanda`
+- Vercel project ID: `prj_UBMV1A9JsFi7I84zmAxJozi7Ct4E`
+- Vercel team ID: `team_4y2XZGwKXqSLRqi9EqNdvUFW`
+- Latest verified production commit: `61fb43ea513e7f56d90244051c7a03a66e09c0c8`
+- Related PRs: #23 and #24
 
 ## Completed
 
@@ -39,50 +51,27 @@ Sanity MCP was installed on the user's account but was not exposed to the previo
 - Local article mock data was removed from frontend rendering.
 - Seed script and no-terminal GitHub Actions seed workflow exist and have been run successfully.
 - Live validation workflow exists.
-- Favicon is now visible in Chrome, but needs production verification for the dedicated small-size SVG asset.
 - Documentation source-of-truth structure exists.
-- New handoff document exists at `docs/10_New_Chat_Handoff.md`.
-
-## Current production deployment
-
-Latest observed Vercel production deployment:
-
-- Project: `therugbypanda`
-- Vercel project ID: `prj_UBMV1A9JsFi7I84zmAxJozi7Ct4E`
-- Vercel team ID: `team_4y2XZGwKXqSLRqi9EqNdvUFW`
-- Latest observed production commit: `538af6b2ae8d3b81db515bdf4d04336049cd4f67`
-
-Production commit still needs to be rechecked with the Vercel connector before closing `INF-001`.
-
-## Current branch work
-
-### `feature/seo-publishing-final`
-
-Implemented on branch, pending PR/merge/deployment/production verification:
-
-- CMS-backed `/sitemap.xml`.
-- CMS-backed `/robots.txt`.
-- CMS-backed `/rss.xml`.
-- Article SEO metadata.
-- Article `NewsArticle` JSON-LD.
-- Category SEO metadata.
-- Homepage bottom section order fix remains implemented in `lib/cms.ts` via ordered section links and News de-duplication.
-- Masthead proportions polish: larger panda mark, smaller wordmark and tighter spacing.
-- Dedicated small-size SVG favicon asset and `/favicon.ico` redirect to that asset.
+- `docs/10_New_Chat_Handoff.md` exists.
+- CMS-backed `/sitemap.xml` is implemented, merged, deployed and verified in production.
+- CMS-backed `/robots.txt` is implemented, merged, deployed and verified in production.
+- CMS-backed `/rss.xml` is implemented, merged, deployed and verified in production.
+- Article SEO metadata is implemented, merged, deployed and verified in production.
+- Article `NewsArticle` JSON-LD is implemented, merged, deployed and verified in production.
+- Category SEO metadata is implemented, merged, deployed and verified in production.
+- Homepage bottom section ordering and News de-duplication are implemented, merged, deployed and verified in production.
+- Masthead proportions were improved and verified in production by the user.
+- Dedicated small-size favicon was implemented and verified in production by the user.
 
 ## Current article URL
 
 `/articles/leinster-season-preview-2026`
 
-## Current task
-
-Continue Sprint 3 — CMS and Publishing Platform. Hosted Sanity Studio is the canonical CMS. Sprint 3 is mostly complete, but production verification and polish remain.
-
 ## Sprint 3 status
 
-Estimated completion: 95%.
+Sprint 3 — CMS and Publishing Platform is effectively complete.
 
-Completed:
+Completed and verified:
 
 1. Sanity dependencies and configuration.
 2. Sanity Studio route.
@@ -95,30 +84,99 @@ Completed:
 9. Live validation workflow.
 10. Starter CMS content seeded.
 11. Documentation structure and issue log created.
-12. SEO and publishing endpoints implemented on `feature/seo-publishing-final`.
-13. Article/category metadata and article JSON-LD implemented on `feature/seo-publishing-final`.
-14. Header masthead proportions and dedicated favicon implemented on `feature/seo-publishing-final`.
+12. SEO and publishing endpoints.
+13. Article/category metadata and article JSON-LD.
+14. Header masthead proportions.
+15. Dedicated favicon.
 
-Pending:
+Pending after Sprint 3:
 
-1. Open, review, merge and deploy `feature/seo-publishing-final`.
-2. Verify `/sitemap.xml`, `/robots.txt` and `/rss.xml` after deployment.
-3. Verify article/category metadata and article JSON-LD in production.
-4. Verify homepage bottom section order in production.
-5. Verify header masthead proportions on desktop, tablet and mobile.
-6. Verify dedicated favicon in production browsers.
-7. Featured image uploads and metadata in Sanity.
-8. Search remains placeholder.
+1. CMS image library and proper featured images.
+2. Search remains placeholder.
+3. Newsletter capture remains future work.
+4. Editorial workflow polish remains future work.
+
+## Editorial Media Library strategy
+
+The Rugby Panda now treats images as a first-class product asset, not as decoration.
+
+Primary principles:
+
+- Original Rugby Panda photography is always preferred over third-party imagery.
+- Public attribution for original images must be `Photo: The Rugby Panda` and `© The Rugby Panda`.
+- Do not expose the user's personal identity as photographer or founder on the public website.
+- Third-party images may only be used when licence, source, creator and attribution are stored.
+- The long-term goal is a searchable, AI-assisted rugby image archive dominated by original Rugby Panda photography.
+
+Current image strategy is documented in `docs/11_Editorial_Image_Archive.md`.
+
+## Current image archive status
+
+Original Rugby Panda photos uploaded in chat:
+
+- 20+ images reviewed visually.
+- 8 hero-quality images identified.
+- 5 evergreen images identified.
+- Initial categories and metadata taxonomy defined.
+
+Starter external editorial image library:
+
+- Candidates found: 27
+- Pending licence validation: 26
+- Verified and ready: 1 / 100
+
+Important: the external image counts came from chat-based discovery and must be revalidated using Apify or direct source checks before CMS import.
+
+## Apify image acquisition strategy
+
+Use Apify to collect open-licence image candidates. Preferred actors:
+
+1. `shahidirfan/OpenVerse-Image-Scraper`
+2. `parseforge/openverse-media-scraper`
+3. `parseforge/wikimedia-commons-media-scraper`
+4. `solidcode/google-images-scraper` only for discovery, never automatic approval
+
+Allowed licences for automatic approval consideration:
+
+- `cc0`
+- `pdm`
+- `by`
+- `by-sa`
+
+Avoid for commercial safety:
+
+- `by-nc`
+- `by-nc-sa`
+- `by-nc-nd`
+- `by-nd` for hero/article images because cropping, resizing or design treatment may conflict with no-derivatives restrictions.
+
+Target: build a starter library of 100 approved images with source URL, creator, licence, attribution and metadata stored in Sanity.
+
+## Deployment budget rule
+
+Vercel has a 100 deployments/day limit. Treat deployments as a constrained resource.
+
+Default workflow:
+
+1. Batch related work into a single branch.
+2. Open one PR.
+3. Use one preview deployment where possible.
+4. Merge automatically when preview/build is clean and scope is agreed.
+5. Use one production deployment.
+6. Verify once in production.
+
+Only create isolated hotfix PRs for genuine production issues.
 
 ## Immediate next tasks
 
-1. Open PR for `feature/seo-publishing-final`.
-2. Use a single preview deployment for the branch where possible.
-3. Review preview/build status before merge.
-4. Merge only when ready to avoid unnecessary production deployments.
-5. After merge, confirm production deployment commit with Vercel connector.
-6. Verify `/sitemap.xml`, `/robots.txt`, `/rss.xml`, article SEO, category SEO, JSON-LD, homepage sections, masthead and favicon.
-7. Upload proper CMS featured images in Sanity.
+1. In the new chat, read docs 07, 08, 09, 10 and 11 first.
+2. Confirm available connectors, especially Apify.
+3. Use Apify to generate external image candidates.
+4. Validate licences and reject unsafe images.
+5. Generate Rugby Panda metadata for approved images.
+6. Prepare Sanity import structure for the image archive.
+7. Add proper featured images to the current CMS articles.
+8. Begin Sprint 4 planning: search, newsletter capture and editorial workflow polish.
 
 ## Known issues
 
@@ -126,12 +184,10 @@ Track all issues in `docs/08_Issue_Log.md`.
 
 Current important issues:
 
-- `INF-001` — Vercel deployment limit and deployment verification.
-- `WEB-001` — favicon visible but too small; dedicated favicon implemented on branch, pending deployment/verification.
-- `WEB-002` — duplicate homepage section links fixed on branch, pending deployment/verification.
-- `WEB-003` — header logo proportions implemented on branch, pending deployment/verification.
-- `WEB-004` — dedicated favicon design implemented on branch, pending deployment/verification.
 - `CMS-002` — CMS article images missing.
+- `MEDIA-001` — Editorial Image Archive planned and partially defined.
+- `MEDIA-002` — Apify image acquisition pipeline planned.
+- `WEB-005` — Search remains placeholder.
 
 ## Working principles
 
