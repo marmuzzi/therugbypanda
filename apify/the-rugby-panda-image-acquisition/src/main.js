@@ -7,6 +7,7 @@ import { classifyCandidate } from "./classifier.js";
 import { filterUnsafeCandidates } from "./safety-filter.js";
 import { filterByRugbyRelevance } from "./relevance.js";
 import { filterByCategoryIntent } from "./category-validator.js";
+import { rankCandidates } from "./ranker.js";
 import { createMetrics, finishMetrics } from "./metrics.js";
 
 await Actor.init();
@@ -19,6 +20,7 @@ const resolvedInput = {
   resultsPerQueryPerSource: input.resultsPerQueryPerSource ?? 5,
   allowedLicenses: input.allowedLicenses ?? ["cc0", "pdm", "by", "by-sa"],
   minimumRugbyRelevanceScore: input.minimumRugbyRelevanceScore ?? 70,
+  maxCandidates: input.maxCandidates ?? 100,
   dryRun: input.dryRun ?? true,
 };
 
@@ -64,12 +66,16 @@ const { accepted: relevanceAccepted, rejected: relevanceRejected } = filterByRug
   categoryAccepted,
   resolvedInput.minimumRugbyRelevanceScore,
 );
-const rejected = [...safetyRejected, ...categoryRejected, ...relevanceRejected];
-const accepted = relevanceAccepted.map(classifyCandidate);
+const classified = relevanceAccepted.map(classifyCandidate);
+const { selected, rejectedByDiversity } = rankCandidates(classified, { maxCandidates: resolvedInput.maxCandidates });
+const rejected = [...safetyRejected, ...categoryRejected, ...relevanceRejected, ...rejectedByDiversity];
+const accepted = selected;
 const finalMetrics = finishMetrics(metrics, { found, accepted, rejected, duplicateCount });
 finalMetrics.rejectedByCategoryIntent = categoryRejected.length;
 finalMetrics.rejectedByRugbyRelevance = relevanceRejected.length;
+finalMetrics.rejectedByDiversity = rejectedByDiversity.length;
 finalMetrics.minimumRugbyRelevanceScore = resolvedInput.minimumRugbyRelevanceScore;
+finalMetrics.maxCandidates = resolvedInput.maxCandidates;
 
 await Actor.pushData({
   recordType: "run-summary",
