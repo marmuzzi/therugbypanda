@@ -105,6 +105,48 @@ function importedImagePreview(url?: string) {
   });
 }
 
+function ImportedImageUrlInput(props: any) {
+  const value = typeof props.value === "string" ? props.value : undefined;
+
+  return React.createElement(
+    "div",
+    { style: { display: "grid", gap: "0.75rem" } },
+    value
+      ? React.createElement(
+          "a",
+          {
+            href: value,
+            target: "_blank",
+            rel: "noreferrer",
+            style: {
+              display: "block",
+              border: "1px solid var(--card-border-color)",
+              borderRadius: "8px",
+              overflow: "hidden",
+              background: "var(--card-bg-color)",
+            },
+          },
+          React.createElement("img", {
+            src: value,
+            alt: "Imported editorial image preview",
+            style: {
+              display: "block",
+              width: "100%",
+              maxHeight: "520px",
+              objectFit: "contain",
+              background: "#f4f4f4",
+            },
+          }),
+        )
+      : React.createElement(
+          "p",
+          { style: { margin: 0, color: "var(--card-muted-fg-color)" } },
+          "No imported image URL is stored on this record.",
+        ),
+    props.renderDefault(props),
+  );
+}
+
 export const authorType = defineType({
   name: "author",
   title: "Authors",
@@ -224,8 +266,24 @@ export const editorialImageType = defineType({
       description: "Use this for original Rugby Panda uploads. Imported URL metadata is preserved below and does not need to be re-imported.",
     }),
     defineField({ name: "thumbnail", title: "Imported thumbnail URL", type: "url", group: "image", readOnly: true }),
-    defineField({ name: "url", title: "Imported image URL", type: "url", group: "image", readOnly: true }),
-    defineField({ name: "imageUrl", title: "Imported image URL (pipeline field)", type: "url", group: "image", readOnly: true }),
+    defineField({
+      name: "url",
+      title: "Imported image URL",
+      type: "url",
+      group: "image",
+      readOnly: true,
+      components: { input: ImportedImageUrlInput },
+      description: "Large preview for imported image URL records. Click the preview to open the original source image in a new tab.",
+    }),
+    defineField({
+      name: "imageUrl",
+      title: "Imported image URL (pipeline field)",
+      type: "url",
+      group: "image",
+      readOnly: true,
+      components: { input: ImportedImageUrlInput },
+      description: "Large preview for imported image URL records. Click the preview to open the original source image in a new tab.",
+    }),
     defineField({ name: "altText", title: "Alt text", type: "string", group: "image" }),
     defineField({ name: "caption", title: "Caption", type: "text", rows: 2, group: "image" }),
     defineField({
