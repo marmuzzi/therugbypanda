@@ -66,6 +66,18 @@ export type CmsCategory = {
   description?: string;
 };
 
+export type CmsSitemapArticle = {
+  title: string;
+  slug: string;
+  standfirst?: string;
+  publishedAt?: string;
+  updatedAt?: string;
+  category?: string;
+  categorySlug?: string;
+  province?: string;
+  competition?: string;
+};
+
 const articleSummaryFields = `
   title,
   "slug": slug.current,
@@ -114,6 +126,24 @@ const categoryBySlugQuery = `*[_type == "category" && slug.current == $slug][0]{
 
 const categoryArticlesQuery = `*[_type == "article" && defined(slug.current) && category->slug.current == $slug] | order(publishedAt desc)[0...24]{${articleSummaryFields}}`;
 
+const sitemapArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(publishedAt desc){
+  title,
+  "slug": slug.current,
+  standfirst,
+  publishedAt,
+  updatedAt,
+  "category": category->title,
+  "categorySlug": category->slug.current,
+  "province": province->title,
+  "competition": competition->title
+}`;
+
+const sitemapCategoriesQuery = `*[_type == "category" && defined(slug.current)] | order(title asc){
+  title,
+  "slug": slug.current,
+  description
+}`;
+
 const primarySectionOrder = ["Provinces", "Ireland", "URC", "Europe"];
 
 function formatDate(date?: string) {
@@ -137,7 +167,7 @@ function uniqueLabels(labels: Array<string | undefined>) {
   });
 }
 
-function formatCategory(article: SanityArticleSummary | CmsArticle) {
+function formatCategory(article: SanityArticleSummary | CmsArticle | CmsSitemapArticle) {
   return uniqueLabels([article.category, article.province, article.competition]).join(" • ");
 }
 
@@ -159,6 +189,23 @@ function mapArticleSummary(article: SanityArticleSummary): ArticleSummary {
     image: imageUrl(article.featuredImage),
     imageAlt: article.featuredImage?.alt,
   };
+}
+
+export function siteUrl(path = "") {
+  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+  return `https://therugbypanda.ie${normalizedPath === "/" ? "" : normalizedPath}`;
+}
+
+export function articleUrl(slug: string) {
+  return siteUrl(`/articles/${slug}`);
+}
+
+export function categoryUrl(slug: string) {
+  return siteUrl(`/categories/${slug}`);
+}
+
+export function articleLabel(article: CmsArticle | CmsSitemapArticle) {
+  return formatCategory(article) || "News";
 }
 
 export async function getHomepageArticles() {
@@ -214,6 +261,14 @@ export async function getCategoryPage(slug: string) {
     category,
     articles: articles?.map(mapArticleSummary) ?? [],
   };
+}
+
+export async function getPublishedArticles() {
+  return (await sanityFetch<CmsSitemapArticle[]>({ query: sitemapArticlesQuery })) ?? [];
+}
+
+export async function getPublishedCategories() {
+  return (await sanityFetch<CmsCategory[]>({ query: sitemapCategoriesQuery })) ?? [];
 }
 
 export function portableTextToSections(body: CmsArticle["body"] = []) {
