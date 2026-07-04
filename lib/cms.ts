@@ -144,7 +144,7 @@ const sitemapCategoriesQuery = `*[_type == "category" && defined(slug.current)] 
   description
 }`;
 
-const primarySectionOrder = ["Provinces", "Ireland", "URC", "Europe"];
+const primarySectionOrder = ["Provinces", "Ireland", "URC", "International"];
 
 function formatDate(date?: string) {
   if (!date) return undefined;
@@ -263,52 +263,10 @@ export async function getCategoryPage(slug: string) {
   };
 }
 
-export async function getPublishedArticles() {
-  return (await sanityFetch<CmsSitemapArticle[]>({ query: sitemapArticlesQuery })) ?? [];
+export async function getSitemapArticles() {
+  return sanityFetch<CmsSitemapArticle[]>({ query: sitemapArticlesQuery });
 }
 
-export async function getPublishedCategories() {
-  return (await sanityFetch<CmsCategory[]>({ query: sitemapCategoriesQuery })) ?? [];
-}
-
-export function portableTextToSections(body: CmsArticle["body"] = []) {
-  const sections: Array<{ heading?: string; paragraphs: string[] }> = [];
-
-  body.forEach((block) => {
-    if (block._type !== "block") return;
-
-    const text = block.children?.map((child) => child.text ?? "").join("").trim();
-    if (!text) return;
-
-    if (block.style === "h2") {
-      sections.push({ heading: text, paragraphs: [] });
-      return;
-    }
-
-    const currentSection = sections.at(-1) ?? { paragraphs: [] };
-    currentSection.paragraphs.push(text);
-
-    if (!sections.length) {
-      sections.push(currentSection);
-    }
-  });
-
-  return sections.filter((section) => section.heading || section.paragraphs.length);
-}
-
-export function articleDateLabel(date?: string) {
-  return formatDate(date) ?? "Draft";
-}
-
-export function getFeaturedImage(article?: CmsArticle | null) {
-  const image = imageUrl(article?.featuredImage);
-
-  if (!image) return null;
-
-  return {
-    src: image,
-    alt: article?.featuredImage?.alt ?? "",
-    caption: article?.featuredImage?.caption,
-    credit: [article?.featuredImage?.photographer, article?.featuredImage?.source].filter(Boolean).join(" / "),
-  };
+export async function getSitemapCategories() {
+  return sanityFetch<CmsCategory[]>({ query: sitemapCategoriesQuery });
 }
