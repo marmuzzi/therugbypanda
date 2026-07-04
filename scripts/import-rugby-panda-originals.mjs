@@ -1,5 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
+import { execFileSync } from "node:child_process";
 import { createClient } from "next-sanity";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID ?? "hvg4b508";
@@ -14,8 +15,9 @@ if (!token) {
 
 const repoRoot = process.cwd();
 const manifestPath = process.argv[2] ?? "data/media/rugby-panda-originals-2026-07-04-manifest.json";
-const encodedDir = process.argv[3] ?? "data/media/rugby-panda-originals-2026-07-04-base64";
+const zipPath = process.argv[3] ?? "data/media/rugby-panda-originals-2026-07-04.zip";
 const tmpDir = path.join(repoRoot, ".tmp-rugby-panda-originals");
+const extractDir = path.join(tmpDir, "photos");
 
 const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false });
 const manifest = JSON.parse(fs.readFileSync(path.join(repoRoot, manifestPath), "utf8"));
@@ -48,22 +50,35 @@ function asSanityStringArray(values = []) {
   return Array.isArray(values) ? values.filter(Boolean) : [];
 }
 
-fs.mkdirSync(tmpDir, { recursive: true });
+fs.rmSync(tmpDir, { recursive: true, force: true });
+fs.mkdirSync(extractDir, { recursive: true });
+
+const absoluteZipPath = path.join(repoRoot, zipPath);
+if (!fs.existsSync(absoluteZipPath)) {
+  throw new Error(`Missing ZIP file: ${absoluteZipPath}`);
+}
+
+execFileSync("unzip", ["-q", absoluteZipPath, "-d", extractDir]);
+
+function resolveExtractedPhoto(sourceFile) {
+  const candidates = [
+    path.join(extractDir, sourceFile),
+    path.join(extractDir, "photos", sourceFile),
+  ];
+
+  for (const candidate of candidates) {
+    if (fs.existsSync(candidate)) return candidate;
+  }
+
+  throw new Error(`Photo from manifest not found in ZIP: ${sourceFile}`);
+}
 
 let imported = 0;
 
 for (const item of manifest) {
-  const encodedPath = path.join(repoRoot, encodedDir, `${item.sourceFile}.b64`);
+  const imagePath = resolveExtractedPhoto(item.sourceFile);
 
-  if (!fs.existsSync(encodedPath)) {
-    throw new Error(`Missing encoded source image: ${encodedPath}`);
-  }
-
-  const imageBuffer = Buffer.from(fs.readFileSync(encodedPath, "utf8"), "base64");
-  const tempImagePath = path.join(tmpDir, item.sourceFile);
-  fs.writeFileSync(tempImagePath, imageBuffer);
-
-  const asset = await client.assets.upload("image", fs.createReadStream(tempImagePath), {
+  const asset = await client.assets.upload("image", fs.createReadStream(imagePath), {
     filename: item.sourceFile,
     contentType: mimeFor(item.sourceFile),
   });
@@ -104,7 +119,7 @@ for (const item of manifest) {
     copyrightLine: "© The Rugby Panda",
     creator: "The Rugby Panda",
     source: "The Rugby Panda Original",
-    rightsNotes: "Original Rugby Panda photography. Do not publish the user's personal name publicly.",
+    rightsNotes: "Original Rugby Panda photography. Public attribution must remain Photo: The Rugby Panda.",
     importedAt: new Date().toISOString(),
     rawImport: JSON.stringify(item, null, 2),
   });
