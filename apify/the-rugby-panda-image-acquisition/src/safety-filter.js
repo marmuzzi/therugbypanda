@@ -52,21 +52,34 @@ function domainFromUrl(url) {
 
 export function normalizeLicense(license) {
   if (!license || typeof license !== "string") return "";
-  return license
+
+  const normalized = license
     .trim()
     .toLowerCase()
     .replace(/^cc-/, "")
     .replace(/^cc\s+/, "")
     .replace(/^creative commons\s+/, "")
-    .replace(/\s+/g, "-");
+    .replace(/\s+/g, "-")
+    .replace(/\//g, "-");
+
+  if (normalized === "zero" || normalized.startsWith("zero-")) return "cc0";
+  if (normalized === "public-domain-mark" || normalized.startsWith("public-domain-mark-")) return "pdm";
+  if (normalized === "publicdomain" || normalized === "public-domain") return "pdm";
+  if (normalized === "by" || /^by-\d/.test(normalized)) return "by";
+  if (normalized === "by-sa" || /^by-sa-\d/.test(normalized)) return "by-sa";
+  if (normalized === "cc0" || /^cc0-\d/.test(normalized)) return "cc0";
+  if (normalized === "pdm" || /^pdm-\d/.test(normalized)) return "pdm";
+
+  return normalized;
 }
 
 export function isAllowedLicense(license, allowedLicenses = []) {
+  const raw = typeof license === "string" ? license.toLowerCase() : "";
   const normalized = normalizeLicense(license);
   const allowed = new Set(allowedLicenses.map(normalizeLicense));
 
+  if (includesAny(raw, blockedLicenseFragments) || includesAny(normalized, blockedLicenseFragments)) return false;
   if (!normalized || !allowed.has(normalized)) return false;
-  if (includesAny(normalized, blockedLicenseFragments)) return false;
 
   return true;
 }
@@ -87,7 +100,7 @@ export function getSafetyDecision(candidate, allowedLicenses = []) {
     ...(candidate.tags ?? []),
   ].filter(Boolean);
 
-  if (!isAllowedLicense(license, allowedLicenses)) {
+  if (!isAllowedLicense(candidate.license, allowedLicenses)) {
     return {
       allowed: false,
       reason: `Rejected licence: ${license || "missing"}`,
