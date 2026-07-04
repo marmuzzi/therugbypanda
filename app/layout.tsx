@@ -8,11 +8,12 @@ export const metadata: Metadata = {
     "Digital rugby newsroom delivering independent coverage, insight and analysis of Irish and European rugby.",
   icons: {
     icon: [
-      { url: "/favicon.ico?v=7", sizes: "any" },
-      { url: "/rugby-panda-logo.png?v=7", type: "image/png", sizes: "any" },
+      { url: "/favicon.ico?v=8", sizes: "any" },
+      { url: "/favicon.svg?v=8", type: "image/svg+xml", sizes: "any" },
+      { url: "/rugby-panda-logo.png?v=8", type: "image/png", sizes: "any" },
     ],
-    shortcut: "/favicon.ico?v=7",
-    apple: [{ url: "/rugby-panda-logo.png?v=7", type: "image/png", sizes: "180x180" }],
+    shortcut: "/favicon.ico?v=8",
+    apple: [{ url: "/rugby-panda-logo.png?v=8", type: "image/png", sizes: "180x180" }],
   },
 };
 

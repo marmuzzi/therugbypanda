@@ -20,15 +20,31 @@ Sanity MCP may be installed on the user's account, but it was not exposed in the
 
 Latest observed Vercel production deployment was on `main` commit `538af6b2ae8d3b81db515bdf4d04336049cd4f67`.
 
-Preview deployments existed for:
+Recheck the latest production deployment with the Vercel connector before closing `INF-001`.
 
-- `docs-project-state-issue-log`
-- `sprint-3-seo-publishing-polish`
+## Important pending pull requests
 
-## Important pending branches
+- PR #23, `feature/seo-publishing-final`: consolidated branch for Sprint 3 publishing polish.
 
-- `sprint-3-seo-publishing-polish`: SEO endpoints, article/category metadata, RSS, sitemap, robots, and homepage section ordering fix.
+Implemented on PR #23:
+
+- CMS-backed `/sitemap.xml`.
+- CMS-backed `/robots.txt`.
+- CMS-backed `/rss.xml`.
+- Article SEO metadata.
+- Article `NewsArticle` JSON-LD.
+- Category SEO metadata.
+- Homepage section link ordering and News de-duplication.
+- Masthead proportions polish.
+- Dedicated small-size SVG favicon and `/favicon.ico` redirect.
+- Documentation updates for project state and issue log.
 
 ## Important open issues
 
-See `docs/08_Issue_Log.md` for current status. Key pending issues include favicon redesign, masthead proportions, missing CMS images, and merging/deploying the SEO/publishing polish branch.
+See `docs/08_Issue_Log.md` for current status. Key pending work:
+
+- Review PR #23 preview/build status.
+- Use as few Vercel deployments as possible because of the 100-deployments-per-day limit.
+- Merge and verify PR #23 in production.
+- Verify `/sitemap.xml`, `/robots.txt`, `/rss.xml`, article/category metadata, JSON-LD, homepage sections, masthead and favicon.
+- Upload proper featured images in Sanity with metadata.

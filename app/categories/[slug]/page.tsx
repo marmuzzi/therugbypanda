@@ -1,13 +1,50 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import ArticleCard from "@/components/ArticleCard";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import { getCategoryPage } from "@/lib/cms";
+import { categoryUrl, getCategoryPage } from "@/lib/cms";
 
 type CategoryPageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: CategoryPageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const { category } = await getCategoryPage(slug);
+
+  if (!category) {
+    return {
+      title: "Category not found | The Rugby Panda",
+    };
+  }
+
+  const title = `${category.title} rugby news | The Rugby Panda`;
+  const description =
+    category.description ?? `Independent rugby coverage, analysis and context for ${category.title}.`;
+  const url = categoryUrl(category.slug);
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "The Rugby Panda",
+      type: "website",
+    },
+    twitter: {
+      card: "summary",
+      title,
+      description,
+    },
+  };
+}
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params;

@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export default function BrandLockup() {
   return (
-    <div className="mx-auto grid max-w-7xl grid-cols-[124px_minmax(0,1fr)] items-center gap-2 px-4 py-4 sm:grid-cols-[148px_minmax(0,1fr)] sm:gap-4 sm:px-6 md:grid-cols-[180px_minmax(0,1fr)_180px] md:gap-5 md:px-8 md:py-4 lg:grid-cols-[190px_minmax(0,1fr)_220px] lg:gap-6 lg:py-4">
+    <div className="mx-auto grid max-w-7xl grid-cols-[132px_minmax(0,1fr)] items-center gap-1 px-4 py-3 sm:grid-cols-[160px_minmax(0,1fr)] sm:gap-3 sm:px-6 md:grid-cols-[210px_minmax(0,1fr)_160px] md:gap-3 md:px-8 md:py-3 lg:grid-cols-[230px_minmax(0,1fr)_190px] lg:gap-4 lg:py-3">
       <Link href="/" aria-label="The Rugby Panda home" className="block justify-self-end md:justify-self-start">
         <Image
           src="/rugby-panda-logo.png"
@@ -11,17 +11,17 @@ export default function BrandLockup() {
           width={280}
           height={280}
           priority
-          sizes="(max-width: 640px) 124px, (max-width: 768px) 148px, (max-width: 1024px) 180px, 190px"
-          className="h-[124px] w-[124px] object-contain sm:h-[148px] sm:w-[148px] md:h-[180px] md:w-[180px] lg:h-[190px] lg:w-[190px]"
+          sizes="(max-width: 640px) 132px, (max-width: 768px) 160px, (max-width: 1024px) 210px, 230px"
+          className="h-[132px] w-[132px] object-contain sm:h-[160px] sm:w-[160px] md:h-[210px] md:w-[210px] lg:h-[230px] lg:w-[230px]"
         />
       </Link>
 
       <Link href="/" aria-label="The Rugby Panda home" className="min-w-0 overflow-hidden">
         <p className="font-black uppercase leading-[0.86] tracking-tight text-[#003D2B]">
-          <span className="block text-[1.35rem] leading-none sm:text-[1.9rem] md:text-[2rem] lg:text-[2.25rem]">
+          <span className="block text-[1.2rem] leading-none sm:text-[1.65rem] md:text-[1.75rem] lg:text-[2rem]">
             The
           </span>
-          <span className="block text-[1.9rem] leading-[0.86] sm:text-[2.9rem] md:text-[3.2rem] lg:text-[3.75rem] xl:text-[4rem]">
+          <span className="block text-[1.65rem] leading-[0.86] sm:text-[2.45rem] md:text-[2.8rem] lg:text-[3.25rem] xl:text-[3.6rem]">
             Rugby Panda
           </span>
         </p>

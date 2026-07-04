@@ -39,7 +39,7 @@ Sanity MCP was installed on the user's account but was not exposed to the previo
 - Local article mock data was removed from frontend rendering.
 - Seed script and no-terminal GitHub Actions seed workflow exist and have been run successfully.
 - Live validation workflow exists.
-- Favicon is now visible in Chrome, but needs a dedicated small-size design.
+- Favicon is now visible in Chrome, but needs production verification for the dedicated small-size SVG asset.
 - Documentation source-of-truth structure exists.
 - New handoff document exists at `docs/10_New_Chat_Handoff.md`.
 
@@ -52,13 +52,13 @@ Latest observed Vercel production deployment:
 - Vercel team ID: `team_4y2XZGwKXqSLRqi9EqNdvUFW`
 - Latest observed production commit: `538af6b2ae8d3b81db515bdf4d04336049cd4f67`
 
-Preview deployments were observed for `docs-project-state-issue-log` and `sprint-3-seo-publishing-polish`.
+Production commit still needs to be rechecked with the Vercel connector before closing `INF-001`.
 
 ## Current branch work
 
-### `sprint-3-seo-publishing-polish`
+### `feature/seo-publishing-final`
 
-Implemented on branch but not merged:
+Implemented on branch, pending PR/merge/deployment/production verification:
 
 - CMS-backed `/sitemap.xml`.
 - CMS-backed `/robots.txt`.
@@ -66,8 +66,9 @@ Implemented on branch but not merged:
 - Article SEO metadata.
 - Article `NewsArticle` JSON-LD.
 - Category SEO metadata.
-- Homepage bottom section order fix.
-- Duplicate News section fix.
+- Homepage bottom section order fix remains implemented in `lib/cms.ts` via ordered section links and News de-duplication.
+- Masthead proportions polish: larger panda mark, smaller wordmark and tighter spacing.
+- Dedicated small-size SVG favicon asset and `/favicon.ico` redirect to that asset.
 
 ## Current article URL
 
@@ -79,7 +80,7 @@ Continue Sprint 3 — CMS and Publishing Platform. Hosted Sanity Studio is the c
 
 ## Sprint 3 status
 
-Estimated completion: 90–95%.
+Estimated completion: 95%.
 
 Completed:
 
@@ -94,26 +95,30 @@ Completed:
 9. Live validation workflow.
 10. Starter CMS content seeded.
 11. Documentation structure and issue log created.
+12. SEO and publishing endpoints implemented on `feature/seo-publishing-final`.
+13. Article/category metadata and article JSON-LD implemented on `feature/seo-publishing-final`.
+14. Header masthead proportions and dedicated favicon implemented on `feature/seo-publishing-final`.
 
 Pending:
 
-1. Dedicated favicon design.
-2. Header masthead proportions.
-3. SEO endpoints and metadata branch merge/deploy/verification.
-4. Homepage bottom section duplicate/order fix deploy/verification.
-5. Featured image uploads and metadata in Sanity.
-6. Search remains placeholder.
+1. Open, review, merge and deploy `feature/seo-publishing-final`.
+2. Verify `/sitemap.xml`, `/robots.txt` and `/rss.xml` after deployment.
+3. Verify article/category metadata and article JSON-LD in production.
+4. Verify homepage bottom section order in production.
+5. Verify header masthead proportions on desktop, tablet and mobile.
+6. Verify dedicated favicon in production browsers.
+7. Featured image uploads and metadata in Sanity.
+8. Search remains placeholder.
 
 ## Immediate next tasks
 
-1. Start the next chat and read the project documentation first.
-2. Check available connectors, especially GitHub and Vercel.
-3. Confirm latest production deployment commit using Vercel connector.
-4. Merge and deploy `sprint-3-seo-publishing-polish` when ready.
-5. Verify `/sitemap.xml`, `/robots.txt` and `/rss.xml` after deployment.
-6. Fix header logo proportions.
-7. Prepare a dedicated favicon asset based on the approved panda brand.
-8. Upload proper CMS featured images in Sanity.
+1. Open PR for `feature/seo-publishing-final`.
+2. Use a single preview deployment for the branch where possible.
+3. Review preview/build status before merge.
+4. Merge only when ready to avoid unnecessary production deployments.
+5. After merge, confirm production deployment commit with Vercel connector.
+6. Verify `/sitemap.xml`, `/robots.txt`, `/rss.xml`, article SEO, category SEO, JSON-LD, homepage sections, masthead and favicon.
+7. Upload proper CMS featured images in Sanity.
 
 ## Known issues
 
@@ -122,10 +127,10 @@ Track all issues in `docs/08_Issue_Log.md`.
 Current important issues:
 
 - `INF-001` — Vercel deployment limit and deployment verification.
-- `WEB-001` — favicon visible but too small.
-- `WEB-002` — duplicate homepage section links fixed on branch, pending deployment.
-- `WEB-003` — header logo proportions.
-- `WEB-004` — dedicated favicon design.
+- `WEB-001` — favicon visible but too small; dedicated favicon implemented on branch, pending deployment/verification.
+- `WEB-002` — duplicate homepage section links fixed on branch, pending deployment/verification.
+- `WEB-003` — header logo proportions implemented on branch, pending deployment/verification.
+- `WEB-004` — dedicated favicon design implemented on branch, pending deployment/verification.
 - `CMS-002` — CMS article images missing.
 
 ## Working principles
