@@ -13,11 +13,11 @@ if (!token) {
 const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false });
 
 const categories = [
-  { _id: "category-news", title: "News", slug: "news", description: "Latest Irish, URC and European rugby stories from The Rugby Panda." },
+  { _id: "category-news", title: "News", slug: "news", description: "Latest rugby stories from The Rugby Panda across Ireland, the provinces, the URC and the international game." },
   { _id: "category-provinces", title: "Provinces", slug: "provinces", description: "Coverage and analysis across Leinster, Munster, Ulster and Connacht." },
   { _id: "category-ireland", title: "Ireland", slug: "ireland", description: "Ireland team coverage, selection context and international rugby analysis." },
   { _id: "category-urc", title: "URC", slug: "urc", description: "United Rugby Championship stories, trends and match understanding." },
-  { _id: "category-europe", title: "Europe", slug: "europe", description: "Champions Cup and wider European rugby coverage." },
+  { _id: "category-europe", title: "International", slug: "international", description: "International rugby coverage, including major test windows, tournaments and cross-border storylines." },
 ];
 
 const provinces = [
@@ -29,10 +29,10 @@ const provinces = [
 
 const competitions = [
   { _id: "competition-urc", title: "URC", slug: "urc" },
-  { _id: "competition-europe", title: "Europe", slug: "europe" },
+  { _id: "competition-international", title: "International", slug: "international" },
 ];
 
-const tags = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland", "URC", "Europe", "Analysis", "Season preview"].map((title) => ({
+const tags = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland", "URC", "International", "Analysis", "Season preview"].map((title) => ({
   _id: `tag-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
   title,
   slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
@@ -44,7 +44,7 @@ const author = {
   name: "The Rugby Panda Newsroom",
   slug: { _type: "slug", current: "rugby-panda-newsroom" },
   role: "Editorial team",
-  bio: "Independent Irish and European rugby coverage built around context, analysis and match understanding.",
+  bio: "Independent Irish and international rugby coverage built around context, analysis and match understanding.",
 };
 
 function block(text, style = "normal") {
@@ -72,18 +72,18 @@ const articles = [
     isLead: true,
     category: "category-provinces",
     province: "province-leinster",
-    tags: ["tag-leinster", "tag-urc", "tag-europe", "tag-season-preview"],
+    tags: ["tag-leinster", "tag-urc", "tag-international", "tag-season-preview"],
     keyPoints: [
       "Leinster enter the 2026/27 season with familiar expectations and a squad still built to compete on multiple fronts.",
       "Selection depth, European game management and the next wave of academy graduates are likely to shape the campaign.",
       "The biggest question is not whether Leinster have enough talent, but whether they can turn control into silverware when the margins tighten.",
     ],
     body: [
-      block("Leinster seasons rarely begin quietly. There is always a familiar combination of expectation, scrutiny and possibility around a squad that has spent years setting standards in Ireland and Europe."),
+      block("Leinster seasons rarely begin quietly. There is always a familiar combination of expectation, scrutiny and possibility around a squad that has spent years setting standards in Ireland and beyond."),
       block("The familiar challenge of depth", "h2"),
-      block("Few European sides can rotate heavily while still putting international-level players across the pitch. That depth is a strength, but it also creates pressure: combinations need rhythm, younger players need meaningful minutes and senior players need to peak when the knockout matches arrive."),
-      block("Europe will define the mood", "h2"),
-      block("For all the importance of domestic consistency, Leinster’s wider reputation is often measured against European nights. Control, territory and defensive pressure have carried them a long way, but the final steps usually demand adaptability when a plan is disrupted."),
+      block("Few leading sides can rotate heavily while still putting international-level players across the pitch. That depth is a strength, but it also creates pressure: combinations need rhythm, younger players need meaningful minutes and senior players need to peak when the knockout matches arrive."),
+      block("Big nights will define the mood", "h2"),
+      block("For all the importance of domestic consistency, Leinster’s wider reputation is often measured against the biggest nights. Control, territory and defensive pressure have carried them a long way, but the final steps usually demand adaptability when a plan is disrupted."),
       block("The bottom line", "h2"),
       block("Leinster have enough quality to make this another serious campaign. The real test is whether they can turn squad strength into sharper big-game solutions and keep their rugby fresh across a long season."),
     ],
@@ -114,15 +114,15 @@ const articles = [
   },
   {
     _id: "article-european-game-management-big-nights",
-    title: "Why game management still decides the biggest European nights",
-    slug: "european-game-management-big-nights",
-    standfirst: "Control matters, but knockout rugby often turns on adaptation, pressure and precision after momentum swings.",
+    title: "Why game management still decides the biggest international nights",
+    slug: "international-game-management-big-nights",
+    standfirst: "Control matters, but major rugby nights often turn on adaptation, pressure and precision after momentum swings.",
     publishedAt: "2026-07-01T10:00:00Z",
     readingTime: "5 min read",
     category: "category-europe",
-    competition: "competition-europe",
-    tags: ["tag-europe", "tag-analysis"],
-    body: [block("European rugby rewards power and detail, but the decisive moments often arrive when the original plan has stopped being enough."), block("The teams that survive those passages are usually the ones that can keep their kicking, discipline and set-piece decisions connected under pressure.")],
+    competition: "competition-international",
+    tags: ["tag-international", "tag-analysis"],
+    body: [block("International rugby rewards power and detail, but the decisive moments often arrive when the original plan has stopped being enough."), block("The teams that survive those passages are usually the ones that can keep their kicking, discipline and set-piece decisions connected under pressure.")],
   },
   {
     _id: "article-munster-control-not-emotion",
@@ -165,7 +165,7 @@ const articles = [
 const transaction = client.transaction();
 
 for (const item of categories) {
-  transaction.createIfNotExists({ _type: "category", ...item, slug: { _type: "slug", current: item.slug } });
+  transaction.createOrReplace({ _type: "category", ...item, slug: { _type: "slug", current: item.slug } });
 }
 
 for (const item of provinces) {
@@ -173,11 +173,11 @@ for (const item of provinces) {
 }
 
 for (const item of competitions) {
-  transaction.createIfNotExists({ _type: "competition", ...item, slug: { _type: "slug", current: item.slug } });
+  transaction.createOrReplace({ _type: "competition", ...item, slug: { _type: "slug", current: item.slug } });
 }
 
 for (const item of tags) {
-  transaction.createIfNotExists({ _type: "tag", ...item, slug: { _type: "slug", current: item.slug } });
+  transaction.createOrReplace({ _type: "tag", ...item, slug: { _type: "slug", current: item.slug } });
 }
 
 transaction.createIfNotExists(author);
