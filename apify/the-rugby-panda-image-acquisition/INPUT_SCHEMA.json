@@ -42,6 +42,14 @@
       "items": { "type": "string" },
       "default": ["cc0", "pdm", "by", "by-sa"]
     },
+    "minimumRugbyRelevanceScore": {
+      "title": "Minimum rugby relevance score",
+      "type": "integer",
+      "description": "Only records at or above this score become Candidate records. Lower scores are rejected for review/debugging.",
+      "default": 70,
+      "minimum": 0,
+      "maximum": 100
+    },
     "dryRun": {
       "title": "Dry run",
       "type": "boolean",
@@ -49,5 +57,5 @@
       "default": true
     }
   },
-  "required": ["searchPack", "sources", "resultsPerQueryPerSource", "allowedLicenses", "dryRun"]
+  "required": ["searchPack", "sources", "resultsPerQueryPerSource", "allowedLicenses", "minimumRugbyRelevanceScore", "dryRun"]
 }
