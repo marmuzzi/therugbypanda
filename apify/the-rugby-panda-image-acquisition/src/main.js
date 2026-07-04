@@ -5,6 +5,7 @@ import { searchWikimedia } from "./wikimedia.js";
 import { deduplicateCandidates } from "./deduplicator.js";
 import { classifyCandidate } from "./classifier.js";
 import { filterUnsafeCandidates } from "./safety-filter.js";
+import { filterByRugbyRelevance } from "./relevance.js";
 import { createMetrics, finishMetrics } from "./metrics.js";
 
 await Actor.init();
@@ -16,6 +17,7 @@ const resolvedInput = {
   sources: input.sources ?? ["openverse", "wikimedia"],
   resultsPerQueryPerSource: input.resultsPerQueryPerSource ?? 5,
   allowedLicenses: input.allowedLicenses ?? ["cc0", "pdm", "by", "by-sa"],
+  minimumRugbyRelevanceScore: input.minimumRugbyRelevanceScore ?? 70,
   dryRun: input.dryRun ?? true,
 };
 
@@ -53,11 +55,18 @@ for (const query of queries) {
   }
 }
 
-const { accepted: safetyAccepted, rejected } = filterUnsafeCandidates(found, resolvedInput.allowedLicenses);
+const { accepted: safetyAccepted, rejected: safetyRejected } = filterUnsafeCandidates(found, resolvedInput.allowedLicenses);
 const deduped = deduplicateCandidates(safetyAccepted);
 const duplicateCount = safetyAccepted.length - deduped.length;
-const accepted = deduped.map(classifyCandidate);
+const { accepted: relevanceAccepted, rejected: relevanceRejected } = filterByRugbyRelevance(
+  deduped,
+  resolvedInput.minimumRugbyRelevanceScore,
+);
+const rejected = [...safetyRejected, ...relevanceRejected];
+const accepted = relevanceAccepted.map(classifyCandidate);
 const finalMetrics = finishMetrics(metrics, { found, accepted, rejected, duplicateCount });
+finalMetrics.rejectedByRugbyRelevance = relevanceRejected.length;
+finalMetrics.minimumRugbyRelevanceScore = resolvedInput.minimumRugbyRelevanceScore;
 
 await Actor.pushData({
   recordType: "run-summary",
