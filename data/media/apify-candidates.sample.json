@@ -1,0 +1,33 @@
+[
+  {
+    "externalId": "sample-openverse-rugby-ball-001",
+    "title": "Rugby ball on grass",
+    "imageUrl": "https://example.com/rugby-ball.jpg",
+    "thumbnailUrl": "https://example.com/rugby-ball-thumb.jpg",
+    "sourceUrl": "https://example.com/rugby-ball",
+    "landingPageUrl": "https://example.com/rugby-ball",
+    "creator": "Example Creator",
+    "creatorUrl": "https://example.com/creator",
+    "license": "cc0",
+    "licenseUrl": "https://creativecommons.org/publicdomain/zero/1.0/",
+    "attribution": "Example Creator / CC0",
+    "width": 1600,
+    "height": 1067,
+    "provider": "openverse",
+    "acquisitionSource": "apify",
+    "acquisitionActor": "shahidirfan/OpenVerse-Image-Scraper",
+    "acquisitionQuery": "rugby ball",
+    "sourceClassification": "Open Licence",
+    "lifecycleStatus": "Candidate",
+    "editorialCategory": "Equipment",
+    "photoType": ["rugby ball"],
+    "tags": ["rugby", "rugby ball", "equipment", "grass"],
+    "searchKeywords": ["rugby ball", "rugby equipment", "evergreen fallback"],
+    "orientation": "landscape",
+    "editorialRating": 3,
+    "editorialValue": "Evergreen",
+    "suggestedUse": ["article header", "homepage card", "evergreen fallback"],
+    "usageApproved": false,
+    "validationNotes": "Sample record only. Do not import as production content."
+  }
+]
