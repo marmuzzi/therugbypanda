@@ -10,67 +10,40 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| INF-001 | Pending Verification | High | Infrastructure | Vercel deployment rate limit caused some merged changes to miss production initially. | #20, #21 | Later deployment activity observed; verify exact live commit with Vercel connector. | Pending Vercel/live validation | — |
-| WEB-001 | Implemented | High | Frontend | Browser favicon now appears, but the panda is too small to read clearly at tab size. A dedicated small-size SVG favicon has been implemented. | #23 | Not deployed to production | Pending browser verification | — |
-| WEB-002 | Implemented | Medium | Frontend | Homepage bottom section links duplicated News and did not follow the header order. | #23 | Not deployed to production | Pending production verification | — |
-| WEB-003 | Implemented | Medium | Branding / UI | Masthead proportions are unbalanced: panda mark is too small and wordmark is too large. Header proportions have been adjusted. | #23 | Not deployed to production | Pending desktop/tablet/mobile verification | — |
-| WEB-004 | Implemented | Medium | Branding / UI | Need a favicon-specific version of the approved panda logo because the current full logo is too detailed when scaled down. A dedicated SVG favicon has been added. | #23 | Not deployed to production | Pending browser verification | — |
-| CMS-002 | Open | High | CMS / Visual content | Stock/mock article photos disappeared after switching frontend rendering to hosted Sanity content. | — | Not implemented | Pending CMS image upload and page verification | — |
+| CMS-002 | Open | High | CMS / Visual content | Hosted Sanity articles need proper featured images and metadata. | — | Not implemented | Pending CMS image upload and page verification | — |
+| MEDIA-001 | Planned | High | Media / CMS | Create The Rugby Panda Editorial Image Archive with tagging, ratings, lifecycle states and source attribution. | — | Not implemented | Pending design and CMS implementation | — |
+| MEDIA-002 | Planned | High | Media / Workflow | Build the starter editorial image library with rights validation and CMS import metadata. | — | Not implemented | Pending validation and CMS import | — |
+| WEB-005 | Open | Medium | Frontend | Search remains a placeholder. | — | Not implemented | Pending search implementation and production verification | — |
+| INF-001 | Closed | High | Infrastructure | Vercel deployment rate limit caused production verification risk. | #20, #21, #23, #24 | Latest production verified on commit `61fb43ea513e7f56d90244051c7a03a66e09c0c8`. | Production deployment verified | 2026-07-04 |
+| WEB-001 | Closed | High | Frontend | Dedicated favicon implemented and verified. | #23, #24 | Deployed to production | User verified favicon looks great | 2026-07-04 |
+| WEB-002 | Closed | Medium | Frontend | Homepage section link order fixed and verified. | #23 | Deployed to production | Production verified | 2026-07-04 |
+| WEB-003 | Closed | Medium | Branding / UI | Masthead proportions improved and verified. | #23 | Deployed to production | User verified production improvements | 2026-07-04 |
+| WEB-004 | Closed | Medium | Branding / UI | Dedicated favicon design implemented and verified. | #23, #24 | Deployed to production | User verified favicon in production | 2026-07-04 |
 | DOC-001 | Closed | High | Documentation | Project state, issue log and publishing workflow added as source of truth. | #22 | Merged to main | Repository files verified | 2026-07-04 |
-| CMS-001 | Closed | High | CMS | Homepage and article pages used local mock article data instead of hosted Sanity content. | #14 | Deployed | Verified by live validation workflow | 2026-07-03 |
+| CMS-001 | Closed | High | CMS | Homepage and article pages use hosted Sanity content. | #14 | Deployed | Verified by live validation workflow | 2026-07-03 |
 
-## INF-001 — Vercel deployment rate limit
+## MEDIA-001 — Editorial Image Archive
 
-- **Status:** Pending Verification
+- **Status:** Planned
 - **Priority:** High
-- **Root cause:** Multiple rapid merges triggered Vercel deployment rate limiting.
-- **Impact:** Some merged changes existed in GitHub but were not immediately live in production.
-- **Related PRs:** #20, #21
-- **Deployment status:** Later Vercel deployment activity was observed, but the exact production commit must be checked with the Vercel connector before closing.
-- **Verification steps:** Use the Vercel connector to confirm the production deployment commit, then run Validate Live Site.
+- **Root cause:** The project needs a structured media library so original Rugby Panda photos and approved external images can be reused safely and quickly.
+- **Scope:** Store image metadata, source attribution, category tags, editorial ratings, lifecycle status, suggested use and search fields.
+- **Public attribution rule:** Original images must be credited publicly as `Photo: The Rugby Panda` and `© The Rugby Panda`. Do not expose the user's personal identity.
+- **Related PRs:** Pending
+- **Deployment status:** Not implemented
+- **Verification steps:** Confirm CMS can store, search and display image metadata; verify article and homepage images render correctly.
 - **Resolution date:** Pending
 
-## WEB-001 — Favicon visible but too small
+## MEDIA-002 — Starter editorial image library
 
-- **Status:** Implemented
+- **Status:** Planned
 - **Priority:** High
-- **Root cause:** The tab icon now loads, but it uses the full approved logo composition. At favicon sizes the panda occupies too little of the canvas to be clearly recognizable.
-- **Related PRs:** #23
-- **Deployment status:** Not deployed to production
-- **Implementation:** Added `public/favicon.svg`, updated metadata icon references and redirected `/favicon.ico` to the dedicated small-size favicon asset.
-- **Verification steps:** Verify at 16x16, 32x32 and browser tab size in Chrome, Safari, Edge and Firefox after production deployment.
-- **Resolution date:** Pending
-
-## WEB-002 — Duplicate homepage section links
-
-- **Status:** Implemented
-- **Priority:** Medium
-- **Root cause:** `getSectionLinks()` hardcoded News while Sanity also contained a News category, and CMS categories were sorted alphabetically.
-- **Related PRs:** #23
-- **Deployment status:** Not deployed to production
-- **Verification steps:** Confirm bottom sections render once and in this order: News, Provinces, Ireland, URC, Europe.
-- **Resolution date:** Pending
-
-## WEB-003 — Header logo proportions
-
-- **Status:** Implemented
-- **Priority:** Medium
-- **Root cause:** The masthead visual balance is off. The panda logo is undersized while the `THE RUGBY PANDA` wordmark dominates the header.
-- **Related PRs:** #23
-- **Deployment status:** Not deployed to production
-- **Implementation:** Increased panda logo size, reduced wordmark size and tightened spacing while preserving the tagline.
-- **Verification steps:** Verify desktop, tablet and mobile layouts after deployment.
-- **Resolution date:** Pending
-
-## WEB-004 — Dedicated favicon design
-
-- **Status:** Implemented
-- **Priority:** Medium
-- **Root cause:** The current favicon uses the full logo composition. Brand assets intended for very small sizes need dedicated simplified versions rather than direct downscales of the primary logo.
-- **Related PRs:** #23
-- **Deployment status:** Not deployed to production
-- **Implementation:** Added a simplified green-backed SVG panda face favicon optimized for small display sizes.
-- **Verification steps:** Verify in Chrome, Safari, Edge and Firefox after deployment.
+- **Root cause:** The site needs a starter library of reusable images while original Rugby Panda photography grows.
+- **Target:** 100 approved starter images.
+- **Current tracker:** 27 candidates found, 26 pending validation, 1 verified/ready from chat-based discovery. Revalidate all external candidates before CMS import.
+- **Related PRs:** Pending
+- **Deployment status:** Not implemented
+- **Verification steps:** Validate rights metadata, reject unsafe images, generate metadata and import approved images into Sanity.
 - **Resolution date:** Pending
 
 ## CMS-002 — CMS article images missing
@@ -83,22 +56,22 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 - **Verification steps:** Upload featured images in Sanity with alt text, caption, source/rights metadata, then verify homepage cards and article pages render images again.
 - **Resolution date:** Pending
 
-## DOC-001 — Documentation source of truth
+## WEB-005 — Search placeholder
 
-- **Status:** Closed
-- **Priority:** High
-- **Root cause:** Project status was tracked in chat more than repository documentation.
-- **Related PRs:** #22
-- **Deployment status:** Merged to main.
-- **Verification steps:** Repository contains `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, `docs/09_Publishing_Workflow.md`, and `docs/10_New_Chat_Handoff.md`.
-- **Resolution date:** 2026-07-04
+- **Status:** Open
+- **Priority:** Medium
+- **Root cause:** Search UI exists but has not been implemented as a real searchable editorial experience.
+- **Related PRs:** Pending
+- **Deployment status:** Not implemented
+- **Verification steps:** Implement search, verify article/category/tag discovery in production.
+- **Resolution date:** Pending
 
-## CMS-001 — Remove frontend mock data
+## Closed issues summary
 
-- **Status:** Closed
-- **Priority:** High
-- **Root cause:** Sprint 2 article data still powered frontend pages after Sanity became canonical.
-- **Related PRs:** #14
-- **Deployment status:** Deployed
-- **Verification status:** Verified by live validation workflow.
-- **Resolution date:** 2026-07-03
+- `INF-001` Vercel deployment risk — closed 2026-07-04.
+- `WEB-001` favicon visible but too small — closed 2026-07-04.
+- `WEB-002` duplicate homepage section links — closed 2026-07-04.
+- `WEB-003` header logo proportions — closed 2026-07-04.
+- `WEB-004` dedicated favicon design — closed 2026-07-04.
+- `DOC-001` documentation source of truth — closed 2026-07-04.
+- `CMS-001` remove frontend mock data — closed 2026-07-03.
