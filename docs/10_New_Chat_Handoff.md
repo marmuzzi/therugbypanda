@@ -22,11 +22,11 @@ Latest observed Vercel production deployment was on `main` commit `538af6b2ae8d3
 
 Recheck the latest production deployment with the Vercel connector before closing `INF-001`.
 
-## Important pending branches
+## Important pending pull requests
 
-- `feature/seo-publishing-final`: consolidated branch for Sprint 3 publishing polish.
+- PR #23, `feature/seo-publishing-final`: consolidated branch for Sprint 3 publishing polish.
 
-Implemented on the branch:
+Implemented on PR #23:
 
 - CMS-backed `/sitemap.xml`.
 - CMS-backed `/robots.txt`.
@@ -43,9 +43,8 @@ Implemented on the branch:
 
 See `docs/08_Issue_Log.md` for current status. Key pending work:
 
-- Open PR for `feature/seo-publishing-final`.
+- Review PR #23 preview/build status.
 - Use as few Vercel deployments as possible because of the 100-deployments-per-day limit.
-- Review preview/build status before merge.
-- Merge and verify the consolidated Sprint 3 branch in production.
+- Merge and verify PR #23 in production.
 - Verify `/sitemap.xml`, `/robots.txt`, `/rss.xml`, article/category metadata, JSON-LD, homepage sections, masthead and favicon.
 - Upload proper featured images in Sanity with metadata.
