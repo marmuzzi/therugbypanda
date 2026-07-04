@@ -1,0 +1,55 @@
+{
+  "title": "The Rugby Panda Image Acquisition Input",
+  "type": "object",
+  "schemaVersion": 1,
+  "properties": {
+    "searchPack": {
+      "title": "Search pack",
+      "type": "string",
+      "description": "Named built-in search pack to run.",
+      "enum": ["evergreen", "ireland", "six-nations", "urc", "custom"],
+      "default": "evergreen"
+    },
+    "queries": {
+      "title": "Custom queries",
+      "type": "array",
+      "description": "Used only when searchPack is custom. Keep the first run small to protect budget.",
+      "editor": "stringList",
+      "items": { "type": "string" },
+      "default": []
+    },
+    "sources": {
+      "title": "Sources",
+      "type": "array",
+      "description": "External sources to query. Openverse and Wikimedia are preferred; Google is intentionally not included.",
+      "editor": "stringList",
+      "items": {
+        "type": "string",
+        "enum": ["openverse", "wikimedia"]
+      },
+      "default": ["openverse", "wikimedia"]
+    },
+    "resultsPerQueryPerSource": {
+      "title": "Results per query per source",
+      "type": "integer",
+      "description": "Small default keeps runs cheap and reviewable.",
+      "default": 5,
+      "minimum": 1,
+      "maximum": 20
+    },
+    "allowedLicenses": {
+      "title": "Allowed licences",
+      "type": "array",
+      "editor": "stringList",
+      "items": { "type": "string" },
+      "default": ["cc0", "pdm", "by", "by-sa"]
+    },
+    "dryRun": {
+      "title": "Dry run",
+      "type": "boolean",
+      "description": "When true, output records are still candidates and no external CMS write is attempted.",
+      "default": true
+    }
+  },
+  "required": ["searchPack", "sources", "resultsPerQueryPerSource", "allowedLicenses", "dryRun"]
+}
