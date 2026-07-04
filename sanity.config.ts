@@ -22,9 +22,69 @@ export default defineConfig({
               .title("Editorial Images")
               .schemaType("editorialImage")
               .child(
-                S.documentTypeList("editorialImage")
+                S.list()
                   .title("Editorial Images")
-                  .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                  .items([
+                    S.listItem()
+                      .title("Needs Review")
+                      .schemaType("editorialImage")
+                      .child(
+                        S.documentList()
+                          .title("Needs Review")
+                          .schemaType("editorialImage")
+                          .filter('_type == "editorialImage" && (!defined(lifecycleStatus) || lifecycleStatus in ["candidate", "pending-validation"])')
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
+                    S.listItem()
+                      .title("Approved")
+                      .schemaType("editorialImage")
+                      .child(
+                        S.documentList()
+                          .title("Approved Editorial Images")
+                          .schemaType("editorialImage")
+                          .filter('_type == "editorialImage" && lifecycleStatus == "approved"')
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
+                    S.listItem()
+                      .title("Published")
+                      .schemaType("editorialImage")
+                      .child(
+                        S.documentList()
+                          .title("Published Editorial Images")
+                          .schemaType("editorialImage")
+                          .filter('_type == "editorialImage" && lifecycleStatus == "published"')
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
+                    S.listItem()
+                      .title("Rugby Panda Originals")
+                      .schemaType("editorialImage")
+                      .child(
+                        S.documentList()
+                          .title("Rugby Panda Originals")
+                          .schemaType("editorialImage")
+                          .filter('_type == "editorialImage" && sourceClassification == "the-rugby-panda-original"')
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
+                    S.listItem()
+                      .title("Rejected")
+                      .schemaType("editorialImage")
+                      .child(
+                        S.documentList()
+                          .title("Rejected Editorial Images")
+                          .schemaType("editorialImage")
+                          .filter('_type == "editorialImage" && lifecycleStatus == "rejected"')
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
+                    S.divider(),
+                    S.listItem()
+                      .title("All Editorial Images")
+                      .schemaType("editorialImage")
+                      .child(
+                        S.documentTypeList("editorialImage")
+                          .title("All Editorial Images")
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
+                  ]),
               ),
             S.divider(),
             ...S.documentTypeListItems().filter((item) => {
