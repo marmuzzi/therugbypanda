@@ -21,12 +21,9 @@
     "sources": {
       "title": "Sources",
       "type": "array",
-      "description": "External sources to query. Openverse and Wikimedia are preferred; Google is intentionally not included.",
+      "description": "External sources to query. Valid values are openverse and wikimedia. Google is intentionally not included.",
       "editor": "stringList",
-      "items": {
-        "type": "string",
-        "enum": ["openverse", "wikimedia"]
-      },
+      "items": { "type": "string" },
       "default": ["openverse", "wikimedia"]
     },
     "resultsPerQueryPerSource": {
@@ -40,6 +37,7 @@
     "allowedLicenses": {
       "title": "Allowed licences",
       "type": "array",
+      "description": "Use cc0, pdm, by and by-sa unless the project policy changes.",
       "editor": "stringList",
       "items": { "type": "string" },
       "default": ["cc0", "pdm", "by", "by-sa"]
