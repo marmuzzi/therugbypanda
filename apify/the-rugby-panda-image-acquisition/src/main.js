@@ -6,6 +6,7 @@ import { deduplicateCandidates } from "./deduplicator.js";
 import { classifyCandidate } from "./classifier.js";
 import { filterUnsafeCandidates } from "./safety-filter.js";
 import { filterByRugbyRelevance } from "./relevance.js";
+import { filterByCategoryIntent } from "./category-validator.js";
 import { createMetrics, finishMetrics } from "./metrics.js";
 
 await Actor.init();
@@ -58,13 +59,15 @@ for (const query of queries) {
 const { accepted: safetyAccepted, rejected: safetyRejected } = filterUnsafeCandidates(found, resolvedInput.allowedLicenses);
 const deduped = deduplicateCandidates(safetyAccepted);
 const duplicateCount = safetyAccepted.length - deduped.length;
+const { accepted: categoryAccepted, rejected: categoryRejected } = filterByCategoryIntent(deduped);
 const { accepted: relevanceAccepted, rejected: relevanceRejected } = filterByRugbyRelevance(
-  deduped,
+  categoryAccepted,
   resolvedInput.minimumRugbyRelevanceScore,
 );
-const rejected = [...safetyRejected, ...relevanceRejected];
+const rejected = [...safetyRejected, ...categoryRejected, ...relevanceRejected];
 const accepted = relevanceAccepted.map(classifyCandidate);
 const finalMetrics = finishMetrics(metrics, { found, accepted, rejected, duplicateCount });
+finalMetrics.rejectedByCategoryIntent = categoryRejected.length;
 finalMetrics.rejectedByRugbyRelevance = relevanceRejected.length;
 finalMetrics.minimumRugbyRelevanceScore = resolvedInput.minimumRugbyRelevanceScore;
 
