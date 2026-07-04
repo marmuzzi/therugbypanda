@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import ArticleBody from "@/components/ArticleBody";
@@ -10,15 +11,66 @@ import SiteHeader from "@/components/SiteHeader";
 import TagList from "@/components/TagList";
 import {
   articleDateLabel,
+  articleLabel,
+  articleUrl,
   getArticleBySlug,
   getContinueReading,
   getFeaturedImage,
   portableTextToSections,
+  siteUrl,
 } from "@/lib/cms";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
+
+export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
+  const { slug } = await params;
+  const article = await getArticleBySlug(slug);
+
+  if (!article) {
+    return {
+      title: "Article not found | The Rugby Panda",
+    };
+  }
+
+  const featuredImage = getFeaturedImage(article);
+  const title = `${article.title} | The Rugby Panda`;
+  const description = article.standfirst ?? "Independent Irish and European rugby coverage from The Rugby Panda.";
+  const url = article.slug ? articleUrl(article.slug) : siteUrl("/");
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: url,
+    },
+    openGraph: {
+      title,
+      description,
+      url,
+      siteName: "The Rugby Panda",
+      type: "article",
+      publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt ?? article.publishedAt,
+      section: articleLabel(article),
+      images: featuredImage
+        ? [
+            {
+              url: featuredImage.src,
+              alt: featuredImage.alt || article.title,
+            },
+          ]
+        : undefined,
+    },
+    twitter: {
+      card: featuredImage ? "summary_large_image" : "summary",
+      title,
+      description,
+      images: featuredImage ? [featuredImage.src] : undefined,
+    },
+  };
+}
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
@@ -36,10 +88,34 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     .join(" • ");
   const sections = portableTextToSections(cmsArticle.body);
   const featuredImage = getFeaturedImage(cmsArticle);
+  const canonicalUrl = cmsArticle.slug ? articleUrl(cmsArticle.slug) : siteUrl("/");
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "NewsArticle",
+    headline: cmsArticle.title,
+    description: cmsArticle.standfirst,
+    datePublished: cmsArticle.publishedAt,
+    dateModified: cmsArticle.updatedAt ?? cmsArticle.publishedAt,
+    mainEntityOfPage: canonicalUrl,
+    url: canonicalUrl,
+    articleSection: articleLabel(cmsArticle),
+    image: featuredImage ? [featuredImage.src] : undefined,
+    publisher: {
+      "@type": "Organization",
+      name: "The Rugby Panda",
+      url: siteUrl("/"),
+      logo: siteUrl("/rugby-panda-logo.png"),
+    },
+  };
 
   return (
     <main className="min-h-screen bg-white text-zinc-950">
       <SiteHeader />
+
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
 
       <ArticleHeader
         category={category || "News"}
