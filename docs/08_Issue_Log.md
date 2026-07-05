@@ -10,7 +10,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| BRAND-003 | Implemented | High | Media / Brand Assets / CMS | Import brand asset candidates into Sanity as unapproved review records and review them through a Brand Review tool. | Pending PR | Not deployed | Pending Studio redeploy, candidate import and authenticated Studio verification | — |
+| BRAND-003 | Pending Verification | High | Media / Brand Assets / CMS | Import brand asset candidates into Sanity as unapproved review records and review them through a Brand Review tool. | #29 | Deployed on main commit `c78a02cffbc9ee32e38965b9cee7e3faae124382`; Vercel deployment `dpl_5aLEWUW17j9WCANp9sDjX6Edu7pM` READY | Public site HTTP 200 verified; pending hosted Studio redeploy, candidate import and authenticated Studio verification | — |
 | BRAND-002 | Merged | High | Media / Brand Assets | Build Brand Assets candidate collector output for approved rugby-union scope only. | #28 | Deployed on main commit `c8edd8bc40d6e03d644f0deea401c35632a7c6bd` | Public site HTTP 200 verified; candidate data/docs merged; Sanity import pending BRAND-003 | — |
 | BRAND-001 | Closed | Medium | Media / Brand Assets | Build separate Brand Assets library for team logos and competition branding. | #27 | Deployed on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43`; Studio redeployed through GitHub Action | User verified Brand Assets is visible in authenticated Sanity Studio | 2026-07-05 |
 | CMS-002 | Open | High | CMS / Visual content | Hosted Sanity articles need proper featured images and metadata. | — | Not implemented | Pending CMS image assignment and page verification | — |
@@ -30,14 +30,14 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 ## BRAND-003 — Brand Assets Sanity review workflow
 
-- **Status:** Implemented
+- **Status:** Pending Verification
 - **Priority:** High
 - **Root cause:** The user wants brand/logo candidates reviewed in Sanity using the same operational pattern as Editorial Images, while preserving brand-specific rights/trademark controls.
 - **Implementation:** Added brand candidate review fields to `brandAsset`, including `lifecycleStatus`, candidate logo URL references, acquisition metadata and validation requiring source URL, rights holder and usage notes before approval. Added a dedicated `Brand Review` Studio tool for bulk approve/reject/archive. Added `scripts/import-brand-asset-candidates.mjs` and a manual `Import Brand Asset Candidates` GitHub Action to import JSON candidate files as unapproved Sanity records.
 - **Rights rule:** Imports create unapproved candidate records only: `lifecycleStatus = candidate`, `approvedForEditorialUse = false`, `rightsStatus = editorial-trademark-use-only`. External URLs remain review references and must not be hotlinked publicly.
-- **Related PRs:** Pending PR from `brand-assets-sanity-review`.
-- **Deployment status:** Not deployed.
-- **Verification steps:** Merge PR, confirm Vercel build, redeploy hosted Sanity Studio, run the import workflow, verify candidates appear in Brand Assets / Needs Review, verify Brand Review can approve/reject/archive, and verify approved public use still requires uploaded Sanity logo assets.
+- **Related PRs:** #29.
+- **Deployment status:** Deployed to production on main commit `c78a02cffbc9ee32e38965b9cee7e3faae124382`; Vercel deployment `dpl_5aLEWUW17j9WCANp9sDjX6Edu7pM` reported READY.
+- **Verification steps:** Public homepage returned HTTP 200 after deployment. Still pending: redeploy hosted Sanity Studio, run the import workflow, verify candidates appear in Brand Assets / Needs Review, verify Brand Review can approve/reject/archive, and verify approved public use still requires uploaded Sanity logo assets.
 - **Resolution date:** Pending
 
 ## BRAND-002 — Brand Assets candidate collector
