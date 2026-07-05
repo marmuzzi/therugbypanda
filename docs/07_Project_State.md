@@ -6,7 +6,7 @@ v0.4 — Publishing Foundation + Editorial Media Archive
 
 Sprint 4 Brand Assets Library foundation is merged, deployed and verified in authenticated Sanity Studio.
 
-Sprint 4 Task 4 Brand Assets Candidate Collector is implemented on a branch as candidate-only JSON output, pending PR review/merge and any later import decision.
+Sprint 4 Task 4 Brand Assets Candidate Collector data/docs output is merged and deployed on `main` through PR #28. The follow-up Sanity review/import workflow is implemented on branch `brand-assets-sanity-review`, pending PR, deployment, Studio redeploy and authenticated verification.
 
 ## Last Updated
 
@@ -45,6 +45,16 @@ Sanity MCP may be installed on the user's account but has not consistently appea
 Latest production deployment:
 
 - Branch: `main`
+- Commit: `c8edd8bc40d6e03d644f0deea401c35632a7c6bd`
+- PR: #28 — Sprint 4 Task 4 brand assets candidate collector
+- Vercel deployment: `dpl_JAPhPAMLttN3nujNmtSu15q5979d`
+- Deployment state: READY
+- Public verification: `https://therugbypanda.ie` returned HTTP 200
+- Verification date: 5 July 2026
+
+Previous verified Sprint 4 foundation deployment:
+
+- Branch: `main`
 - Commit: `aebc730bfe95c54dcb5e437ac2d246f488810d43`
 - PR: #27 — Sprint 4 Brand Assets Library foundation
 - Vercel deployment: `dpl_7JKweNP5rizBkicVVRxobVkahRru`
@@ -53,17 +63,6 @@ Latest production deployment:
 - Studio deployment: hosted Sanity Studio redeployed through GitHub Action
 - Studio verification: user verified the `Brand Assets` category is visible in authenticated Sanity Studio
 - Verification date: 5 July 2026
-
-Previous user-verified production deployment:
-
-- Branch: `main`
-- Commit: `a37e25d`
-- Vercel build result: successful
-- Deployment result: completed
-- User verification: everything looked OK on the website
-- Verification date: 5 July 2026
-
-This closed the previously pending build and International taxonomy verification items.
 
 ## Completed
 
@@ -88,15 +87,16 @@ This closed the previously pending build and International taxonomy verification
   - `© The Rugby Panda`
 - Bulk approval/rejection/archive workflow has been used successfully by the user.
 - Sprint 4 Brand Assets Library foundation is merged, deployed and verified in authenticated Sanity Studio.
+- Sprint 4 Task 4 candidate collector data/docs output is merged and deployed.
 
 ## Implemented but not merged/deployed
 
-- `BRAND-002` — Brand Assets Candidate Collector output.
-  - Branch: `sprint-4-brand-assets-candidates`
-  - Candidate file: `data/brand-assets/candidate-collection-2026-07-05.json`
-  - Status: candidate-only data/docs implementation.
-  - Source discovery: Apify `apify/rag-web-browser` official-source runs.
-  - No assets were approved, published, uploaded to Sanity, or used in public templates.
+- `BRAND-003` — Brand Assets Sanity review workflow.
+  - Branch: `brand-assets-sanity-review`
+  - Adds `Brand Review` Studio tool.
+  - Extends `brandAsset` with lifecycle review fields and candidate logo URL previews.
+  - Adds manual import workflow for unapproved Sanity candidate records.
+  - No brand assets are approved or published automatically.
 
 ## Sprint 4 — Brand Assets Library foundation
 
@@ -119,7 +119,7 @@ Verification:
 
 ## Sprint 4 Task 4 — Brand Assets Candidate Collector
 
-Implemented on branch `sprint-4-brand-assets-candidates`:
+Merged in PR #28 and deployed on main commit `c8edd8bc40d6e03d644f0deea401c35632a7c6bd`:
 
 - Created candidate-only collection output in `data/brand-assets/candidate-collection-2026-07-05.json`.
 - Collected official-source candidate records for Six Nations Rugby, Six Nations unions/teams, EPCR, Champions Cup, Challenge Cup, URC, World Rugby and Men's Rugby World Cup 2027.
@@ -132,6 +132,25 @@ Known limitations of first pass:
 - Colour values were not reliably extracted.
 - World Rugby and Rugby World Cup records need follow-up extraction for reliable logo URLs.
 - Irish provinces and wider Rugby World Cup-cycle national teams still need follow-up collection.
+
+## Sprint 4 Task 4 follow-up — Sanity review workflow
+
+Implemented on branch `brand-assets-sanity-review`:
+
+- Brand candidates can be imported into Sanity as unapproved `brandAsset` documents.
+- Brand records now have lifecycle states: Candidate, Pending Validation, Approved, Rejected and Archived.
+- `approvedForEditorialUse` remains false on import.
+- Schema validation requires source URL, rights holder and usage notes before approval.
+- `Brand Review` Studio tool supports bulk approve, reject and archive actions.
+- External candidate logo URLs preview in Studio but must not be hotlinked publicly.
+
+Pending:
+
+1. Open and merge PR.
+2. Confirm Vercel build and production deployment.
+3. Redeploy hosted Sanity Studio through GitHub Action.
+4. Run `Import Brand Asset Candidates` workflow.
+5. Verify imported candidates appear in Brand Assets / Needs Review and the Brand Review tool.
 
 ## Current article URL
 
@@ -164,6 +183,7 @@ Primary principles:
 - The starter library should prioritise Rugby World Cup-cycle national teams, rugby unions, Champions Cup / Challenge Cup / URC-relevant professional teams and top-level rugby competitions.
 - Do not collect brand assets for random grassroots clubs, schools, sponsors, broadcasters, unrelated teams or non-rugby organisations unless explicitly approved later.
 - Candidate collector output is review-only and must not be treated as approved Sanity assets.
+- Sanity imports are allowed only as unapproved candidate records until manual review.
 
 Current brand asset strategy is documented in `docs/12_Brand_Assets_Library.md`.
 
@@ -198,10 +218,12 @@ Only create isolated hotfix PRs for genuine production issues.
 
 ## Immediate next tasks
 
-1. Review and merge `sprint-4-brand-assets-candidates` if the candidate-only output is acceptable.
-2. Continue the candidate collector for Irish provinces and remaining Rugby World Cup-cycle unions/national teams.
-3. Build a controlled Sanity import workflow only after candidate source/rights workflow is reviewed.
-4. Continue `CMS-002`: assign approved editorial images to current articles.
+1. Open and merge PR for `brand-assets-sanity-review` if preview/build is clean.
+2. Redeploy hosted Sanity Studio through GitHub Action.
+3. Run `Import Brand Asset Candidates` workflow.
+4. Verify candidate records and Brand Review workflow in authenticated Studio.
+5. Continue the candidate collector for Irish provinces and remaining Rugby World Cup-cycle unions/national teams.
+6. Continue `CMS-002`: assign approved editorial images to current articles.
 
 ## Known issues
 
@@ -209,7 +231,8 @@ Track all issues in `docs/08_Issue_Log.md`.
 
 Current important issues:
 
-- `BRAND-002` — Brand Assets Candidate Collector output implemented as candidate-only JSON; pending PR review/merge and follow-up collection.
+- `BRAND-003` — Brand Assets Sanity review/import workflow implemented on branch; pending PR, deployment, Studio redeploy, import and verification.
+- `BRAND-002` — Brand Assets Candidate Collector output merged and deployed; Sanity review/import tracked in `BRAND-003`.
 - `CMS-002` — CMS article images missing from live articles.
 - `MEDIA-001` — Editorial Image Archive Studio completed, pending production documentation closeout.
 - `MEDIA-002` — starter editorial image library review completed by user, pending final production verification count.

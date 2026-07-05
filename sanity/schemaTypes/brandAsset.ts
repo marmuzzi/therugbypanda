@@ -1,3 +1,4 @@
+import React from "react";
 import { defineField, defineType } from "sanity";
 
 const brandImageFields = [
@@ -22,6 +23,14 @@ const brandStatusOptions = [
   { title: "Superseded", value: "superseded" },
 ];
 
+const lifecycleStatusOptions = [
+  { title: "Candidate", value: "candidate" },
+  { title: "Pending Validation", value: "pending-validation" },
+  { title: "Approved", value: "approved" },
+  { title: "Rejected", value: "rejected" },
+  { title: "Archived", value: "archived" },
+];
+
 const competitionLevelOptions = [
   { title: "International", value: "international" },
   { title: "Professional", value: "professional" },
@@ -40,34 +49,92 @@ const brandRightsStatusOptions = [
   { title: "Unknown / needs review", value: "unknown" },
 ];
 
+function externalLogoPreview(url?: string) {
+  if (!url) return undefined;
+
+  return React.createElement("img", {
+    src: url,
+    alt: "",
+    style: {
+      width: "100%",
+      height: "100%",
+      objectFit: "contain",
+      borderRadius: "4px",
+      background: "#f6f6f6",
+      padding: "0.25rem",
+    },
+  });
+}
+
 export const brandAssetType = defineType({
   name: "brandAsset",
   title: "Brand Assets",
   type: "document",
   groups: [
     { name: "identity", title: "Identity" },
+    { name: "review", title: "Editorial Review" },
     { name: "logos", title: "Logos" },
     { name: "colours", title: "Colours" },
     { name: "relationships", title: "Relationships" },
     { name: "rights", title: "Rights & Use" },
+    { name: "metadata", title: "Acquisition Metadata" },
   ],
   fields: [
     defineField({ name: "title", title: "Official name", type: "string", group: "identity", validation: (rule) => rule.required() }),
     defineField({ name: "shortName", title: "Short name", type: "string", group: "identity" }),
     defineField({ name: "slug", title: "Slug", type: "slug", group: "identity", options: { source: "title", maxLength: 96 }, validation: (rule) => rule.required() }),
     defineField({ name: "brandType", title: "Brand type", type: "string", group: "identity", options: { list: brandTypeOptions, layout: "radio" }, validation: (rule) => rule.required() }),
-    defineField({ name: "status", title: "Status", type: "string", group: "identity", options: { list: brandStatusOptions, layout: "radio" }, initialValue: "active", validation: (rule) => rule.required() }),
+    defineField({ name: "status", title: "Brand status", type: "string", group: "identity", options: { list: brandStatusOptions, layout: "radio" }, initialValue: "active", validation: (rule) => rule.required() }),
     defineField({ name: "country", title: "Country", type: "string", group: "identity" }),
     defineField({ name: "region", title: "Region", type: "string", group: "identity" }),
     defineField({ name: "competitionLevel", title: "Competition level", type: "string", group: "identity", options: { list: competitionLevelOptions } }),
     defineField({ name: "description", title: "Internal description", type: "text", rows: 3, group: "identity" }),
+    defineField({ name: "lifecycleStatus", title: "Review status", type: "string", group: "review", options: { list: lifecycleStatusOptions, layout: "radio" }, initialValue: "candidate" }),
+    defineField({
+      name: "approvedForEditorialUse",
+      title: "Approved for editorial use",
+      type: "boolean",
+      group: "review",
+      initialValue: false,
+      description: "Candidates must stay false until source, rights holder and usage notes have been reviewed.",
+      validation: (rule) =>
+        rule.custom((value, context) => {
+          const parent = context.parent as { sourceUrl?: string; rightsHolder?: string; usageNotes?: string } | undefined;
+          if (value === true && (!parent?.sourceUrl || !parent?.rightsHolder || !parent?.usageNotes)) {
+            return "Before approval, record source URL, rights holder and usage notes.";
+          }
+          return true;
+        }),
+    }),
     defineField({ name: "primaryLogo", title: "Primary logo", type: "image", group: "logos", options: { hotspot: true }, fields: brandImageFields }),
     defineField({ name: "lightLogo", title: "Light background logo", type: "image", group: "logos", options: { hotspot: true }, fields: brandImageFields }),
     defineField({ name: "darkLogo", title: "Dark background logo", type: "image", group: "logos", options: { hotspot: true }, fields: brandImageFields }),
-    defineField({ name: "externalLogoUrl", title: "External logo reference URL", type: "url", group: "logos", description: "Use only as a source/reference URL. Upload approved logo assets into Sanity before publishing." }),
+    defineField({ name: "externalLogoUrl", title: "Primary external logo reference URL", type: "url", group: "logos", description: "Use only as a source/reference URL. Upload approved logo assets into Sanity before publishing." }),
+    defineField({
+      name: "candidateLogoUrls",
+      title: "Candidate logo URLs",
+      type: "array",
+      group: "logos",
+      of: [
+        {
+          type: "object",
+          fields: [
+            defineField({ name: "url", title: "URL", type: "url" }),
+            defineField({ name: "format", title: "Format", type: "string" }),
+            defineField({ name: "notes", title: "Notes", type: "string" }),
+          ],
+          preview: {
+            select: { title: "url", subtitle: "format" },
+          },
+        },
+      ],
+      description: "External candidates for editorial review only. Do not hotlink these publicly.",
+    }),
+    defineField({ name: "logoFormat", title: "Logo format", type: "string", group: "logos" }),
     defineField({ name: "primaryColour", title: "Primary colour", type: "string", group: "colours", description: "Use HEX, e.g. #0057B8." }),
     defineField({ name: "secondaryColour", title: "Secondary colour", type: "string", group: "colours" }),
     defineField({ name: "accentColour", title: "Accent colour", type: "string", group: "colours" }),
+    defineField({ name: "colourSource", title: "Colour source / notes", type: "text", rows: 2, group: "colours" }),
     defineField({ name: "website", title: "Official website", type: "url", group: "relationships" }),
     defineField({ name: "relatedCompetition", title: "Related competition", type: "reference", to: [{ type: "competition" }], group: "relationships" }),
     defineField({ name: "relatedProvince", title: "Related province / team", type: "reference", to: [{ type: "province" }], group: "relationships" }),
@@ -83,14 +150,18 @@ export const brandAssetType = defineType({
       validation: (rule) => rule.required(),
       description: "Most rugby logos should be treated as editorial/trademark use only unless explicit permission is recorded.",
     }),
-    defineField({ name: "approvedForEditorialUse", title: "Approved for editorial use", type: "boolean", group: "rights", initialValue: false }),
     defineField({ name: "rightsHolder", title: "Rights holder", type: "string", group: "rights" }),
     defineField({ name: "sourceUrl", title: "Source URL", type: "url", group: "rights" }),
     defineField({ name: "usageNotes", title: "Usage notes", type: "text", rows: 4, group: "rights" }),
     defineField({ name: "reviewedAt", title: "Reviewed at", type: "datetime", group: "rights" }),
+    defineField({ name: "acquisitionTimestamp", title: "Acquisition timestamp", type: "datetime", group: "metadata", readOnly: true }),
+    defineField({ name: "apifyRunId", title: "Apify run ID", type: "string", group: "metadata", readOnly: true }),
+    defineField({ name: "apifyDatasetId", title: "Apify dataset ID", type: "string", group: "metadata", readOnly: true }),
+    defineField({ name: "rawSourceMetadata", title: "Raw source metadata", type: "text", rows: 8, group: "metadata", readOnly: true }),
   ],
   initialValue: {
     status: "active",
+    lifecycleStatus: "candidate",
     rightsStatus: "editorial-trademark-use-only",
     approvedForEditorialUse: false,
   },
@@ -99,14 +170,17 @@ export const brandAssetType = defineType({
       title: "title",
       shortName: "shortName",
       brandType: "brandType",
-      status: "status",
+      lifecycleStatus: "lifecycleStatus",
+      approvedForEditorialUse: "approvedForEditorialUse",
       media: "primaryLogo",
+      externalLogoUrl: "externalLogoUrl",
     },
     prepare(selection) {
+      const approval = selection.approvedForEditorialUse ? "approved" : "not approved";
       return {
         title: selection.shortName ? `${selection.title} (${selection.shortName})` : selection.title,
-        subtitle: `${selection.brandType ?? "brand"} · ${selection.status ?? "active"}`,
-        media: selection.media,
+        subtitle: `${selection.brandType ?? "brand"} · ${selection.lifecycleStatus ?? "candidate"} · ${approval}`,
+        media: selection.media ?? externalLogoPreview(selection.externalLogoUrl),
       };
     },
   },
