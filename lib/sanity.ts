@@ -13,6 +13,8 @@ export const client = createClient({
 
 const builder = imageUrlBuilder(client);
 
+type SanityParam = string | number | boolean | Array<string | number | boolean>;
+
 export function urlForImage(source: Parameters<typeof builder.image>[0]) {
   return builder.image(source).auto("format").fit("max");
 }
@@ -22,7 +24,7 @@ export async function sanityFetch<QueryResponse>({
   params = {},
 }: {
   query: string;
-  params?: Record<string, string | number | boolean>;
+  params?: Record<string, SanityParam>;
 }) {
   if (!isSanityConfigured) {
     return null;
