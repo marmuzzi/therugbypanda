@@ -4,6 +4,8 @@
 
 v0.4 — Publishing Foundation + Editorial Media Archive
 
+Sprint 4 implementation branch: Brand Assets Library foundation.
+
 ## Last Updated
 
 5 July 2026
@@ -17,6 +19,7 @@ Read these files first in future sessions:
 3. `docs/09_Publishing_Workflow.md`
 4. `docs/10_New_Chat_Handoff.md`
 5. `docs/11_Editorial_Image_Archive.md`
+6. `docs/12_Brand_Assets_Library.md`
 
 Do not rely on chat history for current status.
 
@@ -32,13 +35,17 @@ Sanity MCP may be installed on the user's account but has not consistently appea
 
 ## Current production deployment
 
-Latest verified production deployment remains commit `61fb43ea513e7f56d90244051c7a03a66e09c0c8` until the current build fix is deployed and verified.
+Latest user-verified production deployment:
 
-Recent deployment note:
+- Branch: `main`
+- Commit: `a37e25d`
+- Vercel build location: Washington, D.C., USA East (`iad1`)
+- Build result: successful
+- Deployment result: completed
+- User verification: everything looked OK on the website
+- Verification date: 5 July 2026
 
-- Vercel build failed on 4 July 2026 because `lib/cms.ts` temporarily lost helper exports used by article, RSS and sitemap routes.
-- Fix committed on 5 July 2026: `41ace4780c9210a87d4d87579202b918665ec241`.
-- Pending verification: Vercel build/deploy for commit `41ace4780c9210a87d4d87579202b918665ec241`.
+This closes the previously pending build and International taxonomy verification items.
 
 ## Completed
 
@@ -54,6 +61,7 @@ Recent deployment note:
 - CMS-backed `/sitemap.xml`, `/robots.txt`, and `/rss.xml` are implemented.
 - Article SEO metadata, article `NewsArticle` JSON-LD and category SEO metadata are implemented.
 - Homepage section ordering, masthead proportions and dedicated favicon are implemented and verified.
+- International taxonomy rename has been deployed and user-verified in production.
 - Apify → GitHub → Sanity import pipeline imported 16 `editorialImage` candidate records into the Sanity production dataset.
 - Sanity Studio now has an Editorial Images section, review queues and a bulk Image Review tool.
 - Original Rugby Panda photo import workflow imported 22 original photos into Sanity as approved Rugby Panda originals.
@@ -64,22 +72,26 @@ Recent deployment note:
 
 ## Current implemented but pending production verification
 
-### International taxonomy rename
+### Sprint 4 — Brand Assets Library foundation
 
-Implemented:
+Implemented on branch `sprint-4-brand-assets-library`:
 
-- Header navigation changed from `Europe` to `International`.
-- `/categories/europe` redirects to `/categories/international`.
-- CMS seed script now writes the `International` category and competition.
-- Frontend now maps legacy `Europe` category records to `International` so `/categories/international` does not 404 before the seed workflow is rerun.
-- Build helper exports restored in `lib/cms.ts` after the Vercel failure.
+- New `brandAsset` Sanity document type.
+- Dedicated `Brand Assets` Studio section.
+- Studio queues for active brands, teams, competitions/leagues, unions/governing bodies and rights review.
+- Logo fields for primary, light-background and dark-background variants.
+- Colour fields for primary, secondary and accent colours.
+- Rights fields for trademark/editorial-use review.
+- Documentation added in `docs/12_Brand_Assets_Library.md`.
 
 Pending:
 
-1. Confirm Vercel deployment succeeds for commit `41ace4780c9210a87d4d87579202b918665ec241` or later.
-2. Run `Seed Sanity CMS` if the Sanity dataset still contains legacy Europe labels.
-3. Verify `/categories/international` renders in production.
-4. Verify `/categories/europe` redirects to `/categories/international`.
+1. Open PR from `sprint-4-brand-assets-library`.
+2. Confirm preview/build is clean.
+3. Merge to `main` if clean.
+4. Confirm Vercel production deployment.
+5. Verify authenticated Sanity Studio shows `Brand Assets`.
+6. Create or review one safe test brand record.
 
 ## Current article URL
 
@@ -98,6 +110,20 @@ Primary principles:
 - The long-term goal is a searchable, AI-assisted rugby image archive dominated by original Rugby Panda photography.
 
 Current image strategy is documented in `docs/11_Editorial_Image_Archive.md`.
+
+## Brand Assets Library strategy
+
+Team logos, competition marks, league branding and union/governing-body marks must be managed separately from editorial photography.
+
+Primary principles:
+
+- Brand marks are not editorial photography.
+- Default rights status is `Editorial / trademark use only`.
+- Source URL, rights holder where known, rights status and usage notes should be recorded before public use.
+- Logos should be approved for editorial use before appearing in public templates.
+- The starter library should prioritise major rugby competitions, unions and Irish provinces.
+
+Current brand asset strategy is documented in `docs/12_Brand_Assets_Library.md`.
 
 ## Current image archive status
 
@@ -131,11 +157,12 @@ Only create isolated hotfix PRs for genuine production issues.
 
 ## Immediate next tasks
 
-1. Verify the Vercel build succeeds after commit `41ace4780c9210a87d4d87579202b918665ec241`.
-2. Verify `/categories/international` works in production.
-3. Verify `/categories/europe` redirects to `/categories/international`.
-4. Run `Seed Sanity CMS` if legacy Europe records remain visible in Studio or on the website.
-5. Begin Sprint 4 planning: Brand Assets library for team logos and competition branding.
+1. Open PR for Sprint 4 Brand Assets Library foundation.
+2. Verify preview/build for the Sprint 4 branch.
+3. Merge if clean.
+4. Verify production deployment and authenticated Studio visibility.
+5. Create/review one safe test brand asset.
+6. Continue `CMS-002`: assign approved editorial images to current articles.
 
 ## Known issues
 
@@ -143,11 +170,11 @@ Track all issues in `docs/08_Issue_Log.md`.
 
 Current important issues:
 
-- `BUILD-001` — Vercel build failed after International taxonomy change; fix committed and pending deployment verification.
+- `BRAND-001` — Brand Assets library foundation implemented on sprint branch; pending PR, deployment and production verification.
 - `CMS-002` — CMS article images missing from live articles.
 - `MEDIA-001` — Editorial Image Archive Studio completed, pending production documentation closeout.
 - `MEDIA-002` — starter editorial image library review completed by user, pending final production verification count.
-- `BRAND-001` — Brand Assets library for team logos and competition branding planned.
+- `MEDIA-003` — original Rugby Panda photos imported, pending final Studio count verification.
 - `WEB-005` — Search remains placeholder.
 
 ## Working principles

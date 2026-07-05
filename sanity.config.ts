@@ -3,9 +3,10 @@ import { structureTool } from "sanity/structure";
 
 import { EditorialImageReviewTool } from "./sanity/components/EditorialImageReviewTool";
 import { dataset, projectId, studioUrl } from "./sanity/env";
+import { brandAssetType } from "./sanity/schemaTypes/brandAsset";
 import { schemaTypes } from "./sanity/schemaTypes";
 
-const singletonHiddenTypes = new Set(["editorialImage"]);
+const singletonHiddenTypes = new Set(["brandAsset", "editorialImage"]);
 
 const editorialImageReviewTool = definePlugin({
   name: "editorial-image-review-tool",
@@ -31,6 +32,71 @@ export default defineConfig({
         S.list()
           .title("The Rugby Panda")
           .items([
+            S.listItem()
+              .title("Brand Assets")
+              .schemaType("brandAsset")
+              .child(
+                S.list()
+                  .title("Brand Assets")
+                  .items([
+                    S.listItem()
+                      .title("Active Brands")
+                      .schemaType("brandAsset")
+                      .child(
+                        S.documentList()
+                          .title("Active Brand Assets")
+                          .schemaType("brandAsset")
+                          .filter('_type == "brandAsset" && (!defined(status) || status == "active")')
+                          .defaultOrdering([{ field: "title", direction: "asc" }]),
+                      ),
+                    S.listItem()
+                      .title("Teams")
+                      .schemaType("brandAsset")
+                      .child(
+                        S.documentList()
+                          .title("Team Brand Assets")
+                          .schemaType("brandAsset")
+                          .filter('_type == "brandAsset" && brandType == "team"')
+                          .defaultOrdering([{ field: "title", direction: "asc" }]),
+                      ),
+                    S.listItem()
+                      .title("Competitions & Leagues")
+                      .schemaType("brandAsset")
+                      .child(
+                        S.documentList()
+                          .title("Competition & League Brand Assets")
+                          .schemaType("brandAsset")
+                          .filter('_type == "brandAsset" && brandType in ["competition", "league", "tournament"]')
+                          .defaultOrdering([{ field: "title", direction: "asc" }]),
+                      ),
+                    S.listItem()
+                      .title("Unions & Governing Bodies")
+                      .schemaType("brandAsset")
+                      .child(
+                        S.documentList()
+                          .title("Union Brand Assets")
+                          .schemaType("brandAsset")
+                          .filter('_type == "brandAsset" && brandType == "union"')
+                          .defaultOrdering([{ field: "title", direction: "asc" }]),
+                      ),
+                    S.listItem()
+                      .title("Needs Rights Review")
+                      .schemaType("brandAsset")
+                      .child(
+                        S.documentList()
+                          .title("Brand Assets Needing Rights Review")
+                          .schemaType("brandAsset")
+                          .filter('_type == "brandAsset" && (!defined(approvedForEditorialUse) || approvedForEditorialUse != true || rightsStatus == "unknown")')
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
+                    S.divider(),
+                    S.listItem()
+                      .title("All Brand Assets")
+                      .schemaType("brandAsset")
+                      .child(S.documentTypeList("brandAsset").title("All Brand Assets").defaultOrdering([{ field: "title", direction: "asc" }])),
+                  ]),
+              ),
+            S.divider(),
             S.listItem()
               .title("Editorial Images")
               .schemaType("editorialImage")
@@ -108,7 +174,7 @@ export default defineConfig({
     }),
   ],
   schema: {
-    types: schemaTypes,
+    types: [...schemaTypes, brandAssetType],
   },
   document: {
     productionUrl: async (prev, context) => {
