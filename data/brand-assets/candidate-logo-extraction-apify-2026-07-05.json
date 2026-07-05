@@ -1,0 +1,101 @@
+{
+  "collectionName": "Sprint 4 Task 4 — Apify Targeted Brand Logo Extraction",
+  "status": "candidate-only",
+  "acquisitionTimestamp": "2026-07-05T15:20:00Z",
+  "collector": {
+    "tool": "Apify apify/rag-web-browser",
+    "purpose": "Targeted browser extraction for unresolved Batch 2 brand asset records with empty candidateLogoUrls.",
+    "runs": [
+      {"runId": "D8SaP5X30M1EwHxlm", "datasetId": "5NsDXalZg7JiYw8ei", "query": "https://www.connachtrugby.ie/", "target": "Connacht Rugby"},
+      {"runId": "a9p5fBMKxlyOlLBkv", "datasetId": "HbpZT8P2OeZqAvmfU", "query": "https://www.sarugby.co.za/", "target": "South African Rugby Union / Springboks"},
+      {"runId": "KDdydxwRzR1KPrzOd", "datasetId": "RYzp3eCNrHJw9z1NX", "query": "https://www.rugby.com.au/", "target": "Rugby Australia"},
+      {"runId": "e9ti3QYbV6Tjzpf8L", "datasetId": "FnnuwWyL0IymLDv6Z", "query": "https://www.allblacks.com/", "target": "New Zealand Rugby / All Blacks"},
+      {"runId": "ZWpfhoLsCJ6cgyS4b", "datasetId": "SkgNZG1L3cWnWlgPu", "query": "https://uar.com.ar/", "target": "Unión Argentina de Rugby"}
+    ],
+    "notes": "Candidate-only extraction. External URLs are review references only and must not be hotlinked or used in public templates. Sponsor, broadcaster and commercial partner marks exposed on source pages were ignored. No Sanity asset upload or approval occurred."
+  },
+  "defaultCandidateValues": {
+    "status": "active",
+    "rightsStatus": "editorial-trademark-use-only",
+    "approvedForEditorialUse": false,
+    "lifecycleStatus": "candidate",
+    "reviewedAt": null
+  },
+  "candidates": [
+    {
+      "officialBrandName": "Connacht Rugby",
+      "shortName": "Connacht",
+      "brandType": "club",
+      "officialWebsite": "https://www.connachtrugby.ie/",
+      "sourcePageUrl": "https://www.connachtrugby.ie/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Connacht Rugby",
+      "rightsTrademarkNotes": "Official homepage confirmed. Header/footer logo anchors titled Connacht Rugby Logo were visible, but Apify did not expose a reliable direct logo image URL. Candidate only; continue manual source review before import.",
+      "rawSourceMetadata": {"apifyRunId": "D8SaP5X30M1EwHxlm", "datasetId": "5NsDXalZg7JiYw8ei", "metadataTitle": "Home | Connacht Rugby", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "South African Rugby Union",
+      "shortName": "South Africa Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.sarugby.co.za/",
+      "sourcePageUrl": "https://springboks.rugby/",
+      "candidateLogoUrls": [
+        "https://springboks.rugby/_next/image?url=https%3A%2F%2Fmobiithumbnails.blob.core.windows.net%2Fthumbnails%2Flive%2Fstratus%2F7a0c0f2e-a6ef-474e-95d3-f6b4638292b8%2Flarge.png&w=96&q=75",
+        "https://springboks.rugby/_next/image?url=%2Fassets%2Fsvg%2Fspringbok.svg&w=96&q=75",
+        "https://springboks.rugby/_next/image?url=%2Fassets%2Fimages%2FSpringboks-logo.svg&w=750&q=75"
+      ],
+      "logoFormat": "mixed-next-image-reference",
+      "rightsHolder": "South African Rugby Union",
+      "rightsTrademarkNotes": "sarugby.co.za redirected to springboks.rugby. Apify exposed SARU and Springboks image references. Candidate only; resolve underlying source asset and rights before approval.",
+      "rawSourceMetadata": {"apifyRunId": "a9p5fBMKxlyOlLBkv", "datasetId": "HbpZT8P2OeZqAvmfU", "metadataTitle": "Home | SA Rugby", "metadataRedirectedUrl": "https://springboks.rugby/", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Rugby Australia",
+      "shortName": "Australia Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.rugby.com.au/",
+      "sourcePageUrl": "https://www.rugby.com.au/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Rugby Australia",
+      "rightsTrademarkNotes": "Official homepage confirmed. Apify extraction showed editorial images but no reliable Rugby Australia logo URL. Candidate only; continue targeted source or brand page extraction.",
+      "rawSourceMetadata": {"apifyRunId": "KDdydxwRzR1KPrzOd", "datasetId": "RYzp3eCNrHJw9z1NX", "metadataTitle": "Rugby News | Fixtures and Results | Tickets | RUGBY.com.au", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "New Zealand Rugby",
+      "shortName": "New Zealand Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.allblacks.com/",
+      "sourcePageUrl": "https://www.allblacks.com/",
+      "candidateLogoUrls": [
+        "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png",
+        "https://images.allblacks.com/image/private/t_q_good/v1780998991/prd/assets/teams/logos_darkmode/BF.png"
+      ],
+      "logoFormat": "png",
+      "rightsHolder": "New Zealand Rugby",
+      "rightsTrademarkNotes": "Official All Blacks homepage exposed All Blacks and Black Ferns logo references. Candidate only; verify whether the Brand Asset record should represent NZ Rugby, All Blacks, Black Ferns, or separate reviewed assets before approval.",
+      "rawSourceMetadata": {"apifyRunId": "e9ti3QYbV6Tjzpf8L", "datasetId": "FnnuwWyL0IymLDv6Z", "metadataTitle": "Home of the All Blacks & Black Ferns | NZ Rugby", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Unión Argentina de Rugby",
+      "shortName": "Argentina Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://uar.com.ar/",
+      "sourcePageUrl": "https://uar.com.ar/",
+      "candidateLogoUrls": [
+        "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg",
+        "https://uar.com.ar/wp-content/uploads/MarcaUAR_iso.svg",
+        "https://uar.com.ar/wp-content/uploads/LosPumas_negativo.svg",
+        "https://uar.com.ar/wp-content/uploads/LosPumas_positivo.svg"
+      ],
+      "logoFormat": "svg",
+      "rightsHolder": "Unión Argentina de Rugby",
+      "rightsTrademarkNotes": "Official UAR homepage exposed UAR and Los Pumas SVG marks. Candidate only; verify whether UAR and Los Pumas should be separate Brand Asset records before approval.",
+      "rawSourceMetadata": {"apifyRunId": "ZWpfhoLsCJ6cgyS4b", "datasetId": "SkgNZG1L3cWnWlgPu", "metadataTitle": "UAR - Unión Argentina de Rugby", "httpStatusCode": 200}
+    }
+  ],
+  "remainingTargets": [
+    "Japan Rugby Football Union", "Fiji Rugby Union", "Samoa Rugby Union", "Tonga Rugby Union", "Georgia Rugby Union", "USA Rugby", "Rugby Canada", "Uruguay Rugby Union", "Chile Rugby", "Portugal Rugby", "Spain Rugby", "Romania Rugby", "Namibia Rugby Union", "World Rugby", "Rugby World Cup"
+  ]
+}
