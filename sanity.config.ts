@@ -1,6 +1,7 @@
 import { defineConfig, definePlugin } from "sanity";
 import { structureTool } from "sanity/structure";
 
+import { BrandAssetReviewTool } from "./sanity/components/BrandAssetReviewTool";
 import { EditorialImageReviewTool } from "./sanity/components/EditorialImageReviewTool";
 import { dataset, projectId, studioUrl } from "./sanity/env";
 import { brandAssetType } from "./sanity/schemaTypes/brandAsset";
@@ -19,6 +20,17 @@ const editorialImageReviewTool = definePlugin({
   ],
 });
 
+const brandAssetReviewTool = definePlugin({
+  name: "brand-asset-review-tool",
+  tools: [
+    {
+      name: "brand-asset-review",
+      title: "Brand Review",
+      component: BrandAssetReviewTool,
+    },
+  ],
+});
+
 export default defineConfig({
   name: "default",
   title: "The Rugby Panda",
@@ -27,6 +39,7 @@ export default defineConfig({
   basePath: studioUrl,
   plugins: [
     editorialImageReviewTool(),
+    brandAssetReviewTool(),
     structureTool({
       structure: (S) =>
         S.list()
@@ -39,6 +52,36 @@ export default defineConfig({
                 S.list()
                   .title("Brand Assets")
                   .items([
+                    S.listItem()
+                      .title("Needs Review")
+                      .schemaType("brandAsset")
+                      .child(
+                        S.documentList()
+                          .title("Brand Assets Needing Review")
+                          .schemaType("brandAsset")
+                          .filter('_type == "brandAsset" && (!defined(lifecycleStatus) || lifecycleStatus in ["candidate", "Candidate", "pending-validation", "Pending Validation"] || !defined(approvedForEditorialUse) || approvedForEditorialUse != true)')
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
+                    S.listItem()
+                      .title("Approved")
+                      .schemaType("brandAsset")
+                      .child(
+                        S.documentList()
+                          .title("Approved Brand Assets")
+                          .schemaType("brandAsset")
+                          .filter('_type == "brandAsset" && lifecycleStatus in ["approved", "Approved"] && approvedForEditorialUse == true')
+                          .defaultOrdering([{ field: "title", direction: "asc" }]),
+                      ),
+                    S.listItem()
+                      .title("Rejected")
+                      .schemaType("brandAsset")
+                      .child(
+                        S.documentList()
+                          .title("Rejected Brand Assets")
+                          .schemaType("brandAsset")
+                          .filter('_type == "brandAsset" && lifecycleStatus in ["rejected", "Rejected"]')
+                          .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
+                      ),
                     S.listItem()
                       .title("Active Brands")
                       .schemaType("brandAsset")
@@ -86,7 +129,7 @@ export default defineConfig({
                         S.documentList()
                           .title("Brand Assets Needing Rights Review")
                           .schemaType("brandAsset")
-                          .filter('_type == "brandAsset" && (!defined(approvedForEditorialUse) || approvedForEditorialUse != true || rightsStatus == "unknown")')
+                          .filter('_type == "brandAsset" && (!defined(approvedForEditorialUse) || approvedForEditorialUse != true || rightsStatus == "unknown" || !defined(sourceUrl) || !defined(rightsHolder))')
                           .defaultOrdering([{ field: "_updatedAt", direction: "desc" }]),
                       ),
                     S.divider(),
