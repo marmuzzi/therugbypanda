@@ -29,22 +29,61 @@ function text(value) {
   return typeof value === "string" && value.trim() ? value.trim() : undefined;
 }
 
+function normaliseBrandType(value) {
+  const brandType = text(value);
+
+  if (brandType === "club") return "team";
+  if (brandType === "governing-body") return "union";
+
+  return brandType;
+}
+
+function normaliseLogoCandidate(value, fallbackFormat, index) {
+  if (typeof value === "string") {
+    return {
+      _key: `candidateLogo${index}`,
+      _type: "object",
+      url: value,
+      format: text(fallbackFormat),
+      notes: "External candidate reference only. Do not hotlink publicly.",
+    };
+  }
+
+  if (value && typeof value === "object" && typeof value.url === "string") {
+    return {
+      _key: text(value._key) ?? `candidateLogo${index}`,
+      _type: "object",
+      url: value.url,
+      format: text(value.format) ?? text(fallbackFormat),
+      notes: text(value.notes) ?? "External candidate reference only. Do not hotlink publicly.",
+    };
+  }
+
+  return undefined;
+}
+
 function toLogoCandidates(candidate) {
   return Array.isArray(candidate.candidateLogoUrls)
-    ? candidate.candidateLogoUrls.filter(Boolean).map((url, index) => ({
-        _key: `candidateLogo${index}`,
-        _type: "object",
-        url,
-        format: text(candidate.logoFormat),
-        notes: "External candidate reference only. Do not hotlink publicly.",
-      }))
+    ? candidate.candidateLogoUrls
+        .map((logoCandidate, index) => normaliseLogoCandidate(logoCandidate, candidate.logoFormat, index))
+        .filter(Boolean)
     : [];
+}
+
+function toRawSourceMetadata(candidate) {
+  const rawSourceMetadata = candidate.rawSourceMetadata ?? {};
+
+  return {
+    sourceFile: inputPath,
+    ...rawSourceMetadata,
+  };
 }
 
 function toBrandAsset(candidate) {
   const slug = slugify(candidate.officialBrandName ?? candidate.shortName);
-  const rawSourceMetadata = candidate.rawSourceMetadata ?? {};
-  const firstLogoUrl = candidate.candidateLogoUrls?.find(Boolean);
+  const rawSourceMetadata = toRawSourceMetadata(candidate);
+  const candidateLogoUrls = toLogoCandidates(candidate);
+  const firstLogoUrl = candidateLogoUrls.find((logoCandidate) => logoCandidate.url)?.url;
 
   return {
     _id: `brandAsset-candidate-${slug}`,
@@ -52,7 +91,7 @@ function toBrandAsset(candidate) {
     title: candidate.officialBrandName,
     shortName: text(candidate.shortName),
     slug: { _type: "slug", current: slug },
-    brandType: candidate.brandType,
+    brandType: normaliseBrandType(candidate.brandType),
     status: "active",
     lifecycleStatus: "candidate",
     approvedForEditorialUse: false,
@@ -60,7 +99,7 @@ function toBrandAsset(candidate) {
     website: text(candidate.officialWebsite),
     sourceUrl: text(candidate.sourcePageUrl),
     externalLogoUrl: text(firstLogoUrl),
-    candidateLogoUrls: toLogoCandidates(candidate),
+    candidateLogoUrls,
     logoFormat: text(candidate.logoFormat),
     primaryColour: text(candidate.colours?.primary),
     secondaryColour: text(candidate.colours?.secondary),
@@ -76,18 +115,87 @@ function toBrandAsset(candidate) {
   };
 }
 
+function getCandidates(collection) {
+  if (Array.isArray(collection.candidates)) return collection.candidates;
+  if (Array.isArray(collection.targetedResults)) return collection.targetedResults;
+
+  return [];
+}
+
 const filePath = path.resolve(process.cwd(), inputPath);
 const collection = JSON.parse(await fs.readFile(filePath, "utf8"));
-const candidates = Array.isArray(collection.candidates) ? collection.candidates : [];
+const candidates = getCandidates(collection);
 
 if (candidates.length === 0) {
-  throw new Error(`No candidates found in ${inputPath}.`);
+  throw new Error(`No candidates found in ${inputPath}. Expected a top-level candidates or targetedResults array.`);
 }
+
+const documents = candidates.map(toBrandAsset);
+const existingDocuments = await client.fetch(
+  '*[_id in $ids]{_id,lifecycleStatus,approvedForEditorialUse,title}',
+  { ids: documents.map((document) => document._id) },
+);
+const existingById = new Map(existingDocuments.map((document) => [document._id, document]));
 
 let transaction = client.transaction();
-for (const candidate of candidates) {
-  transaction = transaction.createIfNotExists(toBrandAsset(candidate));
+let created = 0;
+let updated = 0;
+let skippedApproved = 0;
+
+for (const document of documents) {
+  const existingDocument = existingById.get(document._id);
+  const isApproved = existingDocument?.approvedForEditorialUse === true || existingDocument?.lifecycleStatus === "approved";
+
+  if (isApproved) {
+    skippedApproved += 1;
+    console.log(`Skipped approved brand asset: ${document.title} (${document._id})`);
+    continue;
+  }
+
+  if (!existingDocument) {
+    transaction = transaction.createIfNotExists(document);
+    created += 1;
+    continue;
+  }
+
+  transaction = transaction.patch(document._id, (patch) =>
+    patch.set({
+      title: document.title,
+      shortName: document.shortName,
+      slug: document.slug,
+      brandType: document.brandType,
+      status: "active",
+      lifecycleStatus: "candidate",
+      approvedForEditorialUse: false,
+      rightsStatus: "editorial-trademark-use-only",
+      website: document.website,
+      sourceUrl: document.sourceUrl,
+      externalLogoUrl: document.externalLogoUrl,
+      candidateLogoUrls: document.candidateLogoUrls,
+      logoFormat: document.logoFormat,
+      primaryColour: document.primaryColour,
+      secondaryColour: document.secondaryColour,
+      accentColour: document.accentColour,
+      colourSource: document.colourSource,
+      rightsHolder: document.rightsHolder,
+      usageNotes: document.usageNotes,
+      acquisitionTimestamp: document.acquisitionTimestamp,
+      apifyRunId: document.apifyRunId,
+      apifyDatasetId: document.apifyDatasetId,
+      rawSourceMetadata: document.rawSourceMetadata,
+      tags: document.tags,
+    }),
+  );
+  updated += 1;
 }
 
-await transaction.commit();
-console.log(`Imported ${candidates.length} unapproved brand asset candidates into ${projectId}/${dataset}.`);
+if (created === 0 && updated === 0) {
+  console.log(`No unapproved brand asset candidates needed importing or updating from ${inputPath}.`);
+} else {
+  await transaction.commit();
+}
+
+console.log(
+  `Processed ${candidates.length} brand asset candidates from ${inputPath}: created ${created}, updated ${updated}, skipped approved ${skippedApproved}.`,
+);
+console.log(`Target dataset: ${projectId}/${dataset}.`);
