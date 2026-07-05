@@ -2,7 +2,7 @@
 
 ## Current Version
 
-v0.5 — Verified Media + Brand Assets Review Architecture
+v0.6 — Sprint 4 Media Foundation Complete / Sprint 5 Ready
 
 ## Last Updated
 
@@ -29,32 +29,42 @@ Read these files first in future sessions:
 
 Do not rely on chat history for current status.
 
-## Connectors
-
-Expected connectors:
-
-- GitHub
-- Vercel
-- Sanity
-- Apify
-
-In the 5 July 2026 Apify targeted extraction session, all four connector surfaces were visible.
-
-During the later Batch 2 completion follow-up, GitHub and Vercel remained visible but Apify was no longer exposed by connector discovery. That pass used available public page extraction and repository source URLs, not new Apify actor runs.
-
-During the Batch 2 import request, Sanity and Apify were not exposed in the connector list, and the GitHub connector did not expose a workflow-dispatch operation. The import could not be started from that chat. Continue from `docs/20_New_Chat_Batch_2_Import_Handoff.md` when the correct connector set is available.
-
-## Current production architecture
+## Current state summary
 
 Sprint 4 is complete.
 
-The current verified media architecture is:
+The Rugby Panda now has the verified media foundation needed for Sprint 5:
 
 ```text
-Apify → GitHub candidate JSON → GitHub Action → Sanity import → Review tool → Approval / rejection → Frontend availability
+Discovery / acquisition
+→ GitHub candidate JSON
+→ GitHub Action import
+→ Sanity candidate records
+→ Review tool
+→ Manual approval / rejection / archive
+→ Approved CMS records for future editorial use
 ```
 
 This applies to both Editorial Images and Brand Assets.
+
+## Connectors
+
+Expected connector surfaces:
+
+- GitHub.
+- Vercel.
+- Sanity, when available.
+- Apify, when available.
+
+Always check available connectors before asking the user to configure anything.
+
+Important connector notes from Sprint 4:
+
+- GitHub was available and write-capable.
+- Vercel was available for deployment checks.
+- Sanity connector availability varied; Sanity write access was not always exposed in chat.
+- Apify availability varied; when Apify was not exposed, acquisition continued using repository records and public official-source extraction.
+- GitHub Actions remain the reliable mobile-friendly import path for Sanity candidate imports.
 
 ## Editorial Images
 
@@ -66,25 +76,19 @@ Editorial Images are managed in Sanity using a complete review workflow:
 - Original Rugby Panda images.
 - External candidate images.
 - Bulk import workflow.
-- Images are imported into Sanity as candidates.
-- The user manually approves or rejects images inside Sanity before use.
+- User manual approval/rejection before use.
 
-Current acquisition priorities:
+Original Rugby Panda photography remains preferred.
 
-- Stadiums.
-- Rugby supporters.
-- Match atmosphere.
-- Pubs showing rugby.
-- Match action.
-- Training.
+Current verification items still pending:
 
-Do not continue collecting rugby balls or generic equipment unless specifically requested.
+- Final Editorial Image queue/count verification.
+- Final starter external image approved/rejected count verification.
+- Final original Rugby Panda photo count verification.
 
 ## Brand Assets
 
-Brand Assets use the same philosophy as Editorial Images.
-
-Brand assets are not published directly. Candidate logos are imported into Sanity as unapproved review records.
+Brand Assets are managed separately from Editorial Images.
 
 Brand lifecycle states:
 
@@ -96,7 +100,7 @@ Brand lifecycle states:
 
 The Brand Review tool supports bulk approve, reject and archive actions.
 
-Every imported logo is created as:
+Every imported candidate starts as:
 
 ```text
 approvedForEditorialUse = false
@@ -104,15 +108,28 @@ rightsStatus = editorial-trademark-use-only
 lifecycleStatus = candidate
 ```
 
-Candidate logo URLs are references only and must never be hotlinked on the website. Approved logos should eventually become uploaded Sanity assets before public frontend use.
+Candidate logo URLs are references only and must never be hotlinked on the public website. Approved logos should eventually be uploaded into Sanity assets before any frontend use.
 
-The full Brand Asset workflow has been verified:
+## Brand Assets completion status
 
-```text
-Apify → GitHub → Sanity → Brand Review → Approval
-```
+Completed:
 
-The first candidate batch was successfully imported into Sanity and manually approved by the user.
+- Brand Assets Library foundation implemented, merged, deployed and user-verified in Studio.
+- Batch 1 candidate import completed and manually reviewed/approved by the user.
+- Batch 2 candidate source coverage completed and merged.
+- Batch 2 candidates imported into Sanity through GitHub Actions.
+- Importer enhanced to support both `candidates` and `targetedResults` source files.
+- Importer enhanced to update existing unapproved candidate records with later logo references.
+- Importer skips already-approved Brand Asset records.
+- Logo preview update candidate file added:
+  - `data/brand-assets/candidate-logo-preview-update-2026-07-05.json`
+- User completed Batch 2 Brand Review and approved 5 records.
+
+Important limitation:
+
+- Some approved Brand Asset records may still use external candidate logo references.
+- Before any public frontend logo display, approved logo files should be uploaded into Sanity assets.
+- Fallback preview references such as favicon candidates are review aids only and should not be treated as final approval-ready logo assets.
 
 ## Approved acquisition scope
 
@@ -140,45 +157,29 @@ Never collect:
 - Grassroots clubs.
 - Non-rugby organisations.
 
-## Current Batch 2 status
+## Current article URL
 
-Batch 2 now has candidate source coverage for:
+`/articles/leinster-season-preview-2026`
 
-- Remaining Rugby World Cup-cycle unions.
-- Remaining national teams.
-- Leinster.
-- Munster.
-- Ulster.
-- Connacht.
-- Other professional clubs within the approved editorial scope where already captured.
+## Sprint 5 starting point
 
-Candidate-only Batch 2 files:
+Sprint 5 should start from the completed Sprint 4 media foundation.
 
-- `data/brand-assets/candidate-collection-batch-2-2026-07-05.json`
-- `data/brand-assets/candidate-logo-extraction-2026-07-05.json`
-- `data/brand-assets/candidate-logo-extraction-apify-2026-07-05.json`
-- `data/brand-assets/candidate-logo-extraction-batch-2-completion-2026-07-05.json`
+Recommended Sprint 5 theme:
 
-Batch 2 is complete as a source-coverage candidate pass.
+**Editorial & Publishing Automation**
 
-Batch 2 is not complete as a fully resolved direct-logo asset pass. Many records still have empty `candidateLogoUrls` because the official source was confirmed but no reliable direct logo asset URL was exposed by the extraction route.
-
-Immediate next step: import Batch 2 into Sanity as unapproved candidates only when GitHub, Sanity and the import workflow trigger are available.
-
-## Sprint 5 priorities
-
-After Brand Assets expansion, priorities are:
+Recommended priorities:
 
 1. AI-powered bulk upload of original Rugby Panda photos into Sanity.
-2. AI categorization by stadium, teams, competition, supporters, match action, pubs and related newsroom categories.
+2. AI categorisation by stadium, teams, competition, supporters, match action, pubs and newsroom categories.
 3. Automatic title, caption, alt text, tags and metadata generation.
 4. Duplicate detection.
 5. Event and album creation.
 6. Fast search of the Editorial Image Library.
-
-## Current article URL
-
-`/articles/leinster-season-preview-2026`
+7. Assign approved editorial images to current articles.
+8. Build real website search.
+9. Build the editorial article generation / review / publishing pipeline.
 
 ## Deployment budget rule
 
@@ -193,18 +194,19 @@ Default workflow:
 5. Use one production deployment.
 6. Verify once in production.
 
-## Known issues
+## Known open issues
 
 Track all issues in `docs/08_Issue_Log.md`.
 
-Current important issues:
+Current important open items:
 
-- `BRAND-004` — Batch 2 Brand Assets source coverage implemented; pending Sanity candidate import and Brand Review.
 - `CMS-002` — CMS article images missing from live articles.
 - `MEDIA-001` — Editorial Image Archive final production documentation/count verification.
 - `MEDIA-002` — starter editorial image library final reviewed-count verification.
 - `MEDIA-003` — original Rugby Panda photo final Studio count verification.
 - `WEB-005` — Search remains placeholder.
+
+`BRAND-004` is closed as of 5 July 2026 because Batch 2 was imported, reviewed by the user and documented. Public frontend logo use remains a separate future implementation step, not part of `BRAND-004`.
 
 ## Working principles
 
