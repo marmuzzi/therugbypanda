@@ -352,20 +352,20 @@ export async function getCategoryPage(slug: string) {
   };
 }
 
-export async function getSitemapArticles() {
-  return sanityFetch<CmsSitemapArticle[]>({ query: sitemapArticlesQuery });
+export async function getSitemapArticles(): Promise<CmsSitemapArticle[]> {
+  return (await sanityFetch<CmsSitemapArticle[]>({ query: sitemapArticlesQuery })) ?? [];
 }
 
-export async function getSitemapCategories() {
+export async function getSitemapCategories(): Promise<CmsCategory[]> {
   const categories = await sanityFetch<CmsCategory[]>({ query: sitemapCategoriesQuery });
 
   return categories?.map(normaliseCategory).filter((category): category is CmsCategory => Boolean(category)) ?? [];
 }
 
-export async function getPublishedArticles() {
+export async function getPublishedArticles(): Promise<CmsSitemapArticle[]> {
   return getSitemapArticles();
 }
 
-export async function getPublishedCategories() {
+export async function getPublishedCategories(): Promise<CmsCategory[]> {
   return getSitemapCategories();
 }
