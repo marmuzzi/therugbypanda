@@ -19,10 +19,9 @@ Use this file when continuing The Rugby Panda in a new chat.
 
 Connector note:
 
-- The user confirmed Apify access exists in another chat.
-- In the previous chat, Apify did not appear in the active connector list.
-- If Apify is visible in the new chat, use it directly for acquisition work.
-- If Apify is not visible, do not ask the user to reconfigure immediately; explain that this chat does not expose Apify and continue with GitHub/Vercel work only.
+- Apify was available in the 5 July 2026 Sprint 4 Task 4 session and was used for brand-asset candidate discovery.
+- If Apify is visible in a new chat, use it directly for acquisition work.
+- If Apify is not visible, do not ask the user to reconfigure immediately; explain that the chat does not expose Apify and continue with GitHub/Vercel work only.
 
 Sanity MCP may be installed on the user's account, but it has not consistently appeared in available tools. Check tool availability before assuming it can be used.
 
@@ -97,41 +96,44 @@ Important Studio deployment note:
 - After Studio/schema changes, the hosted Studio must be redeployed through the GitHub Action.
 - The user redeployed the Studio through GitHub Action and then verified `Brand Assets` became visible.
 
-## Next Apify task — Brand Assets candidate collector actor
+## Sprint 4 Task 4 — Brand Assets candidate collector
 
-The next chat should use Apify, if available, to create or configure a Brand Assets candidate collector actor.
+Implemented on branch `sprint-4-brand-assets-candidates`, pending PR/merge:
 
-The actor should collect candidates only. It must not auto-approve or publish assets.
+- Candidate file: `data/brand-assets/candidate-collection-2026-07-05.json`.
+- Issue log item: `BRAND-002`.
+- Candidate records only; no approval, publication, Sanity asset upload or frontend use.
+- All candidate records default to `editorial-trademark-use-only` and `approvedForEditorialUse: false`.
 
-Candidate output should include:
+Apify runs used:
 
-- official brand name
-- short name
-- brand type
-- official website
-- source page URL
-- candidate logo URL
-- candidate logo format, if available
-- candidate colour data, if available
-- rights holder, if discoverable
-- trademark / usage source notes
-- acquisition timestamp
-- raw source metadata
+- `kfrzGA4W4OiRtPHDU` / dataset `cHRH5MKA4jY0OpceD` — Six Nations Rugby corporate/media source discovery.
+- `rL7g9OFGSJL3PQQY0` / dataset `yuz5P6lIMwBZXmzba` — EPCR, Champions Cup and Challenge Cup source discovery.
+- `QqjyFgqiiapbmRTkg` / dataset `Icm5UGA8rd2jV05MR` — URC media-centre source discovery.
+- `gpBny1OiiU55jOFVI` / dataset `enqhstkkWdCoARsLU` — World Rugby and Rugby World Cup source discovery.
 
-Approved acquisition scope:
+Initial candidate coverage:
 
-- Rugby union governing bodies and unions.
-- National teams that normally participate in Rugby World Cup qualification cycles or Rugby World Cup finals.
-- Teams and competitions directly relevant to international rugby, Champions Cup, Challenge Cup or URC coverage.
-- Irish provinces and other professional clubs only when relevant to URC, Champions Cup or Challenge Cup coverage.
+- Six Nations Rugby.
+- Irish Rugby Football Union / Ireland Rugby.
+- Rugby Football Union / England Rugby.
+- Scottish Rugby Union / Scottish Rugby.
+- Fédération Française de Rugby / France Rugby.
+- Federazione Italiana Rugby / Italy Rugby.
+- Welsh Rugby Union / Wales Rugby.
+- European Professional Club Rugby.
+- European Rugby Champions Cup.
+- EPCR Challenge Cup.
+- United Rugby Championship.
+- World Rugby.
+- Men's Rugby World Cup 2027.
 
-Out of scope unless explicitly approved later:
+Known limitations:
 
-- Random grassroots clubs.
-- Schools, youth teams or amateur clubs.
-- Sponsors, broadcasters or commercial partners.
-- Teams from competitions outside the Rugby World Cup / international rugby / Champions Cup / Challenge Cup editorial lane.
-- Generic sports brands or non-rugby organisations.
+- Colour values still need extraction/validation.
+- World Rugby and Rugby World Cup records need a follow-up pass for reliable logo URLs.
+- Irish provinces and wider Rugby World Cup-cycle national-team/unions list still need follow-up collection.
+- External logo URLs are source references only. Do not hotlink in public templates.
 
 ## PR #26 — Editorial Images in Sanity Studio
 
@@ -156,6 +158,7 @@ The user or assistant with an authenticated Studio-capable connector must still 
 1. Final Editorial Image counts in Needs Review, Approved, Rejected and Rugby Panda Originals.
 2. A brand asset can be created or reviewed.
 3. Brand asset rights-review queue behaves correctly.
+4. If candidate data is imported later, imported brand candidates remain unapproved and do not appear in public templates.
 
 ## Deployment budget rule
 
@@ -200,6 +203,7 @@ Important decisions:
 - Do not bulk-import logos until the rights/source workflow has been verified.
 - Do not use hotlinked logos in public templates; upload approved logo assets into Sanity.
 - Acquisition scope is intentionally limited to international rugby, Rugby World Cup-cycle national teams, Champions Cup, Challenge Cup, URC and relevant professional clubs/competitions.
+- Candidate collector output is not approved content.
 
 ## Current image tracker
 
@@ -219,6 +223,7 @@ Starter external editorial library:
 
 See `docs/08_Issue_Log.md` for current status. Key pending work:
 
+- `BRAND-002`: Brand Assets Candidate Collector output implemented as candidate-only JSON; pending PR review/merge and follow-up collection.
 - `CMS-002`: CMS article images missing.
 - `MEDIA-001`: Editorial Image Archive Studio final count verification.
 - `MEDIA-002`: starter editorial image library final count verification.
@@ -227,4 +232,4 @@ See `docs/08_Issue_Log.md` for current status. Key pending work:
 
 ## Recommended next session prompt
 
-Continue The Rugby Panda. Read docs 07, 08, 09, 10, 11 and 12 from the repository. Check whether Apify is available in this chat. If Apify is available, start the Brand Assets candidate collector actor for the approved rugby-union scope only. Do not collect random clubs, schools, sponsors, broadcasters or unrelated teams. Output must be candidates for editorial review, not approved/published assets.
+Continue The Rugby Panda. Read docs 07, 08, 09, 10, 11 and 12 from the repository. Check whether GitHub, Vercel and Apify are available. Review branch `sprint-4-brand-assets-candidates` and `data/brand-assets/candidate-collection-2026-07-05.json`. If acceptable, open/merge the PR, then continue the candidate collector for Irish provinces and remaining Rugby World Cup-cycle unions/national teams. Keep all brand assets candidate-only unless explicitly reviewed and approved later.
