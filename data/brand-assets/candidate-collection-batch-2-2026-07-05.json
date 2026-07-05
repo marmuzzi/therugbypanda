@@ -1,0 +1,561 @@
+{
+  "collectionName": "Sprint 4 Task 4 — Brand Assets Candidate Collector Batch 2",
+  "status": "candidate-only",
+  "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+  "collector": {
+    "tool": "Apify apify/rag-web-browser",
+    "runs": [
+      {
+        "runId": "D3TiNoKjFvH8z0bZL",
+        "datasetId": "yFr4VZu0xXpBCmWz5",
+        "query": "official rugby union logo brand assets Leinster Rugby Munster Rugby Ulster Rugby Connacht Rugby site:leinsterugby.ie OR site:munsterrugby.ie OR site:ulsterrugby.com OR site:connachtrugby.ie"
+      },
+      {
+        "runId": "CmAHZC8fZOjAKe2ie",
+        "datasetId": "wNhvGOsRh3G9tM2tp",
+        "query": "https://www.leinsterrugby.ie/"
+      },
+      {
+        "runId": "D5Pyt293XOIo7IOb9",
+        "datasetId": "OXSruDFhdWvaxQtmq",
+        "query": "https://www.connachtrugby.ie/"
+      },
+      {
+        "runId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "query": "official rugby union logo brand assets South African Rugby Union Rugby Australia New Zealand Rugby Argentina Rugby Japan Rugby Fiji Rugby Samoa Rugby Tonga Rugby Georgia Rugby USA Rugby Canada Rugby Uruguay Rugby Chile Rugby Portugal Rugby Spain Rugby Romania Rugby Namibia Rugby Union"
+      },
+      {
+        "runId": "B8hRZUfiKrJ9HADBS",
+        "datasetId": "ihHRI3KDx4t3tPzrh",
+        "query": "site:world.rugby teams Rugby World Cup 2027 qualified teams official union logos Rugby World Cup cycle national teams rugby union official websites"
+      }
+    ],
+    "notes": "Batch 2 extends approved-scope discovery for Irish provinces and remaining Rugby World Cup-cycle unions/national teams. Records are candidate references only. They are not approved for editorial use, are not uploaded as Sanity image assets, and must not be used in public templates until reviewed. Empty candidateLogoUrls mean the official source was identified but a reliable logo URL was not extracted in this pass."
+  },
+  "scopeRules": {
+    "included": [
+      "Rugby union governing bodies and unions",
+      "Rugby World Cup-cycle national teams",
+      "Irish provinces directly relevant to URC and EPCR coverage"
+    ],
+    "excluded": [
+      "Grassroots clubs",
+      "Schools or youth teams",
+      "Amateur clubs",
+      "Sponsors",
+      "Broadcasters",
+      "Commercial partners",
+      "Non-rugby organisations",
+      "Teams outside the approved editorial scope"
+    ]
+  },
+  "defaultCandidateValues": {
+    "status": "active",
+    "rightsStatus": "editorial-trademark-use-only",
+    "approvedForEditorialUse": false,
+    "lifecycleStatus": "candidate",
+    "reviewedAt": null
+  },
+  "candidates": [
+    {
+      "officialBrandName": "Leinster Rugby",
+      "shortName": "Leinster",
+      "brandType": "club",
+      "officialWebsite": "https://www.leinsterrugby.ie/",
+      "sourcePageUrl": "https://www.leinsterrugby.ie/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Leinster Rugby",
+      "rightsTrademarkNotes": "Official Leinster Rugby homepage was collected as a source reference. Candidate only; verify logo source and usage restrictions before use.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "CmAHZC8fZOjAKe2ie",
+        "datasetId": "wNhvGOsRh3G9tM2tp",
+        "metadataTitle": "Leinster Rugby",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Munster Rugby",
+      "shortName": "Munster",
+      "brandType": "club",
+      "officialWebsite": "https://www.munsterrugby.ie/",
+      "sourcePageUrl": "https://www.munsterrugby.ie/preview/team-named-munster-side-to-visit-scarlets/",
+      "candidateLogoUrls": [
+        "https://cdn.soticservers.net/tools/images/teams/logos/RUGBY969513/d/MUNS1976.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Munster Rugby",
+      "rightsTrademarkNotes": "Official Munster Rugby page exposes a team logo SVG through Sotic CDN. Candidate only; verify source and usage restrictions before use.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "D3TiNoKjFvH8z0bZL",
+        "datasetId": "yFr4VZu0xXpBCmWz5",
+        "searchResultTitle": "Team Named | Munster Side To Visit Scarlets",
+        "metadataTitle": "Munster Rugby | Team Named | Munster Side To Visit Scarlets",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Ulster Rugby",
+      "shortName": "Ulster",
+      "brandType": "club",
+      "officialWebsite": "https://ulsterrugby.com/",
+      "sourcePageUrl": "https://ulsterrugby.com/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Ulster Rugby",
+      "rightsTrademarkNotes": "Official Ulster Rugby homepage was collected as a source reference but returned limited content. Candidate only; follow up for reliable logo URL before review.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "D3TiNoKjFvH8z0bZL",
+        "datasetId": "yFr4VZu0xXpBCmWz5",
+        "searchResultTitle": "Ulster Rugby: Homepage",
+        "metadataTitle": "",
+        "httpStatusCode": 202
+      }
+    },
+    {
+      "officialBrandName": "Connacht Rugby",
+      "shortName": "Connacht",
+      "brandType": "club",
+      "officialWebsite": "https://www.connachtrugby.ie/",
+      "sourcePageUrl": "https://www.connachtrugby.ie/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Connacht Rugby",
+      "rightsTrademarkNotes": "Official Connacht Rugby homepage was collected as a source reference. Candidate only; verify logo source and usage restrictions before use.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "D5Pyt293XOIo7IOb9",
+        "datasetId": "OXSruDFhdWvaxQtmq",
+        "metadataTitle": "Connacht Rugby",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "South African Rugby Union",
+      "shortName": "South Africa Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.sarugby.co.za/",
+      "sourcePageUrl": "https://www.sarugby.co.za/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "South African Rugby Union",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Rugby Australia",
+      "shortName": "Australia Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.rugby.com.au/",
+      "sourcePageUrl": "https://www.rugby.com.au/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Rugby Australia",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "New Zealand Rugby",
+      "shortName": "New Zealand Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.allblacks.com/",
+      "sourcePageUrl": "https://www.allblacks.com/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "New Zealand Rugby",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Unión Argentina de Rugby",
+      "shortName": "Argentina Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://uar.com.ar/",
+      "sourcePageUrl": "https://uar.com.ar/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Unión Argentina de Rugby",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Japan Rugby Football Union",
+      "shortName": "Japan Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.rugby-japan.jp/",
+      "sourcePageUrl": "https://www.rugby-japan.jp/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Japan Rugby Football Union",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Fiji Rugby Union",
+      "shortName": "Fiji Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://fijirugby.com/",
+      "sourcePageUrl": "https://fijirugby.com/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Fiji Rugby Union",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Samoa Rugby Union",
+      "shortName": "Samoa Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://lakapirugby.com/",
+      "sourcePageUrl": "https://lakapirugby.com/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Samoa Rugby Union",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Tonga Rugby Union",
+      "shortName": "Tonga Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.tongarugbyunion.net/",
+      "sourcePageUrl": "https://www.tongarugbyunion.net/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Tonga Rugby Union",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Georgia Rugby Union",
+      "shortName": "Georgia Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://rugby.ge/",
+      "sourcePageUrl": "https://rugby.ge/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Georgia Rugby Union",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "USA Rugby",
+      "shortName": "USA Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://usa.rugby/",
+      "sourcePageUrl": "https://usa.rugby/tickets",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "USA Rugby",
+      "rightsTrademarkNotes": "Official USA Rugby page was discovered in Batch 2. Candidate only; follow up for reliable logo URL before review.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "searchResultTitle": "USA Rugby Tickets",
+        "metadataTitle": "Tickets |  USA Rugby",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Rugby Canada",
+      "shortName": "Canada Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://rugby.ca/",
+      "sourcePageUrl": "https://rugby.ca/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Rugby Canada",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Uruguay Rugby Union",
+      "shortName": "Uruguay Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://uru.org.uy/",
+      "sourcePageUrl": "https://uru.org.uy/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Uruguay Rugby Union",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Chile Rugby",
+      "shortName": "Chile Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.chilerugby.org/",
+      "sourcePageUrl": "https://www.chilerugby.org/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Chile Rugby",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Portugal Rugby",
+      "shortName": "Portugal Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.fpr.pt/",
+      "sourcePageUrl": "https://www.fpr.pt/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Federação Portuguesa de Rugby",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Spain Rugby",
+      "shortName": "Spain Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://ferugby.es/",
+      "sourcePageUrl": "https://ferugby.es/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Federación Española de Rugby",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Romania Rugby",
+      "shortName": "Romania Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://rugbyromania.ro/",
+      "sourcePageUrl": "https://rugbyromania.ro/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Federația Română de Rugby",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    },
+    {
+      "officialBrandName": "Namibia Rugby Union",
+      "shortName": "Namibia Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.nru.com.na/",
+      "sourcePageUrl": "https://www.nru.com.na/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Namibia Rugby Union",
+      "rightsTrademarkNotes": "Approved starter-library target. Official website/source reference recorded; logo URL requires follow-up extraction.",
+      "acquisitionTimestamp": "2026-07-05T14:05:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "Qk5LJvJqbFtXsJrcs",
+        "datasetId": "QNLvft2pXVVZcc7Jr",
+        "sourceDiscovery": "Batch 2 official-source discovery"
+      }
+    }
+  ],
+  "followUpRequired": [
+    "Run targeted extraction for official logo URLs on records where candidateLogoUrls is empty.",
+    "Validate official websites and rights holder fields before Sanity import.",
+    "Do not import these records as approved assets; import only as unapproved candidates after review workflow verification.",
+    "Do not use any external candidate logo URL in public templates."
+  ]
+}
