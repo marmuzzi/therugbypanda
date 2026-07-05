@@ -17,6 +17,41 @@ Sprint 4 starts with the CMS foundation:
 - Logo variants for primary, light-background and dark-background use.
 - Colour metadata for future frontend UI, cards and team / competition pages.
 
+## Acquisition scope
+
+Do not collect brand assets outside the rugby-union editorial scope.
+
+Approved scope:
+
+- Rugby union governing bodies and unions.
+- National teams that normally participate in Rugby World Cup qualification cycles or Rugby World Cup finals.
+- Teams and competitions that participate in, organise, or are directly relevant to top-level international rugby, Champions Cup or Challenge Cup coverage.
+- Irish provinces and other professional clubs only when they are relevant to United Rugby Championship, Champions Cup or Challenge Cup coverage.
+
+Out of scope unless explicitly approved later:
+
+- Random grassroots clubs.
+- Schools, youth teams or amateur clubs.
+- Sponsors, broadcasters or commercial partners.
+- Teams from competitions outside the Rugby World Cup / international rugby / Champions Cup / Challenge Cup editorial lane.
+- Generic sports brands or non-rugby organisations.
+
+National-team collection should stay focused on countries that normally participate in Rugby World Cup cycles. That is already enough for the first national-team library.
+
+## Connector rule
+
+Apify is expected to be available for acquisition workflows.
+
+Use Apify for structured discovery and collection tasks such as:
+
+- official logo/source-page discovery,
+- official website discovery,
+- candidate asset metadata extraction,
+- candidate source URL collection,
+- future acquisition pipelines for images and article candidates.
+
+Always check active connector availability at the start of a session before assuming Apify can be used directly.
+
 ## Brand asset fields
 
 Each brand record should include:
@@ -57,17 +92,15 @@ A logo should not be used in public templates until:
 4. `Approved for editorial use` is set to true.
 5. Usage notes explain any limitations.
 
+Do not bulk-import third-party logos until the source and usage workflow has been verified in Studio.
+
 ## Starter library targets
 
 Initial brand records should prioritise:
 
+### Governing bodies and unions
+
 - World Rugby
-- Six Nations Rugby
-- United Rugby Championship
-- European Professional Club Rugby
-- Premiership Rugby
-- Top 14
-- Super Rugby Pacific
 - Irish Rugby Football Union
 - Rugby Football Union
 - Welsh Rugby Union
@@ -75,13 +108,41 @@ Initial brand records should prioritise:
 - South African Rugby Union
 - Rugby Australia
 - New Zealand Rugby
+- Fédération Française de Rugby
+- Federazione Italiana Rugby
+- Unión Argentina de Rugby
+- Japan Rugby Football Union
+- Fiji Rugby Union
+- Samoa Rugby Union
+- Tonga Rugby Union
+- Georgia Rugby Union
+- USA Rugby
+- Rugby Canada
+- Uruguay Rugby Union
+- Chile Rugby
+- Portugal Rugby
+- Spain Rugby
+- Romania Rugby
+- Namibia Rugby Union
+
+### Competitions
+
+- Rugby World Cup
+- Six Nations Rugby
+- United Rugby Championship
+- European Professional Club Rugby
+- European Rugby Champions Cup
+- EPCR Challenge Cup
+
+### Irish provinces
+
 - Connacht Rugby
 - Leinster Rugby
 - Munster Rugby
 - Ulster Rugby
 
-Do not bulk-import third-party logos until the source and usage workflow has been verified in Studio.
+Do not add broad rugby clubs outside this editorial scope unless they are directly relevant to Champions Cup, Challenge Cup or current international coverage.
 
 ## Completion rule
 
-Sprint 4 is not complete until the Brand Assets Studio section is deployed and verified in production, and at least one safe test brand record has been created or reviewed in the authenticated Studio.
+Sprint 4 is complete because the Brand Assets Studio section is deployed and the user verified the `Brand Assets` category is visible in authenticated Sanity Studio after redeploying the Studio through GitHub Action.
