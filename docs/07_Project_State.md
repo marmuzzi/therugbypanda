@@ -29,7 +29,13 @@ Expected connectors:
 
 - GitHub
 - Vercel
-- Apify, when available in the active chat
+- Apify
+
+Important connector note:
+
+- Apify was confirmed by the user as available in another chat, but it did not appear in this chat's active connector list.
+- If Apify is not visible, do not ask the user to reconfigure immediately; suggest starting or continuing in a chat where Apify is available.
+- Always check available connectors before asking the user to configure one.
 
 Sanity MCP may be installed on the user's account but has not consistently appeared in available tools. Always check available connectors before asking the user to configure one.
 
@@ -129,7 +135,8 @@ Primary principles:
 - Default rights status is `Editorial / trademark use only`.
 - Source URL, rights holder where known, rights status and usage notes should be recorded before public use.
 - Logos should be approved for editorial use before appearing in public templates.
-- The starter library should prioritise major rugby competitions, unions and Irish provinces.
+- The starter library should prioritise Rugby World Cup-cycle national teams, rugby unions, Champions Cup / Challenge Cup / URC-relevant professional teams and top-level rugby competitions.
+- Do not collect brand assets for random grassroots clubs, schools, sponsors, broadcasters, unrelated teams or non-rugby organisations unless explicitly approved later.
 
 Current brand asset strategy is documented in `docs/12_Brand_Assets_Library.md`.
 
@@ -150,7 +157,7 @@ Starter external editorial image library:
 
 ## Deployment budget rule
 
-Vercel has a 100 deployments/day limit. Treat deployments as a constrained resource.
+The Vercel free plan has a maximum of **100 deployments per day**. Treat every deployment as a constrained resource.
 
 Default workflow:
 
@@ -165,10 +172,12 @@ Only create isolated hotfix PRs for genuine production issues.
 
 ## Immediate next tasks
 
-1. Continue `CMS-002`: assign approved editorial images to current articles.
-2. Confirm final counts for Editorial Image Archive queues.
-3. Confirm all 22 originals appear in Rugby Panda Originals.
-4. Continue with Brand Assets starter records only after source and rights metadata are available.
+1. Start a new chat where Apify is available.
+2. Read docs 07–12 first.
+3. Build or configure the Apify Brand Assets candidate collector actor.
+4. Limit Brand Assets acquisition to the approved scope in `docs/12_Brand_Assets_Library.md`.
+5. Store Apify output as candidates for editorial review, not approved/published assets.
+6. Continue `CMS-002`: assign approved editorial images to current articles.
 
 ## Known issues
 
