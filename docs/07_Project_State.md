@@ -4,7 +4,7 @@
 
 v0.4 — Publishing Foundation + Editorial Media Archive
 
-Sprint 4 Brand Assets Library foundation is merged and deployed, pending authenticated Studio verification.
+Sprint 4 Brand Assets Library foundation is merged, deployed and verified in authenticated Sanity Studio.
 
 ## Last Updated
 
@@ -43,6 +43,8 @@ Latest production deployment:
 - Vercel deployment: `dpl_7JKweNP5rizBkicVVRxobVkahRru`
 - Deployment state: READY
 - Public verification: `https://therugbypanda.ie` returned HTTP 200
+- Studio deployment: hosted Sanity Studio redeployed through GitHub Action
+- Studio verification: user verified the `Brand Assets` category is visible in authenticated Sanity Studio
 - Verification date: 5 July 2026
 
 Previous user-verified production deployment:
@@ -78,11 +80,9 @@ This closed the previously pending build and International taxonomy verification
   - `Photo: The Rugby Panda`
   - `© The Rugby Panda`
 - Bulk approval/rejection/archive workflow has been used successfully by the user.
-- Sprint 4 Brand Assets Library foundation is merged and deployed.
+- Sprint 4 Brand Assets Library foundation is merged, deployed and verified in authenticated Sanity Studio.
 
-## Current merged and deployed but pending production verification
-
-### Sprint 4 — Brand Assets Library foundation
+## Sprint 4 — Brand Assets Library foundation
 
 Merged in PR #27 and deployed on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43`:
 
@@ -94,16 +94,12 @@ Merged in PR #27 and deployed on main commit `aebc730bfe95c54dcb5e437ac2d246f488
 - Rights fields for trademark/editorial-use review.
 - Documentation added in `docs/12_Brand_Assets_Library.md`.
 
-Public site verification:
+Verification:
 
 - Vercel deployment reported READY.
 - Public homepage returned HTTP 200.
-
-Pending authenticated Studio verification:
-
-1. Verify authenticated Sanity Studio shows `Brand Assets`.
-2. Verify Brand Assets queues load correctly.
-3. Create or review one safe test brand record.
+- User redeployed hosted Sanity Studio through GitHub Action.
+- User verified the `Brand Assets` category is visible in authenticated Sanity Studio.
 
 ## Current article URL
 
@@ -169,10 +165,10 @@ Only create isolated hotfix PRs for genuine production issues.
 
 ## Immediate next tasks
 
-1. Verify authenticated Sanity Studio shows `Brand Assets`.
-2. Verify Brand Assets queues load correctly.
-3. Create/review one safe test brand asset.
-4. Continue `CMS-002`: assign approved editorial images to current articles.
+1. Continue `CMS-002`: assign approved editorial images to current articles.
+2. Confirm final counts for Editorial Image Archive queues.
+3. Confirm all 22 originals appear in Rugby Panda Originals.
+4. Continue with Brand Assets starter records only after source and rights metadata are available.
 
 ## Known issues
 
@@ -180,7 +176,6 @@ Track all issues in `docs/08_Issue_Log.md`.
 
 Current important issues:
 
-- `BRAND-001` — Brand Assets library foundation merged and deployed; pending authenticated Studio verification.
 - `CMS-002` — CMS article images missing from live articles.
 - `MEDIA-001` — Editorial Image Archive Studio completed, pending production documentation closeout.
 - `MEDIA-002` — starter editorial image library review completed by user, pending final production verification count.
