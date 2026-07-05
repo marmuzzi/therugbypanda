@@ -8,7 +8,7 @@ Brand assets must stay separate from the Editorial Image Archive because logos a
 
 ## Current Sprint 4 scope
 
-Sprint 4 starts with the CMS foundation:
+Sprint 4 foundation is complete:
 
 - `brandAsset` Sanity document type.
 - Dedicated `Brand Assets` Studio section.
@@ -17,12 +17,13 @@ Sprint 4 starts with the CMS foundation:
 - Logo variants for primary, light-background and dark-background use.
 - Colour metadata for future frontend UI, cards and team / competition pages.
 
-Sprint 4 Task 4 has now started as candidate-only acquisition output:
+Sprint 4 Task 4 has started as candidate acquisition and Sanity review workflow:
 
 - Candidate records are stored in `data/brand-assets/candidate-collection-2026-07-05.json`.
 - Collection used Apify `apify/rag-web-browser` against official rugby source pages.
-- Candidate records are not approved, not published and not imported into Sanity as usable logo assets.
-- `approvedForEditorialUse` must remain false until a manual editorial/rights review is completed.
+- Candidate records are not approved and are not published.
+- Candidate records may be imported into Sanity only as unapproved review candidates.
+- `approvedForEditorialUse` must remain false until manual editorial/rights review is completed.
 
 ## Acquisition scope
 
@@ -61,7 +62,7 @@ Always check active connector availability at the start of a session before assu
 
 ## Brand asset candidate collector
 
-The first candidate collector pass ran on 5 July 2026.
+The first candidate collector pass ran on 5 July 2026 and was merged in PR #28.
 
 Apify runs used for the first candidate file:
 
@@ -93,6 +94,27 @@ Candidate collector limitations:
 - Sponsor, broadcaster and commercial partner marks found on official pages must be ignored.
 - External logo URLs are references for review only. Do not hotlink them in frontend templates.
 
+## Sanity candidate review workflow
+
+Brand assets now follow the same editorial-review principle as Editorial Images, but with brand-specific fields and rights checks.
+
+Implemented on branch `brand-assets-sanity-review`:
+
+- `brandAsset` has a `lifecycleStatus` review field with Candidate, Pending Validation, Approved, Rejected and Archived states.
+- Candidate logo URLs can be stored as external review references.
+- External logo previews render in Studio, but the public site must not hotlink them.
+- A dedicated `Brand Review` Studio tool mirrors the bulk Image Review workflow.
+- A manual GitHub Action can import JSON candidates into Sanity as unapproved `brandAsset` records.
+- Imported records use `approvedForEditorialUse: false` and `rightsStatus: editorial-trademark-use-only`.
+
+Review lifecycle:
+
+1. Candidate — collected but not checked.
+2. Pending Validation — selected for source, rights and colour validation.
+3. Approved — source, rights holder and usage notes reviewed; still prefer uploading logo files into Sanity assets before public use.
+4. Rejected — unsuitable, out of scope, unsafe source, sponsor/broadcaster/commercial partner, or duplicate.
+5. Archived — retained but not recommended for current use.
+
 ## Brand asset fields
 
 Each brand record should include:
@@ -102,9 +124,11 @@ Each brand record should include:
 - slug
 - brand type
 - active / retired / superseded status
+- lifecycle / review status
 - country and region
 - competition level
 - primary, light and dark logo variants
+- external candidate logo URL references
 - external source URL when used for research/reference
 - primary, secondary and accent colours
 - official website
@@ -115,6 +139,8 @@ Each brand record should include:
 - rights holder
 - source URL
 - usage notes
+- acquisition timestamp
+- raw source metadata
 - review date
 
 ## Rights policy
@@ -132,8 +158,11 @@ A logo should not be used in public templates until:
 3. The rights status is selected.
 4. `Approved for editorial use` is set to true.
 5. Usage notes explain any limitations.
+6. The approved logo is uploaded into Sanity assets rather than hotlinked from the external candidate URL.
 
-Do not bulk-import third-party logos until the source and usage workflow has been verified in Studio.
+The schema now prevents setting `Approved for editorial use` to true unless source URL, rights holder and usage notes are recorded.
+
+Do not bulk-import third-party logos as usable assets. Bulk import is allowed only for unapproved review candidates.
 
 ## Starter library targets
 
@@ -188,4 +217,4 @@ Do not add broad rugby clubs outside this editorial scope unless they are direct
 
 Sprint 4 foundation is complete because the Brand Assets Studio section is deployed and the user verified the `Brand Assets` category is visible in authenticated Sanity Studio after redeploying the Studio through GitHub Action.
 
-Sprint 4 Task 4 is implemented as a candidate-only data/docs branch, but it is not complete until the candidate output is reviewed, merged if accepted, and any later Sanity import workflow is verified.
+Sprint 4 Task 4 is not complete until the Sanity candidate review workflow is merged, deployed, the Studio is redeployed, candidate records are imported as unapproved records, and the user verifies the Brand Review workflow in authenticated Studio.
