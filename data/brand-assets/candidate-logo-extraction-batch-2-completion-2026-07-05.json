@@ -1,0 +1,206 @@
+{
+  "collectionName": "Sprint 4 Task 4 — Brand Assets Batch 2 Completion Pass",
+  "status": "candidate-only",
+  "acquisitionTimestamp": "2026-07-05T15:35:00Z",
+  "collector": {
+    "tool": "Public page extraction through available browser/web tooling after Apify became unavailable in the active connector list",
+    "purpose": "Complete source coverage for remaining Batch 2 approved-scope rugby-union organisations and preserve unresolved logo status for Sanity candidate review.",
+    "notes": "This is a candidate-only completion pass. Apify was visible earlier in the session and used for the previous targeted extraction file, but it was not exposed by connector discovery during this follow-up. No Sanity import, approval, asset upload, public template use or hotlinking occurred. Sponsor, broadcaster and commercial partner marks were ignored."
+  },
+  "defaultCandidateValues": {
+    "status": "active",
+    "rightsStatus": "editorial-trademark-use-only",
+    "approvedForEditorialUse": false,
+    "lifecycleStatus": "candidate",
+    "reviewedAt": null
+  },
+  "candidates": [
+    {
+      "officialBrandName": "Japan Rugby Football Union",
+      "shortName": "Japan Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.rugby-japan.jp/",
+      "sourcePageUrl": "https://www.rugby-japan.jp/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Japan Rugby Football Union",
+      "rightsTrademarkNotes": "Official JRFU homepage confirmed. Extracted page exposed site navigation and image placeholders but no reliable direct JRFU logo asset URL. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "JRFU｜日本ラグビーフットボール協会", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Fiji Rugby Union",
+      "shortName": "Fiji Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://fijirugby.com/",
+      "sourcePageUrl": "https://fijirugby.com/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Fiji Rugby Union",
+      "rightsTrademarkNotes": "Official source URL retained from Batch 2. Direct browser fetch was not available through the current public extraction route. Candidate only; run Apify/browser extraction again before Sanity import if a direct logo URL is required.",
+      "rawSourceMetadata": {"sourceTool": "existing Batch 2 source coverage plus attempted public extraction", "sourceStatus": "official source retained; direct logo unresolved"}
+    },
+    {
+      "officialBrandName": "Samoa Rugby Union",
+      "shortName": "Samoa Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://lakapirugby.com/",
+      "sourcePageUrl": "https://lakapirugby.com/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Samoa Rugby Union / Lakapi Samoa",
+      "rightsTrademarkNotes": "Official Lakapi Samoa source URL retained from Batch 2. Direct browser fetch was not available through the current public extraction route. Candidate only; run Apify/browser extraction again before Sanity import if a direct logo URL is required.",
+      "rawSourceMetadata": {"sourceTool": "existing Batch 2 source coverage plus attempted public extraction", "sourceStatus": "official source retained; direct logo unresolved"}
+    },
+    {
+      "officialBrandName": "Tonga Rugby Union",
+      "shortName": "Tonga Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.tongarugbyunion.net/",
+      "sourcePageUrl": "https://www.tongarugbyunion.net/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Tonga Rugby Union",
+      "rightsTrademarkNotes": "Official source URL retained from Batch 2. Public extraction timed out. Candidate only; run Apify/browser extraction again before Sanity import if a direct logo URL is required.",
+      "rawSourceMetadata": {"sourceTool": "existing Batch 2 source coverage plus attempted public extraction", "sourceStatus": "official source retained; direct logo unresolved"}
+    },
+    {
+      "officialBrandName": "Georgia Rugby Union",
+      "shortName": "Georgia Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://rugby.ge/",
+      "sourcePageUrl": "https://rugby.ge/ka",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Georgia Rugby Union",
+      "rightsTrademarkNotes": "Official Georgian Rugby Union homepage confirmed and redirected to the Georgian-language page. Page showed an image placeholder but no reliable direct logo asset URL. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "Georgian Rugby Union", "httpStatusCode": 200, "redirectedUrl": "https://rugby.ge/ka"}
+    },
+    {
+      "officialBrandName": "USA Rugby",
+      "shortName": "USA Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://usa.rugby/",
+      "sourcePageUrl": "https://usa.rugby/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "USA Rugby",
+      "rightsTrademarkNotes": "Official USA Rugby homepage confirmed. Extracted page exposed USA Rugby Logo 2 image references but no reliable direct logo asset URL. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "USA Rugby", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Rugby Canada",
+      "shortName": "Canada Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://rugby.ca/",
+      "sourcePageUrl": "https://rugby.ca/en",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Rugby Canada",
+      "rightsTrademarkNotes": "Official Rugby Canada homepage confirmed. Page exposes brand/about navigation and image placeholders but no reliable direct logo asset URL. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "Rugby Canada", "httpStatusCode": 200, "redirectedUrl": "https://rugby.ca/en"}
+    },
+    {
+      "officialBrandName": "Uruguay Rugby Union",
+      "shortName": "Uruguay Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://uru.org.uy/",
+      "sourcePageUrl": "https://uru.org.uy/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Uruguay Rugby Union",
+      "rightsTrademarkNotes": "Official Unión de Rugby del Uruguay homepage confirmed. No reliable direct logo URL was exposed in the parsed public extraction. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "Unión de Rugby del Uruguay", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Chile Rugby",
+      "shortName": "Chile Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.chilerugby.org/",
+      "sourcePageUrl": "https://chile.rugby/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Federación Deportiva Nacional de Rugby / Chile Rugby",
+      "rightsTrademarkNotes": "Official Chile Rugby source redirected to chile.rugby. Page exposed CHILE RUGBY and Logo FNDR image references but no reliable direct URL in parsed output. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "Chile Rugby | Federación Deportiva Nacional de Rugby", "httpStatusCode": 200, "redirectedUrl": "https://chile.rugby/"}
+    },
+    {
+      "officialBrandName": "Portugal Rugby",
+      "shortName": "Portugal Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.fpr.pt/",
+      "sourcePageUrl": "https://www.fpr.pt/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Federação Portuguesa de Rugby",
+      "rightsTrademarkNotes": "Official Portugal Rugby homepage confirmed. Parsed output exposed images and official Federation footer/contact details but no reliable direct logo URL. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "PORTUGAL RUGBY", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Spain Rugby",
+      "shortName": "Spain Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://ferugby.es/",
+      "sourcePageUrl": "https://ferugby.es/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Real Federación Española de Rugby",
+      "rightsTrademarkNotes": "Official FERugby homepage confirmed. Direct logo URL not resolved in this pass. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "Real Federación Española de Rugby - FERugby - Spanish Rugby Union", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Romania Rugby",
+      "shortName": "Romania Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://rugbyromania.ro/",
+      "sourcePageUrl": "https://rugbyromania.ro/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Federația Română de Rugby",
+      "rightsTrademarkNotes": "Official Romanian Rugby Federation homepage confirmed. Direct logo URL not resolved in this pass. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "Federatia Romana de Rugby - Site oficial", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Namibia Rugby Union",
+      "shortName": "Namibia Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.namibiarugby.com.na/",
+      "sourcePageUrl": "https://www.namibiarugby.com.na/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Namibia Rugby Union",
+      "rightsTrademarkNotes": "Official source URL retained from Batch 2. Public extraction was not available through the current safe-open route. Candidate only; run Apify/browser extraction again before Sanity import if a direct logo URL is required.",
+      "rawSourceMetadata": {"sourceTool": "existing Batch 2 source coverage plus attempted public extraction", "sourceStatus": "official source retained; direct logo unresolved"}
+    },
+    {
+      "officialBrandName": "World Rugby",
+      "shortName": "World Rugby",
+      "brandType": "governing-body",
+      "officialWebsite": "https://www.world.rugby/",
+      "sourcePageUrl": "https://www.world.rugby/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "World Rugby",
+      "rightsTrademarkNotes": "Official World Rugby homepage confirmed. Page exposed World Rugby navigation and official tournament links, but no reliable direct World Rugby logo URL in parsed output. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "World Rugby", "httpStatusCode": 200}
+    },
+    {
+      "officialBrandName": "Rugby World Cup",
+      "shortName": "Rugby World Cup",
+      "brandType": "competition",
+      "officialWebsite": "https://www.rugbyworldcup.com/",
+      "sourcePageUrl": "https://www.rugbyworldcup.com/en",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "rightsHolder": "Rugby World Cup Limited / World Rugby",
+      "rightsTrademarkNotes": "Official Rugby World Cup homepage confirmed. Page exposed masterbrand graphic image references but no reliable direct logo URL. Candidate only; continue source review before import or approval.",
+      "rawSourceMetadata": {"sourceTool": "web public page extraction", "metadataTitle": "Home | Women's and Men's Rugby World Cup", "httpStatusCode": 200, "redirectedUrl": "https://www.rugbyworldcup.com/en"}
+    }
+  ],
+  "batch2CompletionSummary": {
+    "sourceCoverage": "Completed for the remaining listed targets using existing Batch 2 URLs plus available public page extraction.",
+    "directLogoUrlCoverage": "Partial. Most remaining targets still require full browser/asset inspection to resolve reliable direct logo URLs.",
+    "readyForAutomaticApproval": false,
+    "readyForPublicFrontendUse": false,
+    "recommendedNextStep": "Import as unapproved candidates only if source-only records are useful for Brand Review; otherwise rerun targeted Apify/browser extraction for direct logo URLs first."
+  }
+}
