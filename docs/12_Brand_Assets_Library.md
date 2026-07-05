@@ -17,6 +17,13 @@ Sprint 4 starts with the CMS foundation:
 - Logo variants for primary, light-background and dark-background use.
 - Colour metadata for future frontend UI, cards and team / competition pages.
 
+Sprint 4 Task 4 has now started as candidate-only acquisition output:
+
+- Candidate records are stored in `data/brand-assets/candidate-collection-2026-07-05.json`.
+- Collection used Apify `apify/rag-web-browser` against official rugby source pages.
+- Candidate records are not approved, not published and not imported into Sanity as usable logo assets.
+- `approvedForEditorialUse` must remain false until a manual editorial/rights review is completed.
+
 ## Acquisition scope
 
 Do not collect brand assets outside the rugby-union editorial scope.
@@ -51,6 +58,40 @@ Use Apify for structured discovery and collection tasks such as:
 - future acquisition pipelines for images and article candidates.
 
 Always check active connector availability at the start of a session before assuming Apify can be used directly.
+
+## Brand asset candidate collector
+
+The first candidate collector pass ran on 5 July 2026.
+
+Apify runs used for the first candidate file:
+
+- `kfrzGA4W4OiRtPHDU` / dataset `cHRH5MKA4jY0OpceD` — Six Nations Rugby corporate/media source discovery.
+- `rL7g9OFGSJL3PQQY0` / dataset `yuz5P6lIMwBZXmzba` — EPCR, Champions Cup and Challenge Cup source discovery.
+- `QqjyFgqiiapbmRTkg` / dataset `Icm5UGA8rd2jV05MR` — URC media-centre source discovery.
+- `gpBny1OiiU55jOFVI` / dataset `enqhstkkWdCoARsLU` — World Rugby and Rugby World Cup source discovery.
+
+Initial candidates collected:
+
+- Six Nations Rugby.
+- Irish Rugby Football Union / Ireland Rugby.
+- Rugby Football Union / England Rugby.
+- Scottish Rugby Union / Scottish Rugby.
+- Fédération Française de Rugby / France Rugby.
+- Federazione Italiana Rugby / Italy Rugby.
+- Welsh Rugby Union / Wales Rugby.
+- European Professional Club Rugby.
+- European Rugby Champions Cup.
+- EPCR Challenge Cup.
+- United Rugby Championship.
+- World Rugby.
+- Men's Rugby World Cup 2027.
+
+Candidate collector limitations:
+
+- Some records have logo URL candidates but no extracted colour values yet.
+- World Rugby and Rugby World Cup candidate records currently confirm official source pages but still need a follow-up extraction pass for reliable logo URLs and colour values.
+- Sponsor, broadcaster and commercial partner marks found on official pages must be ignored.
+- External logo URLs are references for review only. Do not hotlink them in frontend templates.
 
 ## Brand asset fields
 
@@ -145,4 +186,6 @@ Do not add broad rugby clubs outside this editorial scope unless they are direct
 
 ## Completion rule
 
-Sprint 4 is complete because the Brand Assets Studio section is deployed and the user verified the `Brand Assets` category is visible in authenticated Sanity Studio after redeploying the Studio through GitHub Action.
+Sprint 4 foundation is complete because the Brand Assets Studio section is deployed and the user verified the `Brand Assets` category is visible in authenticated Sanity Studio after redeploying the Studio through GitHub Action.
+
+Sprint 4 Task 4 is implemented as a candidate-only data/docs branch, but it is not complete until the candidate output is reviewed, merged if accepted, and any later Sanity import workflow is verified.
