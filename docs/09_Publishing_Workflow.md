@@ -10,7 +10,7 @@ Sanity Studio is the canonical CMS.
 4. Read `docs/10_New_Chat_Handoff.md`.
 5. Read `docs/11_Editorial_Image_Archive.md`.
 6. Read `docs/12_Brand_Assets_Library.md` when working on logos, team marks or competition branding.
-7. Check available connectors before asking the user to configure anything.
+7. Check available connectors before asking the user to configure anything. Expected connectors are GitHub, Vercel and Apify.
 
 ## Content publishing checklist
 
@@ -24,7 +24,7 @@ Sanity Studio is the canonical CMS.
 
 ## Deployment budget rule
 
-Vercel has a daily deployment limit. Treat deployments as a constrained resource.
+The Vercel free plan has a maximum of **100 deployments per day**. Treat every deployment as a constrained resource.
 
 Default approach:
 
@@ -34,6 +34,8 @@ Default approach:
 4. Merge automatically when preview/build is clean and the scope is agreed.
 5. Use one production deployment.
 6. Verify once in production.
+
+Avoid documentation-only deployments unless the documentation update is important for project continuity or is bundled with code changes.
 
 Only create an isolated hotfix PR when production is broken or the risk of waiting is higher than the deployment cost.
 
@@ -132,3 +134,17 @@ Before a brand asset is used publicly:
 6. Prefer uploaded Sanity logo assets over hotlinked external URLs.
 
 Do not treat a logo discovered online as automatically approved. The Brand Assets Library is a controlled editorial reference library, not a generic image-import queue.
+
+## Apify acquisition workflow
+
+Apify is expected to be available for acquisition workflows.
+
+Use Apify for structured discovery and acquisition work such as:
+
+- collecting rugby news candidates,
+- collecting official source URLs,
+- discovering candidate image or logo assets,
+- extracting source metadata,
+- feeding future Sanity import pipelines.
+
+Do not use Apify to automatically publish content or approve brand assets. Apify output should create candidates for editorial review unless the project documentation explicitly says otherwise.
