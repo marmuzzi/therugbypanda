@@ -6,6 +6,18 @@ Sprint 4 is complete.
 
 The Rugby Panda now has a verified production media architecture where Editorial Images and Brand Assets are centrally managed in Sanity with review workflows before frontend use.
 
+## Current architecture
+
+```text
+Discovery / acquisition
+→ GitHub candidate JSON
+→ GitHub Action import
+→ Sanity candidate records
+→ Review tool
+→ Manual approval / rejection / archive
+→ Approved CMS records for future editorial use
+```
+
 ## Editorial Images
 
 Editorial Images are managed in Sanity using a complete review workflow.
@@ -18,8 +30,8 @@ Current capabilities:
 - Original Rugby Panda images.
 - External candidate images.
 - Bulk import workflow.
-- Images are imported into Sanity as candidates.
-- The user manually approves or rejects images inside Sanity before they are used.
+- Candidate metadata preservation.
+- User manual approval/rejection before use.
 
 Current acquisition priorities:
 
@@ -41,7 +53,7 @@ Brand assets are not published directly.
 Workflow:
 
 ```text
-Apify
+Apify / official-source discovery
 ↓
 GitHub candidate JSON
 ↓
@@ -51,9 +63,9 @@ Sanity import
 ↓
 Brand Review
 ↓
-Approve / Reject
+Approve / Reject / Archive
 ↓
-Available for frontend
+Approved CMS record for future frontend use
 ```
 
 Candidate logos are imported into Sanity as unapproved review records.
@@ -86,7 +98,7 @@ Approved logos should eventually become uploaded Sanity assets before public fro
 
 ## Rights policy
 
-Every imported logo is created as:
+Every imported logo candidate starts as:
 
 ```text
 approvedForEditorialUse = false
@@ -94,17 +106,47 @@ rightsStatus = editorial-trademark-use-only
 lifecycleStatus = candidate
 ```
 
-Only after editorial review may a logo become approved.
+Only after editorial review may a logo record become approved.
+
+Public frontend use requires a further implementation step: upload reviewed logo files into Sanity assets and render only approved Sanity-hosted assets.
 
 ## Import workflow
 
-The Brand Assets import workflow exists.
+The Brand Assets import workflow exists and is mobile-friendly through GitHub Actions.
 
-Candidate JSON is imported through a GitHub Action.
+Workflow name:
 
-The import creates unapproved Brand Asset records inside Sanity.
+`Import Brand Asset Candidates`
 
-After import, the user reviews everything in Studio.
+Script:
+
+`npm run brand-assets:import-candidates`
+
+The importer now supports:
+
+- `candidates` arrays.
+- `targetedResults` arrays.
+- creating new candidate records.
+- updating existing unapproved candidate records.
+- skipping already-approved records.
+
+## Brand Assets current state
+
+Completed:
+
+- Sprint 4 Brand Assets foundation.
+- Batch 1 import and manual approval.
+- Batch 2 source coverage.
+- Batch 2 import as candidates.
+- Batch 2 logo-reference importer fix.
+- Batch 2 Brand Review by user.
+- 5 Batch 2 records approved by user.
+
+Still required before public logo display:
+
+- Upload final approved logos into Sanity assets.
+- Replace external candidate URL references with Sanity asset references.
+- Verify public templates do not hotlink external candidate URLs.
 
 ## Acquisition scope
 
@@ -132,28 +174,6 @@ Never collect:
 - Grassroots clubs.
 - Non-rugby organisations.
 
-## Current state
-
-Sprint 4 is complete.
-
-The entire Brand Asset workflow has been verified:
-
-```text
-Apify → GitHub → Sanity → Brand Review → Approval
-```
-
-The first candidate batch was successfully imported into Sanity and manually approved.
-
-The next task is Batch 2, expanding the library with:
-
-- Remaining Rugby World Cup-cycle unions.
-- Remaining national teams.
-- Leinster.
-- Munster.
-- Ulster.
-- Connacht.
-- Other professional clubs within the approved editorial scope.
-
 ## Sprint 5 priorities
 
 After Brand Assets expansion, priorities are:
@@ -164,7 +184,10 @@ After Brand Assets expansion, priorities are:
 - Duplicate detection.
 - Event and album creation.
 - Fast search of the Editorial Image Library.
+- Assign approved editorial images to current articles.
+- Build real website search.
+- Build the article generation / review / scheduled publishing workflow.
 
 ## Long-term goal
 
-The long-term goal is for The Rugby Panda to function like a professional newsroom, where both editorial images and brand assets are centrally managed in Sanity with AI-assisted ingestion, review and reuse.
+The long-term goal is for The Rugby Panda to function like a professional newsroom, where editorial images, brand assets and article production are centrally managed in Sanity with AI-assisted ingestion, review and reuse.

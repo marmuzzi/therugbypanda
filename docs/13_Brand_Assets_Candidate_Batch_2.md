@@ -2,17 +2,24 @@
 
 ## Status
 
-Candidate-only collector output created on 5 July 2026.
+Completed on 5 July 2026.
 
-Repository file:
+Batch 2 is no longer pending import. It has been imported into Sanity as unapproved Brand Asset candidates, reviewed by the user in Brand Review, and partially approved.
+
+## Repository file
 
 - `data/brand-assets/candidate-collection-batch-2-2026-07-05.json`
 
-This batch is not approved content. It must not be used in public templates and must not be treated as a Sanity asset import source for approved logos.
+Related follow-up files:
+
+- `data/brand-assets/candidate-logo-extraction-2026-07-05.json`
+- `data/brand-assets/candidate-logo-extraction-apify-2026-07-05.json`
+- `data/brand-assets/candidate-logo-extraction-batch-2-completion-2026-07-05.json`
+- `data/brand-assets/candidate-logo-preview-update-2026-07-05.json`
 
 ## Scope
 
-Batch 2 continues Sprint 4 Task 4 for the remaining approved rugby-union organisations.
+Batch 2 continued Sprint 4 Task 4 for the remaining approved rugby-union organisations.
 
 Included:
 
@@ -29,14 +36,6 @@ Excluded:
 - Commercial partners.
 - Non-rugby organisations.
 - Teams outside the approved editorial scope.
-
-## Apify runs
-
-- `D3TiNoKjFvH8z0bZL` / dataset `yFr4VZu0xXpBCmWz5` — Irish province official-source discovery.
-- `CmAHZC8fZOjAKe2ie` / dataset `wNhvGOsRh3G9tM2tp` — Leinster Rugby homepage fetch.
-- `D5Pyt293XOIo7IOb9` / dataset `OXSruDFhdWvaxQtmq` — Connacht Rugby homepage fetch.
-- `Qk5LJvJqbFtXsJrcs` / dataset `QNLvft2pXVVZcc7Jr` — remaining Rugby World Cup-cycle unions/national teams discovery.
-- `B8hRZUfiKrJ9HADBS` / dataset `ihHRI3KDx4t3tPzrh` — World Rugby / Rugby World Cup-cycle source discovery.
 
 ## Candidate records added
 
@@ -69,26 +68,32 @@ Remaining unions / Rugby World Cup-cycle national-team organisations:
 
 ## Candidate-only rules preserved
 
-Every record uses or inherits:
+Every imported record was created or updated as:
 
-- `lifecycleStatus: candidate`
-- `approvedForEditorialUse: false`
-- `rightsStatus: editorial-trademark-use-only`
-- `reviewedAt: null`
+```text
+lifecycleStatus: candidate
+approvedForEditorialUse: false
+rightsStatus: editorial-trademark-use-only
+reviewedAt: null
+```
 
 External logo URLs, where found, are review references only. They must not be hotlinked publicly.
 
-## Known limitations
+## Completion outcome
 
-- Munster Rugby has an extracted SVG logo candidate from an official Munster Rugby page.
-- Leinster Rugby, Connacht Rugby and most remaining unions have official source references but no reliable extracted logo URL yet.
-- Ulster Rugby returned limited page content and needs targeted follow-up extraction.
-- Colour values were not extracted in this pass.
-- Several official website/source URLs should be validated again before Sanity import because Batch 2 prioritised source coverage over deep logo extraction.
+- Batch 2 candidate source coverage was completed.
+- Batch 2 records were imported through the GitHub Action.
+- The importer was later updated to support follow-up files that use `targetedResults`.
+- Existing unapproved candidates can now be updated with later logo references.
+- User completed Batch 2 Brand Review and approved 5 records.
+- `BRAND-004` is closed in `docs/08_Issue_Log.md`.
 
-## Next steps
+## Remaining limitation
 
-1. Run targeted extraction against the empty-logo records.
-2. Validate source URLs and rights holder names.
-3. Import only as unapproved Sanity candidates after the Brand Review workflow has been verified.
-4. Keep approved public use blocked until logo files are reviewed and uploaded into Sanity assets.
+Batch 2 was completed as a source-coverage and review workflow, not as a final public-logo asset pipeline.
+
+Before any frontend logo display:
+
+1. Upload approved logo files into Sanity assets.
+2. Replace external candidate URLs with Sanity-hosted assets.
+3. Verify no public template hotlinks external candidate URLs.
