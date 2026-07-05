@@ -10,7 +10,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| BRAND-004 | Implemented | High | Media / Brand Assets | Expand Batch 2 Brand Asset candidates for remaining Rugby World Cup-cycle unions, national teams, Irish provinces and approved-scope professional clubs. | Pending | Candidate-only data/docs branch implemented | Pending PR, merge, deployment and Sanity import/review decision | — |
+| BRAND-004 | In Progress | High | Media / Brand Assets | Expand Batch 2 Brand Asset candidates for remaining Rugby World Cup-cycle unions, national teams, Irish provinces and approved-scope professional clubs. | Pending candidate import upsert PR | Candidate-only data/docs branch implemented; importer upsert fix pending merge | Batch 2 imported as candidates; logo-reference update workflow pending rerun and Brand Review verification | — |
 | BRAND-003 | Closed | High | Media / Brand Assets / CMS | Import brand asset candidates into Sanity as unapproved review records and review them through a Brand Review tool. | #29 | Deployed on main commit `c78a02cffbc9ee32e38965b9cee7e3faae124382`; Vercel deployment `dpl_5aLEWUW17j9WCANp9sDjX6Edu7pM` READY | Full Brand Asset workflow verified: Apify → GitHub → Sanity → Brand Review → Approval. First candidate batch imported and manually approved by user. | 2026-07-05 |
 | BRAND-002 | Closed | High | Media / Brand Assets | Build Brand Assets candidate collector output for approved rugby-union scope only. | #28 | Deployed on main commit `c8edd8bc40d6e03d644f0deea401c35632a7c6bd` | Candidate data/docs merged and deployed; Sanity review/import workflow subsequently verified under BRAND-003 | 2026-07-05 |
 | BRAND-001 | Closed | Medium | Media / Brand Assets | Build separate Brand Assets library for team logos and competition branding. | #27 | Deployed on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43`; Studio redeployed through GitHub Action | User verified Brand Assets is visible in authenticated Sanity Studio | 2026-07-05 |
@@ -31,15 +31,17 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 ## BRAND-004 — Batch 2 Brand Assets expansion
 
-- **Status:** Implemented
+- **Status:** In Progress
 - **Priority:** High
 - **Root cause:** The verified Brand Assets workflow needs broader approved-scope coverage for remaining Rugby World Cup-cycle unions, national teams, Irish provinces and relevant professional clubs.
 - **Implementation:** Candidate-only Batch 2 source coverage has been recorded in JSON files under `data/brand-assets/`, including `candidate-logo-extraction-batch-2-completion-2026-07-05.json`.
+- **Import status:** Batch 2 candidate records were imported through the GitHub Action. Logo previews are still incomplete because some follow-up files use `targetedResults` rather than `candidates`, and the original importer used `createIfNotExists`, so later logo-reference files could not update existing unapproved candidate records.
+- **Importer fix:** A follow-up importer update is pending merge to support both `candidates` and `targetedResults`, update existing unapproved candidate records with logo references, and skip already-approved Brand Assets.
 - **Important limitation:** Batch 2 is complete as a source-coverage candidate pass, not as a fully resolved direct-logo asset pass. Many records still have empty `candidateLogoUrls`.
 - **Rights rule:** Candidate logo URLs are references only. They must not be hotlinked or used in public templates. Imported records must use `approvedForEditorialUse = false`, `rightsStatus = editorial-trademark-use-only` and `lifecycleStatus = candidate`.
-- **Related PRs:** Pending.
+- **Related PRs:** Pending candidate import upsert PR.
 - **Deployment status:** Pending PR and deployment.
-- **Verification steps:** Merge data/docs, decide whether to import source-only records or rerun direct-logo extraction, import candidates through GitHub Action if appropriate, verify candidates appear in Brand Review, manually approve/reject/archive where appropriate, and verify no frontend hotlinking occurs.
+- **Verification steps:** Merge importer fix, rerun import workflow for the logo-extraction files, verify candidates appear in Brand Review with available previews, manually approve/reject/archive where appropriate, and verify no frontend hotlinking occurs.
 - **Resolution date:** Pending
 
 ## CMS-002 — CMS article images missing
