@@ -1,0 +1,125 @@
+{
+  "collectionName": "Sprint 4 Task 4 — Targeted Brand Logo Extraction",
+  "status": "candidate-only",
+  "acquisitionTimestamp": "2026-07-05T14:36:00Z",
+  "collector": {
+    "tool": "Official public source extraction through available web/GitHub tooling",
+    "notes": "Apify was not exposed in the active connector list during this follow-up turn, so this pass records only logo URLs directly discoverable from official public pages. Records remain candidate-only and are not approved, imported, uploaded to Sanity, published, or hotlinked."
+  },
+  "sourceBatch": {
+    "file": "data/brand-assets/candidate-collection-batch-2-2026-07-05.json",
+    "mergedPr": 30,
+    "mergedCommit": "d0be37d70c787292b4d40b08774e5d1e999486fe"
+  },
+  "defaultCandidateValues": {
+    "status": "active",
+    "rightsStatus": "editorial-trademark-use-only",
+    "approvedForEditorialUse": false,
+    "lifecycleStatus": "candidate",
+    "reviewedAt": null
+  },
+  "targetedResults": [
+    {
+      "officialBrandName": "Leinster Rugby",
+      "shortName": "Leinster",
+      "brandType": "club",
+      "officialWebsite": "https://www.leinsterrugby.ie/",
+      "sourcePageUrl": "https://www.leinsterrugby.ie/",
+      "candidateLogoUrls": [
+        "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this targeted pass."
+      },
+      "rightsHolder": "Leinster Rugby",
+      "rightsTrademarkNotes": "Official Leinster Rugby homepage exposes a Leinster Rugby image reference and the clicked image target resolved to a CloudFront-hosted Leinster logo SVG. Candidate reference only; verify rights and upload approved asset to Sanity before public use.",
+      "acquisitionTimestamp": "2026-07-05T14:36:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "web.open / web.click",
+        "sourceEvidence": "Official Leinster Rugby homepage image reference and clicked image target.",
+        "httpStatusCode": "page 200; image fetch cache miss in extraction tool but URL resolved from clicked image target"
+      }
+    },
+    {
+      "officialBrandName": "Ulster Rugby",
+      "shortName": "Ulster",
+      "brandType": "club",
+      "officialWebsite": "https://ulster.rugby/",
+      "sourcePageUrl": "https://ulster.rugby/",
+      "candidateLogoUrls": [
+        "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301"
+      ],
+      "logoFormat": "png",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this targeted pass."
+      },
+      "rightsHolder": "Ulster Rugby",
+      "rightsTrademarkNotes": "Official Ulster Rugby homepage exposes Ulster Rugby image references for fixture/team contexts, and the clicked image target resolved to an Ulster-hosted team icon PNG. Candidate reference only; verify rights and upload approved asset to Sanity before public use.",
+      "acquisitionTimestamp": "2026-07-05T14:36:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "web.open / web.click",
+        "sourceEvidence": "Official Ulster Rugby homepage image reference and clicked image target.",
+        "httpStatusCode": "page 200; image URL resolved"
+      }
+    },
+    {
+      "officialBrandName": "Connacht Rugby",
+      "shortName": "Connacht",
+      "brandType": "club",
+      "officialWebsite": "https://www.connachtrugby.ie/",
+      "sourcePageUrl": "https://www.connachtrugby.ie/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this targeted pass."
+      },
+      "rightsHolder": "Connacht Rugby",
+      "rightsTrademarkNotes": "Official Connacht Rugby homepage was accessible, but the available extraction did not expose a reliable club logo asset URL. Keep unresolved until Apify/browser extraction or manual official-asset review is available.",
+      "acquisitionTimestamp": "2026-07-05T14:36:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "web.open / web.click",
+        "sourceEvidence": "Official Connacht Rugby homepage context only; no reliable logo URL captured.",
+        "httpStatusCode": "page 200"
+      }
+    },
+    {
+      "officialBrandName": "South African Rugby Union",
+      "shortName": "South Africa Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://springboks.rugby/",
+      "sourcePageUrl": "https://springboks.rugby/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this targeted pass."
+      },
+      "rightsHolder": "South African Rugby Union",
+      "rightsTrademarkNotes": "The SA Rugby source redirects to the official Springboks site and exposes SARU / Springboks image references, but the available extraction did not return a reliable direct asset URL. Keep unresolved until Apify/browser extraction or manual official-asset review is available.",
+      "acquisitionTimestamp": "2026-07-05T14:36:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "web.open / web.find",
+        "sourceEvidence": "Official Springboks/SARU homepage image references only; no reliable logo URL captured.",
+        "httpStatusCode": "page 200"
+      }
+    }
+  ],
+  "followUpRequired": [
+    "Run a full browser extraction when Apify is visible again for Connacht Rugby, South African Rugby Union and the remaining empty-logo union records.",
+    "Validate every candidate logo URL in Sanity before approval.",
+    "Do not hotlink any candidate logo URL in public templates.",
+    "Upload any approved logo file into Sanity assets before frontend use."
+  ]
+}
