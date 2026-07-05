@@ -1,0 +1,426 @@
+{
+  "collectionName": "Sprint 4 Task 4 — Brand Assets Candidate Collector",
+  "status": "candidate-only",
+  "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+  "collector": {
+    "tool": "Apify apify/rag-web-browser",
+    "runs": [
+      {
+        "runId": "kfrzGA4W4OiRtPHDU",
+        "datasetId": "cHRH5MKA4jY0OpceD",
+        "query": "site:sixnationsrugby.com logo Six Nations Rugby brand assets official"
+      },
+      {
+        "runId": "rL7g9OFGSJL3PQQY0",
+        "datasetId": "yuz5P6lIMwBZXmzba",
+        "query": "site:epcrugby.com official logo EPCR Champions Cup Challenge Cup brand assets"
+      },
+      {
+        "runId": "QqjyFgqiiapbmRTkg",
+        "datasetId": "Icm5UGA8rd2jV05MR",
+        "query": "site:unitedrugby.com official United Rugby Championship logo brand assets URC"
+      },
+      {
+        "runId": "gpBny1OiiU55jOFVI",
+        "datasetId": "enqhstkkWdCoARsLU",
+        "query": "site:world.rugby official World Rugby logo brand guidelines Rugby World Cup logo"
+      }
+    ],
+    "notes": "Records are candidate references only. They are not approved for editorial use, are not uploaded as Sanity image assets, and must not be used in public templates until reviewed."
+  },
+  "scopeRules": {
+    "included": [
+      "Rugby union governing bodies and unions",
+      "Rugby World Cup-cycle national teams",
+      "Rugby World Cup",
+      "Six Nations Rugby",
+      "United Rugby Championship",
+      "European Professional Club Rugby",
+      "European Rugby Champions Cup",
+      "EPCR Challenge Cup",
+      "Irish provinces directly relevant to URC and EPCR coverage"
+    ],
+    "excluded": [
+      "Grassroots clubs",
+      "Schools or youth teams",
+      "Amateur clubs",
+      "Sponsors",
+      "Broadcasters",
+      "Commercial partners",
+      "Non-rugby organisations",
+      "Teams outside the approved editorial scope"
+    ]
+  },
+  "defaultCandidateValues": {
+    "status": "active",
+    "rightsStatus": "editorial-trademark-use-only",
+    "approvedForEditorialUse": false,
+    "lifecycleStatus": "candidate",
+    "reviewedAt": null
+  },
+  "candidates": [
+    {
+      "officialBrandName": "Six Nations Rugby",
+      "shortName": "Six Nations",
+      "brandType": "competition",
+      "officialWebsite": "https://www.sixnationsrugby.com/",
+      "sourcePageUrl": "https://media.sixnationsrugby.com/",
+      "candidateLogoUrls": [
+        "https://media.sixnationsrugby.com/wp-content/uploads/2025/10/Frame-3.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Six Nations Rugby Limited / Six Nations Rugby",
+      "rightsTrademarkNotes": "Official Six Nations media/corporate site includes brand assets and locked download access. Treat as editorial/trademark-use only until reviewed.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "kfrzGA4W4OiRtPHDU",
+        "datasetId": "cHRH5MKA4jY0OpceD",
+        "searchResultTitle": "Six Nations Rugby Corporate",
+        "metadataTitle": "Six Nations Rugby Corporate",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Irish Rugby Football Union",
+      "shortName": "Ireland Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.irishrugby.ie/",
+      "sourcePageUrl": "https://media.sixnationsrugby.com/#ireland",
+      "candidateLogoUrls": [
+        "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Ireland_-_Dark.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Irish Rugby Football Union",
+      "rightsTrademarkNotes": "Official Six Nations media page exposes Ireland dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "kfrzGA4W4OiRtPHDU",
+        "datasetId": "cHRH5MKA4jY0OpceD",
+        "searchResultTitle": "Six Nations Rugby Corporate",
+        "metadataTitle": "Six Nations Rugby Corporate",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Rugby Football Union",
+      "shortName": "England Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.englandrugby.com/",
+      "sourcePageUrl": "https://media.sixnationsrugby.com/#england",
+      "candidateLogoUrls": [
+        "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/England_-_Dark.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Rugby Football Union",
+      "rightsTrademarkNotes": "Official Six Nations media page exposes England dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "kfrzGA4W4OiRtPHDU",
+        "datasetId": "cHRH5MKA4jY0OpceD",
+        "searchResultTitle": "Six Nations Rugby Corporate",
+        "metadataTitle": "Six Nations Rugby Corporate",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Scottish Rugby Union",
+      "shortName": "Scottish Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://scottishrugby.org/",
+      "sourcePageUrl": "https://media.sixnationsrugby.com/#scotland",
+      "candidateLogoUrls": [
+        "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Scottish_Rugby_-_Dark.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Scottish Rugby Union",
+      "rightsTrademarkNotes": "Official Six Nations media page exposes Scotland dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "kfrzGA4W4OiRtPHDU",
+        "datasetId": "cHRH5MKA4jY0OpceD",
+        "searchResultTitle": "Six Nations Rugby Corporate",
+        "metadataTitle": "Six Nations Rugby Corporate",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Fédération Française de Rugby",
+      "shortName": "France Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.ffr.fr/",
+      "sourcePageUrl": "https://media.sixnationsrugby.com/#france",
+      "candidateLogoUrls": [
+        "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/France_-_Dark.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Fédération Française de Rugby",
+      "rightsTrademarkNotes": "Official Six Nations media page exposes France dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "kfrzGA4W4OiRtPHDU",
+        "datasetId": "cHRH5MKA4jY0OpceD",
+        "searchResultTitle": "Six Nations Rugby Corporate",
+        "metadataTitle": "Six Nations Rugby Corporate",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Federazione Italiana Rugby",
+      "shortName": "Italy Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.federugby.it/",
+      "sourcePageUrl": "https://media.sixnationsrugby.com/#italy",
+      "candidateLogoUrls": [
+        "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Italy_-_Dark.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Federazione Italiana Rugby",
+      "rightsTrademarkNotes": "Official Six Nations media page exposes Italy dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "kfrzGA4W4OiRtPHDU",
+        "datasetId": "cHRH5MKA4jY0OpceD",
+        "searchResultTitle": "Six Nations Rugby Corporate",
+        "metadataTitle": "Six Nations Rugby Corporate",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Welsh Rugby Union",
+      "shortName": "Wales Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.wru.wales/",
+      "sourcePageUrl": "https://media.sixnationsrugby.com/#wales",
+      "candidateLogoUrls": [
+        "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Welsh_Rugby_-_Dark.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "Welsh Rugby Union",
+      "rightsTrademarkNotes": "Official Six Nations media page exposes Wales dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "kfrzGA4W4OiRtPHDU",
+        "datasetId": "cHRH5MKA4jY0OpceD",
+        "searchResultTitle": "Six Nations Rugby Corporate",
+        "metadataTitle": "Six Nations Rugby Corporate",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "European Professional Club Rugby",
+      "shortName": "EPCR",
+      "brandType": "competition",
+      "officialWebsite": "https://www.epcrugby.com/european-professional-club-rugby",
+      "sourcePageUrl": "https://www.epcrugby.com/european-professional-club-rugby/about-epcr",
+      "candidateLogoUrls": [
+        "https://media-cdn.incrowdsports.com/1d77a993-3a66-4ef5-a36b-66788229dca0.svg?format=webp&width=200",
+        "https://media-cdn.incrowdsports.com/39fdce74-2703-4bc4-8f6b-22f958168a78.svg?format=webp&width=1920",
+        "https://media-cdn.incrowdsports.com/d5dac4eb-15fb-4e27-ba6a-b40d566561da.svg?format=webp&width=1920",
+        "https://media-cdn.incrowdsports.com/253f1e28-4d1d-4876-9fbb-88a8f45957b5.svg?format=webp&width=1920"
+      ],
+      "logoFormat": "svg source served with webp transform query",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "European Professional Club Rugby",
+      "rightsTrademarkNotes": "Official EPCR pages expose EPCR logo variants through Incrowd media CDN. Candidate only; verify source and usage restrictions before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "rL7g9OFGSJL3PQQY0",
+        "datasetId": "yuz5P6lIMwBZXmzba",
+        "searchResultTitle": "About EPCR | European Professional Club Rugby",
+        "metadataTitle": "About EPCR | European Professional Club Rugby",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "European Rugby Champions Cup",
+      "shortName": "Champions Cup",
+      "brandType": "competition",
+      "officialWebsite": "https://www.epcrugby.com/champions-cup",
+      "sourcePageUrl": "https://www.epcrugby.com/european-professional-club-rugby/about-epcr",
+      "candidateLogoUrls": [
+        "https://media-cdn.incrowdsports.com/20f46ca2-f360-49fd-a056-12344a2d19b6.svg?format=webp&width=200"
+      ],
+      "logoFormat": "svg source served with webp transform query",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "European Professional Club Rugby",
+      "rightsTrademarkNotes": "Official EPCR pages expose Champions Cup logo candidate. Candidate only; verify source and usage restrictions before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "rL7g9OFGSJL3PQQY0",
+        "datasetId": "yuz5P6lIMwBZXmzba",
+        "searchResultTitle": "About EPCR | European Professional Club Rugby",
+        "metadataTitle": "About EPCR | European Professional Club Rugby",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "EPCR Challenge Cup",
+      "shortName": "Challenge Cup",
+      "brandType": "competition",
+      "officialWebsite": "https://www.epcrugby.com/challenge-cup",
+      "sourcePageUrl": "https://www.epcrugby.com/challenge-cup/content/itll-be-a-big-atmosphere-itll-be-loud-itll-be-noisy-gloucester-rugbys-lewis-ludlow-relishing-montpellier-epcr-challenge-cup-clash",
+      "candidateLogoUrls": [
+        "https://media-cdn.incrowdsports.com/2e7354fd-d641-4170-8d65-4ba31590ce27.svg?format=webp&width=200",
+        "https://media-cdn.incrowdsports.com/96d27751-bc48-42e6-890e-a389508ab133.svg?format=webp&width=1920",
+        "https://media-cdn.incrowdsports.com/43e4a7e3-bb43-4b3e-ac00-7921debba4a6.svg?format=webp&width=1920",
+        "https://media-cdn.incrowdsports.com/5209c70a-71ec-4df9-a197-b4150b69f314.svg?format=webp&width=1920"
+      ],
+      "logoFormat": "svg source served with webp transform query",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "European Professional Club Rugby",
+      "rightsTrademarkNotes": "Official EPCR Challenge Cup page exposes logo candidates. Candidate only; verify source and usage restrictions before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "rL7g9OFGSJL3PQQY0",
+        "datasetId": "yuz5P6lIMwBZXmzba",
+        "searchResultTitle": "Gloucester Rugby's Lewis Ludlow relishing Montpellier ...",
+        "metadataTitle": "‘It’ll be a big atmosphere, it’ll be loud, it’ll be noisy’ – Gloucester Rugby’s Lewis Ludlow relishing Montpellier EPCR Challenge Cup clash | EPCR Challenge Cup",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "United Rugby Championship",
+      "shortName": "URC",
+      "brandType": "league",
+      "officialWebsite": "https://www.unitedrugby.com/",
+      "sourcePageUrl": "https://www.unitedrugby.com/media/",
+      "candidateLogoUrls": [
+        "https://www.unitedrugby.com/wp-content/themes/sp-starter-theme/public/images/app-banner-logo.svg"
+      ],
+      "logoFormat": "svg",
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour values not extracted by this candidate pass."
+      },
+      "rightsHolder": "United Rugby Championship",
+      "rightsTrademarkNotes": "Official URC media page points to the URC Media Centre and exposes an app/banner logo. Candidate only; verify media-centre access and usage terms before use.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "QqjyFgqiiapbmRTkg",
+        "datasetId": "Icm5UGA8rd2jV05MR",
+        "searchResultTitle": "Media Centre",
+        "metadataTitle": "Media Centre | United Rugby Championship",
+        "httpStatusCode": 200,
+        "mediaCentreUrl": "https://mediacentre.unitedrugby.com/"
+      }
+    },
+    {
+      "officialBrandName": "World Rugby",
+      "shortName": "World Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.world.rugby/",
+      "sourcePageUrl": "https://www.world.rugby/",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Colour and logo URLs not extracted from the accessible homepage metadata in this pass."
+      },
+      "rightsHolder": "World Rugby",
+      "rightsTrademarkNotes": "Official World Rugby homepage and metadata confirmed. No logo URL stored because this pass did not isolate a reliable World Rugby-owned mark from sponsor logos and navigation text.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "gpBny1OiiU55jOFVI",
+        "datasetId": "enqhstkkWdCoARsLU",
+        "searchResultTitle": "World Rugby",
+        "metadataTitle": "World Rugby",
+        "metadataDescription": "The official site of World Rugby the governing body of Rugby Union with news, tournaments, fixtures, results, world rugby rankings, statistics, video, the Laws of the game, governance and contacts.",
+        "httpStatusCode": 200
+      }
+    },
+    {
+      "officialBrandName": "Men's Rugby World Cup 2027",
+      "shortName": "RWC 2027",
+      "brandType": "tournament",
+      "officialWebsite": "https://www.rugbyworldcup.com/2027",
+      "sourcePageUrl": "https://www.world.rugby/news/976853/australia-ready-to-welcome-a-new-era-of-rugby-as-mens-rugby-world-cup-2027-visual-identity-unveiled",
+      "candidateLogoUrls": [],
+      "logoFormat": null,
+      "colours": {
+        "primary": null,
+        "secondary": null,
+        "accent": null,
+        "source": "Visual identity source discovered; colour and logo URLs need a follow-up extraction pass."
+      },
+      "rightsHolder": "World Rugby / Rugby World Cup Limited",
+      "rightsTrademarkNotes": "Official World Rugby result confirms the Men's Rugby World Cup 2027 visual identity source page. Candidate only; logo URLs and colours still need source-page extraction before import.",
+      "acquisitionTimestamp": "2026-07-05T10:56:00Z",
+      "rawSourceMetadata": {
+        "apifyRunId": "gpBny1OiiU55jOFVI",
+        "datasetId": "enqhstkkWdCoARsLU",
+        "searchResultTitle": "Australia ready to welcome a new era of rugby as Men's ...",
+        "metadataTitle": "Australia ready to welcome a new era of rugby as Men’s Rugby World Cup 2027 visual identity unveiled | World Rugby",
+        "httpStatusCode": 200
+      }
+    }
+  ],
+  "reviewChecklistBeforeSanityImport": [
+    "Confirm each source page is official and in scope.",
+    "Confirm each candidateLogoUrl is a logo/mark and not a sponsor, editorial image, or partner asset.",
+    "Extract and validate official colour values before populating colour fields.",
+    "Set approvedForEditorialUse to false for all imports unless manually reviewed later.",
+    "Prefer uploading approved logo files to Sanity assets rather than hotlinking external URLs.",
+    "Record sourceUrl, rightsHolder, rightsStatus and usageNotes before any public template usage."
+  ]
+}
