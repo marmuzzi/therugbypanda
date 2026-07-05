@@ -10,6 +10,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| BRAND-002 | Implemented | High | Media / Brand Assets | Build Brand Assets candidate collector output for approved rugby-union scope only. | Pending PR | Not deployed | Candidate JSON created from Apify official-source discovery; pending review/import decision | — |
 | BRAND-001 | Closed | Medium | Media / Brand Assets | Build separate Brand Assets library for team logos and competition branding. | #27 | Deployed on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43`; Studio redeployed through GitHub Action | User verified Brand Assets is visible in authenticated Sanity Studio | 2026-07-05 |
 | CMS-002 | Open | High | CMS / Visual content | Hosted Sanity articles need proper featured images and metadata. | — | Not implemented | Pending CMS image assignment and page verification | — |
 | MEDIA-001 | Pending Verification | High | Media / CMS | Editorial Images Studio, review queues and bulk Image Review tool are implemented and used successfully. | #26 plus direct main commits | Studio redeployed by user; functionality visible | Pending final production documentation closeout | — |
@@ -25,6 +26,19 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | WEB-004 | Closed | Medium | Branding / UI | Dedicated favicon design implemented and verified. | #23, #24 | Deployed to production | User verified favicon in production | 2026-07-04 |
 | DOC-001 | Closed | High | Documentation | Project state, issue log and publishing workflow added as source of truth. | #22 | Merged to main | Repository files verified | 2026-07-04 |
 | CMS-001 | Closed | High | CMS | Homepage and article pages use hosted Sanity content. | #14 | Deployed | Verified by live validation workflow | 2026-07-03 |
+
+## BRAND-002 — Brand Assets candidate collector
+
+- **Status:** Implemented
+- **Priority:** High
+- **Root cause:** Sprint 4 Brand Assets needs an acquisition layer that can gather official-source logo/brand candidates without approving, publishing or importing them automatically.
+- **Implementation:** Ran Apify `apify/rag-web-browser` against official rugby-union sources for Six Nations, EPCR, URC and World Rugby. Stored structured candidate-only output in `data/brand-assets/candidate-collection-2026-07-05.json`.
+- **Scope guardrails:** Candidate collection is limited to rugby union governing bodies/unions, Rugby World Cup-cycle teams, Rugby World Cup, Six Nations Rugby, URC, EPCR, Champions Cup, Challenge Cup and Irish provinces/relevant professional clubs. Grassroots clubs, schools/youth teams, amateur clubs, sponsors, broadcasters, commercial partners and non-rugby organisations remain excluded.
+- **Candidate status:** All records are candidate-only. `approvedForEditorialUse` remains false; default rights status is `editorial-trademark-use-only`; logo URLs are external references only and must not be used in public templates before editorial review.
+- **Related PRs:** Pending PR.
+- **Deployment status:** Not deployed. Data/docs branch only.
+- **Verification steps:** Review candidate JSON, confirm official source pages, extract/validate colour values where missing, and decide whether to build a controlled Sanity import workflow for candidates.
+- **Resolution date:** Pending
 
 ## BRAND-001 — Brand Assets library
 
