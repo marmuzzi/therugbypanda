@@ -6,6 +6,8 @@ v0.4 — Publishing Foundation + Editorial Media Archive
 
 Sprint 4 Brand Assets Library foundation is merged, deployed and verified in authenticated Sanity Studio.
 
+Sprint 4 Task 4 Brand Assets Candidate Collector is implemented on a branch as candidate-only JSON output, pending PR review/merge and any later import decision.
+
 ## Last Updated
 
 5 July 2026
@@ -33,8 +35,7 @@ Expected connectors:
 
 Important connector note:
 
-- Apify was confirmed by the user as available in another chat, but it did not appear in this chat's active connector list.
-- If Apify is not visible, do not ask the user to reconfigure immediately; suggest starting or continuing in a chat where Apify is available.
+- Apify was available in the 5 July 2026 Sprint 4 Task 4 session and was used for brand-asset candidate discovery.
 - Always check available connectors before asking the user to configure one.
 
 Sanity MCP may be installed on the user's account but has not consistently appeared in available tools. Always check available connectors before asking the user to configure one.
@@ -88,6 +89,15 @@ This closed the previously pending build and International taxonomy verification
 - Bulk approval/rejection/archive workflow has been used successfully by the user.
 - Sprint 4 Brand Assets Library foundation is merged, deployed and verified in authenticated Sanity Studio.
 
+## Implemented but not merged/deployed
+
+- `BRAND-002` — Brand Assets Candidate Collector output.
+  - Branch: `sprint-4-brand-assets-candidates`
+  - Candidate file: `data/brand-assets/candidate-collection-2026-07-05.json`
+  - Status: candidate-only data/docs implementation.
+  - Source discovery: Apify `apify/rag-web-browser` official-source runs.
+  - No assets were approved, published, uploaded to Sanity, or used in public templates.
+
 ## Sprint 4 — Brand Assets Library foundation
 
 Merged in PR #27 and deployed on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43`:
@@ -106,6 +116,22 @@ Verification:
 - Public homepage returned HTTP 200.
 - User redeployed hosted Sanity Studio through GitHub Action.
 - User verified the `Brand Assets` category is visible in authenticated Sanity Studio.
+
+## Sprint 4 Task 4 — Brand Assets Candidate Collector
+
+Implemented on branch `sprint-4-brand-assets-candidates`:
+
+- Created candidate-only collection output in `data/brand-assets/candidate-collection-2026-07-05.json`.
+- Collected official-source candidate records for Six Nations Rugby, Six Nations unions/teams, EPCR, Champions Cup, Challenge Cup, URC, World Rugby and Men's Rugby World Cup 2027.
+- Preserved Apify run IDs, dataset IDs, source URLs, candidate logo URLs where discoverable, rights holder notes, and candidate-only review metadata.
+- Set all output to candidate-only review status.
+- Did not approve logos, import logo assets into Sanity, publish assets, or use hotlinked logo URLs publicly.
+
+Known limitations of first pass:
+
+- Colour values were not reliably extracted.
+- World Rugby and Rugby World Cup records need follow-up extraction for reliable logo URLs.
+- Irish provinces and wider Rugby World Cup-cycle national teams still need follow-up collection.
 
 ## Current article URL
 
@@ -137,6 +163,7 @@ Primary principles:
 - Logos should be approved for editorial use before appearing in public templates.
 - The starter library should prioritise Rugby World Cup-cycle national teams, rugby unions, Champions Cup / Challenge Cup / URC-relevant professional teams and top-level rugby competitions.
 - Do not collect brand assets for random grassroots clubs, schools, sponsors, broadcasters, unrelated teams or non-rugby organisations unless explicitly approved later.
+- Candidate collector output is review-only and must not be treated as approved Sanity assets.
 
 Current brand asset strategy is documented in `docs/12_Brand_Assets_Library.md`.
 
@@ -153,7 +180,6 @@ Starter external editorial image library:
 
 - 16 external editorial image candidate records imported into Sanity production dataset.
 - User has reviewed candidates through the bulk Image Review tool.
-- Approved/rejected workflow is functional.
 
 ## Deployment budget rule
 
@@ -172,12 +198,10 @@ Only create isolated hotfix PRs for genuine production issues.
 
 ## Immediate next tasks
 
-1. Start a new chat where Apify is available.
-2. Read docs 07–12 first.
-3. Build or configure the Apify Brand Assets candidate collector actor.
-4. Limit Brand Assets acquisition to the approved scope in `docs/12_Brand_Assets_Library.md`.
-5. Store Apify output as candidates for editorial review, not approved/published assets.
-6. Continue `CMS-002`: assign approved editorial images to current articles.
+1. Review and merge `sprint-4-brand-assets-candidates` if the candidate-only output is acceptable.
+2. Continue the candidate collector for Irish provinces and remaining Rugby World Cup-cycle unions/national teams.
+3. Build a controlled Sanity import workflow only after candidate source/rights workflow is reviewed.
+4. Continue `CMS-002`: assign approved editorial images to current articles.
 
 ## Known issues
 
@@ -185,6 +209,7 @@ Track all issues in `docs/08_Issue_Log.md`.
 
 Current important issues:
 
+- `BRAND-002` — Brand Assets Candidate Collector output implemented as candidate-only JSON; pending PR review/merge and follow-up collection.
 - `CMS-002` — CMS article images missing from live articles.
 - `MEDIA-001` — Editorial Image Archive Studio completed, pending production documentation closeout.
 - `MEDIA-002` — starter editorial image library review completed by user, pending final production verification count.
