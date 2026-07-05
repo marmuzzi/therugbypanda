@@ -24,6 +24,7 @@ Read these files first in future sessions:
 10. `docs/16_New_Chat_Apify_Prompt.md`
 11. `docs/17_Current_Production_Architecture.md`
 12. `docs/18_Apify_Targeted_Logo_Extraction.md`
+13. `docs/19_Brand_Assets_Batch_2_Completion.md`
 
 Do not rely on chat history for current status.
 
@@ -37,6 +38,8 @@ Expected connectors:
 - Apify
 
 In the 5 July 2026 Apify targeted extraction session, all four connector surfaces were visible.
+
+During the later Batch 2 completion follow-up, GitHub and Vercel remained visible but Apify was no longer exposed by connector discovery. That pass used available public page extraction and repository source URLs, not new Apify actor runs.
 
 ## Current production architecture
 
@@ -136,7 +139,7 @@ Never collect:
 
 ## Current Batch 2 status
 
-Batch 2 is expanding the Brand Assets library with:
+Batch 2 now has candidate source coverage for:
 
 - Remaining Rugby World Cup-cycle unions.
 - Remaining national teams.
@@ -144,13 +147,18 @@ Batch 2 is expanding the Brand Assets library with:
 - Munster.
 - Ulster.
 - Connacht.
-- Other professional clubs within the approved editorial scope.
+- Other professional clubs within the approved editorial scope where already captured.
 
 Candidate-only Batch 2 files:
 
 - `data/brand-assets/candidate-collection-batch-2-2026-07-05.json`
 - `data/brand-assets/candidate-logo-extraction-2026-07-05.json`
 - `data/brand-assets/candidate-logo-extraction-apify-2026-07-05.json`
+- `data/brand-assets/candidate-logo-extraction-batch-2-completion-2026-07-05.json`
+
+Batch 2 is complete as a source-coverage candidate pass.
+
+Batch 2 is not complete as a fully resolved direct-logo asset pass. Many records still have empty `candidateLogoUrls` because the official source was confirmed but no reliable direct logo asset URL was exposed by the extraction route.
 
 ## Sprint 5 priorities
 
@@ -186,7 +194,7 @@ Track all issues in `docs/08_Issue_Log.md`.
 
 Current important issues:
 
-- `BRAND-004` — Batch 2 Brand Assets expansion is in progress as candidate-only data/docs.
+- `BRAND-004` — Batch 2 Brand Assets source coverage implemented; pending merge, deployment and Sanity import/review decision.
 - `CMS-002` — CMS article images missing from live articles.
 - `MEDIA-001` — Editorial Image Archive final production documentation/count verification.
 - `MEDIA-002` — starter editorial image library final reviewed-count verification.
