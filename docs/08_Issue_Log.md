@@ -10,7 +10,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| BRAND-001 | Pending Verification | Medium | Media / Brand Assets | Build separate Brand Assets library for team logos and competition branding. | #27 | Deployed on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43` | Public site returned HTTP 200; pending authenticated Sanity Studio verification | — |
+| BRAND-001 | Closed | Medium | Media / Brand Assets | Build separate Brand Assets library for team logos and competition branding. | #27 | Deployed on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43`; Studio redeployed through GitHub Action | User verified Brand Assets is visible in authenticated Sanity Studio | 2026-07-05 |
 | CMS-002 | Open | High | CMS / Visual content | Hosted Sanity articles need proper featured images and metadata. | — | Not implemented | Pending CMS image assignment and page verification | — |
 | MEDIA-001 | Pending Verification | High | Media / CMS | Editorial Images Studio, review queues and bulk Image Review tool are implemented and used successfully. | #26 plus direct main commits | Studio redeployed by user; functionality visible | Pending final production documentation closeout | — |
 | MEDIA-002 | Pending Verification | High | Media / Workflow | Starter external image candidates imported and reviewed through approval/rejection workflow. | #26 plus direct main commits | Imported data exists and review workflow works | Pending final approved/rejected count verification | — |
@@ -28,15 +28,15 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 ## BRAND-001 — Brand Assets library
 
-- **Status:** Pending Verification
+- **Status:** Closed
 - **Priority:** Medium
 - **Root cause:** Team logos and competition branding should be handled separately from editorial photography because they have different rights/trademark considerations.
 - **Implementation:** Added a dedicated `brandAsset` Sanity document type and a `Brand Assets` Studio section with filtered queues for active brands, teams, competitions/leagues, unions and rights review.
 - **Rights rule:** Brand marks default to `Editorial / trademark use only` and require source, rights holder where known, usage notes and explicit editorial-use approval before use in public templates.
 - **Related PRs:** #27.
-- **Deployment status:** Deployed to production on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43`; Vercel deployment `dpl_7JKweNP5rizBkicVVRxobVkahRru` reported READY.
-- **Verification steps:** Public homepage returned HTTP 200 after deployment; authenticated Sanity Studio still needs verification that `Brand Assets` appears, queues load correctly and one safe test brand record can be created or reviewed.
-- **Resolution date:** Pending
+- **Deployment status:** Deployed to production on main commit `aebc730bfe95c54dcb5e437ac2d246f488810d43`; Vercel deployment `dpl_7JKweNP5rizBkicVVRxobVkahRru` reported READY. The hosted Sanity Studio was then redeployed through the GitHub Action.
+- **Verification steps:** Public homepage returned HTTP 200 after deployment. User verified the `Brand Assets` category is visible in authenticated Sanity Studio after the Studio GitHub Action redeploy.
+- **Resolution date:** 2026-07-05
 
 ## BUILD-001 — Vercel build failure after taxonomy cleanup
 
@@ -114,6 +114,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 ## Closed issues summary
 
+- `BRAND-001` Brand Assets Library foundation — closed 2026-07-05.
 - `BUILD-001` Vercel build failure — closed 2026-07-05.
 - `TAX-001` International taxonomy rename — closed 2026-07-05.
 - `INF-001` Vercel deployment risk — closed 2026-07-04.
