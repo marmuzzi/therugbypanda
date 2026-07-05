@@ -1,0 +1,243 @@
+{
+  "collectionName": "Sprint 4 Task 4 — Brand Assets Logo Preview Update",
+  "status": "candidate-only",
+  "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+  "collector": {
+    "tool": "Official-source and already captured candidate URL consolidation",
+    "purpose": "Update existing unapproved Batch 2 Brand Asset candidates with available logo preview references where direct official image references were already captured or safe official-domain preview fallbacks are useful for review.",
+    "notes": "Candidate-only update. These URLs are review references only and must not be hotlinked publicly. Do not approve automatically. Do not upload to Sanity assets automatically. Records remain unapproved candidates until manual review. Google Image results were used only as a discovery prompt; no Google cached image URL is used as a candidate logo source."
+  },
+  "defaultCandidateValues": {
+    "status": "active",
+    "rightsStatus": "editorial-trademark-use-only",
+    "approvedForEditorialUse": false,
+    "lifecycleStatus": "candidate",
+    "reviewedAt": null
+  },
+  "candidates": [
+    {
+      "officialBrandName": "Leinster Rugby",
+      "shortName": "Leinster",
+      "brandType": "club",
+      "officialWebsite": "https://www.leinsterrugby.ie/",
+      "sourcePageUrl": "https://www.leinsterrugby.ie/",
+      "candidateLogoUrls": [
+        "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg"
+      ],
+      "logoFormat": "svg",
+      "rightsHolder": "Leinster Rugby",
+      "rightsTrademarkNotes": "Official Leinster Rugby homepage image reference resolved to this Leinster Rugby logo SVG. Candidate reference only; verify rights and upload approved asset into Sanity before public use.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceFile": "data/brand-assets/candidate-logo-extraction-2026-07-05.json",
+        "sourceTool": "previous official public source extraction",
+        "sourceStatus": "direct official-site-hosted logo candidate retained for preview update"
+      }
+    },
+    {
+      "officialBrandName": "Munster Rugby",
+      "shortName": "Munster",
+      "brandType": "club",
+      "officialWebsite": "https://www.munsterrugby.ie/",
+      "sourcePageUrl": "https://www.munsterrugby.ie/preview/team-named-munster-side-to-visit-scarlets/",
+      "candidateLogoUrls": [
+        "https://cdn.soticservers.net/tools/images/teams/logos/RUGBY969513/d/MUNS1976.svg"
+      ],
+      "logoFormat": "svg",
+      "rightsHolder": "Munster Rugby",
+      "rightsTrademarkNotes": "Official Munster Rugby page exposed a team logo SVG through Sotic CDN. Candidate reference only; verify rights and upload approved asset into Sanity before public use.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceFile": "data/brand-assets/candidate-collection-batch-2-2026-07-05.json",
+        "sourceTool": "Apify official-source discovery",
+        "apifyRunId": "D3TiNoKjFvH8z0bZL",
+        "datasetId": "yFr4VZu0xXpBCmWz5",
+        "sourceStatus": "direct official-page-exposed logo candidate retained for preview update"
+      }
+    },
+    {
+      "officialBrandName": "Ulster Rugby",
+      "shortName": "Ulster",
+      "brandType": "club",
+      "officialWebsite": "https://ulster.rugby/",
+      "sourcePageUrl": "https://ulster.rugby/",
+      "candidateLogoUrls": [
+        "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301"
+      ],
+      "logoFormat": "png",
+      "rightsHolder": "Ulster Rugby",
+      "rightsTrademarkNotes": "Official Ulster Rugby homepage resolved to an Ulster-hosted team icon PNG. Candidate reference only; verify rights and upload approved asset into Sanity before public use.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceFile": "data/brand-assets/candidate-logo-extraction-2026-07-05.json",
+        "sourceTool": "previous official public source extraction",
+        "sourceStatus": "direct official-site-hosted logo candidate retained for preview update"
+      }
+    },
+    {
+      "officialBrandName": "Connacht Rugby",
+      "shortName": "Connacht",
+      "brandType": "club",
+      "officialWebsite": "https://www.connachtrugby.ie/",
+      "sourcePageUrl": "https://www.connachtrugby.ie/",
+      "candidateLogoUrls": [
+        "https://www.connachtrugby.ie/favicon.ico"
+      ],
+      "logoFormat": "ico-fallback",
+      "rightsHolder": "Connacht Rugby",
+      "rightsTrademarkNotes": "Official Connacht Rugby homepage confirmed. No reliable direct full-size logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "official homepage fallback",
+        "sourceStatus": "official-domain preview fallback; direct logo unresolved"
+      }
+    },
+    {
+      "officialBrandName": "South African Rugby Union",
+      "shortName": "South Africa Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.sarugby.co.za/",
+      "sourcePageUrl": "https://springboks.rugby/",
+      "candidateLogoUrls": [
+        "https://springboks.rugby/assets/svg/springbok.svg",
+        "https://springboks.rugby/assets/images/Springboks-logo.svg"
+      ],
+      "logoFormat": "svg",
+      "rightsHolder": "South African Rugby Union",
+      "rightsTrademarkNotes": "sarugby.co.za redirected to springboks.rugby. Previous Apify output exposed Next.js image wrapper URLs for these Springboks/SARU asset paths; this update records the underlying official-domain SVG paths as candidate references only. Verify rights and whether SARU/Springboks should be split before approval.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceFile": "data/brand-assets/candidate-logo-extraction-apify-2026-07-05.json",
+        "sourceTool": "Apify official-source extraction plus decoded official-domain image path",
+        "apifyRunId": "a9p5fBMKxlyOlLBkv",
+        "datasetId": "HbpZT8P2OeZqAvmfU",
+        "sourceStatus": "underlying official-domain paths decoded from previous Next.js image references"
+      }
+    },
+    {
+      "officialBrandName": "New Zealand Rugby",
+      "shortName": "New Zealand Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.allblacks.com/",
+      "sourcePageUrl": "https://www.allblacks.com/",
+      "candidateLogoUrls": [
+        "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png",
+        "https://images.allblacks.com/image/private/t_q_good/v1780998991/prd/assets/teams/logos_darkmode/BF.png"
+      ],
+      "logoFormat": "png",
+      "rightsHolder": "New Zealand Rugby",
+      "rightsTrademarkNotes": "Official All Blacks homepage exposed All Blacks and Black Ferns logo references. Candidate only; verify whether NZ Rugby, All Blacks and Black Ferns should be separate reviewed Brand Asset records before approval.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceFile": "data/brand-assets/candidate-logo-extraction-apify-2026-07-05.json",
+        "sourceTool": "Apify official-source extraction",
+        "apifyRunId": "e9ti3QYbV6Tjzpf8L",
+        "datasetId": "FnnuwWyL0IymLDv6Z",
+        "sourceStatus": "direct official-site-hosted logo candidates retained for preview update"
+      }
+    },
+    {
+      "officialBrandName": "Unión Argentina de Rugby",
+      "shortName": "Argentina Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://uar.com.ar/",
+      "sourcePageUrl": "https://uar.com.ar/",
+      "candidateLogoUrls": [
+        "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg",
+        "https://uar.com.ar/wp-content/uploads/MarcaUAR_iso.svg",
+        "https://uar.com.ar/wp-content/uploads/LosPumas_negativo.svg",
+        "https://uar.com.ar/wp-content/uploads/LosPumas_positivo.svg"
+      ],
+      "logoFormat": "svg",
+      "rightsHolder": "Unión Argentina de Rugby",
+      "rightsTrademarkNotes": "Official UAR homepage exposed UAR and Los Pumas SVG marks. Candidate only; verify whether UAR and Los Pumas should be separate Brand Asset records before approval.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceFile": "data/brand-assets/candidate-logo-extraction-apify-2026-07-05.json",
+        "sourceTool": "Apify official-source extraction",
+        "apifyRunId": "ZWpfhoLsCJ6cgyS4b",
+        "datasetId": "SkgNZG1L3cWnWlgPu",
+        "sourceStatus": "direct official-site-hosted logo candidates retained for preview update"
+      }
+    },
+    {
+      "officialBrandName": "Rugby Australia",
+      "shortName": "Australia Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.rugby.com.au/",
+      "sourcePageUrl": "https://www.rugby.com.au/",
+      "candidateLogoUrls": [
+        "https://www.rugby.com.au/favicon.ico"
+      ],
+      "logoFormat": "ico-fallback",
+      "rightsHolder": "Rugby Australia",
+      "rightsTrademarkNotes": "Official Rugby Australia homepage confirmed. No reliable direct full-size Rugby Australia logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "official homepage fallback",
+        "sourceStatus": "official-domain preview fallback; direct logo unresolved"
+      }
+    },
+    {
+      "officialBrandName": "Japan Rugby Football Union",
+      "shortName": "Japan Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://www.rugby-japan.jp/",
+      "sourcePageUrl": "https://www.rugby-japan.jp/",
+      "candidateLogoUrls": [
+        "https://www.rugby-japan.jp/favicon.ico"
+      ],
+      "logoFormat": "ico-fallback",
+      "rightsHolder": "Japan Rugby Football Union",
+      "rightsTrademarkNotes": "Official JRFU homepage confirmed. No reliable direct full-size logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "official homepage fallback",
+        "sourceStatus": "official-domain preview fallback; direct logo unresolved"
+      }
+    },
+    {
+      "officialBrandName": "Fiji Rugby Union",
+      "shortName": "Fiji Rugby",
+      "brandType": "union",
+      "officialWebsite": "https://fijirugby.com/",
+      "sourcePageUrl": "https://fijirugby.com/",
+      "candidateLogoUrls": [
+        "https://fijirugby.com/favicon.ico"
+      ],
+      "logoFormat": "ico-fallback",
+      "rightsHolder": "Fiji Rugby Union",
+      "rightsTrademarkNotes": "Official Fiji Rugby source retained. No reliable direct full-size logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "official homepage fallback",
+        "sourceStatus": "official-domain preview fallback; direct logo unresolved"
+      }
+    },
+    {
+      "officialBrandName": "Rugby World Cup",
+      "shortName": "Rugby World Cup",
+      "brandType": "competition",
+      "officialWebsite": "https://www.rugbyworldcup.com/",
+      "sourcePageUrl": "https://www.rugbyworldcup.com/en",
+      "candidateLogoUrls": [
+        "https://www.rugbyworldcup.com/favicon.ico"
+      ],
+      "logoFormat": "ico-fallback",
+      "rightsHolder": "Rugby World Cup Limited / World Rugby",
+      "rightsTrademarkNotes": "Official Rugby World Cup homepage confirmed. No reliable direct full-size logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "acquisitionTimestamp": "2026-07-05T16:55:00Z",
+      "rawSourceMetadata": {
+        "sourceTool": "official homepage fallback",
+        "sourceStatus": "official-domain preview fallback; direct logo unresolved"
+      }
+    }
+  ],
+  "followUpRequired": [
+    "Review all records manually in Brand Review.",
+    "Do not approve fallback favicon candidates as final logo assets.",
+    "Replace fallback previews with official full-size logo files where possible before approval.",
+    "Do not hotlink candidate logo URLs in public frontend templates.",
+    "Upload approved logo files into Sanity assets before any public use."
+  ]
+}
