@@ -2,41 +2,51 @@
 
 ## Status
 
-Candidate-only completion pass created on 5 July 2026.
+Completed on 5 July 2026.
 
 Repository file:
 
 - `data/brand-assets/candidate-logo-extraction-batch-2-completion-2026-07-05.json`
 
-This follows:
+This followed:
 
 - `data/brand-assets/candidate-collection-batch-2-2026-07-05.json`
 - `data/brand-assets/candidate-logo-extraction-2026-07-05.json`
 - `data/brand-assets/candidate-logo-extraction-apify-2026-07-05.json`
 - `docs/18_Apify_Targeted_Logo_Extraction.md`
 
-## Connector status
+Additional final preview update file:
 
-GitHub and Vercel were available throughout this pass.
+- `data/brand-assets/candidate-logo-preview-update-2026-07-05.json`
 
-Apify was available earlier in the session and was used for the previous targeted extraction file. During this follow-up request, the active connector discovery surface no longer exposed Apify, so no additional Apify actor run was started.
+## Completion summary
 
-This completion pass used available public page extraction and the official Batch 2 source URLs already recorded in the repository.
+Batch 2 is complete as a candidate/source-coverage and review workflow.
+
+Completed:
+
+- Candidate source coverage recorded for remaining approved-scope Batch 2 targets.
+- Candidate data/docs merged.
+- Candidate records imported into Sanity through GitHub Actions.
+- Importer enhanced to support later logo-reference updates.
+- User completed Brand Review.
+- User approved 5 records.
+- `BRAND-004` closed.
 
 ## Candidate-only rules preserved
 
-Every record remains:
+Every imported candidate started as:
 
-- `lifecycleStatus: candidate`
-- `approvedForEditorialUse: false`
-- `rightsStatus: editorial-trademark-use-only`
-- `reviewedAt: null`
+```text
+lifecycleStatus: candidate
+approvedForEditorialUse: false
+rightsStatus: editorial-trademark-use-only
+reviewedAt: null
+```
 
-No candidate was approved.
+No candidate was automatically approved.
 
-No Sanity import was run.
-
-No Sanity asset upload was performed.
+No Sanity asset upload was performed automatically.
 
 No public template use or hotlinking was introduced.
 
@@ -44,7 +54,7 @@ Sponsor, broadcaster and commercial partner marks were ignored.
 
 ## Batch 2 source coverage status
 
-Source coverage is now recorded for the remaining Batch 2 targets:
+Source coverage was recorded for:
 
 - Japan Rugby Football Union.
 - Fiji Rugby Union.
@@ -61,28 +71,37 @@ Source coverage is now recorded for the remaining Batch 2 targets:
 - Namibia Rugby Union.
 - World Rugby.
 - Rugby World Cup.
+- Irish provinces: Leinster, Munster, Ulster, Connacht.
+- Selected direct-logo follow-ups for South Africa, New Zealand and Argentina.
 
 ## Direct logo URL status
 
-Direct logo URL coverage is still partial.
+Direct logo URL coverage remains partial.
 
-The completion file intentionally keeps many `candidateLogoUrls` empty where the source page was confirmed but no reliable direct logo asset URL was exposed by the extraction route.
+Some candidate records have direct official-source logo references. Others have only source-page references or fallback preview aids.
 
-This is acceptable for candidate-source tracking, but not enough for approved public logo use.
+This is acceptable for internal review tracking, but it is not enough for public frontend logo display.
 
 ## Practical interpretation
 
-Batch 2 is complete as a source-coverage candidate pass.
+Batch 2 is complete for Sprint 4.
 
-Batch 2 is not complete as a fully resolved direct-logo asset pass.
+Do not reopen Batch 2 unless the user explicitly asks for additional Brand Asset acquisition.
 
-The Brand Review workflow may still import these records as unapproved candidates if source-only records are useful for review. If direct logo previews are required before import, run another targeted browser/asset extraction pass when Apify is visible again.
+Future Brand Asset work should be treated as Sprint 5+ integration work:
+
+1. Upload approved final logo files into Sanity assets.
+2. Replace external candidate URLs with Sanity asset references.
+3. Link Brand Assets to teams, competitions and articles.
+4. Render only approved Sanity-hosted logos in the frontend.
+5. Verify no external candidate logo URL is hotlinked publicly.
 
 ## Recommended next actions
 
-1. Decide whether to import source-only Batch 2 candidates into Sanity for Brand Review.
-2. If yes, run the existing GitHub Action import workflow and verify all records appear as unapproved candidates.
-3. If no, rerun Apify targeted extraction for the unresolved direct logo URLs first.
-4. Review Batch 2 candidates in Sanity Brand Review.
-5. Approve/reject/archive manually.
-6. Upload approved logo files into Sanity assets before any public frontend use.
+Move to Sprint 5: Editorial & Publishing Automation.
+
+See:
+
+- `docs/07_Project_State.md`
+- `docs/08_Issue_Log.md`
+- `docs/10_New_Chat_Handoff.md`
