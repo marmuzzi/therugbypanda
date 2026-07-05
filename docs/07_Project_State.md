@@ -25,6 +25,7 @@ Read these files first in future sessions:
 11. `docs/17_Current_Production_Architecture.md`
 12. `docs/18_Apify_Targeted_Logo_Extraction.md`
 13. `docs/19_Brand_Assets_Batch_2_Completion.md`
+14. `docs/20_New_Chat_Batch_2_Import_Handoff.md`
 
 Do not rely on chat history for current status.
 
@@ -40,6 +41,8 @@ Expected connectors:
 In the 5 July 2026 Apify targeted extraction session, all four connector surfaces were visible.
 
 During the later Batch 2 completion follow-up, GitHub and Vercel remained visible but Apify was no longer exposed by connector discovery. That pass used available public page extraction and repository source URLs, not new Apify actor runs.
+
+During the Batch 2 import request, Sanity and Apify were not exposed in the connector list, and the GitHub connector did not expose a workflow-dispatch operation. The import could not be started from that chat. Continue from `docs/20_New_Chat_Batch_2_Import_Handoff.md` when the correct connector set is available.
 
 ## Current production architecture
 
@@ -160,6 +163,8 @@ Batch 2 is complete as a source-coverage candidate pass.
 
 Batch 2 is not complete as a fully resolved direct-logo asset pass. Many records still have empty `candidateLogoUrls` because the official source was confirmed but no reliable direct logo asset URL was exposed by the extraction route.
 
+Immediate next step: import Batch 2 into Sanity as unapproved candidates only when GitHub, Sanity and the import workflow trigger are available.
+
 ## Sprint 5 priorities
 
 After Brand Assets expansion, priorities are:
@@ -194,7 +199,7 @@ Track all issues in `docs/08_Issue_Log.md`.
 
 Current important issues:
 
-- `BRAND-004` — Batch 2 Brand Assets source coverage implemented; pending merge, deployment and Sanity import/review decision.
+- `BRAND-004` — Batch 2 Brand Assets source coverage implemented; pending Sanity candidate import and Brand Review.
 - `CMS-002` — CMS article images missing from live articles.
 - `MEDIA-001` — Editorial Image Archive final production documentation/count verification.
 - `MEDIA-002` — starter editorial image library final reviewed-count verification.
