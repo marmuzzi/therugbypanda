@@ -78,6 +78,18 @@ export type CmsSitemapArticle = {
   competition?: string;
 };
 
+export type FeaturedImage = {
+  src: string;
+  alt: string;
+  caption?: string;
+  credit?: string;
+};
+
+export type ArticleBodySection = {
+  heading?: string;
+  paragraphs: string[];
+};
+
 const articleSummaryFields = `
   title,
   "slug": slug.current,
@@ -118,13 +130,13 @@ const categoryLinksQuery = `*[_type == "category" && defined(slug.current)] | or
   "slug": slug.current
 }`;
 
-const categoryBySlugQuery = `*[_type == "category" && slug.current == $slug][0]{
+const categoryBySlugQuery = `*[_type == "category" && slug.current in $slugs][0]{
   title,
   "slug": slug.current,
   description
 }`;
 
-const categoryArticlesQuery = `*[_type == "article" && defined(slug.current) && category->slug.current == $slug] | order(publishedAt desc)[0...24]{${articleSummaryFields}}`;
+const categoryArticlesQuery = `*[_type == "article" && defined(slug.current) && category->slug.current in $slugs] | order(publishedAt desc)[0...24]{${articleSummaryFields}}`;
 
 const sitemapArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(publishedAt desc){
   title,
@@ -145,6 +157,27 @@ const sitemapCategoriesQuery = `*[_type == "category" && defined(slug.current)] 
 }`;
 
 const primarySectionOrder = ["Provinces", "Ireland", "URC", "International"];
+
+function categorySlugs(slug: string) {
+  return slug === "international" ? ["international", "europe"] : [slug];
+}
+
+function normaliseCategory(category?: CmsCategory | null): CmsCategory | null {
+  if (!category) return null;
+
+  if (category.slug === "europe") {
+    return {
+      ...category,
+      title: "International",
+      slug: "international",
+      description:
+        category.description ??
+        "International rugby coverage, including major test windows, tournaments and cross-border storylines.",
+    };
+  }
+
+  return category;
+}
 
 function formatDate(date?: string) {
   if (!date) return undefined;
@@ -168,7 +201,10 @@ function uniqueLabels(labels: Array<string | undefined>) {
 }
 
 function formatCategory(article: SanityArticleSummary | CmsArticle | CmsSitemapArticle) {
-  return uniqueLabels([article.category, article.province, article.competition]).join(" • ");
+  const category = article.category === "Europe" ? "International" : article.category;
+  const competition = article.competition === "Europe" ? "International" : article.competition;
+
+  return uniqueLabels([category, article.province, competition]).join(" • ");
 }
 
 function imageUrl(image?: SanityImage) {
@@ -208,6 +244,52 @@ export function articleLabel(article: CmsArticle | CmsSitemapArticle) {
   return formatCategory(article) || "News";
 }
 
+export function articleDateLabel(date?: string) {
+  return formatDate(date) ?? "Date to be confirmed";
+}
+
+export function getFeaturedImage(article: CmsArticle): FeaturedImage | undefined {
+  const src = imageUrl(article.featuredImage);
+
+  if (!src) return undefined;
+
+  return {
+    src,
+    alt: article.featuredImage?.alt ?? article.title,
+    caption: article.featuredImage?.caption,
+    credit: [article.featuredImage?.photographer, article.featuredImage?.source]
+      .filter(Boolean)
+      .join(" / ") || article.featuredImage?.rights,
+  };
+}
+
+export function portableTextToSections(body: CmsArticle["body"]): ArticleBodySection[] {
+  if (!body?.length) return [];
+
+  const sections: ArticleBodySection[] = [];
+
+  for (const block of body) {
+    const text = block.children?.map((child) => child.text ?? "").join("").trim();
+
+    if (!text) continue;
+
+    if (block.style === "h2") {
+      sections.push({ heading: text, paragraphs: [] });
+      continue;
+    }
+
+    const currentSection = sections.at(-1);
+
+    if (currentSection) {
+      currentSection.paragraphs.push(text);
+    } else {
+      sections.push({ paragraphs: [text] });
+    }
+  }
+
+  return sections.filter((section) => section.heading || section.paragraphs.length > 0);
+}
+
 export async function getHomepageArticles() {
   const cmsArticles = await sanityFetch<SanityArticleSummary[]>({ query: homepageArticlesQuery });
   const mapped = cmsArticles?.map(mapArticleSummary) ?? [];
@@ -230,11 +312,17 @@ export async function getContinueReading(slug: string) {
 export async function getSectionLinks(): Promise<SectionLink[]> {
   const categories = await sanityFetch<Array<{ title: string; slug: string }>>({ query: categoryLinksQuery });
   const categoryLinks =
-    categories?.map((category) => ({
-      label: category.title,
-      href: `/categories/${category.slug}`,
-    })) ?? [];
-  const sortedCategoryLinks = categoryLinks.sort((a, b) => {
+    categories?.map((category) => {
+      const normalised = normaliseCategory({ title: category.title, slug: category.slug });
+      return {
+        label: normalised?.title ?? category.title,
+        href: `/categories/${normalised?.slug ?? category.slug}`,
+      };
+    }) ?? [];
+  const dedupedCategoryLinks = categoryLinks.filter(
+    (category, index, all) => all.findIndex((item) => item.href === category.href) === index,
+  );
+  const sortedCategoryLinks = dedupedCategoryLinks.sort((a, b) => {
     const aIndex = primarySectionOrder.indexOf(a.label);
     const bIndex = primarySectionOrder.indexOf(b.label);
 
@@ -252,13 +340,14 @@ export async function getSectionLinks(): Promise<SectionLink[]> {
 }
 
 export async function getCategoryPage(slug: string) {
+  const slugs = categorySlugs(slug);
   const [category, articles] = await Promise.all([
-    sanityFetch<CmsCategory>({ query: categoryBySlugQuery, params: { slug } }),
-    sanityFetch<SanityArticleSummary[]>({ query: categoryArticlesQuery, params: { slug } }),
+    sanityFetch<CmsCategory>({ query: categoryBySlugQuery, params: { slugs } }),
+    sanityFetch<SanityArticleSummary[]>({ query: categoryArticlesQuery, params: { slugs } }),
   ]);
 
   return {
-    category,
+    category: normaliseCategory(category),
     articles: articles?.map(mapArticleSummary) ?? [],
   };
 }
@@ -268,5 +357,15 @@ export async function getSitemapArticles() {
 }
 
 export async function getSitemapCategories() {
-  return sanityFetch<CmsCategory[]>({ query: sitemapCategoriesQuery });
+  const categories = await sanityFetch<CmsCategory[]>({ query: sitemapCategoriesQuery });
+
+  return categories?.map(normaliseCategory).filter((category): category is CmsCategory => Boolean(category)) ?? [];
+}
+
+export async function getPublishedArticles() {
+  return getSitemapArticles();
+}
+
+export async function getPublishedCategories() {
+  return getSitemapCategories();
 }
