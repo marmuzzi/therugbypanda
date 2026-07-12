@@ -2,11 +2,11 @@
 
 ## Current Version
 
-v0.6 — Sprint 4 Media Foundation Complete / Sprint 5 Ready
+v0.7 — Sprint 5 Editorial Automation In Progress
 
 ## Last Updated
 
-5 July 2026
+12 July 2026
 
 ## Source of truth
 
@@ -26,14 +26,27 @@ Read these files first in future sessions:
 12. `docs/18_Apify_Targeted_Logo_Extraction.md`
 13. `docs/19_Brand_Assets_Batch_2_Completion.md`
 14. `docs/20_New_Chat_Batch_2_Import_Handoff.md`
+15. `docs/21_Editorial_Image_Readiness_Audit.md`
+16. `docs/22_Editorial_Image_Metadata_Suggestions.md`
 
 Do not rely on chat history for current status.
 
+## Connectors
+
+Verified available on 12 July 2026:
+
+- GitHub — read/write capable.
+- Vercel — deployment and production checks available.
+- Apify — available for acquisition workflows.
+- Sanity direct connector — not available in the current session; GitHub Actions remain the reliable CMS automation path.
+
+Always check available connectors before asking the user to configure anything.
+
 ## Current state summary
 
-Sprint 4 is complete.
+Sprint 4 is complete. Sprint 5 has started.
 
-The Rugby Panda now has the verified media foundation needed for Sprint 5:
+The verified media architecture remains:
 
 ```text
 Discovery / acquisition
@@ -42,183 +55,103 @@ Discovery / acquisition
 → Sanity candidate records
 → Review tool
 → Manual approval / rejection / archive
-→ Approved CMS records for future editorial use
+→ Approved CMS records
 ```
 
-This applies to both Editorial Images and Brand Assets.
+Sprint 5 is adding read-only quality gates and reviewable metadata automation before any controlled CMS write-back is introduced.
 
-## Connectors
+## Sprint 5 completed work
 
-Expected connector surfaces:
+### PUB-001 — Editorial Image Readiness Audit
 
-- GitHub.
-- Vercel.
-- Sanity, when available.
-- Apify, when available.
+Implemented, merged in PR #38, deployed and verified through workflow run `29208191194`.
 
-Always check available connectors before asking the user to configure anything.
+Verified production result:
 
-Important connector notes from Sprint 4:
+- 40 Editorial Image records.
+- 22 publication-ready.
+- 18 needing attention.
+- 34 approved or published.
+- 12 approved/published but not ready.
+- 0 duplicate Sanity asset groups.
+- 2 duplicate source groups caused by draft/published document pairs.
 
-- GitHub was available and write-capable.
-- Vercel was available for deployment checks.
-- Sanity connector availability varied; Sanity write access was not always exposed in chat.
-- Apify availability varied; when Apify was not exposed, acquisition continued using repository records and public official-source extraction.
-- GitHub Actions remain the reliable mobile-friendly import path for Sanity candidate imports.
+The repeated metadata gap is missing alt text, caption, public credit and copyright line.
+
+## Sprint 5 current work
+
+### PUB-002 — Editorial Image Metadata Suggestions
+
+Implemented on branch `sprint-5/editorial-metadata-suggestions` and pending merge/verification.
+
+The workflow:
+
+- reads Editorial Images from production Sanity
+- generates conservative suggestions for missing alt text, captions, credits, copyright and tags
+- preserves all existing metadata
+- never invents rights or licence data
+- classifies records as metadata-review-ready, rights-review-required, already-complete or not-active
+- outputs Markdown and JSON artifacts
+- performs no Sanity mutation
+
+Human review remains mandatory. A future controlled import step may apply only explicitly approved suggestions.
 
 ## Editorial Images
 
-Editorial Images are managed in Sanity using a complete review workflow:
+Editorial Images are managed in Sanity using:
 
-- `editorialImage` document type.
-- Bulk Image Review tool.
-- Needs Review / Approved / Rejected queues.
-- Original Rugby Panda images.
-- External candidate images.
-- Bulk import workflow.
-- User manual approval/rejection before use.
+- `editorialImage` document type
+- Bulk Image Review tool
+- Needs Review / Approved / Rejected queues
+- original Rugby Panda uploads
+- external candidate imports
+- readiness audit
+- metadata suggestions workflow
 
 Original Rugby Panda photography remains preferred.
 
-Current verification items still pending:
-
-- Final Editorial Image queue/count verification.
-- Final starter external image approved/rejected count verification.
-- Final original Rugby Panda photo count verification.
+Outstanding verification items remain in `docs/08_Issue_Log.md`, particularly `MEDIA-001`, `MEDIA-002`, `MEDIA-003`, and `CMS-002`.
 
 ## Brand Assets
 
-Brand Assets are managed separately from Editorial Images.
+Sprint 4 Brand Assets work is complete and verified in authenticated Sanity Studio.
 
-Brand lifecycle states:
-
-- Candidate.
-- Pending Validation.
-- Approved.
-- Rejected.
-- Archived.
-
-The Brand Review tool supports bulk approve, reject and archive actions.
-
-Every imported candidate starts as:
-
-```text
-approvedForEditorialUse = false
-rightsStatus = editorial-trademark-use-only
-lifecycleStatus = candidate
-```
-
-Candidate logo URLs are references only and must never be hotlinked on the public website. Approved logos should eventually be uploaded into Sanity assets before any frontend use.
-
-## Brand Assets completion status
-
-Completed:
-
-- Brand Assets Library foundation implemented, merged, deployed and user-verified in Studio.
-- Batch 1 candidate import completed and manually reviewed/approved by the user.
-- Batch 2 candidate source coverage completed and merged.
-- Batch 2 candidates imported into Sanity through GitHub Actions.
-- Importer enhanced to support both `candidates` and `targetedResults` source files.
-- Importer enhanced to update existing unapproved candidate records with later logo references.
-- Importer skips already-approved Brand Asset records.
-- Logo preview update candidate file added:
-  - `data/brand-assets/candidate-logo-preview-update-2026-07-05.json`
-- User completed Batch 2 Brand Review and approved 5 records.
-
-Important limitation:
-
-- Some approved Brand Asset records may still use external candidate logo references.
-- Before any public frontend logo display, approved logo files should be uploaded into Sanity assets.
-- Fallback preview references such as favicon candidates are review aids only and should not be treated as final approval-ready logo assets.
-
-## Approved acquisition scope
-
-Only collect:
-
-- World Rugby.
-- Rugby World Cup.
-- Six Nations.
-- EPCR.
-- Champions Cup.
-- Challenge Cup.
-- United Rugby Championship.
-- Rugby unions.
-- Rugby World Cup-cycle national teams.
-- Irish provinces.
-- Professional clubs relevant to URC, Champions Cup or Challenge Cup.
-
-Never collect:
-
-- Sponsors.
-- Broadcasters.
-- Commercial partners.
-- Amateur clubs.
-- Schools.
-- Grassroots clubs.
-- Non-rugby organisations.
+Candidate logo URLs remain review references only. Public frontend logo use requires approved logo files uploaded into Sanity assets; external candidate URLs must never be hotlinked.
 
 ## Current article URL
 
 `/articles/leinster-season-preview-2026`
 
-## Sprint 5 starting point
+## Current priorities
 
-Sprint 5 should start from the completed Sprint 4 media foundation.
-
-Recommended Sprint 5 theme:
-
-**Editorial & Publishing Automation**
-
-Recommended priorities:
-
-1. AI-powered bulk upload of original Rugby Panda photos into Sanity.
-2. AI categorisation by stadium, teams, competition, supporters, match action, pubs and newsroom categories.
-3. Automatic title, caption, alt text, tags and metadata generation.
-4. Duplicate detection.
-5. Event and album creation.
-6. Fast search of the Editorial Image Library.
-7. Assign approved editorial images to current articles.
-8. Build real website search.
-9. Build the editorial article generation / review / publishing pipeline.
+1. Verify and review the Editorial Image Metadata Suggestions artifact.
+2. Build a controlled review/import step for accepted metadata suggestions.
+3. Assign approved Editorial Images to current articles under `CMS-002`.
+4. Add AI vision enrichment behind the same suggestions-only approval boundary.
+5. Build real website search under `WEB-005`.
+6. Build the article generation, review and scheduled publishing workflow.
 
 ## Deployment budget rule
 
-The Vercel free plan has a maximum of 100 deployments per day. Treat every deployment as a constrained resource.
+The Vercel free plan has a maximum of 100 deployments per day. Treat every deployment as constrained.
 
 Default workflow:
 
-1. Batch related work into a single branch.
-2. Open one PR where possible.
+1. Batch related work into one branch.
+2. Open one PR.
 3. Use one preview deployment where possible.
 4. Merge automatically when preview/build is clean and scope is agreed.
 5. Use one production deployment.
 6. Verify once in production.
 
-## Known open issues
-
-Track all issues in `docs/08_Issue_Log.md`.
-
-Current important open items:
-
-- `CMS-002` — CMS article images missing from live articles.
-- `MEDIA-001` — Editorial Image Archive final production documentation/count verification.
-- `MEDIA-002` — starter editorial image library final reviewed-count verification.
-- `MEDIA-003` — original Rugby Panda photo final Studio count verification.
-- `WEB-005` — Search remains placeholder.
-
-`BRAND-004` is closed as of 5 July 2026 because Batch 2 was imported, reviewed by the user and documented. Public frontend logo use remains a separate future implementation step, not part of `BRAND-004`.
-
 ## Working principles
 
-- Project documentation is the source of truth at the start of each session.
-- Full file replacements are preferred over partial snippets.
-- Batch related changes to reduce Vercel deployment pressure.
-- Always distinguish implemented, committed, merged, deployed and verified in production.
-- A feature is not complete until verified in production.
-- Every meaningful change must update documentation.
-- Every issue must stay in `docs/08_Issue_Log.md` until closed.
+- Documentation is the source of truth.
+- Prefer full-file replacements and reusable components.
 - Keep `main` deployable.
-- Use reusable components only.
+- Distinguish implemented, committed, merged, deployed and verified.
+- A feature is not complete until production or authenticated-Studio verification.
+- Keep the Issue Log current.
 - Mobile-first design.
 - Reader-first advertising.
-- No public AI references.
+- Do not expose AI implementation references publicly on the reader-facing website.
