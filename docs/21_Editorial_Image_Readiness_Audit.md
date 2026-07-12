@@ -2,7 +2,12 @@
 
 ## Status
 
-Implemented on the Sprint 5 feature branch. Pending merge, workflow execution and authenticated Sanity verification.
+Implemented, merged in PR #38, deployed and verified through GitHub Actions on 12 July 2026.
+
+Workflow run:
+
+- `29208191194`
+- artifact: `editorial-image-readiness-audit`
 
 ## Purpose
 
@@ -26,13 +31,32 @@ The audit never mutates Sanity records.
 - `.github/workflows/audit-editorial-image-readiness.yml`
 - `package.json` script: `npm run media:audit-readiness`
 
+## Verified production result
+
+The first production audit reported:
+
+- Total records: 40
+- Publication ready: 22
+- Needs attention: 18
+- Approved or published: 34
+- Approved/published but not ready: 12
+- Duplicate asset groups: 0
+- Duplicate source groups: 2
+
+The repeated metadata gap was missing:
+
+- alt text
+- caption
+- public credit
+- copyright line
+
+The two duplicate source groups were draft/published document pairs rather than duplicate Sanity image assets.
+
 ## GitHub Action
 
 Workflow name:
 
 `Audit Editorial Image Readiness`
-
-The workflow is manually triggered and uses the existing Sanity project configuration and `SANITY_API_TOKEN` repository secret.
 
 Outputs:
 
@@ -68,16 +92,6 @@ Additional checks:
 - external images must retain a source/landing-page URL
 - external images must retain licence information or rights notes
 
-## Completion criteria
-
-This task is complete only after:
-
-1. the branch is merged
-2. the GitHub Action is available on `main`
-3. the workflow runs successfully against the production Sanity dataset
-4. the generated report is reviewed
-5. the result is recorded in `docs/08_Issue_Log.md`
-
 ## Next step
 
-Use the first audit report to close the outstanding Editorial Image count/readiness verification items and then implement approved Editorial Image assignment to articles under `CMS-002`.
+Use the verified audit findings as input to the reviewable Editorial Image Metadata Suggestions workflow documented in `docs/22_Editorial_Image_Metadata_Suggestions.md`.
