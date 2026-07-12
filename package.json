@@ -14,6 +14,7 @@
     "deploy-studio": "sanity deploy",
     "seed:sanity": "node scripts/seed-sanity.mjs",
     "media:import-originals": "node scripts/import-rugby-panda-originals.mjs",
+    "media:audit-readiness": "node scripts/audit-editorial-image-readiness.mjs",
     "brand-assets:import-candidates": "node scripts/import-brand-asset-candidates.mjs"
   },
   "dependencies": {

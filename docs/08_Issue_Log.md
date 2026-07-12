@@ -10,6 +10,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PUB-001 | Implemented | High | Editorial Automation / Media | Add a non-destructive Editorial Image readiness audit for metadata completeness, approval consistency and duplicate detection. | Pending PR | Implemented on `sprint-5/editorial-image-readiness-audit`; not merged | Pending workflow execution against production Sanity and report review | — |
 | BRAND-004 | Closed | High | Media / Brand Assets | Expand Batch 2 Brand Asset candidates for remaining Rugby World Cup-cycle unions, national teams, Irish provinces and approved-scope professional clubs. | #30, #31, #36 plus direct candidate preview update commit | Candidate data/docs merged and deployed; importer update merged to main; Sanity import workflow run by user through GitHub Actions | Batch 2 imported as candidates; importer update allowed logo-reference updates; user completed Brand Review and approved 5 records | 2026-07-05 |
 | BRAND-003 | Closed | High | Media / Brand Assets / CMS | Import brand asset candidates into Sanity as unapproved review records and review them through a Brand Review tool. | #29 | Deployed on main commit `c78a02cffbc9ee32e38965b9cee7e3faae124382`; Vercel deployment `dpl_5aLEWUW17j9WCANp9sDjX6Edu7pM` READY | Full Brand Asset workflow verified: Apify → GitHub → Sanity → Brand Review → Approval. First candidate batch imported and manually approved by user. | 2026-07-05 |
 | BRAND-002 | Closed | High | Media / Brand Assets | Build Brand Assets candidate collector output for approved rugby-union scope only. | #28 | Deployed on main commit `c8edd8bc40d6e03d644f0deea401c35632a7c6bd` | Candidate data/docs merged and deployed; Sanity review/import workflow subsequently verified under BRAND-003 | 2026-07-05 |
@@ -28,6 +29,17 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | WEB-004 | Closed | Medium | Branding / UI | Dedicated favicon design implemented and verified. | #23, #24 | Deployed to production | User verified favicon in production | 2026-07-04 |
 | DOC-001 | Closed | High | Documentation | Project state, issue log and publishing workflow added as source of truth. | #22 | Merged to main | Repository files verified | 2026-07-04 |
 | CMS-001 | Closed | High | CMS | Homepage and article pages use hosted Sanity content. | #14 | Deployed | Verified by live validation workflow | 2026-07-03 |
+
+## PUB-001 — Editorial Image readiness audit
+
+- **Status:** Implemented
+- **Priority:** High
+- **Root cause:** Sprint 5 needs a reliable, repeatable quality gate before approved Editorial Images are assigned to articles or used by publishing automation. Existing pending verification issues rely on manual counts and do not expose incomplete metadata or duplicate references systematically.
+- **Implementation:** Added `scripts/audit-editorial-image-readiness.mjs`, the `media:audit-readiness` npm command, and the manually triggered `Audit Editorial Image Readiness` GitHub Action. The audit is read-only and generates JSON and Markdown reports plus a GitHub Actions summary.
+- **Related PRs:** Pending PR.
+- **Deployment status:** Implemented on feature branch; not merged.
+- **Verification status:** Pending workflow execution against the production Sanity dataset and review of the generated artifact.
+- **Resolution date:** Pending
 
 ## BRAND-004 — Batch 2 Brand Assets expansion
 
