@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Editorial Image Metadata Review Decisions",
+  "type": "object",
+  "required": ["dataset", "decisions"],
+  "properties": {
+    "sourceReportGeneratedAt": {"type": "string"},
+    "dataset": {"type": "string", "const": "production"},
+    "decisions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["documentId", "approvedFields", "reviewedBy", "reviewedAt"],
+        "properties": {
+          "documentId": {"type": "string", "not": {"pattern": "^drafts\\."}},
+          "approvedFields": {
+            "type": "object",
+            "minProperties": 1,
+            "additionalProperties": false,
+            "properties": {
+              "altText": {"type": "string", "minLength": 1},
+              "caption": {"type": "string", "minLength": 1},
+              "publicCredit": {"type": "string", "minLength": 1},
+              "copyrightLine": {"type": "string", "minLength": 1},
+              "tags": {"type": "array", "items": {"type": "string", "minLength": 1}, "maxItems": 20}
+            }
+          },
+          "reviewedBy": {"type": "string", "minLength": 1},
+          "reviewedAt": {"type": "string", "format": "date-time"},
+          "notes": {"type": "string"}
+        },
+        "additionalProperties": false
+      }
+    }
+  },
+  "additionalProperties": false
+}
