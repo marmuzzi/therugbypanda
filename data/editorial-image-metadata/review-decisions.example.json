@@ -1,0 +1,19 @@
+{
+  "sourceReportGeneratedAt": "2026-07-12T21:04:41.762Z",
+  "dataset": "production",
+  "decisions": [
+    {
+      "documentId": "media-candidate-example",
+      "approvedFields": {
+        "altText": "Reviewed alt text",
+        "caption": "Reviewed caption.",
+        "publicCredit": "Photo: The Rugby Panda",
+        "copyrightLine": "© The Rugby Panda",
+        "tags": ["rugby", "example"]
+      },
+      "reviewedBy": "editor",
+      "reviewedAt": "2026-07-12T21:00:00.000Z",
+      "notes": "Example only. Copy this file and replace the example decision with reviewed records."
+    }
+  ]
+}
