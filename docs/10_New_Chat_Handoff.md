@@ -10,116 +10,141 @@ Use this file when continuing The Rugby Panda in a new chat.
 4. Read `docs/10_New_Chat_Handoff.md`.
 5. Read `docs/11_Editorial_Image_Archive.md`.
 6. Read `docs/12_Brand_Assets_Library.md`.
-7. Read all later numbered documents, including `docs/23_Make_Orchestration_Architecture.md`.
-8. Check available connectors before asking the user to configure anything.
+7. Read all later numbered documents, including `docs/23_Make_Orchestration_Architecture.md`, `docs/24_Editorial_Image_Canonical_Metadata_Review.md` and `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`.
+8. Check all currently available connectors before asking the user to configure anything.
 
 Do not rely on chat history for current status.
+
+## User context and timezone
+
+- The project owner is based in Dublin, Ireland.
+- Use `Europe/Dublin` for all schedules, deadlines and reports.
+- The daily review target is eight drafts available by 08:00 Europe/Dublin.
 
 ## Connector expectations
 
 Connector availability varies by session and must be checked each time.
 
-Last verified on 23 July 2026:
+Last verified during the 23–24 July 2026 session:
 
 - GitHub was available and write-capable.
-- Vercel was available for deployment checks.
-- Apify was not exposed in that session.
-- Sanity was not exposed as a direct connector; GitHub Actions remain the reliable CMS automation path.
+- Vercel was available for deployment and production checks.
+- Apify was available.
+- Sanity direct connector was available for authenticated production data queries.
 - Make.com was not connected.
 
 ## Agreed architecture
-
-The project decision is:
 
 ```text
 GitHub source of truth
 → Make.com orchestration
 → Apify acquisition
-→ Sanity canonical CMS
+→ Editorial Brain and OpenAI generation
+→ Sanity canonical CMS and human review
 → Vercel public website
 ```
 
-GitHub retains code, business logic, workflow definitions and documentation. Make.com should provide scheduling, webhooks, retries, notifications and service coordination. Do not move core business logic primarily into Make.com. Human editorial approval remains mandatory before metadata application or publishing.
-
-See `docs/23_Make_Orchestration_Architecture.md`.
+GitHub retains code, business logic, prompts, workflow definitions and documentation. Make.com should provide scheduling, retries, notifications and service coordination. Apify discovers approved-scope candidates. The Editorial Brain validates facts and originality. OpenAI generates structured drafts. Sanity remains the mandatory human approval boundary.
 
 ## Current handoff status
 
 Sprint 4 is complete. Sprint 5 Editorial & Publishing Automation is in progress.
 
-The verified media workflow is:
+The core editorial engine is now merged into `main` through four pull requests:
 
-```text
-Discovery / acquisition
-→ GitHub candidate JSON
-→ GitHub Action import
-→ Sanity candidate records
-→ Review tool
-→ Manual approval / rejection / archive
-→ Approved CMS records
-```
+### PR #47 — Editorial Brain core
 
-## Sprint 5 completed and current work
+- structured input/output contracts;
+- rugby story classification and scoring;
+- source-linked fact ledger with confidence controls;
+- The Rugby Panda editorial voice and originality rules;
+- responsible speculation support while preserving uncertainty;
+- mandatory human approval.
 
-### PUB-001 — Editorial Image Readiness Audit
+### PR #48 — OpenAI and Sanity draft pipeline
 
-- Merged in PR #38.
-- Workflow run `29208191194` succeeded.
-- 40 records audited.
-- 22 publication-ready.
-- 18 needing attention.
-- 34 approved/published.
-- 12 approved/published but not ready.
-- 0 duplicate asset groups.
-- 2 duplicate source groups caused by draft/published pairs.
+- OpenAI Responses API structured article generation;
+- protected `POST /api/editorial/draft` endpoint;
+- Sanity Portable Text conversion;
+- create-or-replace Sanity draft behaviour;
+- support for `SANITY_API_TOKEN` and legacy `SANITY_AUTH_TOKEN`;
+- OpenAI response storage disabled;
+- bearer protection with `EDITORIAL_AUTOMATION_SECRET`.
 
-### PUB-002 — Editorial Image Metadata Suggestions
+### PR #49 — Approved Editorial Image assignment
 
-- Merged in PR #39 at commit `4fe2ace1db1a61f24d3e9cbb21b49c786dd6c4b8`.
-- Artifact reviewed.
-- 40 records processed.
-- 18 records had suggestions.
-- 11 metadata-review-ready.
-- 1 rights-review-required.
-- 22 complete.
-- 6 inactive.
-- The generator still needs to exclude `drafts.*` records and emit canonical records only.
+- existing `article.featuredImage` confirmed as the canonical frontend contract;
+- optional `editorialImageId` accepted by the draft endpoint;
+- only usage-approved, approved/published records backed by a Sanity asset may be assigned;
+- reviewed alt text, caption, public credit and rights metadata copied into the article draft;
+- unavailable or unapproved assignments rejected.
 
-### PUB-003 — Controlled Reviewed Metadata Importer
+### PR #50 — Controlled editorial review workflow
 
-- Merged in PR #40 at commit `cd442f47eee73237f935bdad9848f789ca7c618d`.
-- Includes a review-decision contract and schema, dry-run default, explicit apply flag, draft-ID rejection, inactive-record rejection, allow-listed fields, no-overwrite protection and reports.
-- The first dry run used the example record ID `media-candidate-example`.
-- It correctly rejected the nonexistent record with `Editorial Image not found`.
-- Applied changes: 0.
-- No Sanity mutation occurred.
-- This validates the rejection path only; it does not validate a real metadata update.
+- protected `POST /api/editorial/workflow` endpoint;
+- supported actions: `submit`, `approve`, `reject`, `publish`, `discard`;
+- server-side state-transition validation;
+- actor, timestamp, notes and status audit history;
+- rejection count and replacement-required tracking;
+- controlled publish through a Sanity transaction.
+
+PR #50 merged successfully at commit `70916d5bd9070f1c77cf92e3f767722d68b1cbf2`.
+
+## Important completion distinction
+
+The editorial backend is implemented and merged. It is not yet fully verified operationally.
+
+Still required:
+
+- authenticated Sanity Studio review workspace;
+- one end-to-end test from candidate through production publication;
+- automatic replacement generation after rejection;
+- persistent daily orchestration.
 
 ## Exact next steps
 
-1. Check current GitHub, Vercel, Apify, Sanity and Make.com connector availability.
-2. Confirm the current production deployment and workflow state for PR #40.
-3. Fix the metadata suggestions generator so it excludes `drafts.*` records.
-4. Generate a real review-decision file using canonical production Editorial Image IDs.
-5. Run `Apply Reviewed Editorial Image Metadata` with `apply_changes=false`.
-6. Inspect the generated report and confirm proposed changes and skips.
-7. Run `apply_changes=true` only after a clean dry run and explicit editorial review.
-8. Re-run the Editorial Image Readiness Audit.
-9. Verify the updated records in authenticated Sanity Studio.
-10. Continue with approved Editorial Image assignment to articles under `CMS-002`.
-11. Introduce Make.com incrementally as orchestration, without moving core logic out of GitHub.
+1. Build the Sanity Studio editorial review workspace for `AUTO-001`.
+2. Expose the fact ledger, confidence information, sources, assigned image, audit history and review notes.
+3. Add state-appropriate submit, approve, reject, publish and discard actions without bypassing the protected workflow.
+4. Implement `AUTO-002` automatic replacement generation from the replacement-required state.
+5. Prevent reuse of the rejected angle and source set.
+6. Run authenticated Studio tests for approve, reject and publish.
+7. Run one controlled production publication and verify homepage, category and article routes.
+8. Assign approved Editorial Images to existing published articles under `CMS-002`.
+9. Create and review the nine-article launch package under `LAUNCH-001`.
+10. Begin `ACCRED-001` analytics and accreditation evidence implementation.
 
-## Current open issues
+Estimated build time discussed with the user:
+
+- Sanity Studio review workspace: approximately 1–2 focused hours if integration is straightforward.
+- Automatic replacement generation: approximately 1 focused hour.
+- Combined realistic working session: approximately 2–3 hours, excluding unexpected connector, deployment or schema issues.
+
+These are estimates, not guarantees. Preserve the distinction between implementation and verification.
+
+## Accreditation and analytics requirement
+
+The user explicitly stated that analytics is very important and that the project must show proof of:
+
+- a consistent publishing track record;
+- verifiable traffic metrics;
+- established readership.
+
+This requirement is tracked as `ACCRED-001` and GitHub issue #51. Treat it as a core architectural objective for accreditation, sponsors and advertisers. The future evidence pack must include durable publication history, editorial audit trail, GA4, Search Console, article-level metrics, returning readership, traffic sources and reproducible monthly exports.
+
+## Current open priorities
 
 See `docs/08_Issue_Log.md` for canonical status.
 
 Highest priority:
 
-- `PUB-002`: canonical-only metadata suggestions.
-- `PUB-003`: real-record dry run, reviewed apply and Sanity verification.
-- `CMS-002`: assign approved featured images to articles.
-- `MEDIA-001`, `MEDIA-002`, `MEDIA-003`: reconcile final Studio/report counts.
-- `WEB-005`: implement real search.
+- `AUTO-001`: Studio review workspace and end-to-end verification.
+- `AUTO-002`: automatic rejected-draft replacement.
+- `CMS-002`: assign approved featured images to existing and launch articles.
+- `LAUNCH-001`: complete and publish the minimum launch package.
+- `ACCRED-001`: analytics and accreditation evidence baseline.
+- `SEC-001`: security, backups and tested recovery.
+- `AUTO-003`: eight review-ready drafts by 08:00 Europe/Dublin.
 
 ## Production and verification rules
 
@@ -137,19 +162,10 @@ A feature is not complete until the relevant production or authenticated-Studio 
 
 ## Deployment budget rule
 
-The Vercel free plan has a maximum of 100 deployments per day. Treat every deployment as constrained.
-
-Default workflow:
-
-1. Batch related work into a single branch.
-2. Open one PR where possible.
-3. Use one preview deployment where possible.
-4. Merge automatically when preview/build is clean and scope is agreed.
-5. Use one production deployment.
-6. Verify once in production.
+The Vercel free plan has a maximum of 100 deployments per day. Batch related work into a single branch and one production deployment where practical.
 
 ## Recommended next chat prompt
 
 ```text
-Continue The Rugby Panda in repository marmuzzi/therugbypanda. Read docs/07_Project_State.md, docs/08_Issue_Log.md, docs/09_Publishing_Workflow.md, docs/10_New_Chat_Handoff.md, docs/11_Editorial_Image_Archive.md, docs/12_Brand_Assets_Library.md, and all later numbered docs including docs/23_Make_Orchestration_Architecture.md. Use them as the source of truth. Check all currently available connectors before doing anything else. Then continue Sprint 5 from PUB-003: verify PR #40 workflow/deployment state, fix the metadata suggestions generator to exclude drafts.*, create a real canonical-ID review decision file, run a dry run, review it, apply only if clean, rerun the readiness audit, verify in Sanity Studio, and continue CMS-002 image assignment. Keep documentation and the Issue Log current, and report implemented, committed, merged, deployed, verified, documentation updated, blockers and next step separately.
+Continue The Rugby Panda in repository marmuzzi/therugbypanda. The owner is based in Dublin, Ireland, so use Europe/Dublin for all schedules and deadlines. Read docs/07_Project_State.md, docs/08_Issue_Log.md, docs/09_Publishing_Workflow.md, docs/10_New_Chat_Handoff.md, docs/11_Editorial_Image_Archive.md, docs/12_Brand_Assets_Library.md, and all later numbered documents including docs/23_Make_Orchestration_Architecture.md, docs/24_Editorial_Image_Canonical_Metadata_Review.md and docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md. Use them as the source of truth and check all available connectors first. Then continue AUTO-001 by building the authenticated Sanity Studio editorial review workspace over the workflow merged in PR #50. After that implement AUTO-002 automatic replacement generation, preventing reuse of rejected angles and source sets. Keep documentation and the Issue Log current, and report implemented, committed, merged, deployed, verified and documentation updated separately.
 ```
