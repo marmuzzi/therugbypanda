@@ -1,6 +1,6 @@
 import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
 import type { EditorialBrainResult, RawStoryInput } from "./EditorialTypes";
-import { buildEditorialSystemPrompt } from "./PromptBuilder";
+import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 
@@ -68,6 +68,7 @@ function generationInput(story: RawStoryInput, editorial: EditorialBrainResult) 
       preserveUncertainty: true,
       targetLengthWords: "700-1100",
       useOnlySupportedClaims: true,
+      disclosureInstruction: "State briefly what remains unconfirmed or requires the human editor's check. Do not add an AI disclosure.",
     },
   });
 }
@@ -88,7 +89,7 @@ export async function generateArticleDraft(
     body: JSON.stringify({
       model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
       store: false,
-      instructions: buildEditorialSystemPrompt(),
+      instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
       input: generationInput(story, editorial),
       text: {
         format: {
