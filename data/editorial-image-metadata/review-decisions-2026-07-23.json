@@ -1,0 +1,30 @@
+{
+  "sourceReportGeneratedAt": "2026-07-23T20:35:00.000Z",
+  "dataset": "production",
+  "decisions": [
+    {
+      "documentId": "media-candidate-37cb2e9b2ab4af54",
+      "approvedFields": {
+        "altText": "A Gilbert rugby ball resting on grass.",
+        "caption": "A Gilbert rugby ball on a grass pitch.",
+        "publicCredit": "Helene Brasseur / CC BY 2.0",
+        "copyrightLine": "© Helene Brasseur"
+      },
+      "reviewedBy": "The Rugby Panda editorial review",
+      "reviewedAt": "2026-07-23T20:35:00.000Z",
+      "notes": "Canonical approved Editorial Image. Existing source URL, creator and CC BY licence were reviewed against the production record. No existing non-empty metadata is overwritten."
+    },
+    {
+      "documentId": "media-candidate-ec5cdf173d079e58",
+      "approvedFields": {
+        "altText": "Welsh rugby supporters gathered together on matchday.",
+        "caption": "Welsh rugby supporters create a lively matchday atmosphere.",
+        "publicCredit": "infomatique / CC BY-SA 2.0",
+        "copyrightLine": "© infomatique"
+      },
+      "reviewedBy": "The Rugby Panda editorial review",
+      "reviewedAt": "2026-07-23T20:35:00.000Z",
+      "notes": "Canonical approved Editorial Image. Existing source URL, creator and CC BY-SA licence were reviewed against the production record. No existing non-empty metadata is overwritten."
+    }
+  ]
+}
