@@ -2,9 +2,6 @@ name: Audit Editorial Image Readiness
 
 on:
   workflow_dispatch:
-  pull_request:
-    paths:
-      - .github/workflows/audit-editorial-image-readiness.yml
 
 jobs:
   audit-editorial-images:
