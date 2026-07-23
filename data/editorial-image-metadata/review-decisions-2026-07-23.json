@@ -12,7 +12,7 @@
       },
       "reviewedBy": "The Rugby Panda editorial review",
       "reviewedAt": "2026-07-23T20:35:00.000Z",
-      "notes": "Canonical approved Editorial Image. Existing source URL, creator and CC BY licence were reviewed in Sanity before approval. No existing non-empty metadata is overwritten."
+      "notes": "Canonical approved Editorial Image. Existing source URL, creator and CC BY licence were reviewed against the production record. No existing non-empty metadata is overwritten."
     },
     {
       "documentId": "media-candidate-ec5cdf173d079e58",
@@ -24,7 +24,7 @@
       },
       "reviewedBy": "The Rugby Panda editorial review",
       "reviewedAt": "2026-07-23T20:35:00.000Z",
-      "notes": "Canonical approved Editorial Image. Existing source URL, creator and CC BY-SA licence were reviewed in Sanity before approval. No existing non-empty metadata is overwritten."
+      "notes": "Canonical approved Editorial Image. Existing source URL, creator and CC BY-SA licence were reviewed against the production record. No existing non-empty metadata is overwritten."
     }
   ]
 }
