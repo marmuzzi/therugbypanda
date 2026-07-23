@@ -12,16 +12,15 @@ on:
         required: true
         type: boolean
         default: false
-  push:
-    branches:
-      - sprint-5/editorial-metadata-canonical-review
+  pull_request:
     paths:
-      - data/editorial-image-metadata/review-decisions-2026-07-23.json
+      - data/editorial-image-metadata/review-decisions-*.json
+      - scripts/apply-reviewed-editorial-image-metadata.mjs
       - .github/workflows/apply-reviewed-editorial-image-metadata.yml
 
 jobs:
   apply-reviewed-metadata:
-    name: Validate and optionally apply reviewed metadata
+    name: Validate reviewed metadata dry run
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
@@ -29,8 +28,8 @@ jobs:
       NEXT_PUBLIC_SANITY_DATASET: production
       NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
-      EDITORIAL_METADATA_DECISIONS_FILE: ${{ inputs.decisions_file || 'data/editorial-image-metadata/review-decisions-2026-07-23.json' }}
-      EDITORIAL_METADATA_APPLY: ${{ inputs.apply_changes || 'false' }}
+      EDITORIAL_METADATA_DECISIONS_FILE: ${{ github.event_name == 'workflow_dispatch' && inputs.decisions_file || 'data/editorial-image-metadata/review-decisions-2026-07-23.json' }}
+      EDITORIAL_METADATA_APPLY: ${{ github.event_name == 'workflow_dispatch' && inputs.apply_changes || 'false' }}
 
     steps:
       - name: Checkout repository
