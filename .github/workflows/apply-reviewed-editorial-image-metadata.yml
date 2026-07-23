@@ -42,7 +42,7 @@ jobs:
         run: npm run media:apply-reviewed-metadata
 
       - name: Upload apply report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: editorial-image-metadata-apply
           path: artifacts/editorial-image-metadata-apply/

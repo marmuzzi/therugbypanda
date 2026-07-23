@@ -31,7 +31,7 @@ jobs:
         run: npm run media:generate-metadata-suggestions
 
       - name: Upload metadata suggestions
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: editorial-image-metadata-suggestions
           path: artifacts/editorial-image-metadata-suggestions/

@@ -32,7 +32,7 @@ jobs:
         run: npm run media:audit-readiness
 
       - name: Upload audit report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: editorial-image-readiness-audit
           path: artifacts/editorial-image-audit
