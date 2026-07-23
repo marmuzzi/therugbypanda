@@ -10,29 +10,44 @@ Use this file when continuing The Rugby Panda in a new chat.
 4. Read `docs/10_New_Chat_Handoff.md`.
 5. Read `docs/11_Editorial_Image_Archive.md`.
 6. Read `docs/12_Brand_Assets_Library.md`.
-7. Check available connectors before asking the user to configure anything.
+7. Read all later numbered documents, including `docs/23_Make_Orchestration_Architecture.md`.
+8. Check available connectors before asking the user to configure anything.
 
 Do not rely on chat history for current status.
 
-## Expected connectors
+## Connector expectations
 
-- GitHub.
-- Vercel.
-- Sanity, when available.
-- Apify, when available.
+Connector availability varies by session and must be checked each time.
 
-Connector notes:
+Last verified on 23 July 2026:
 
-- GitHub has been available and write-capable.
-- Vercel has been available for deployment checks.
-- Sanity connector availability varies; when Sanity write access is unavailable, use the GitHub Action import workflow.
-- Apify connector availability varies; when unavailable, continue with GitHub/Vercel work and official-source records only.
+- GitHub was available and write-capable.
+- Vercel was available for deployment checks.
+- Apify was not exposed in that session.
+- Sanity was not exposed as a direct connector; GitHub Actions remain the reliable CMS automation path.
+- Make.com was not connected.
+
+## Agreed architecture
+
+The project decision is:
+
+```text
+GitHub source of truth
+→ Make.com orchestration
+→ Apify acquisition
+→ Sanity canonical CMS
+→ Vercel public website
+```
+
+GitHub retains code, business logic, workflow definitions and documentation. Make.com should provide scheduling, webhooks, retries, notifications and service coordination. Do not move core business logic primarily into Make.com. Human editorial approval remains mandatory before metadata application or publishing.
+
+See `docs/23_Make_Orchestration_Architecture.md`.
 
 ## Current handoff status
 
-Sprint 4 is complete.
+Sprint 4 is complete. Sprint 5 Editorial & Publishing Automation is in progress.
 
-The verified media architecture is:
+The verified media workflow is:
 
 ```text
 Discovery / acquisition
@@ -41,82 +56,72 @@ Discovery / acquisition
 → Sanity candidate records
 → Review tool
 → Manual approval / rejection / archive
-→ Approved CMS records for future editorial use
+→ Approved CMS records
 ```
 
-## Completed Sprint 4 work
+## Sprint 5 completed and current work
 
-### Editorial Images
+### PUB-001 — Editorial Image Readiness Audit
 
-Implemented and in use:
+- Merged in PR #38.
+- Workflow run `29208191194` succeeded.
+- 40 records audited.
+- 22 publication-ready.
+- 18 needing attention.
+- 34 approved/published.
+- 12 approved/published but not ready.
+- 0 duplicate asset groups.
+- 2 duplicate source groups caused by draft/published pairs.
 
-- `editorialImage` Sanity document type.
-- Dedicated Editorial Images Studio section.
-- Image Review tool.
-- Needs Review / Approved / Rejected queues.
-- Original Rugby Panda photo import workflow.
-- External candidate image import workflow.
+### PUB-002 — Editorial Image Metadata Suggestions
 
-Pending verification:
+- Merged in PR #39 at commit `4fe2ace1db1a61f24d3e9cbb21b49c786dd6c4b8`.
+- Artifact reviewed.
+- 40 records processed.
+- 18 records had suggestions.
+- 11 metadata-review-ready.
+- 1 rights-review-required.
+- 22 complete.
+- 6 inactive.
+- The generator still needs to exclude `drafts.*` records and emit canonical records only.
 
-- Final Editorial Image queue/count verification.
-- Final starter external image reviewed-count verification.
-- Final original Rugby Panda photo count verification.
+### PUB-003 — Controlled Reviewed Metadata Importer
 
-### Brand Assets
+- Merged in PR #40 at commit `cd442f47eee73237f935bdad9848f789ca7c618d`.
+- Includes a review-decision contract and schema, dry-run default, explicit apply flag, draft-ID rejection, inactive-record rejection, allow-listed fields, no-overwrite protection and reports.
+- The first dry run used the example record ID `media-candidate-example`.
+- It correctly rejected the nonexistent record with `Editorial Image not found`.
+- Applied changes: 0.
+- No Sanity mutation occurred.
+- This validates the rejection path only; it does not validate a real metadata update.
 
-Implemented, merged, deployed and user-verified:
+## Exact next steps
 
-- `brandAsset` Sanity document type.
-- Dedicated Brand Assets Studio section.
-- Brand Review tool.
-- Candidate import workflow via GitHub Action.
-- Batch 1 imported and manually approved.
-- Batch 2 source coverage completed.
-- Batch 2 imported as candidates.
-- Batch 2 reviewed by the user; 5 records approved.
-- Importer updated to support both `candidates` and `targetedResults` files.
-- Importer updated to patch existing unapproved candidates with later logo references.
-- Importer skips already-approved Brand Asset records.
-- Candidate logo preview update file added.
-
-Important brand asset rule:
-
-Approved Brand Asset records do not automatically mean the external candidate logo URL is safe for public hotlinking. Before public frontend logo display, upload final approved logo files into Sanity assets and use the Sanity-hosted assets.
+1. Check current GitHub, Vercel, Apify, Sanity and Make.com connector availability.
+2. Confirm the current production deployment and workflow state for PR #40.
+3. Fix the metadata suggestions generator so it excludes `drafts.*` records.
+4. Generate a real review-decision file using canonical production Editorial Image IDs.
+5. Run `Apply Reviewed Editorial Image Metadata` with `apply_changes=false`.
+6. Inspect the generated report and confirm proposed changes and skips.
+7. Run `apply_changes=true` only after a clean dry run and explicit editorial review.
+8. Re-run the Editorial Image Readiness Audit.
+9. Verify the updated records in authenticated Sanity Studio.
+10. Continue with approved Editorial Image assignment to articles under `CMS-002`.
+11. Introduce Make.com incrementally as orchestration, without moving core logic out of GitHub.
 
 ## Current open issues
 
 See `docs/08_Issue_Log.md` for canonical status.
 
-Open / pending items for Sprint 5:
+Highest priority:
 
-- `CMS-002`: hosted Sanity articles need proper featured images and metadata.
-- `MEDIA-001`: Editorial Image Archive final count verification.
-- `MEDIA-002`: starter external image reviewed-count verification.
-- `MEDIA-003`: original Rugby Panda photo count verification.
-- `WEB-005`: search remains placeholder.
+- `PUB-002`: canonical-only metadata suggestions.
+- `PUB-003`: real-record dry run, reviewed apply and Sanity verification.
+- `CMS-002`: assign approved featured images to articles.
+- `MEDIA-001`, `MEDIA-002`, `MEDIA-003`: reconcile final Studio/report counts.
+- `WEB-005`: implement real search.
 
-Closed on 5 July 2026:
-
-- `BRAND-004`: Batch 2 Brand Assets expansion/import/review.
-
-## Sprint 5 recommended theme
-
-**Editorial & Publishing Automation**
-
-Recommended Sprint 5 priorities:
-
-1. AI-powered bulk upload of original Rugby Panda photos into Sanity.
-2. AI metadata generation for images: title, caption, alt text, tags and suggested use.
-3. AI categorisation by stadium, teams, competition, supporters, match action, pubs and newsroom categories.
-4. Duplicate detection.
-5. Event and album creation.
-6. Fast search of the Editorial Image Library.
-7. Assign approved editorial images to current articles.
-8. Build real website search.
-9. Build the article generation / review / scheduled publishing workflow.
-
-## Production / verification reminders
+## Production and verification rules
 
 Always distinguish:
 
@@ -126,12 +131,13 @@ Always distinguish:
 - deployed
 - verified in production
 - verified in authenticated Sanity Studio
+- documentation updated
 
 A feature is not complete until the relevant production or authenticated-Studio verification has happened.
 
 ## Deployment budget rule
 
-The Vercel free plan has a maximum of 100 deployments per day. Treat every deployment as a constrained resource.
+The Vercel free plan has a maximum of 100 deployments per day. Treat every deployment as constrained.
 
 Default workflow:
 
@@ -145,5 +151,5 @@ Default workflow:
 ## Recommended next chat prompt
 
 ```text
-Continue The Rugby Panda. Read docs/07 through docs/20 from the repository first and use them as the source of truth. Check available connectors. Continue from the verified Sprint 4 media foundation and start Sprint 5: Editorial & Publishing Automation.
+Continue The Rugby Panda in repository marmuzzi/therugbypanda. Read docs/07_Project_State.md, docs/08_Issue_Log.md, docs/09_Publishing_Workflow.md, docs/10_New_Chat_Handoff.md, docs/11_Editorial_Image_Archive.md, docs/12_Brand_Assets_Library.md, and all later numbered docs including docs/23_Make_Orchestration_Architecture.md. Use them as the source of truth. Check all currently available connectors before doing anything else. Then continue Sprint 5 from PUB-003: verify PR #40 workflow/deployment state, fix the metadata suggestions generator to exclude drafts.*, create a real canonical-ID review decision file, run a dry run, review it, apply only if clean, rerun the readiness audit, verify in Sanity Studio, and continue CMS-002 image assignment. Keep documentation and the Issue Log current, and report implemented, committed, merged, deployed, verified, documentation updated, blockers and next step separately.
 ```
