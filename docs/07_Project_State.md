@@ -6,7 +6,7 @@ v0.7 — Sprint 5 Editorial Automation In Progress
 
 ## Last Updated
 
-12 July 2026
+23 July 2026
 
 ## Source of truth
 
@@ -28,25 +28,43 @@ Read these files first in future sessions:
 14. `docs/20_New_Chat_Batch_2_Import_Handoff.md`
 15. `docs/21_Editorial_Image_Readiness_Audit.md`
 16. `docs/22_Editorial_Image_Metadata_Suggestions.md`
+17. `docs/23_Make_Orchestration_Architecture.md`
 
 Do not rely on chat history for current status.
 
 ## Connectors
 
-Verified available on 12 July 2026:
+Last verified in the 23 July 2026 session:
 
-- GitHub — read/write capable.
-- Vercel — deployment and production checks available.
-- Apify — available for acquisition workflows.
-- Sanity direct connector — not available in the current session; GitHub Actions remain the reliable CMS automation path.
+- GitHub — available and read/write capable.
+- Vercel — available for deployment and production checks.
+- Apify — not exposed in that session; availability must be checked again in each new chat.
+- Sanity direct connector — not exposed in that session; GitHub Actions remain the reliable CMS automation path.
+- Make.com — not connected in that session.
 
 Always check available connectors before asking the user to configure anything.
 
+## Agreed orchestration architecture
+
+The long-term integration decision is:
+
+```text
+GitHub source of truth
+→ Make.com orchestration
+→ Apify acquisition
+→ Sanity canonical CMS
+→ Vercel public website
+```
+
+GitHub keeps code, business logic, workflow definitions and documentation. Make.com should provide persistent scheduling, webhooks, retries, notifications and service coordination, but core business logic should remain version-controlled in GitHub. Human editorial approval remains mandatory before metadata application or publishing.
+
+See `docs/23_Make_Orchestration_Architecture.md`.
+
 ## Current state summary
 
-Sprint 4 is complete. Sprint 5 has started.
+Sprint 4 is complete. Sprint 5 is in progress.
 
-The verified media architecture remains:
+The verified media workflow remains:
 
 ```text
 Discovery / acquisition
@@ -58,7 +76,7 @@ Discovery / acquisition
 → Approved CMS records
 ```
 
-Sprint 5 is adding read-only quality gates and reviewable metadata automation before any controlled CMS write-back is introduced.
+Sprint 5 has added read-only quality gates, reviewable metadata suggestions and a controlled dry-run-first metadata importer.
 
 ## Sprint 5 completed work
 
@@ -66,7 +84,7 @@ Sprint 5 is adding read-only quality gates and reviewable metadata automation be
 
 Implemented, merged in PR #38, deployed and verified through workflow run `29208191194`.
 
-Verified production result:
+Verified result:
 
 - 40 Editorial Image records.
 - 22 publication-ready.
@@ -76,25 +94,37 @@ Verified production result:
 - 0 duplicate Sanity asset groups.
 - 2 duplicate source groups caused by draft/published document pairs.
 
-The repeated metadata gap is missing alt text, caption, public credit and copyright line.
-
-## Sprint 5 current work
-
 ### PUB-002 — Editorial Image Metadata Suggestions
 
-Implemented on branch `sprint-5/editorial-metadata-suggestions` and pending merge/verification.
+Implemented and merged in PR #39 at commit `4fe2ace1db1a61f24d3e9cbb21b49c786dd6c4b8`.
 
-The workflow:
+The reviewed artifact reported:
 
-- reads Editorial Images from production Sanity
-- generates conservative suggestions for missing alt text, captions, credits, copyright and tags
-- preserves all existing metadata
-- never invents rights or licence data
-- classifies records as metadata-review-ready, rights-review-required, already-complete or not-active
-- outputs Markdown and JSON artifacts
-- performs no Sanity mutation
+- 40 records.
+- 18 records with suggestions.
+- 11 metadata-review-ready.
+- 1 rights-review-required.
+- 22 complete.
+- 6 inactive.
 
-Human review remains mandatory. A future controlled import step may apply only explicitly approved suggestions.
+The generator still needs canonical-record filtering so it excludes `drafts.*` document pairs.
+
+### PUB-003 — Controlled Editorial Image Metadata Importer
+
+Implemented and merged in PR #40 at commit `cd442f47eee73237f935bdad9848f789ca7c618d`.
+
+The importer provides:
+
+- review-decision JSON contract and schema
+- dry-run default
+- explicit `apply_changes` switch
+- canonical-ID enforcement and draft-ID rejection
+- inactive-record rejection
+- allow-listed writable fields
+- no-overwrite protection
+- Markdown and JSON reports
+
+The first dry run processed the example ID `media-candidate-example`. It correctly rejected it because the Sanity document did not exist. No metadata was applied. A second dry run using real reviewed Editorial Image IDs is required before any production write.
 
 ## Editorial Images
 
@@ -107,10 +137,11 @@ Editorial Images are managed in Sanity using:
 - external candidate imports
 - readiness audit
 - metadata suggestions workflow
+- controlled reviewed-metadata importer
 
 Original Rugby Panda photography remains preferred.
 
-Outstanding verification items remain in `docs/08_Issue_Log.md`, particularly `MEDIA-001`, `MEDIA-002`, `MEDIA-003`, and `CMS-002`.
+Outstanding verification items remain in `docs/08_Issue_Log.md`, particularly `PUB-002`, `PUB-003`, `MEDIA-001`, `MEDIA-002`, `MEDIA-003`, and `CMS-002`.
 
 ## Brand Assets
 
@@ -124,12 +155,16 @@ Candidate logo URLs remain review references only. Public frontend logo use requ
 
 ## Current priorities
 
-1. Verify and review the Editorial Image Metadata Suggestions artifact.
-2. Build a controlled review/import step for accepted metadata suggestions.
-3. Assign approved Editorial Images to current articles under `CMS-002`.
-4. Add AI vision enrichment behind the same suggestions-only approval boundary.
-5. Build real website search under `WEB-005`.
-6. Build the article generation, review and scheduled publishing workflow.
+1. Confirm the current deployment and workflow state for PR #40.
+2. Fix the metadata suggestions generator to exclude `drafts.*` records.
+3. Build a real reviewed-decision file using canonical Sanity Editorial Image IDs.
+4. Run the importer with `apply_changes=false` and review the report.
+5. Run `apply_changes=true` only after a clean dry run.
+6. Re-run the readiness audit and verify results in authenticated Sanity Studio.
+7. Assign approved Editorial Images to current articles under `CMS-002`.
+8. Build real website search under `WEB-005`.
+9. Build article generation, review and scheduled publishing workflows.
+10. Introduce Make.com incrementally as the orchestration layer without moving core business logic out of GitHub.
 
 ## Deployment budget rule
 
