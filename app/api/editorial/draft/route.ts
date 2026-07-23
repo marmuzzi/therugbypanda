@@ -12,6 +12,7 @@ type DraftRequest = {
   story: RawStoryInput;
   factLedger: FactLedger;
   createSanityDraft?: boolean;
+  editorialImageId?: string;
 };
 
 function isAuthorized(request: NextRequest): boolean {
@@ -47,7 +48,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ status: "generated", ...pkg });
     }
 
-    const sanityDraft = await createSanityArticleDraft(pkg);
+    const sanityDraft = await createSanityArticleDraft(pkg, {
+      editorialImageId: body.editorialImageId,
+    });
     return NextResponse.json({ status: "draft-created", editorial, article, sanityDraft });
   } catch (error) {
     console.error("Editorial draft pipeline failed", error);
