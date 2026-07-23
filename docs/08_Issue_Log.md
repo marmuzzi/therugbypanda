@@ -10,8 +10,8 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| PUB-003 | Implemented | High | Editorial Automation / Media | Apply human-reviewed Editorial Image metadata through a controlled dry-run-first importer. | Pending PR | Implemented on `sprint-5/editorial-metadata-apply`; not merged | Pending preview/build, dry-run workflow execution and reviewed apply verification | — |
-| PUB-002 | Pending Verification | High | Editorial Automation / Media | Generate reviewable metadata suggestions for Editorial Images without mutating Sanity. | #39 | Merged to main commit `4fe2ace1db1a61f24d3e9cbb21b49c786dd6c4b8`; workflow available | Workflow artifact reviewed: 40 records, 18 with suggestions, 11 metadata-review-ready, 1 rights-review-required, 22 complete, 6 inactive. Draft/published pairs identified for correction. | — |
+| PUB-003 | Pending Verification | High | Editorial Automation / Media | Apply human-reviewed Editorial Image metadata through a controlled dry-run-first importer. | #40 | Merged to main commit `cd442f47eee73237f935bdad9848f789ca7c618d`; workflow available | Example-file dry run succeeded technically and correctly rejected nonexistent ID `media-candidate-example`; no Sanity mutation occurred. Real canonical-ID dry run and explicit apply remain pending. | — |
+| PUB-002 | Pending Verification | High | Editorial Automation / Media | Generate reviewable metadata suggestions for Editorial Images without mutating Sanity. | #39 | Merged to main commit `4fe2ace1db1a61f24d3e9cbb21b49c786dd6c4b8`; workflow available | Artifact reviewed: 40 records, 18 with suggestions, 11 metadata-review-ready, 1 rights-review-required, 22 complete, 6 inactive. Draft/published pairs identified; canonical-record filtering remains required. | — |
 | PUB-001 | Closed | High | Editorial Automation / Media | Add a non-destructive Editorial Image readiness audit for metadata completeness, approval consistency and duplicate detection. | #38 | Merged to main commit `52773146417b677f0171db0dd9cb9b9dc7a54f34`; production workflow available | Workflow run `29208191194` succeeded; report reviewed: 40 total, 22 ready, 18 needing attention, 0 duplicate assets | 2026-07-12 |
 | BRAND-004 | Closed | High | Media / Brand Assets | Expand Batch 2 Brand Asset candidates for remaining Rugby World Cup-cycle unions, national teams, Irish provinces and approved-scope professional clubs. | #30, #31, #36 plus direct candidate preview update commit | Candidate data/docs merged and deployed; importer update merged to main; Sanity import workflow run by user through GitHub Actions | Batch 2 imported as candidates; importer update allowed logo-reference updates; user completed Brand Review and approved 5 records | 2026-07-05 |
 | BRAND-003 | Closed | High | Media / Brand Assets / CMS | Import brand asset candidates into Sanity as unapproved review records and review them through a Brand Review tool. | #29 | Deployed on main commit `c78a02cffbc9ee32e38965b9cee7e3faae124382`; Vercel deployment `dpl_5aLEWUW17j9WCANp9sDjX6Edu7pM` READY | Full Brand Asset workflow verified: Apify → GitHub → Sanity → Brand Review → Approval. First candidate batch imported and manually approved by user. | 2026-07-05 |
@@ -34,13 +34,13 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 ## PUB-003 — Controlled Editorial Image metadata importer
 
-- **Status:** Implemented
+- **Status:** Pending Verification
 - **Priority:** High
 - **Root cause:** Metadata suggestions require a safe human-review boundary before any Sanity mutation. The first suggestions report also included `drafts.*` document pairs, so writes must target canonical document IDs only.
 - **Implementation:** Added a decision-file contract, JSON Schema, dry-run-first importer, allow-listed writable fields, draft-ID rejection, inactive-record rejection, no-overwrite protection, change reports, and the `Apply Reviewed Editorial Image Metadata` GitHub Action.
-- **Related PRs:** Pending PR.
-- **Deployment status:** Implemented on `sprint-5/editorial-metadata-apply`; not merged.
-- **Verification status:** Pending clean preview/build, dry-run execution, review of the generated report, then an explicit apply run using approved decisions.
+- **Related PRs:** #40.
+- **Deployment status:** Merged to `main` at `cd442f47eee73237f935bdad9848f789ca7c618d`; workflow available.
+- **Verification status:** The first dry run used `review-decisions.example.json` and processed the placeholder ID `media-candidate-example`. It correctly returned `Editorial Image not found`, applied zero changes and made no Sanity mutation. Pending: create a real reviewed decision file using canonical production IDs, run `apply_changes=false`, inspect the report, then run an explicit apply only if clean.
 - **Resolution date:** Pending
 
 ## PUB-002 — Editorial Image metadata suggestions
