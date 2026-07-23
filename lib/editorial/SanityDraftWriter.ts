@@ -3,6 +3,23 @@ import { createClient } from "next-sanity";
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 import type { EditorialDraftPackage } from "./ArticleDraftTypes";
 
+type ApprovedEditorialImage = {
+  _id: string;
+  title?: string;
+  altText?: string;
+  caption?: string;
+  publicCredit?: string;
+  copyrightLine?: string;
+  source?: string;
+  rightsNotes?: string;
+  image: {
+    _type?: "image";
+    asset: { _type?: "reference"; _ref: string };
+    crop?: Record<string, number>;
+    hotspot?: Record<string, number>;
+  };
+};
+
 function slugify(value: string): string {
   return value
     .toLowerCase()
@@ -31,7 +48,63 @@ function portableTextBody(article: EditorialDraftPackage["article"]) {
   ]);
 }
 
-export async function createSanityArticleDraft(pkg: EditorialDraftPackage) {
+function normaliseDocumentId(value: string): string {
+  return value.replace(/^drafts\./, "");
+}
+
+async function fetchApprovedEditorialImage(
+  writeClient: ReturnType<typeof createClient>,
+  editorialImageId?: string,
+): Promise<ApprovedEditorialImage | undefined> {
+  if (!editorialImageId) return undefined;
+
+  const publishedId = normaliseDocumentId(editorialImageId);
+  const image = await writeClient.fetch<ApprovedEditorialImage | null>(
+    `*[
+      _type == "editorialImage" &&
+      _id in [$publishedId, $draftId] &&
+      usageApproved == true &&
+      lifecycleStatus in ["approved", "published"] &&
+      defined(image.asset._ref)
+    ][0]{
+      _id,
+      title,
+      altText,
+      caption,
+      publicCredit,
+      copyrightLine,
+      source,
+      rightsNotes,
+      image
+    }`,
+    { publishedId, draftId: `drafts.${publishedId}` },
+  );
+
+  if (!image) {
+    throw new Error(
+      `Editorial Image ${editorialImageId} is unavailable, lacks a Sanity asset, or is not approved for use.`,
+    );
+  }
+
+  return image;
+}
+
+function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
+  return {
+    ...editorialImage.image,
+    _type: "image",
+    alt: editorialImage.altText ?? editorialImage.title ?? "Rugby editorial image",
+    caption: editorialImage.caption,
+    photographer: editorialImage.publicCredit,
+    source: editorialImage.source,
+    rights: [editorialImage.copyrightLine, editorialImage.rightsNotes].filter(Boolean).join(" — ") || undefined,
+  };
+}
+
+export async function createSanityArticleDraft(
+  pkg: EditorialDraftPackage,
+  options: { editorialImageId?: string } = {},
+) {
   const token = process.env.SANITY_API_TOKEN ?? process.env.SANITY_AUTH_TOKEN;
   if (!projectId || !dataset) throw new Error("Sanity project configuration is missing.");
   if (!token) throw new Error("SANITY_API_TOKEN or SANITY_AUTH_TOKEN is not configured.");
@@ -45,10 +118,13 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage) {
     perspective: "raw",
   });
 
-  const category = await writeClient.fetch<{ _id: string } | null>(
-    `*[_type == "category" && (title == $title || slug.current == $slug)][0]{_id}`,
-    { title: pkg.editorial.category, slug: slugify(pkg.editorial.category) },
-  );
+  const [category, editorialImage] = await Promise.all([
+    writeClient.fetch<{ _id: string } | null>(
+      `*[_type == "category" && (title == $title || slug.current == $slug)][0]{_id}`,
+      { title: pkg.editorial.category, slug: slugify(pkg.editorial.category) },
+    ),
+    fetchApprovedEditorialImage(writeClient, options.editorialImageId),
+  ]);
 
   if (!category?._id) {
     throw new Error(`No Sanity category found for ${pkg.editorial.category}.`);
@@ -67,6 +143,7 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage) {
     readingTime: `${Math.max(3, Math.ceil(JSON.stringify(pkg.article.body).split(/\s+/).length / 220))} min read`,
     isLead: false,
     category: { _type: "reference", _ref: category._id },
+    ...(editorialImage ? { featuredImage: toFeaturedImage(editorialImage) } : {}),
     keyPoints: pkg.article.keyPoints,
     body: portableTextBody(pkg.article),
     seoTitle: pkg.article.seoTitle,
@@ -74,5 +151,10 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage) {
   };
 
   const result = await writeClient.createOrReplace(document);
-  return { id: result._id, slug, studioIntent: `/intent/edit/id=${result._id};type=article/` };
+  return {
+    id: result._id,
+    slug,
+    editorialImageId: editorialImage?._id,
+    studioIntent: `/intent/edit/id=${result._id};type=article/`,
+  };
 }
