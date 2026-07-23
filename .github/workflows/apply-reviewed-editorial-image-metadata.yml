@@ -12,6 +12,12 @@ on:
         required: true
         type: boolean
         default: false
+  push:
+    branches:
+      - sprint-5/editorial-metadata-canonical-review
+    paths:
+      - data/editorial-image-metadata/review-decisions-2026-07-23.json
+      - .github/workflows/apply-reviewed-editorial-image-metadata.yml
 
 jobs:
   apply-reviewed-metadata:
@@ -23,8 +29,8 @@ jobs:
       NEXT_PUBLIC_SANITY_DATASET: production
       NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
-      EDITORIAL_METADATA_DECISIONS_FILE: ${{ inputs.decisions_file }}
-      EDITORIAL_METADATA_APPLY: ${{ inputs.apply_changes }}
+      EDITORIAL_METADATA_DECISIONS_FILE: ${{ inputs.decisions_file || 'data/editorial-image-metadata/review-decisions-2026-07-23.json' }}
+      EDITORIAL_METADATA_APPLY: ${{ inputs.apply_changes || 'false' }}
 
     steps:
       - name: Checkout repository
