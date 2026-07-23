@@ -21,24 +21,12 @@ type ApprovedEditorialImage = {
 };
 
 function slugify(value: string): string {
-  return value
-    .toLowerCase()
-    .normalize("NFKD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z0-9]+/g, "-")
-    .replace(/^-+|-+$/g, "")
-    .slice(0, 90);
+  return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90);
 }
 
 function textBlock(text: string, style: "normal" | "h2" = "normal") {
   const key = crypto.randomUUID().replaceAll("-", "").slice(0, 12);
-  return {
-    _type: "block",
-    _key: key,
-    style,
-    markDefs: [],
-    children: [{ _type: "span", _key: `${key}span`, marks: [], text }],
-  };
+  return { _type: "block", _key: key, style, markDefs: [], children: [{ _type: "span", _key: `${key}span`, marks: [], text }] };
 }
 
 function portableTextBody(article: EditorialDraftPackage["article"]) {
@@ -52,40 +40,14 @@ function normaliseDocumentId(value: string): string {
   return value.replace(/^drafts\./, "");
 }
 
-async function fetchApprovedEditorialImage(
-  writeClient: ReturnType<typeof createClient>,
-  editorialImageId?: string,
-): Promise<ApprovedEditorialImage | undefined> {
+async function fetchApprovedEditorialImage(writeClient: ReturnType<typeof createClient>, editorialImageId?: string): Promise<ApprovedEditorialImage | undefined> {
   if (!editorialImageId) return undefined;
-
   const publishedId = normaliseDocumentId(editorialImageId);
   const image = await writeClient.fetch<ApprovedEditorialImage | null>(
-    `*[
-      _type == "editorialImage" &&
-      _id in [$publishedId, $draftId] &&
-      usageApproved == true &&
-      lifecycleStatus in ["approved", "published"] &&
-      defined(image.asset._ref)
-    ][0]{
-      _id,
-      title,
-      altText,
-      caption,
-      publicCredit,
-      copyrightLine,
-      source,
-      rightsNotes,
-      image
-    }`,
+    `*[_type == "editorialImage" && _id in [$publishedId, $draftId] && usageApproved == true && lifecycleStatus in ["approved", "published"] && defined(image.asset._ref)][0]{_id,title,altText,caption,publicCredit,copyrightLine,source,rightsNotes,image}`,
     { publishedId, draftId: `drafts.${publishedId}` },
   );
-
-  if (!image) {
-    throw new Error(
-      `Editorial Image ${editorialImageId} is unavailable, lacks a Sanity asset, or is not approved for use.`,
-    );
-  }
-
+  if (!image) throw new Error(`Editorial Image ${editorialImageId} is unavailable, lacks a Sanity asset, or is not approved for use.`);
   return image;
 }
 
@@ -101,23 +63,12 @@ function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
   };
 }
 
-export async function createSanityArticleDraft(
-  pkg: EditorialDraftPackage,
-  options: { editorialImageId?: string } = {},
-) {
+export async function createSanityArticleDraft(pkg: EditorialDraftPackage, options: { editorialImageId?: string } = {}) {
   const token = process.env.SANITY_API_TOKEN ?? process.env.SANITY_AUTH_TOKEN;
   if (!projectId || !dataset) throw new Error("Sanity project configuration is missing.");
   if (!token) throw new Error("SANITY_API_TOKEN or SANITY_AUTH_TOKEN is not configured.");
 
-  const writeClient = createClient({
-    projectId,
-    dataset,
-    apiVersion,
-    token,
-    useCdn: false,
-    perspective: "raw",
-  });
-
+  const writeClient = createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
   const [category, editorialImage] = await Promise.all([
     writeClient.fetch<{ _id: string } | null>(
       `*[_type == "category" && (title == $title || slug.current == $slug)][0]{_id}`,
@@ -126,20 +77,18 @@ export async function createSanityArticleDraft(
     fetchApprovedEditorialImage(writeClient, options.editorialImageId),
   ]);
 
-  if (!category?._id) {
-    throw new Error(`No Sanity category found for ${pkg.editorial.category}.`);
-  }
+  if (!category?._id) throw new Error(`No Sanity category found for ${pkg.editorial.category}.`);
 
+  const now = new Date().toISOString();
   const slug = slugify(pkg.article.title);
   const documentId = `drafts.article-${pkg.editorial.inputId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
-
   const document = {
     _id: documentId,
     _type: "article",
     title: pkg.article.title,
     slug: { _type: "slug", current: slug },
     standfirst: pkg.article.standfirst,
-    publishedAt: new Date().toISOString(),
+    publishedAt: now,
     readingTime: `${Math.max(3, Math.ceil(JSON.stringify(pkg.article.body).split(/\s+/).length / 220))} min read`,
     isLead: false,
     category: { _type: "reference", _ref: category._id },
@@ -148,13 +97,21 @@ export async function createSanityArticleDraft(
     body: portableTextBody(pkg.article),
     seoTitle: pkg.article.seoTitle,
     seoDescription: pkg.article.seoDescription,
+    workflowStatus: "draft",
+    workflowUpdatedAt: now,
+    workflowHistory: [{
+      _key: crypto.randomUUID().replaceAll("-", "").slice(0, 12),
+      _type: "object",
+      action: "generate",
+      fromStatus: "candidate",
+      toStatus: "draft",
+      actor: "editorial-automation",
+      occurredAt: now,
+    }],
+    replacementRequired: false,
+    rejectionCount: 0,
   };
 
   const result = await writeClient.createOrReplace(document);
-  return {
-    id: result._id,
-    slug,
-    editorialImageId: editorialImage?._id,
-    studioIntent: `/intent/edit/id=${result._id};type=article/`,
-  };
+  return { id: result._id, slug, workflowStatus: "draft", editorialImageId: editorialImage?._id, studioIntent: `/intent/edit/id=${result._id};type=article/` };
 }
