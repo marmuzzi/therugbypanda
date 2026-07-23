@@ -2,7 +2,7 @@
 
 ## Status
 
-Approved project direction recorded on 23 July 2026.
+Approved project direction recorded on 23 July 2026. Editorial engine foundation updated on 24 July 2026, 00:04 Europe/Dublin.
 
 ## Business priority
 
@@ -25,9 +25,38 @@ The launch package is not complete until the articles, images, homepage cards, c
 
 After go-live, the operating target is eight review-ready articles per day across the approved website sections.
 
-All eight drafts must be available for editorial review by 08:00 Europe/Dublin every day.
+All eight drafts must be available for editorial review by 08:00 Europe/Dublin every day. The project owner is based in Dublin, Ireland, and `Europe/Dublin` is the canonical operating timezone.
 
 The daily mix must cover the active editorial sections without forcing low-quality stories where there is no credible news. The workflow should favour relevant current stories, meaningful analysis, previews, reviews and evergreen features over filler.
+
+## Current implementation baseline
+
+The following foundation is merged into `main`:
+
+- PR #47 — Editorial Brain classification, scoring, source-linked fact ledger, confidence and originality controls.
+- PR #48 — OpenAI structured generation, protected draft endpoint and Sanity draft creation.
+- PR #49 — approved Editorial Image assignment through the canonical `article.featuredImage` contract.
+- PR #50 — protected editorial state transitions, audit history and controlled publishing.
+
+PR #50 merged at commit `70916d5bd9070f1c77cf92e3f767722d68b1cbf2`.
+
+The merged backend supports:
+
+```text
+structured candidate
+→ Editorial Brain
+→ fact ledger
+→ OpenAI draft
+→ approved image assignment
+→ Sanity draft
+→ submit
+→ approve / reject
+→ publish / discard
+```
+
+Both editorial endpoints require `Authorization: Bearer <EDITORIAL_AUTOMATION_SECRET>`.
+
+The backend foundation is merged but remains pending authenticated Sanity Studio and production end-to-end verification.
 
 ## Editorial lifecycle
 
@@ -37,24 +66,57 @@ The required lifecycle is:
 Source discovery
 → source validation
 → article candidate
-→ generated draft
+→ Editorial Brain classification and scoring
+→ source-linked fact ledger
+→ generated original draft
 → factual and rights checks
-→ image suggestion or assignment
+→ approved image assignment
 → editor review queue
-→ approve / amend / reject
-→ publish / discard
+→ amend / approve / reject
+→ controlled publish / discard
 ```
 
 Rules:
 
 - Generated articles are drafts, never automatically published.
 - The editor can amend, approve or reject each article.
-- Approved articles are scheduled or published through the CMS.
-- Rejected articles are archived with the rejection reason.
+- Approved articles are published only through the controlled workflow.
+- Rejected articles retain their reason and audit history.
+- Rejected drafts are marked as requiring replacement.
 - A rejected daily article must trigger a replacement candidate so the review queue returns to the daily target of eight.
 - Replacement generation must not repeatedly regenerate the same rejected angle or source set.
 - Every article must retain its source references and generation/review audit trail internally.
 - Public pages must not disclose AI implementation details.
+
+## Next implementation milestone — Sanity Studio review workspace
+
+Build an authenticated Studio workspace that makes the merged workflow operational without manual API calls.
+
+Required capabilities:
+
+- queue of drafts awaiting review;
+- article content and metadata preview;
+- Editorial Brain score and classification;
+- fact ledger, confidence and source links;
+- assigned Editorial Image and rights metadata;
+- audit history and review notes;
+- state-appropriate submit, approve, reject, publish and discard controls;
+- all actions routed through the protected workflow and server-side transition validation.
+
+## Rejected-draft replacement
+
+PR #50 already records rejection reason, rejection count and replacement-required state.
+
+Remaining work under `AUTO-002`:
+
+1. read the replacement-required state;
+2. exclude the rejected angle and source set;
+3. select a different eligible candidate;
+4. pass it through the Editorial Brain;
+5. generate a genuinely new article rather than rewriting the rejected one;
+6. assign an approved image where available;
+7. preserve links between the rejected draft and replacement;
+8. restore the queue to the required inventory.
 
 ## Automation architecture
 
@@ -64,6 +126,7 @@ The target orchestration remains:
 GitHub source of truth
 → Make.com orchestration
 → Apify source acquisition
+→ Editorial Brain and OpenAI generation
 → Sanity draft, review and publishing state
 → Vercel production website
 ```
@@ -71,6 +134,25 @@ GitHub source of truth
 GitHub retains versioned business logic, prompts, schemas, tests, workflow definitions and documentation. Make.com provides daily scheduling, retries, state coordination and operational notifications. Apify collects approved-scope source material. Sanity is the human review and publication boundary. Vercel serves the public site.
 
 The 08:00 review deadline requires the generation workflow to begin early enough to complete discovery, validation, drafting, image assignment and quality checks before the deadline. The exact production schedule must be documented when the orchestration scenario is implemented.
+
+## Accreditation and analytics baseline
+
+Analytics is a core platform capability because media accreditation and sponsorship discussions require proof of a consistent publishing track record, verifiable traffic metrics and established readership.
+
+Track this under `ACCRED-001` and GitHub issue #51.
+
+Required evidence includes:
+
+- durable publication timestamps and publishing cadence;
+- editorial approval and audit history;
+- GA4 users, sessions, page views, engagement and returning readership;
+- article-level performance;
+- search, social, referral and direct traffic sources;
+- Google Search Console clicks, impressions and rankings;
+- reproducible monthly snapshots and exports;
+- a date-range accreditation evidence pack suitable for external review.
+
+The analytics implementation must preserve credible source-platform evidence rather than relying only on manually entered figures.
 
 ## Mobile photo ingestion
 
@@ -97,12 +179,11 @@ Required controls include:
 
 ### GitHub
 
-- Private or appropriately restricted repositories where business logic or operational data should not be public.
 - Mandatory multi-factor authentication for repository administrators.
 - Branch protection on `main`.
 - Pull-request review and successful checks before merge where supported.
 - Restricted GitHub Actions permissions using least privilege.
-- Dependabot or equivalent dependency and security alerts.
+- Dependency and security alerts.
 - Secret scanning and prevention of secrets in commits.
 - Regular repository backups or mirrors outside the primary account.
 - Protected tags/releases for production milestones.
@@ -144,28 +225,23 @@ Required controls include:
 
 ### Recovery
 
-The project requires a documented recovery plan covering:
+The project requires a documented recovery plan covering GitHub repository restoration, Sanity dataset restoration, Vercel redeployment from a known-good commit, DNS and domain recovery, credential rotation and recovery verification exercises.
 
-- GitHub repository restoration.
-- Sanity dataset restoration.
-- Vercel redeployment from a known-good commit.
-- DNS and domain recovery.
-- Credential rotation.
-- Recovery verification exercises.
+A backup is not considered reliable until a restoration test succeeds.
 
-Security work must distinguish prevention, backup, restoration and verified recovery. A backup is not considered reliable until a restoration test succeeds.
+## Updated delivery order
 
-## Delivery order
-
-1. Complete `CMS-002` and establish the article-image reference contract.
-2. Build and publish the nine-article minimum launch package.
-3. Verify all launch content and imagery in production.
-4. Complete the security and recovery baseline.
-5. Implement the article generation and editorial review workflow.
-6. Implement rejection-triggered replacement generation.
-7. Implement the daily eight-article queue ready by 08:00 Europe/Dublin.
-8. Implement mobile original-photo ingestion.
-9. Introduce Make.com scheduling and operational notifications.
+1. Build the authenticated Sanity Studio editorial review workspace.
+2. Implement rejection-triggered automatic replacement generation.
+3. Complete authenticated Studio and production end-to-end verification of the editorial workflow.
+4. Complete `CMS-002` image assignment for existing and launch articles.
+5. Build and publish the nine-article minimum launch package.
+6. Verify all launch content and imagery in production.
+7. Implement the `ACCRED-001` analytics and accreditation evidence baseline.
+8. Complete the security and recovery baseline.
+9. Implement the daily eight-article queue ready by 08:00 Europe/Dublin.
+10. Implement mobile original-photo ingestion.
+11. Introduce Make.com scheduling and operational notifications.
 
 ## Completion rule
 
