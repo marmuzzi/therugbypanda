@@ -10,16 +10,17 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| LAUNCH-001 | In Progress | Critical | Go Live / Editorial | Publish the minimum go-live package: one Rugby Panda introduction article plus at least eight image-backed articles covering recent internationals and Leinster, Munster, Ulster and Connacht. | — | Planning documented; content and image assignment not yet implemented | Pending editorial review, publication, homepage/category/article rendering checks and production verification | — |
+| LAUNCH-001 | In Progress | Critical | Go Live / Editorial | Publish the minimum go-live package: one Rugby Panda introduction article plus at least eight image-backed articles covering recent internationals and Leinster, Munster, Ulster and Connacht. | — | Planning documented; content package not yet completed | Pending editorial review, publication, homepage/category/article rendering checks and production verification | — |
 | SEC-001 | Open | Critical | Security / Resilience | Establish and verify the security, backup and recovery baseline across GitHub, Sanity, Vercel, Cloudflare, Make.com and Apify. | — | Not implemented | Pending access review, branch protection, secret controls, backups, restore tests and recovery documentation | — |
-| AUTO-001 | Open | Critical | Editorial Automation | Build the end-to-end article candidate, draft, editor review, approve/amend/reject, publish/discard workflow. | — | Not implemented | Pending authenticated Sanity workflow and production publication verification | — |
-| AUTO-002 | Open | Critical | Editorial Automation | Generate a replacement article whenever a daily draft is rejected, without repeating the rejected angle or source set. | — | Not implemented | Pending workflow simulation and production verification | — |
-| AUTO-003 | Open | Critical | Scheduling / Orchestration | Prepare eight review-ready articles across active sections by 08:00 Europe/Dublin every day. | — | Not implemented; Make.com unavailable in current session | Pending scheduled-run, retry, deadline and review-queue verification | — |
+| AUTO-001 | Pending Verification | Critical | Editorial Automation | End-to-end article candidate, draft, editor review, approve/amend/reject, publish/discard workflow. | #47, #48, #49, #50 | Core backend merged to `main`; Studio review workspace still required | Pending authenticated Sanity Studio operation and end-to-end production publication verification | — |
+| AUTO-002 | In Progress | Critical | Editorial Automation | Generate a replacement article whenever a daily draft is rejected, without repeating the rejected angle or source set. | #50 foundation | Rejection state, reason, count and replacement-required flag merged; automatic regeneration not yet implemented | Pending simulated and live rejection/replacement tests | — |
+| AUTO-003 | Open | Critical | Scheduling / Orchestration | Prepare eight review-ready articles across active sections by 08:00 Europe/Dublin every day. | #47–#50 foundation | Editorial generation foundation exists; persistent scheduling not implemented; Make.com not connected | Pending scheduled-run, retry, deadline and review-queue verification | — |
+| ACCRED-001 | Open | Critical | Analytics / Accreditation | Build durable evidence of publishing cadence, verifiable traffic, engagement, search visibility and established readership for accreditation and commercial use. | Issue #51 | Requirement recorded; analytics architecture not yet implemented | Pending GA4/Search Console integration, article-level tracking, monthly exports and reproducible evidence-pack verification | — |
 | MEDIA-004 | Open | High | Mobile / Media | Provide a secure phone-friendly workflow for uploading original Rugby Panda photos directly into Sanity Assets and Editorial Image review. | — | Not implemented | Pending mobile upload, metadata creation, rights defaults, review queue and production-use verification | — |
 | PUB-003 | Pending Verification | High | Editorial Automation / Media | Apply human-reviewed Editorial Image metadata through a controlled dry-run-first importer. | #40, #41 | Merged and deployed; real reviewed apply completed through GitHub Actions | Dry run `30042466296` clean; apply `30042718915` updated 2 canonical records; audit `30042908343` improved ready count to 24; direct Sanity data verified. Studio UI verification pending. | — |
 | PUB-002 | Merged | High | Editorial Automation / Media | Generate reviewable metadata suggestions for canonical Editorial Images without mutating Sanity. | #39, #41 | Canonical-only fix merged and production deployment READY | Production query confirmed 38 canonical records versus 40 raw records; generator excludes `drafts.*` and has a runtime guard | — |
 | PUB-001 | Closed | High | Editorial Automation / Media | Add a non-destructive Editorial Image readiness audit. | #38 | Merged and deployed | Initial and follow-up audits succeeded | 2026-07-12 |
-| CMS-002 | In Progress | Critical | CMS / Visual content | Assign approved Editorial Images to every launch and existing article through the canonical article-image contract. | #41 discovery | Seven existing published articles inspected; assignment not implemented | All seven currently lack populated image references; pending schema contract, assignment, Studio and production verification | — |
+| CMS-002 | In Progress | Critical | CMS / Visual content | Assign approved Editorial Images to every launch and existing article through the canonical article-image contract. | #49 | Generated-draft assignment contract merged; existing published articles still require controlled assignment | Pending authenticated Studio verification and production checks for homepage cards and article pages | — |
 | MEDIA-001 | Pending Verification | High | Media / CMS | Editorial Images Studio, queues and bulk review tool. | #26, #38, #41 | Deployed | 40 raw / 38 canonical records confirmed; final Studio queue verification pending | — |
 | MEDIA-002 | Pending Verification | High | Media / Workflow | Starter external image candidates imported and reviewed. | #26, #38, #41 | Imported data exists | Approved/published but not ready reduced from 12 to 10; further reconciliation pending | — |
 | MEDIA-003 | Pending Verification | High | Media / Originals | Original Rugby Panda photos imported as approved originals. | #38 plus direct commits | Import completed | Original-photo count requires explicit Studio/report reconciliation | — |
@@ -38,79 +39,60 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | DOC-001 | Closed | High | Documentation | Project state, Issue Log and publishing workflow. | #22 | Merged | Repository verified | 2026-07-04 |
 | CMS-001 | Closed | High | CMS | Homepage and article pages use hosted Sanity content. | #14 | Deployed | Live validation verified | 2026-07-03 |
 
-## LAUNCH-001 — Minimum go-live content package
-
-- **Status:** In Progress
-- **Priority:** Critical
-- **Root cause:** The website has a technical foundation but does not yet have enough complete, image-backed editorial content for a credible public launch.
-- **Implementation required:** One introduction article plus at least eight additional reviewed articles covering recent international matches and Leinster, Munster, Ulster and Connacht. Accurate backdating is allowed. Every article requires an approved Editorial Image.
-- **Related PRs:** Pending.
-- **Deployment status:** Planning documented in `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`.
-- **Verification status:** Pending production verification of homepage, category pages, article pages, dates, image rendering and metadata.
-- **Resolution date:** Pending.
-
-## SEC-001 — Security, backup and recovery baseline
-
-- **Status:** Open
-- **Priority:** Critical
-- **Root cause:** The project does not yet have a single verified baseline covering account security, least privilege, branch protection, secret handling, backups and tested restoration.
-- **Implementation required:** Audit and harden GitHub, Sanity, Vercel, Cloudflare, domains, Apify and Make.com; create independent backups and test recovery.
-- **Related PRs:** Pending.
-- **Deployment status:** Not implemented.
-- **Verification status:** Must include successful restoration exercises; backup existence alone is insufficient.
-- **Resolution date:** Pending.
-
 ## AUTO-001 — Editorial review and publishing workflow
 
-- **Status:** Open
+- **Status:** Pending Verification
 - **Priority:** Critical
-- **Root cause:** Article generation, human review, approval, rejection and publication are not yet connected as one controlled workflow.
-- **Implementation required:** Candidate discovery, validated source storage, draft generation, image assignment, Sanity review queues, amend/approve/reject actions, controlled publish/discard and audit history.
-- **Related PRs:** Pending.
-- **Deployment status:** Not implemented.
-- **Verification status:** Pending end-to-end authenticated Sanity and production publication test.
+- **Implemented and merged:**
+  - PR #47: Editorial Brain classification, scoring, source-linked fact ledger, confidence controls, voice and originality rules.
+  - PR #48: OpenAI Responses API generation, protected `POST /api/editorial/draft`, Portable Text conversion and Sanity draft creation.
+  - PR #49: approved Editorial Image resolution and assignment into the canonical article `featuredImage` contract.
+  - PR #50: protected `POST /api/editorial/workflow` with `submit`, `approve`, `reject`, `publish` and `discard` actions, state validation and audit history.
+- **Security:** Both editorial endpoints require `Authorization: Bearer <EDITORIAL_AUTOMATION_SECRET>`.
+- **Remaining implementation:** Authenticated Sanity Studio review workspace with readable metadata, fact ledger, sources, image, notes and action controls.
+- **Verification status:** Pending authenticated Studio use and one controlled end-to-end production publication test.
 - **Resolution date:** Pending.
 
 ## AUTO-002 — Rejected article replacement
 
-- **Status:** Open
+- **Status:** In Progress
 - **Priority:** Critical
-- **Root cause:** A rejected draft would currently reduce the daily review inventory below target.
-- **Implementation required:** Rejection must trigger a replacement candidate while recording rejected angles and sources to prevent repetition.
-- **Related PRs:** Pending.
-- **Deployment status:** Not implemented.
-- **Verification status:** Pending simulated and live rejection/replacement tests.
+- **Foundation merged:** PR #50 stores rejection reason, rejection count and replacement-required state while preserving audit history.
+- **Remaining implementation:** Select a non-duplicate candidate, exclude rejected angle/source combinations, generate a genuinely new article, attach an approved image where available and return the queue to target.
+- **Verification status:** Pending simulated rejection, duplicate-prevention test and live queue replenishment test.
 - **Resolution date:** Pending.
 
 ## AUTO-003 — Eight drafts by 08:00 daily
 
 - **Status:** Open
 - **Priority:** Critical
-- **Root cause:** No persistent scheduler currently creates and quality-checks eight review-ready drafts before the daily editorial deadline.
-- **Implementation required:** Use Make.com for orchestration, Apify for approved source acquisition, GitHub for versioned logic, and Sanity for the review queue. Include retries, duplicate prevention, failure notification and section mix rules.
-- **Related PRs:** Pending.
-- **Deployment status:** Not implemented; Make.com is not currently connected.
+- **Current foundation:** Editorial Brain, generation, Sanity draft creation, approved image assignment and workflow state transitions are merged.
+- **Remaining implementation:** Persistent Make.com orchestration, Apify acquisition, section mix, retries, duplicate prevention, failure notification and deadline monitoring.
+- **Timezone:** All scheduling uses Europe/Dublin.
 - **Verification status:** Pending repeated successful daily runs completed before 08:00 Europe/Dublin.
 - **Resolution date:** Pending.
 
-## MEDIA-004 — Mobile original-photo ingestion
+## ACCRED-001 — Accreditation evidence and audience analytics baseline
 
 - **Status:** Open
-- **Priority:** High
-- **Root cause:** Original photos cannot yet be uploaded, enriched and placed into review quickly from the user's phone.
-- **Implementation required:** Secure authenticated mobile upload directly to Sanity Assets, automatic `editorialImage` draft creation, metadata assistance and Rugby Panda attribution defaults.
-- **Related PRs:** Pending.
-- **Deployment status:** Not implemented.
-- **Verification status:** Pending upload and review from a real phone followed by approved production use.
+- **Priority:** Critical
+- **Business reason:** Media accreditation and sponsorship discussions require proof of a consistent publishing track record, verifiable traffic metrics and established readership.
+- **Implementation required:**
+  - durable article publication history and editorial audit trail;
+  - GA4 users, sessions, views, engagement and returning readership;
+  - article-level performance and traffic-source attribution;
+  - Google Search Console impressions, clicks and rankings;
+  - reproducible monthly snapshots and exports;
+  - an accreditation evidence pack that can be regenerated for a selected date range.
+- **Related issue:** GitHub issue #51.
+- **Verification status:** Pending data collection, reconciliation against source platforms and export validation.
 - **Resolution date:** Pending.
 
 ## CMS-002 — CMS article images missing
 
 - **Status:** In Progress
 - **Priority:** Critical
-- **Root cause:** Seven current published articles and all planned launch articles require a canonical image reference that the frontend actually renders.
-- **Implementation required:** Confirm the article image schema and frontend query contract, then assign approved Editorial Images through a controlled workflow.
-- **Related PRs:** #41 discovery; implementation PR pending.
-- **Deployment status:** Discovery completed; assignment not yet implemented.
+- **Progress:** PR #49 establishes the generated-draft assignment path using the existing `article.featuredImage` frontend contract. Only Editorial Images that are usage-approved, approved/published and backed by a Sanity asset may be assigned.
+- **Remaining implementation:** Assign reviewed images to the seven existing published articles and the launch package.
 - **Verification status:** Pending authenticated Studio verification and production checks for homepage cards and article pages.
 - **Resolution date:** Pending.
