@@ -2,11 +2,11 @@
 
 ## Current Version
 
-v0.8 — Go-Live and Editorial Automation Programme
+v0.9 — Editorial Engine Foundation
 
 ## Last Updated
 
-23 July 2026
+24 July 2026, 00:04 Europe/Dublin
 
 ## Source of truth
 
@@ -25,9 +25,15 @@ Read these files first in future sessions:
 
 Do not rely on chat history for current status.
 
+## User operating context
+
+- The project owner is based in Dublin, Ireland.
+- Use `Europe/Dublin` for all schedules, deadlines, reports and timestamps unless explicitly instructed otherwise.
+- The daily editorial deadline remains 08:00 Europe/Dublin.
+
 ## Connector status
 
-Verified during the 23 July 2026 session:
+Verified during the 23–24 July 2026 session:
 
 - GitHub — available and read/write capable.
 - Vercel — available for deployment and production checks.
@@ -43,21 +49,45 @@ Connector availability must be checked again in every new session.
 GitHub source of truth
 → Make.com orchestration
 → Apify acquisition
+→ Editorial Brain and OpenAI generation
 → Sanity canonical CMS and editorial review
 → Vercel public website
 ```
 
-GitHub stores code, prompts, schemas, reusable business logic, workflows and documentation. Make.com provides persistent scheduling, retries, notifications and cross-service coordination. Apify collects approved-scope source candidates. Sanity is the human review and publication boundary. Vercel serves the public site.
+GitHub stores code, prompts, schemas, reusable business logic, workflows and documentation. Make.com will provide persistent scheduling, retries, notifications and cross-service coordination. Apify collects approved-scope source candidates. The Editorial Brain validates and scores candidates, builds a source-linked fact ledger and enforces originality rules. OpenAI creates structured drafts from approved facts. Sanity remains the human review and publication boundary. Vercel serves the public site.
 
 No generated article or acquired asset is automatically approved or published.
 
 ## Current state
 
-Sprint 4 is complete. Sprint 5 media automation is operational but still requires final Studio verification for PUB-003.
+Sprint 4 is complete. Sprint 5 Editorial & Publishing Automation is in progress.
 
-PR #41 was merged to `main` at commit `a63ce10e8d87ac0a9b8b2b3f295cfd48b7fed515` and its Vercel production deployment is READY.
+The following editorial foundation pull requests are merged into `main`:
 
-Editorial Image metadata status:
+- PR #47 — Editorial Brain core.
+- PR #48 — OpenAI Responses API generation and protected Sanity draft creation.
+- PR #49 — approved Editorial Image assignment to generated article drafts.
+- PR #50 — controlled editorial review and publishing workflow.
+
+PR #50 merged at commit `70916d5bd9070f1c77cf92e3f767722d68b1cbf2` on 23 July 2026 at 23:00 UTC / 24 July 2026 at 00:00 Europe/Dublin.
+
+The backend can now:
+
+1. classify and score a structured story candidate;
+2. build a source-linked fact ledger with confidence controls;
+3. generate an original structured article through OpenAI;
+4. create or replace a Sanity draft through `POST /api/editorial/draft`;
+5. assign only approved, usage-approved Editorial Images backed by a Sanity asset;
+6. submit, approve, reject, publish or discard through `POST /api/editorial/workflow`;
+7. enforce valid server-side state transitions;
+8. retain actor, timestamp, notes, status and rejection history;
+9. flag rejected drafts as requiring replacement.
+
+Both protected editorial endpoints require bearer authentication with `EDITORIAL_AUTOMATION_SECRET`.
+
+The foundation is implemented and merged. It is not yet considered fully complete because authenticated Sanity Studio operation and production end-to-end publication verification remain pending.
+
+## Editorial Image status
 
 - 40 raw Editorial Image documents.
 - 38 canonical records.
@@ -72,7 +102,7 @@ A controlled canonical metadata dry run and explicit apply completed successfull
 
 ## Primary project directive
 
-The immediate priority is **go live**.
+The immediate priority remains **go live**.
 
 The launch minimum is:
 
@@ -96,6 +126,21 @@ After launch:
 - Approved drafts publish through the controlled CMS workflow.
 - Rejected drafts are discarded and replaced automatically with a new non-duplicate candidate.
 - Human editorial approval remains mandatory.
+
+## Accreditation and analytics directive
+
+Analytics is a core platform requirement, not a later enhancement. The project must build verifiable evidence of:
+
+- consistent publishing cadence;
+- durable publication timestamps and editorial history;
+- article-level and site-level readership;
+- users, sessions, page views and engagement;
+- returning readership;
+- traffic sources and referrals;
+- Google Search Console impressions, clicks and rankings;
+- reproducible monthly exports and accreditation evidence packs.
+
+Track this work under `ACCRED-001`. The evidence must be credible enough for media accreditation applications and useful for future sponsors and advertisers.
 
 ## Security directive
 
@@ -126,15 +171,17 @@ GitHub remains the source of code and metadata contracts, not the primary binary
 
 ## Current priorities
 
-1. Complete `CMS-002`: confirm the article-image contract and assign approved images.
-2. Create the nine-article minimum launch package under `LAUNCH-001`.
-3. Review, publish and verify the full launch package in production.
-4. Implement and verify the security, backup and recovery baseline under `SEC-001`.
-5. Build the editor review and controlled publishing workflow under `AUTO-001`.
-6. Add rejection-triggered replacement generation under `AUTO-002`.
-7. Deliver eight review-ready drafts by 08:00 daily under `AUTO-003`.
-8. Build secure mobile photo ingestion under `MEDIA-004`.
-9. Implement real website search under `WEB-005`.
+1. Build the authenticated Sanity Studio editorial review workspace for PR #50 workflow actions.
+2. Implement rejection-triggered automatic replacement generation under `AUTO-002`.
+3. Complete authenticated Studio and production end-to-end verification of `AUTO-001`.
+4. Complete `CMS-002` by assigning approved images to existing and launch articles.
+5. Create the nine-article minimum launch package under `LAUNCH-001`.
+6. Review, publish and verify the full launch package in production.
+7. Implement the analytics and accreditation evidence baseline under `ACCRED-001`.
+8. Implement and verify the security, backup and recovery baseline under `SEC-001`.
+9. Deliver eight review-ready drafts by 08:00 daily under `AUTO-003`.
+10. Build secure mobile photo ingestion under `MEDIA-004`.
+11. Implement real website search under `WEB-005`.
 
 ## Completion rule
 
