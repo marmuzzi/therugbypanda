@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 const TEST_SOURCE_URL = "https://www.world.rugby/the-game/laws/law/8";
+const EDITORIAL_API_BASE_URL = "https://therugbypanda.ie";
 
 export function EditorialQaTool() {
   const [secret, setSecret] = useState("");
@@ -27,7 +28,7 @@ export function EditorialQaTool() {
     const sourceId = "world-rugby-law-8";
 
     try {
-      const response = await fetch("/api/editorial/draft", {
+      const response = await fetch(`${EDITORIAL_API_BASE_URL}/api/editorial/draft`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
@@ -65,6 +66,12 @@ export function EditorialQaTool() {
           },
         }),
       });
+
+      const contentType = response.headers.get("content-type") ?? "";
+      if (!contentType.includes("application/json")) {
+        const body = await response.text();
+        throw new Error(`Editorial API returned ${response.status} ${response.statusText} instead of JSON: ${body.slice(0, 120)}`);
+      }
 
       const payload = await response.json();
       if (!response.ok) throw new Error(payload.error ?? `Controlled draft failed with ${response.status}.`);
