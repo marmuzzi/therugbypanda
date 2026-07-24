@@ -2,6 +2,7 @@ import { createClient } from "next-sanity";
 
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 import type { EditorialDraftPackage } from "./ArticleDraftTypes";
+import type { RawStoryInput } from "./EditorialTypes";
 
 type ApprovedEditorialImage = {
   _id: string;
@@ -18,6 +19,12 @@ type ApprovedEditorialImage = {
     crop?: Record<string, number>;
     hotspot?: Record<string, number>;
   };
+};
+
+type DraftWriterOptions = {
+  editorialImageId?: string;
+  story?: RawStoryInput;
+  replacementOf?: string;
 };
 
 function slugify(value: string): string {
@@ -63,7 +70,7 @@ function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
   };
 }
 
-export async function createSanityArticleDraft(pkg: EditorialDraftPackage, options: { editorialImageId?: string } = {}) {
+export async function createSanityArticleDraft(pkg: EditorialDraftPackage, options: DraftWriterOptions = {}) {
   const token = process.env.SANITY_API_TOKEN ?? process.env.SANITY_AUTH_TOKEN;
   if (!projectId || !dataset) throw new Error("Sanity project configuration is missing.");
   if (!token) throw new Error("SANITY_API_TOKEN or SANITY_AUTH_TOKEN is not configured.");
@@ -113,13 +120,22 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage, optio
     generationDisclosure: pkg.article.disclosure,
     generationSchemaVersion: pkg.editorial.schemaVersion,
     editorialGeneratedAt: pkg.editorial.generatedAt,
+    ...(options.story ? {
+      sourceStoryTitle: options.story.title,
+      sourceStorySummary: options.story.summary,
+      sourceStoryBodyText: options.story.bodyText,
+      sourceStoryDiscoveredAt: options.story.discoveredAt,
+    } : {}),
+    ...(options.replacementOf ? {
+      replacementOf: { _type: "reference", _ref: normaliseDocumentId(options.replacementOf), _weak: true },
+    } : {}),
     workflowStatus: "draft",
     workflowUpdatedAt: now,
     workflowHistory: [{
       _key: crypto.randomUUID().replaceAll("-", "").slice(0, 12),
       _type: "object",
-      action: "generate",
-      fromStatus: "candidate",
+      action: options.replacementOf ? "generate-replacement" : "generate",
+      fromStatus: options.replacementOf ? "rejected" : "candidate",
       toStatus: "draft",
       actor: "editorial-automation",
       occurredAt: now,
