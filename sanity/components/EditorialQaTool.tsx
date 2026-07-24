@@ -56,10 +56,10 @@ export function EditorialQaTool() {
           },
           factLedger: {
             facts: [
-              { id: "try-points", claim: "A try is worth five points.", status: "confirmed", confidence: 1, sourceIds: [sourceId], usableInDraft: true },
-              { id: "conversion-points", claim: "A successful conversion is worth two points.", status: "confirmed", confidence: 1, sourceIds: [sourceId], usableInDraft: true },
-              { id: "penalty-points", claim: "A successful penalty goal is worth three points.", status: "confirmed", confidence: 1, sourceIds: [sourceId], usableInDraft: true },
-              { id: "drop-goal-points", claim: "A successful dropped goal is worth three points.", status: "confirmed", confidence: 1, sourceIds: [sourceId], usableInDraft: true },
+              { id: "try-points", claim: "A try is worth five points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
+              { id: "conversion-points", claim: "A successful conversion is worth two points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
+              { id: "penalty-points", claim: "A successful penalty goal is worth three points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
+              { id: "drop-goal-points", claim: "A successful dropped goal is worth three points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
             ],
             unsupportedClaims: [],
             conflicts: [],
