@@ -3,6 +3,7 @@ import { structureTool } from "sanity/structure";
 
 import { BrandAssetReviewTool } from "./sanity/components/BrandAssetReviewTool";
 import { EditorialImageReviewTool } from "./sanity/components/EditorialImageReviewTool";
+import { EditorialQaTool } from "./sanity/components/EditorialQaTool";
 import { EditorialReviewTool } from "./sanity/components/EditorialReviewTool";
 import { dataset, projectId, studioUrl } from "./sanity/env";
 import { brandAssetType } from "./sanity/schemaTypes/brandAsset";
@@ -17,6 +18,17 @@ const editorialReviewTool = definePlugin({
       name: "editorial-review",
       title: "Editorial Review",
       component: EditorialReviewTool,
+    },
+  ],
+});
+
+const editorialQaTool = definePlugin({
+  name: "editorial-qa-tool",
+  tools: [
+    {
+      name: "editorial-qa",
+      title: "Editorial QA",
+      component: EditorialQaTool,
     },
   ],
 });
@@ -51,6 +63,7 @@ export default defineConfig({
   basePath: studioUrl,
   plugins: [
     editorialReviewTool(),
+    editorialQaTool(),
     editorialImageReviewTool(),
     brandAssetReviewTool(),
     structureTool({
