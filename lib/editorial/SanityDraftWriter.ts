@@ -47,6 +47,23 @@ function normaliseDocumentId(value: string): string {
   return value.replace(/^drafts\./, "");
 }
 
+function createWriteClient() {
+  const token = process.env.SANITY_API_TOKEN ?? process.env.SANITY_AUTH_TOKEN;
+  if (!projectId || !dataset) throw new Error("Sanity project configuration is missing.");
+  if (!token) throw new Error("SANITY_API_TOKEN or SANITY_AUTH_TOKEN is not configured.");
+  return createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
+}
+
+export async function validateSanityConnectivity(categoryTitle: string) {
+  const client = createWriteClient();
+  const category = await client.fetch<{ _id: string } | null>(
+    `*[_type == "category" && (title == $title || slug.current == $slug)][0]{_id}`,
+    { title: categoryTitle, slug: slugify(categoryTitle) },
+  );
+  if (!category?._id) throw new Error(`No Sanity category found for ${categoryTitle}.`);
+  return { connected: true, projectId, dataset, categoryId: category._id };
+}
+
 async function fetchApprovedEditorialImage(writeClient: ReturnType<typeof createClient>, editorialImageId?: string): Promise<ApprovedEditorialImage | undefined> {
   if (!editorialImageId) return undefined;
   const publishedId = normaliseDocumentId(editorialImageId);
@@ -71,11 +88,7 @@ function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
 }
 
 export async function createSanityArticleDraft(pkg: EditorialDraftPackage, options: DraftWriterOptions = {}) {
-  const token = process.env.SANITY_API_TOKEN ?? process.env.SANITY_AUTH_TOKEN;
-  if (!projectId || !dataset) throw new Error("Sanity project configuration is missing.");
-  if (!token) throw new Error("SANITY_API_TOKEN or SANITY_AUTH_TOKEN is not configured.");
-
-  const writeClient = createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
+  const writeClient = createWriteClient();
   const [category, editorialImage] = await Promise.all([
     writeClient.fetch<{ _id: string } | null>(
       `*[_type == "category" && (title == $title || slug.current == $slug)][0]{_id}`,
