@@ -6,7 +6,7 @@ v0.9 — Editorial Engine Foundation
 
 ## Last Updated
 
-24 July 2026, 00:04 Europe/Dublin
+24 July 2026, Editorial Review Intelligence framework implementation (not merged)
 
 ## Source of truth
 
@@ -84,6 +84,8 @@ The backend can now:
 9. flag rejected drafts as requiring replacement.
 
 Both protected editorial endpoints require bearer authentication with `EDITORIAL_AUTOMATION_SECRET`.
+
+PR #62, **Editorial Review Intelligence — Framework**, is implemented on branch `feat/editorial-review-intelligence` but is not yet merged, deployed or verified in authenticated Sanity Studio. It adds deterministic local review checks, live score/readiness reporting, native Irish-English browser spellchecking, and an approval/publication gate for blocking review issues. It makes no AI calls and does not persist review history.
 
 The foundation is implemented and merged. It is not yet considered fully complete because authenticated Sanity Studio operation and production end-to-end publication verification remain pending.
 

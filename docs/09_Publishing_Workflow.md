@@ -171,6 +171,14 @@ It should show:
 
 The Studio UI must call or reuse the protected server-side workflow. It must not bypass transition validation.
 
+## Editorial Review Intelligence — PR #62 framework
+
+Implemented on `feat/editorial-review-intelligence`; not yet merged, deployed or verified in authenticated Sanity Studio.
+
+The Editorial Review panel recalculates locally as an editor changes the headline, standfirst, body and SEO fields. It reports the deterministic 0–100 quality score, readiness, word count, blocking and warning counts, existing editorial confidence and typed issues. Native browser spellchecking is enabled with `spellCheck={true}` and `lang="en-IE"` on all editable editorial text fields.
+
+Approval and publication are unavailable while any blocking issue remains. The same condition is enforced in `runAction`, so the UI cannot bypass it. Submit, Reject and Discard retain their existing workflow rules. This framework performs no AI calls and does not persist review history.
+
 ## Content publishing checklist
 
 1. Confirm the article passed the Editorial Brain and has source-linked facts.
