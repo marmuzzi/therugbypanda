@@ -183,6 +183,7 @@ Approval and publication are unavailable while any blocking issue remains. The s
 
 Implemented on the current branch; not yet merged, deployed or verified in authenticated Sanity Studio.
 
+The AI Editorial Review panel appears directly below the deterministic Editorial Review panel. It runs only when the editor selects **Run AI Review**; it never runs while the editor is typing. It sends its protected request to the Next.js/Vercel application at `POST https://therugbypanda.ie/api/editorial/review`, matching the existing protected editorial API base URL pattern and never resolving `/api` against the hosted Sanity Studio origin. The endpoint uses the existing OpenAI Responses API, `store: false`, and strict JSON-schema output. The editor's current headline, standfirst, article body and SEO fields, together with retained source and fact-ledger context, are reviewed for:
 The AI Editorial Review panel appears directly below the deterministic Editorial Review panel. It runs only when the editor selects **Run AI Review**; it never runs while the editor is typing. The protected `POST /api/editorial/review` endpoint uses the existing OpenAI Responses API, `store: false`, and strict JSON-schema output. The editor's current headline, standfirst, article body and SEO fields, together with retained source and fact-ledger context, are reviewed for:
 
 - spelling mistakes;

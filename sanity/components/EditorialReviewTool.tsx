@@ -1,6 +1,8 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useClient } from "sanity";
 
+const EDITORIAL_API_BASE_URL = "https://therugbypanda.ie";
+
 type WorkflowHistoryEvent = {
   _key?: string;
   action?: string;
@@ -523,6 +525,7 @@ export function EditorialReviewTool() {
     setIsAiReviewing(true);
     setMessage(null);
     try {
+      const response = await fetch(`${EDITORIAL_API_BASE_URL}/api/editorial/review`, {
       const response = await fetch("/api/editorial/review", {
         method: "POST",
         headers: {
