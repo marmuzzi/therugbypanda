@@ -127,6 +127,13 @@ const inputStyle: React.CSSProperties = {
   font: "inherit",
 };
 
+const cardStyle: React.CSSProperties = {
+  border: "1px solid #ddd",
+  borderRadius: 10,
+  padding: "1rem",
+  background: "#fff",
+};
+
 function normaliseId(id: string) {
   return id.replace(/^drafts\./, "");
 }
@@ -137,8 +144,7 @@ function displayStatus(status?: string) {
 
 function displayConfidence(value?: number) {
   if (value == null) return "Not recorded";
-  const percentage = value <= 1 ? value * 100 : value;
-  return `${Math.round(percentage)}%`;
+  return `${Math.round(value <= 1 ? value * 100 : value)}%`;
 }
 
 function bodyToText(body?: PortableTextMember[]) {
@@ -150,16 +156,17 @@ function bodyToText(body?: PortableTextMember[]) {
 
 function textToBody(text: string, existingBody?: PortableTextMember[]) {
   const preservedNonText = (existingBody ?? []).filter((member) => member._type !== "block");
+  const timestamp = Date.now();
   const blocks = text
     .split(/\n\s*\n/)
     .map((paragraph) => paragraph.trim())
     .filter(Boolean)
     .map((paragraph, index) => ({
-      _key: `editorial-${Date.now()}-${index}`,
+      _key: `editorial-${timestamp}-${index}`,
       _type: "block",
       style: "normal",
       markDefs: [],
-      children: [{ _key: `span-${Date.now()}-${index}`, _type: "span", marks: [], text: paragraph }],
+      children: [{ _key: `span-${timestamp}-${index}`, _type: "span", marks: [], text: paragraph }],
     }));
 
   return [...blocks, ...preservedNonText];
@@ -184,6 +191,7 @@ export function EditorialReviewTool() {
   const [actor, setActor] = useState("The Rugby Panda editor");
   const [note, setNote] = useState("");
   const [secret, setSecret] = useState("");
+  const [showCredentials, setShowCredentials] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -192,6 +200,9 @@ export function EditorialReviewTool() {
     () => articles.find((article) => article._id === selectedId) ?? articles[0],
     [articles, selectedId],
   );
+
+  const availableActions = actionMap[selected?.workflowStatus ?? "draft"] ?? [];
+  const needsRejectionReason = availableActions.includes("reject");
 
   async function loadQueue(preferredId?: string) {
     setIsLoading(true);
@@ -212,7 +223,10 @@ export function EditorialReviewTool() {
 
   useEffect(() => {
     const savedSecret = window.sessionStorage.getItem("rugby-panda-editorial-secret");
+    const savedActor = window.sessionStorage.getItem("rugby-panda-editorial-actor");
     if (savedSecret) setSecret(savedSecret);
+    if (savedActor) setActor(savedActor);
+    setShowCredentials(!savedSecret);
     void loadQueue();
   }, []);
 
@@ -227,7 +241,7 @@ export function EditorialReviewTool() {
   }, [selected?._id]);
 
   function updateDraft(field: keyof EditableDraft, value: string) {
-    setDraft((current) => current ? { ...current, [field]: value } : current);
+    setDraft((current) => (current ? { ...current, [field]: value } : current));
     setIsDirty(true);
   }
 
@@ -292,11 +306,13 @@ export function EditorialReviewTool() {
       if (!saved) return;
     }
     if (!secret.trim()) {
-      setMessage("Enter the editorial automation secret before using workflow actions.");
+      setShowCredentials(true);
+      setMessage("Workflow authentication is required. Open Workflow settings and enter the secret once for this browser session.");
       return;
     }
     if (!actor.trim()) {
-      setMessage("Enter the editor name or role.");
+      setShowCredentials(true);
+      setMessage("Enter the editor name or role in Workflow settings.");
       return;
     }
     if (action === "reject" && !note.trim()) {
@@ -308,6 +324,7 @@ export function EditorialReviewTool() {
     setIsSaving(true);
     setMessage(null);
     window.sessionStorage.setItem("rugby-panda-editorial-secret", secret.trim());
+    window.sessionStorage.setItem("rugby-panda-editorial-actor", actor.trim());
 
     try {
       const response = await fetch("/api/editorial/workflow", {
@@ -327,6 +344,7 @@ export function EditorialReviewTool() {
       if (!response.ok) throw new Error(payload.error ?? `Workflow action failed with ${response.status}.`);
       setMessage(`${action} completed. Article status: ${payload.status}.`);
       setNote("");
+      setShowCredentials(false);
       await loadQueue();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Workflow action failed.");
@@ -348,7 +366,7 @@ export function EditorialReviewTool() {
         <aside style={{ border: "1px solid #ddd", borderRadius: 10, overflow: "hidden", background: "#fff" }}>
           <div style={{ padding: "0.75rem", borderBottom: "1px solid #ddd", display: "flex", justifyContent: "space-between", gap: "0.5rem", alignItems: "center" }}>
             <strong>Review queue ({articles.length})</strong>
-            <button type="button" onClick={() => loadQueue()} disabled={isLoading || isSaving}>Refresh</button>
+            <button type="button" onClick={() => void loadQueue()} disabled={isLoading || isSaving}>Refresh</button>
           </div>
           {isLoading ? <p style={{ padding: "0.75rem" }}>Loading…</p> : null}
           {!isLoading && articles.length === 0 ? <p style={{ padding: "0.75rem" }}>No drafts currently need review.</p> : null}
@@ -374,7 +392,7 @@ export function EditorialReviewTool() {
 
         {selected && draft ? (
           <article style={{ display: "grid", gap: "1rem" }}>
-            <section style={{ border: "1px solid #ddd", borderRadius: 10, padding: "1rem", background: "#fff", display: "grid", gap: "0.85rem" }}>
+            <section style={{ ...cardStyle, display: "grid", gap: "0.85rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", alignItems: "center" }}>
                 <small style={{ textTransform: "uppercase", letterSpacing: ".05em" }}>{displayStatus(selected.workflowStatus)}</small>
                 <strong style={{ color: isDirty ? "#a15c00" : "#39723b" }}>{isDirty ? "● Unsaved changes" : "Saved"}</strong>
@@ -396,7 +414,7 @@ export function EditorialReviewTool() {
               </div>
             </section>
 
-            <section style={{ border: "1px solid #ddd", borderRadius: 10, padding: "1rem", background: "#fff", display: "grid", gap: ".75rem" }}>
+            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
               {selected.featuredImageUrl ? (
                 <figure style={{ margin: 0 }}>
                   <img src={selected.featuredImageUrl} alt={selected.featuredImageAlt ?? ""} style={{ width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: 8 }} />
@@ -408,14 +426,14 @@ export function EditorialReviewTool() {
               <p style={{ margin: 0 }}><strong>Confidence:</strong> {displayConfidence(selected.editorialConfidence)} {selected.needsHumanFactCheck ? "— human fact-check required" : ""}</p>
             </section>
 
-            <section style={{ border: "1px solid #ddd", borderRadius: 10, padding: "1rem", background: "#fff" }}>
+            <section style={cardStyle}>
               <h3 style={{ marginTop: 0 }}>Sources</h3>
               {(selected.sourceRecords ?? []).length === 0 ? <p>No source records stored.</p> : (
                 <ol>{selected.sourceRecords?.map((source) => <li key={source.id ?? source.url}><a href={source.url} target="_blank" rel="noreferrer">{source.publisher ?? source.title ?? source.url}</a>{source.isPrimarySource ? " — primary source" : ""}</li>)}</ol>
               )}
             </section>
 
-            <section style={{ border: "1px solid #ddd", borderRadius: 10, padding: "1rem", background: "#fff" }}>
+            <section style={cardStyle}>
               <h3 style={{ marginTop: 0 }}>Fact ledger</h3>
               {(selected.factLedger?.facts ?? []).length === 0 ? <p>No fact ledger stored.</p> : (
                 <div style={{ display: "grid", gap: ".65rem" }}>{selected.factLedger?.facts?.map((fact) => (
@@ -430,20 +448,35 @@ export function EditorialReviewTool() {
               {(selected.factLedger?.conflicts ?? []).length ? <p><strong>Conflicts:</strong> {selected.factLedger?.conflicts?.join("; ")}</p> : null}
             </section>
 
-            <section style={{ position: "sticky", bottom: 12, border: "1px solid #bbb", borderRadius: 10, padding: "1rem", background: "#fff", boxShadow: "0 4px 18px rgba(0,0,0,.12)" }}>
-              <h3 style={{ marginTop: 0 }}>Workflow action</h3>
-              <div style={{ display: "grid", gap: ".65rem" }}>
-                <label>Editor / actor<input value={actor} onChange={(event) => setActor(event.target.value)} style={inputStyle} /></label>
-                <label>Editorial automation secret<input type="password" value={secret} onChange={(event) => setSecret(event.target.value)} style={inputStyle} /></label>
-                <label>Review note / rejection reason<textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} style={inputStyle} /></label>
-                <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem" }}>
-                  {(actionMap[selected.workflowStatus ?? "draft"] ?? []).map((action) => <button type="button" key={action} disabled={isSaving} onClick={() => void runAction(action)} style={{ textTransform: "capitalize" }}>{action}</button>)}
-                </div>
-                {message ? <p style={{ margin: 0 }}>{message}</p> : null}
+            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", gap: "1rem", alignItems: "center", flexWrap: "wrap" }}>
+                <h3 style={{ margin: 0 }}>Workflow action</h3>
+                <button type="button" onClick={() => setShowCredentials((current) => !current)}>
+                  {showCredentials ? "Hide workflow settings" : secret ? "Change workflow settings" : "Set up workflow"}
+                </button>
               </div>
+
+              {showCredentials ? (
+                <div style={{ display: "grid", gap: ".65rem", padding: ".75rem", background: "#f7f7f7", borderRadius: 8 }}>
+                  <label>Editor / actor<input value={actor} onChange={(event) => setActor(event.target.value)} style={inputStyle} /></label>
+                  <label>Workflow authentication<input type="password" value={secret} onChange={(event) => setSecret(event.target.value)} autoComplete="off" style={inputStyle} /></label>
+                  <small style={{ color: "#666" }}>Stored only in this browser tab session and hidden after a successful workflow action.</small>
+                </div>
+              ) : secret ? <small style={{ color: "#39723b" }}>Workflow authentication is configured for this session.</small> : null}
+
+              {needsRejectionReason ? (
+                <label>Review note / rejection reason<textarea value={note} onChange={(event) => setNote(event.target.value)} rows={3} style={inputStyle} /></label>
+              ) : null}
+
+              <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem" }}>
+                {availableActions.map((action) => (
+                  <button type="button" key={action} disabled={isSaving} onClick={() => void runAction(action)} style={{ textTransform: "capitalize" }}>{action}</button>
+                ))}
+              </div>
+              {message ? <p style={{ margin: 0 }}>{message}</p> : null}
             </section>
 
-            <section style={{ border: "1px solid #ddd", borderRadius: 10, padding: "1rem", background: "#fff" }}>
+            <section style={cardStyle}>
               <h3 style={{ marginTop: 0 }}>Audit history</h3>
               {(selected.workflowHistory ?? []).length === 0 ? <p>No workflow events recorded.</p> : (
                 <ol>{selected.workflowHistory?.slice().reverse().map((event, index) => <li key={event._key ?? `${event.occurredAt}-${index}`}><strong>{event.action}</strong> {event.fromStatus} → {event.toStatus} by {event.actor} {event.occurredAt ? `at ${new Date(event.occurredAt).toLocaleString("en-IE", { timeZone: "Europe/Dublin" })}` : ""}{event.note ? ` — ${event.note}` : ""}</li>)}</ol>
