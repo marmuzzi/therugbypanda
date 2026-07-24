@@ -526,6 +526,7 @@ export function EditorialReviewTool() {
     setMessage(null);
     try {
       const response = await fetch(`${EDITORIAL_API_BASE_URL}/api/editorial/review`, {
+      const response = await fetch("/api/editorial/review", {
         method: "POST",
         headers: {
           "content-type": "application/json",
