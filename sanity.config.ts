@@ -3,11 +3,23 @@ import { structureTool } from "sanity/structure";
 
 import { BrandAssetReviewTool } from "./sanity/components/BrandAssetReviewTool";
 import { EditorialImageReviewTool } from "./sanity/components/EditorialImageReviewTool";
+import { EditorialReviewTool } from "./sanity/components/EditorialReviewTool";
 import { dataset, projectId, studioUrl } from "./sanity/env";
 import { brandAssetType } from "./sanity/schemaTypes/brandAsset";
 import { schemaTypes } from "./sanity/schemaTypes";
 
 const singletonHiddenTypes = new Set(["brandAsset", "editorialImage"]);
+
+const editorialReviewTool = definePlugin({
+  name: "editorial-review-tool",
+  tools: [
+    {
+      name: "editorial-review",
+      title: "Editorial Review",
+      component: EditorialReviewTool,
+    },
+  ],
+});
 
 const editorialImageReviewTool = definePlugin({
   name: "editorial-image-review-tool",
@@ -38,6 +50,7 @@ export default defineConfig({
   dataset,
   basePath: studioUrl,
   plugins: [
+    editorialReviewTool(),
     editorialImageReviewTool(),
     brandAssetReviewTool(),
     structureTool({
