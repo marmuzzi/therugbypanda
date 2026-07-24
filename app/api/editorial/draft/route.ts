@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
 
     const sanityDraft = await createSanityArticleDraft(pkg, {
       editorialImageId: body.editorialImageId,
+      story: body.story,
     });
     return NextResponse.json({ status: "draft-created", editorial, article, sanityDraft });
   } catch (error) {
