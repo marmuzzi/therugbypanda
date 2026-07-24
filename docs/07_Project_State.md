@@ -6,7 +6,7 @@ v0.9 — Editorial Engine Foundation
 
 ## Last Updated
 
-24 July 2026, Editorial Review Intelligence framework implementation (not merged)
+24 July 2026, AI Editorial Review implementation for PR #63 (not merged)
 
 ## Source of truth
 
@@ -85,7 +85,9 @@ The backend can now:
 
 Both protected editorial endpoints require bearer authentication with `EDITORIAL_AUTOMATION_SECRET`.
 
-PR #62, **Editorial Review Intelligence — Framework**, is implemented on branch `feat/editorial-review-intelligence` but is not yet merged, deployed or verified in authenticated Sanity Studio. It adds deterministic local review checks, live score/readiness reporting, native Irish-English browser spellchecking, and an approval/publication gate for blocking review issues. It makes no AI calls and does not persist review history.
+PR #62, **Editorial Review Intelligence — Framework**, is merged at commit `6791877`. It adds deterministic local review checks, live score/readiness reporting, native Irish-English browser spellchecking, and an approval/publication gate for blocking review issues.
+
+PR #63, **AI Editorial Review**, is implemented on the current branch but is not yet merged, deployed or verified in authenticated Sanity Studio. It adds an on-demand AI Editorial Review panel below the deterministic review. The protected endpoint uses the existing OpenAI Responses API with strict structured JSON output and disabled response storage. It reviews the current editor copy and retained source/fact-ledger context for spelling, grammar, awkward phrasing, factual support, certainty, readability, SEO, headline and standfirst improvements. Findings are grouped as Blocking, Warnings and Suggestions. It does not edit content, persist review history, alter deterministic checks, workflow actions or publishing logic.
 
 The foundation is implemented and merged. It is not yet considered fully complete because authenticated Sanity Studio operation and production end-to-end publication verification remain pending.
 
