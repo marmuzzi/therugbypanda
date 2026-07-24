@@ -45,6 +45,20 @@ const ARTICLE_SCHEMA = {
   },
 } as const;
 
+type ResponsesPayload = {
+  status?: string;
+  error?: { message?: string } | null;
+  incomplete_details?: { reason?: string } | null;
+  output?: Array<{
+    type?: string;
+    content?: Array<{
+      type?: string;
+      text?: string;
+      refusal?: string;
+    }>;
+  }>;
+};
+
 function generationInput(story: RawStoryInput, editorial: EditorialBrainResult) {
   return JSON.stringify({
     assignment: editorial.brief,
@@ -71,6 +85,19 @@ function generationInput(story: RawStoryInput, editorial: EditorialBrainResult) 
       disclosureInstruction: "State briefly what remains unconfirmed or requires the human editor's check. Do not add an AI disclosure.",
     },
   });
+}
+
+function extractOutputText(payload: ResponsesPayload): string | undefined {
+  for (const item of payload.output ?? []) {
+    if (item.type !== "message") continue;
+    for (const part of item.content ?? []) {
+      if (part.type === "output_text" && part.text) return part.text;
+      if (part.type === "refusal" && part.refusal) {
+        throw new Error(`OpenAI refused article generation: ${part.refusal}`);
+      }
+    }
+  }
+  return undefined;
 }
 
 export async function generateArticleDraft(
@@ -107,8 +134,20 @@ export async function generateArticleDraft(
     throw new Error(`OpenAI generation failed (${response.status}): ${details.slice(0, 500)}`);
   }
 
-  const payload = (await response.json()) as { output_text?: string };
-  if (!payload.output_text) throw new Error("OpenAI returned no structured article output.");
+  const payload = (await response.json()) as ResponsesPayload;
+  if (payload.status === "failed") {
+    throw new Error(`OpenAI generation failed: ${payload.error?.message ?? "unknown error"}`);
+  }
+  if (payload.status === "incomplete") {
+    throw new Error(`OpenAI generation was incomplete: ${payload.incomplete_details?.reason ?? "unknown reason"}`);
+  }
 
-  return JSON.parse(payload.output_text) as GeneratedArticleDraft;
+  const outputText = extractOutputText(payload);
+  if (!outputText) throw new Error("OpenAI returned no structured article output in the response output array.");
+
+  try {
+    return JSON.parse(outputText) as GeneratedArticleDraft;
+  } catch (error) {
+    throw new Error(`OpenAI returned invalid structured article JSON: ${error instanceof Error ? error.message : "parse failed"}`);
+  }
 }
