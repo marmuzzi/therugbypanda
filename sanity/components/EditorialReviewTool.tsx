@@ -94,6 +94,26 @@ type EditorialReview = {
   warningCount: number;
 };
 
+type AiEditorialFindingSeverity = "blocking" | "warning" | "suggestion";
+type AiEditorialFindingCategory =
+  | "spelling"
+  | "grammar"
+  | "awkward-phrasing"
+  | "unsupported-claim"
+  | "speculation-presented-as-fact"
+  | "readability"
+  | "seo"
+  | "headline"
+  | "standfirst";
+
+type AiEditorialFinding = {
+  severity: AiEditorialFindingSeverity;
+  category: AiEditorialFindingCategory;
+  message: string;
+  excerpt: string;
+  recommendation: string;
+};
+
 type EditableDraft = {
   title: string;
   standfirst: string;
@@ -421,6 +441,8 @@ export function EditorialReviewTool() {
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [aiFindings, setAiFindings] = useState<AiEditorialFinding[] | null>(null);
+  const [isAiReviewing, setIsAiReviewing] = useState(false);
 
   const selected = useMemo(
     () => articles.find((article) => article._id === selectedId) ?? articles[0],
@@ -474,15 +496,66 @@ export function EditorialReviewTool() {
     if (!selected) {
       setDraft(null);
       setIsDirty(false);
+      setAiFindings(null);
       return;
     }
     setDraft(articleToEditable(selected));
     setIsDirty(false);
+    setAiFindings(null);
   }, [selected?._id]);
 
   function updateDraft(field: keyof EditableDraft, value: string) {
     setDraft((current) => (current ? { ...current, [field]: value } : current));
     setIsDirty(true);
+    setAiFindings(null);
+  }
+
+  async function runAiReview() {
+    if (!selected || !draft) return;
+    if (!secret.trim()) {
+      setShowCredentials(true);
+      setMessage(
+        "Workflow authentication is required before running the AI Editorial Review.",
+      );
+      return;
+    }
+
+    setIsAiReviewing(true);
+    setMessage(null);
+    try {
+      const response = await fetch("/api/editorial/review", {
+        method: "POST",
+        headers: {
+          "content-type": "application/json",
+          authorization: `Bearer ${secret.trim()}`,
+        },
+        body: JSON.stringify({
+          title: draft.title,
+          standfirst: draft.standfirst,
+          bodyText: draft.bodyText,
+          seoTitle: draft.seoTitle,
+          seoDescription: draft.seoDescription,
+          sourceRecords: selected.sourceRecords ?? [],
+          factLedger: {
+            facts: selected.factLedger?.facts ?? [],
+            unsupportedClaims: selected.factLedger?.unsupportedClaims ?? [],
+            conflicts: selected.factLedger?.conflicts ?? [],
+          },
+        }),
+      });
+      const payload = (await response.json()) as {
+        findings?: AiEditorialFinding[];
+        error?: string;
+      };
+      if (!response.ok) {
+        throw new Error(payload.error ?? `AI review failed with ${response.status}.`);
+      }
+      setAiFindings(payload.findings ?? []);
+    } catch (error) {
+      setMessage(error instanceof Error ? error.message : "AI editorial review failed.");
+    } finally {
+      setIsAiReviewing(false);
+    }
   }
 
   async function saveDraft() {
@@ -870,6 +943,58 @@ export function EditorialReviewTool() {
                   )}
                 </>
               ) : null}
+            </section>
+
+            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  gap: ".75rem",
+                  flexWrap: "wrap",
+                }}
+              >
+                <div>
+                  <h3 style={{ margin: 0 }}>AI Editorial Review</h3>
+                  <small style={{ color: "#666" }}>
+                    Runs on demand against the current draft and never changes article copy.
+                  </small>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => void runAiReview()}
+                  disabled={isAiReviewing || isSaving}
+                >
+                  {isAiReviewing ? "Running AI Review…" : "Run AI Review"}
+                </button>
+              </div>
+              {aiFindings === null ? (
+                <p style={{ margin: 0 }}>No AI review has been run for the current draft.</p>
+              ) : aiFindings.length === 0 ? (
+                <p style={{ margin: 0 }}>No AI editorial findings returned.</p>
+              ) : (
+                (["blocking", "warning", "suggestion"] as const).map((severity) => {
+                  const findings = aiFindings.filter((finding) => finding.severity === severity);
+                  if (findings.length === 0) return null;
+                  return (
+                    <div key={severity} style={{ display: "grid", gap: ".5rem" }}>
+                      <strong style={{ textTransform: "capitalize" }}>
+                        {severity === "suggestion" ? "Suggestions" : `${severity[0].toUpperCase()}${severity.slice(1)}s`} ({findings.length})
+                      </strong>
+                      <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+                        {findings.map((finding, index) => (
+                          <li key={`${severity}-${finding.category}-${index}`}>
+                            <strong>{finding.category}</strong>: {finding.message}
+                            {finding.excerpt ? ` Excerpt: “${finding.excerpt}”` : ""}
+                            {finding.recommendation ? ` Recommendation: ${finding.recommendation}` : ""}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  );
+                })
+              )}
             </section>
 
             <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
