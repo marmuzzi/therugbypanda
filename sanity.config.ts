@@ -7,6 +7,7 @@ import { EditorialQaTool } from "./sanity/components/EditorialQaTool";
 import { EditorialReviewTool } from "./sanity/components/EditorialReviewTool";
 import { dataset, projectId, studioUrl } from "./sanity/env";
 import { brandAssetType } from "./sanity/schemaTypes/brandAsset";
+import { editorialArticleType } from "./sanity/schemaTypes/editorialArticle";
 import { schemaTypes } from "./sanity/schemaTypes";
 
 const singletonHiddenTypes = new Set(["brandAsset", "editorialImage"]);
@@ -243,7 +244,7 @@ export default defineConfig({
     }),
   ],
   schema: {
-    types: [...schemaTypes, brandAssetType],
+    types: [...schemaTypes.filter((type) => type.name !== "article"), editorialArticleType, brandAssetType],
   },
   document: {
     productionUrl: async (prev, context) => {
