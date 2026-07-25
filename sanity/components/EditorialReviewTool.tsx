@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useClient } from "sanity";
+import { useClient, type Tool } from "sanity";
 
 const EDITORIAL_API_BASE_URL = "https://therugbypanda.ie";
 
@@ -430,7 +430,7 @@ function articleToEditable(article: ReviewArticle): EditableDraft {
   };
 }
 
-export function EditorialReviewTool() {
+export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.Element {
   const client = useClient({ apiVersion: "2025-01-01" });
   const [articles, setArticles] = useState<ReviewArticle[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
@@ -526,7 +526,6 @@ export function EditorialReviewTool() {
     setMessage(null);
     try {
       const response = await fetch(`${EDITORIAL_API_BASE_URL}/api/editorial/review`, {
-      const response = await fetch("/api/editorial/review", {
         method: "POST",
         headers: {
           "content-type": "application/json",
