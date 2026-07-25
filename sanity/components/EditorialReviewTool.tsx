@@ -25,6 +25,7 @@ import {
 
 import { ReviewQueue } from "./EditorialReview/ReviewQueue";
 import { EditorialReviewSummary } from "./EditorialReview/EditorialReviewSummary";
+import { DraftEditor } from "./EditorialReview/DraftEditor";
 
 import type {
   WorkflowHistoryEvent,
@@ -314,145 +315,14 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
         </p>
       </header>
 
-      <section
-        style={{
-          display: "grid",
-          gridTemplateColumns: "minmax(260px, 360px) minmax(0, 1fr)",
-          gap: "1rem",
-          alignItems: "start",
-        }}
-      >
-        <ReviewQueue
-          articles={articles}
-          selectedId={selected?._id ?? null}
-          isDirty={isDirty}
-          isLoading={isLoading}
-          isSaving={isSaving}
-          onRefresh={() => void loadQueue()}
-          onSelect={setSelectedId}
-        />
-
-        {selected && draft ? (
-          <article style={{ display: "grid", gap: "1rem" }}>
-            <section style={{ ...cardStyle, display: "grid", gap: "0.85rem" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "1rem",
-                  alignItems: "center",
-                }}
-              >
-                <small
-                  style={{ textTransform: "uppercase", letterSpacing: ".05em" }}
-                >
-                  {displayStatus(selected.workflowStatus)}
-                </small>
-                <strong style={{ color: isDirty ? "#a15c00" : "#39723b" }}>
-                  {isDirty ? "● Unsaved changes" : "Saved"}
-                </strong>
-              </div>
-              <label>
-                Headline
-                <input
-                  value={draft.title}
-                  onChange={(event) => updateDraft("title", event.target.value)}
-                  spellCheck={true}
-                  lang="en-IE"
-                  style={inputStyle}
-                />
-              </label>
-              <label>
-                Standfirst
-                <textarea
-                  value={draft.standfirst}
-                  onChange={(event) =>
-                    updateDraft("standfirst", event.target.value)
-                  }
-                  rows={3}
-                  spellCheck={true}
-                  lang="en-IE"
-                  style={inputStyle}
-                />
-              </label>
-              <label>
-                Article body
-                <textarea
-                  value={draft.bodyText}
-                  onChange={(event) =>
-                    updateDraft("bodyText", event.target.value)
-                  }
-                  rows={18}
-                  spellCheck={true}
-                  lang="en-IE"
-                  style={{
-                    ...inputStyle,
-                    lineHeight: 1.55,
-                    resize: "vertical",
-                  }}
-                />
-              </label>
-              <details>
-                <summary style={{ cursor: "pointer", fontWeight: 600 }}>
-                  SEO
-                </summary>
-                <div
-                  style={{
-                    display: "grid",
-                    gap: ".75rem",
-                    marginTop: ".75rem",
-                  }}
-                >
-                  <label>
-                    SEO title
-                    <input
-                      value={draft.seoTitle}
-                      onChange={(event) =>
-                        updateDraft("seoTitle", event.target.value)
-                      }
-                      spellCheck={true}
-                      lang="en-IE"
-                      style={inputStyle}
-                    />
-                  </label>
-                  <label>
-                    SEO description
-                    <textarea
-                      value={draft.seoDescription}
-                      onChange={(event) =>
-                        updateDraft("seoDescription", event.target.value)
-                      }
-                      rows={3}
-                      spellCheck={true}
-                      lang="en-IE"
-                      style={inputStyle}
-                    />
-                  </label>
-                </div>
-              </details>
-              <div
-                style={{
-                  display: "flex",
-                  gap: ".75rem",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => void saveDraft()}
-                  disabled={!isDirty || isSaving}
-                >
-                  {isSaving ? "Saving…" : "Save draft"}
-                </button>
-                <small>Keyboard shortcut: Ctrl+S / Cmd+S</small>
-                <a
-                  href={`/intent/edit/id=${normaliseId(selected._id)};type=article/`}
-                >
-                  Open full Sanity editor
-                </a>
-              </div>
-            </section>
+            <DraftEditor
+              article={selected}
+              draft={draft}
+              isDirty={isDirty}
+              isSaving={isSaving}
+              onChange={updateDraft}
+              onSave={() => void saveDraft()}
+            />
 
             <EditorialReviewSummary
               article={selected}
