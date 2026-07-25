@@ -1,3 +1,4 @@
+import React from "react";
 import { displayStatus } from "./formatting";
 
 import type { ReviewArticle } from "./types";
