@@ -26,6 +26,7 @@ import {
 import { ReviewQueue } from "./EditorialReview/ReviewQueue";
 import { EditorialReviewSummary } from "./EditorialReview/EditorialReviewSummary";
 import { DraftEditor } from "./EditorialReview/DraftEditor";
+import { AIEditorialReview } from "./EditorialReview/AIEditorialReview";
 
 import type {
   WorkflowHistoryEvent,
@@ -329,58 +330,12 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
               review={editorialReview}
             />
 
-            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: ".75rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div>
-                  <h3 style={{ margin: 0 }}>AI Editorial Review</h3>
-                  <small style={{ color: "#666" }}>
-                    Runs on demand against the current draft and never changes article copy.
-                  </small>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void runAiReview()}
-                  disabled={isAiReviewing || isSaving}
-                >
-                  {isAiReviewing ? "Running AI Review…" : "Run AI Review"}
-                </button>
-              </div>
-              {aiFindings === null ? (
-                <p style={{ margin: 0 }}>No AI review has been run for the current draft.</p>
-              ) : aiFindings.length === 0 ? (
-                <p style={{ margin: 0 }}>No AI editorial findings returned.</p>
-              ) : (
-                (["blocking", "warning", "suggestion"] as const).map((severity) => {
-                  const findings = aiFindings.filter((finding) => finding.severity === severity);
-                  if (findings.length === 0) return null;
-                  return (
-                    <div key={severity} style={{ display: "grid", gap: ".5rem" }}>
-                      <strong style={{ textTransform: "capitalize" }}>
-                        {severity === "suggestion" ? "Suggestions" : `${severity[0].toUpperCase()}${severity.slice(1)}s`} ({findings.length})
-                      </strong>
-                      <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-                        {findings.map((finding, index) => (
-                          <li key={`${severity}-${finding.category}-${index}`}>
-                            <strong>{finding.category}</strong>: {finding.message}
-                            {finding.excerpt ? ` Excerpt: “${finding.excerpt}”` : ""}
-                            {finding.recommendation ? ` Recommendation: ${finding.recommendation}` : ""}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })
-              )}
-            </section>
-
+            <AIEditorialReview
+              findings={aiFindings}
+              isReviewing={isAiReviewing}
+              isSaving={isSaving}
+              onRunReview={() => void runAiReview()}
+            />
             <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
               {selected.featuredImageUrl ? (
                 <figure style={{ margin: 0 }}>
