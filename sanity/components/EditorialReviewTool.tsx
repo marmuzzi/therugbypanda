@@ -24,6 +24,7 @@ import {
 } from "./EditorialReview/editorialReview";
 
 import { ReviewQueue } from "./EditorialReview/ReviewQueue";
+import { EditorialReviewSummary } from "./EditorialReview/EditorialReviewSummary";
 
 import type {
   WorkflowHistoryEvent,
@@ -453,45 +454,10 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
               </div>
             </section>
 
-            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-              <h3 style={{ margin: 0 }}>Editorial Review</h3>
-              {editorialReview ? (
-                <>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(130px, 1fr))",
-                      gap: ".65rem",
-                    }}
-                  >
-                    <strong>Quality score: {editorialReview.score}/100</strong>
-                    <strong>Readiness: {editorialReview.readiness}</strong>
-                    <span>Words: {editorialReview.wordCount}</span>
-                    <span>Blocking: {editorialReview.blockingCount}</span>
-                    <span>Warnings: {editorialReview.warningCount}</span>
-                    <span>
-                      Confidence:{" "}
-                      {displayConfidence(selected.editorialConfidence)}
-                    </span>
-                  </div>
-                  {editorialReview.issues.length > 0 ? (
-                    <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-                      {editorialReview.issues.map((issue) => (
-                        <li key={issue.id}>
-                          <strong>{issue.severity}</strong> · {issue.category}:{" "}
-                          {issue.message}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p style={{ margin: 0 }}>
-                      No local editorial issues found.
-                    </p>
-                  )}
-                </>
-              ) : null}
-            </section>
+            <EditorialReviewSummary
+              article={selected}
+              review={editorialReview}
+            />
 
             <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
               <div
