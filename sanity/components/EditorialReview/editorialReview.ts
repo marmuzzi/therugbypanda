@@ -5,6 +5,8 @@ import type {
   ReviewArticle,
   EditableDraft,
   EditorialIssue,
+  EditorialIssueSeverity,
+  EditorialIssueCategory,
   EditorialReview,
 } from "./types";
 
@@ -12,8 +14,7 @@ export function createEditorialReview(
   article: ReviewArticle,
   draft: EditableDraft,
 ): EditorialReview {
-
-const issues: EditorialIssue[] = [];
+  const issues: EditorialIssue[] = [];
   const addIssue = (
     id: string,
     severity: EditorialIssueSeverity,
