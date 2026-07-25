@@ -1,185 +1,26 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useClient, type Tool } from "sanity";
 
-const EDITORIAL_API_BASE_URL = "https://therugbypanda.ie";
+import {
+  EDITORIAL_API_BASE_URL,
+  QUEUE_QUERY,
+  actionMap,
+  inputStyle,
+  cardStyle,
+} from "./EditorialReview/constants";
 
-type WorkflowHistoryEvent = {
-  _key?: string;
-  action?: string;
-  fromStatus?: string;
-  toStatus?: string;
-  actor?: string;
-  note?: string;
-  occurredAt?: string;
-};
-
-type SourceRecord = {
-  id?: string;
-  title?: string;
-  publisher?: string;
-  url?: string;
-  publishedAt?: string;
-  isPrimarySource?: boolean;
-};
-
-type FactRecord = {
-  id?: string;
-  claim?: string;
-  status?: string;
-  confidence?: number;
-  sourceIds?: string[];
-  notes?: string;
-  usableInDraft?: boolean;
-};
-
-type PortableTextMember = {
-  _key?: string;
-  _type?: string;
-  style?: string;
-  children?: Array<{
-    _key?: string;
-    _type?: string;
-    text?: string;
-    marks?: string[];
-  }>;
-  [key: string]: unknown;
-};
-
-type ReviewArticle = {
-  _id: string;
-  title?: string;
-  standfirst?: string;
-  body?: PortableTextMember[];
-  seoTitle?: string;
-  seoDescription?: string;
-  workflowStatus?: string;
-  workflowUpdatedAt?: string;
-  rejectionReason?: string;
-  rejectionCount?: number;
-  replacementRequired?: boolean;
-  editorialConfidence?: number;
-  needsHumanFactCheck?: boolean;
-  editorialAngle?: string;
-  audiencePromise?: string;
-  sourceRecords?: SourceRecord[];
-  factLedger?: {
-    facts?: FactRecord[];
-    unsupportedClaims?: string[];
-    conflicts?: string[];
-  };
-  workflowHistory?: WorkflowHistoryEvent[];
-  featuredImageUrl?: string;
-  featuredImageAlt?: string;
-  featuredImageCaption?: string;
-  featuredImageCredit?: string;
-  slug?: string;
-};
-
-type EditorialAction = "submit" | "approve" | "reject" | "publish" | "discard";
-
-type EditorialIssueSeverity = "blocking" | "warning" | "info";
-type EditorialIssueCategory = "content" | "seo" | "readability" | "journalism";
-
-export type EditorialIssue = {
-  id: string;
-  severity: EditorialIssueSeverity;
-  category: EditorialIssueCategory;
-  message: string;
-};
-
-type EditorialReview = {
-  issues: EditorialIssue[];
-  score: number;
-  readiness: "Ready" | "Needs review" | "Blocking";
-  wordCount: number;
-  blockingCount: number;
-  warningCount: number;
-};
-
-type AiEditorialFindingSeverity = "blocking" | "warning" | "suggestion";
-type AiEditorialFindingCategory =
-  | "spelling"
-  | "grammar"
-  | "awkward-phrasing"
-  | "unsupported-claim"
-  | "speculation-presented-as-fact"
-  | "readability"
-  | "seo"
-  | "headline"
-  | "standfirst";
-
-type AiEditorialFinding = {
-  severity: AiEditorialFindingSeverity;
-  category: AiEditorialFindingCategory;
-  message: string;
-  excerpt: string;
-  recommendation: string;
-};
-
-type EditableDraft = {
-  title: string;
-  standfirst: string;
-  bodyText: string;
-  seoTitle: string;
-  seoDescription: string;
-};
-
-const QUEUE_QUERY = `*[
-  _type == "article" &&
-  _id match "drafts.*" &&
-  workflowStatus in ["draft", "under-review", "approved", "rejected", "amendment-required"]
-] | order(workflowUpdatedAt desc, _updatedAt desc) {
-  _id,
-  title,
-  standfirst,
-  body,
-  seoTitle,
-  seoDescription,
-  workflowStatus,
-  workflowUpdatedAt,
-  rejectionReason,
-  rejectionCount,
-  replacementRequired,
-  editorialConfidence,
-  needsHumanFactCheck,
-  editorialAngle,
-  audiencePromise,
-  sourceRecords,
-  factLedger,
-  workflowHistory,
-  "featuredImageUrl": featuredImage.asset->url,
-  "featuredImageAlt": featuredImage.alt,
-  "featuredImageCaption": featuredImage.caption,
-  "featuredImageCredit": featuredImage.photographer,
-  "slug": slug.current
-}`;
-
-const actionMap: Record<string, EditorialAction[]> = {
-  draft: ["submit", "discard"],
-  "amendment-required": ["submit", "discard"],
-  "under-review": ["approve", "reject", "discard"],
-  approved: ["publish", "reject", "discard"],
-  rejected: ["discard"],
-};
-
-const inputStyle: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: ".65rem",
-  marginTop: ".25rem",
-  border: "1px solid #bbb",
-  borderRadius: 6,
-  boxSizing: "border-box",
-  font: "inherit",
-};
-
-const cardStyle: React.CSSProperties = {
-  border: "1px solid #ddd",
-  borderRadius: 10,
-  padding: "1rem",
-  background: "#fff",
-};
-
+import type {
+  WorkflowHistoryEvent,
+  SourceRecord,
+  FactRecord,
+  PortableTextMember,
+  ReviewArticle,
+  EditorialAction,
+  EditorialIssue,
+  EditorialReview,
+  AiEditorialFinding,
+  EditableDraft,
+} from "./EditorialReview/types";
 function normaliseId(id: string) {
   return id.replace(/^drafts\./, "");
 }
