@@ -179,9 +179,9 @@ The Editorial Review panel recalculates locally as an editor changes the headlin
 
 Approval and publication are unavailable while any blocking issue remains. The same condition is enforced in `runAction`, so the UI cannot bypass it. Submit, Reject and Discard retain their existing workflow rules. This framework performs no AI calls and does not persist review history.
 
-## AI Editorial Review — PR #63
+## AI Editorial Review — PR #65
 
-Implemented on the current branch; not yet merged, deployed or verified in authenticated Sanity Studio.
+Rebased on the merged PR #62 framework and implemented on the current branch; not yet merged, deployed or verified in authenticated Sanity Studio.
 
 The AI Editorial Review panel appears directly below the deterministic Editorial Review panel. It runs only when the editor selects **Run AI Review**; it never runs while the editor is typing. It sends its protected request to the Next.js/Vercel application at `POST https://therugbypanda.ie/api/editorial/review`, matching the existing protected editorial API base URL pattern and never resolving `/api` against the hosted Sanity Studio origin. The endpoint uses the existing OpenAI Responses API, `store: false`, and strict JSON-schema output. The editor's current headline, standfirst, article body and SEO fields, together with retained source and fact-ledger context, are reviewed for:
 
