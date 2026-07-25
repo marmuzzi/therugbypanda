@@ -23,6 +23,8 @@ import {
   articleToEditable,
 } from "./EditorialReview/editorialReview";
 
+import { ReviewQueue } from "./EditorialReview/ReviewQueue";
+
 import type {
   WorkflowHistoryEvent,
   SourceRecord,
@@ -319,75 +321,15 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
           alignItems: "start",
         }}
       >
-        <aside
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: 10,
-            overflow: "hidden",
-            background: "#fff",
-          }}
-        >
-          <div
-            style={{
-              padding: "0.75rem",
-              borderBottom: "1px solid #ddd",
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "0.5rem",
-              alignItems: "center",
-            }}
-          >
-            <strong>Review queue ({articles.length})</strong>
-            <button
-              type="button"
-              onClick={() => void loadQueue()}
-              disabled={isLoading || isSaving}
-            >
-              Refresh
-            </button>
-          </div>
-          {isLoading ? <p style={{ padding: "0.75rem" }}>Loading…</p> : null}
-          {!isLoading && articles.length === 0 ? (
-            <p style={{ padding: "0.75rem" }}>
-              No drafts currently need review.
-            </p>
-          ) : null}
-          {articles.map((article) => (
-            <button
-              type="button"
-              key={article._id}
-              onClick={() => {
-                if (
-                  isDirty &&
-                  !window.confirm(
-                    "Discard unsaved changes and open another article?",
-                  )
-                )
-                  return;
-                setSelectedId(article._id);
-              }}
-              style={{
-                width: "100%",
-                textAlign: "left",
-                padding: "0.8rem",
-                border: 0,
-                borderBottom: "1px solid #eee",
-                background: selected?._id === article._id ? "#f0f0f0" : "#fff",
-                cursor: "pointer",
-                display: "grid",
-                gap: "0.25rem",
-              }}
-            >
-              <strong>{article.title ?? "Untitled draft"}</strong>
-              <small style={{ textTransform: "capitalize" }}>
-                {displayStatus(article.workflowStatus)}
-              </small>
-              {article.replacementRequired ? (
-                <small>Replacement required</small>
-              ) : null}
-            </button>
-          ))}
-        </aside>
+        <ReviewQueue
+          articles={articles}
+          selectedId={selected?._id ?? null}
+          isDirty={isDirty}
+          isLoading={isLoading}
+          isSaving={isSaving}
+          onRefresh={() => void loadQueue()}
+          onSelect={setSelectedId}
+        />
 
         {selected && draft ? (
           <article style={{ display: "grid", gap: "1rem" }}>
