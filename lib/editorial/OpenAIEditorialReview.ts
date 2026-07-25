@@ -1,3 +1,10 @@
+import {
+  buildEditorialDnaPrompt,
+  calculateWeightedEditorialScore,
+  editorialScoreStatus,
+  type EditorialScorecard,
+} from "./EditorialDna";
+
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_TIMEOUT_MS = 45_000;
 
@@ -11,7 +18,9 @@ export type AiEditorialFindingCategory =
   | "readability"
   | "seo"
   | "headline"
-  | "standfirst";
+  | "standfirst"
+  | "rugby-voice"
+  | "originality";
 
 export type AiEditorialFinding = {
   severity: AiEditorialFindingSeverity;
@@ -23,6 +32,7 @@ export type AiEditorialFinding = {
 
 export type AiEditorialReview = {
   findings: AiEditorialFinding[];
+  scorecard: EditorialScorecard;
 };
 
 export type AiEditorialReviewInput = {
@@ -39,10 +49,21 @@ export type AiEditorialReviewInput = {
   };
 };
 
+const categoryScoreSchema = {
+  type: "object",
+  additionalProperties: false,
+  required: ["score", "explanation", "findings"],
+  properties: {
+    score: { type: "integer", minimum: 0, maximum: 100 },
+    explanation: { type: "string" },
+    findings: { type: "array", items: { type: "string" } },
+  },
+} as const;
+
 const EDITORIAL_REVIEW_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["findings"],
+  required: ["findings", "scorecard"],
   properties: {
     findings: {
       type: "array",
@@ -64,6 +85,8 @@ const EDITORIAL_REVIEW_SCHEMA = {
               "seo",
               "headline",
               "standfirst",
+              "rugby-voice",
+              "originality",
             ],
           },
           message: { type: "string" },
@@ -72,8 +95,34 @@ const EDITORIAL_REVIEW_SCHEMA = {
         },
       },
     },
+    scorecard: {
+      type: "object",
+      additionalProperties: false,
+      required: [
+        "accuracy",
+        "grammar",
+        "readability",
+        "seo",
+        "rugbyVoice",
+        "originality",
+        "summary",
+        "accuracyNotice",
+      ],
+      properties: {
+        accuracy: categoryScoreSchema,
+        grammar: categoryScoreSchema,
+        readability: categoryScoreSchema,
+        seo: categoryScoreSchema,
+        rugbyVoice: categoryScoreSchema,
+        originality: categoryScoreSchema,
+        summary: { type: "string" },
+        accuracyNotice: { type: "string" },
+      },
+    },
   },
 } as const;
+
+type RawScorecard = Omit<EditorialScorecard, "overall" | "status">;
 
 type ResponsesPayload = {
   status?: string;
@@ -95,6 +144,18 @@ function extractOutputText(payload: ResponsesPayload): string | undefined {
   return undefined;
 }
 
+function normaliseReview(review: { findings: AiEditorialFinding[]; scorecard: RawScorecard }): AiEditorialReview {
+  const overall = calculateWeightedEditorialScore(review.scorecard);
+  return {
+    findings: review.findings,
+    scorecard: {
+      ...review.scorecard,
+      overall,
+      status: editorialScoreStatus(overall),
+    },
+  };
+}
+
 export async function runAiEditorialReview(input: AiEditorialReviewInput): Promise<AiEditorialReview> {
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is not configured.");
@@ -111,13 +172,16 @@ export async function runAiEditorialReview(input: AiEditorialReviewInput): Promi
         model: process.env.OPENAI_EDITORIAL_REVIEW_MODEL ?? process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
         store: false,
         instructions: [
-          "You are a meticulous Irish-English editorial reviewer for The Rugby Panda.",
+          "You are the meticulous Irish-English editorial reviewer for The Rugby Panda.",
+          buildEditorialDnaPrompt(),
           "Return only the requested JSON schema. Do not rewrite or modify the article.",
-          "Assess spelling, grammar, awkward phrasing, unsupported claims, speculation stated as fact, readability, SEO, headline and standfirst.",
-          "Use blocking only for a material factual-support or misleading-certainty concern; use warning for clear editorial errors; use suggestion for improvements.",
-          "For unsupported claims, compare article copy only with the supplied fact ledger and source records. Do not invent missing facts.",
-          "Keep excerpts short and recommendations actionable. Return an empty findings array when no findings are warranted.",
-        ].join(" "),
+          "Score Accuracy, Grammar, Readability, SEO, Rugby Voice and Originality independently from 0 to 100.",
+          "Accuracy carries the greatest importance. Do not present the score as proof of independent factual verification.",
+          "For accuracy, distinguish supported facts, apparent internal consistency and facts requiring human verification.",
+          "Use blocking only for a material factual-support or misleading-certainty concern; warning for clear editorial errors; suggestion for improvements.",
+          "Compare article copy only with the supplied fact ledger and source records. Do not invent missing facts.",
+          "Keep excerpts short, explanations concise and recommendations actionable. Return an empty findings array when no findings are warranted.",
+        ].join("\n"),
         input: JSON.stringify(input),
         text: {
           format: {
@@ -142,7 +206,7 @@ export async function runAiEditorialReview(input: AiEditorialReviewInput): Promi
     if (!outputText) throw new Error("OpenAI returned no structured editorial review output.");
 
     try {
-      return JSON.parse(outputText) as AiEditorialReview;
+      return normaliseReview(JSON.parse(outputText) as { findings: AiEditorialFinding[]; scorecard: RawScorecard });
     } catch (error) {
       throw new Error(`OpenAI returned invalid structured editorial review JSON: ${error instanceof Error ? error.message : "parse failed"}`);
     }
