@@ -1,3 +1,15 @@
+main[style*="padding: 1.5rem"] > section > article > * {
+  order: 3;
+}
+
+main[style*="padding: 1.5rem"] .editorial-quality-card {
+  order: 1;
+}
+
+main[style*="padding: 1.5rem"] .editorial-ai-card {
+  order: 2;
+}
+
 @media (max-width: 767px) {
   main[style*="padding: 1.5rem"] {
     box-sizing: border-box;
@@ -19,6 +31,10 @@
   main[style*="padding: 1.5rem"] > section > article {
     width: 100%;
     min-width: 0;
+  }
+
+  main[style*="padding: 1.5rem"] .editorial-quality-card > div {
+    grid-template-columns: minmax(0, 1fr) !important;
   }
 
   main[style*="padding: 1.5rem"] input,
