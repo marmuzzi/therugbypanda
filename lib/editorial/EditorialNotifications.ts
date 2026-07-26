@@ -5,8 +5,9 @@ type ReviewQueueNotification = {
 };
 
 export type NotificationDelivery = {
-  status: "sent" | "skipped";
+  status: "sent" | "skipped" | "failed";
   eventId: string;
+  error?: string;
 };
 
 const destination = "editor@therugbypanda.ie";
@@ -45,10 +46,20 @@ export async function notifyReviewQueue(input: ReviewQueueNotification): Promise
     });
 
     if (!response.ok) {
-      throw new Error(`Editorial notification webhook returned ${response.status}.`);
+      return {
+        status: "failed",
+        eventId,
+        error: `Editorial notification webhook returned ${response.status}.`,
+      };
     }
 
     return { status: "sent", eventId };
+  } catch (error) {
+    return {
+      status: "failed",
+      eventId,
+      error: error instanceof Error ? error.message : "Editorial notification webhook failed.",
+    };
   } finally {
     clearTimeout(timeout);
   }
