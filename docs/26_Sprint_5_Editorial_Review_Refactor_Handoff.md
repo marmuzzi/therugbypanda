@@ -4,21 +4,25 @@
 
 26 July 2026, Europe/Dublin.
 
-## Working branch
+## Status
+
+Completed, merged, deployed and verified for the current production baseline.
+
+## Pull request
+
+PR #67 — **Sprint 5: refactor editorial review tool**
+
+Merged into `main` on 26 July 2026.
+
+Merge commit:
 
 ```text
-feat/pr67-editorial-dna
+e934cc7ea8e2fe222eb1f4d06b131c717b5fefb1
 ```
 
-## Objective
+The corresponding Vercel production deployment is `READY`.
 
-Refactor `sanity/components/EditorialReviewTool.tsx` from a large monolithic component into a thin orchestration layer composed of focused React components and helper modules while preserving all existing editorial behaviour.
-
-## Repository status
-
-The feature branch is ahead of `main`.
-
-The following work has been completed on `feat/pr67-editorial-dna`:
+## Delivered structure
 
 ### Helper modules
 
@@ -40,38 +44,30 @@ The following work has been completed on `feat/pr67-editorial-dna`:
 - `WorkflowPanel`
 - `AuditHistoryPanel`
 
-`EditorialReviewTool.tsx` now acts primarily as the orchestration component, coordinating state management, saving, AI review and workflow.
+`EditorialReviewTool.tsx` now acts primarily as the orchestration layer for article selection, state management, draft saving, AI review and workflow actions.
 
-## Pull request status
+## Preserved and improved behaviour
 
-Sprint 5 is tracked in **PR #67**.
+- Existing workflow transition validation remains in place.
+- Deterministic review blocking rules still gate approval and publication.
+- AI review remains on demand and non-destructive.
+- AI findings remain visible after edits and are marked **Out of date**.
+- The action changes to **Run Review Again** after relevant edits.
+- Rerunning replaces findings with a fresh review of the current draft.
+- Switching articles clears findings from the previous article.
+- The controlled QA article uses **drop goal** terminology.
 
-Current status:
+## Related production history
 
-- Draft pull request.
-- Vercel preview passing.
-- Awaiting conflict resolution and final review before merge.
+- PR #63 introduced AI Editorial Review and is merged.
+- PR #64 introduced a broken Editorial Review component.
+- PR #66 repaired the build and restored the Sanity Tool component contract.
+- PR #67 completed the maintainability refactor and QA improvements.
 
-## Remaining work before merge
+## Current source of truth
 
-- Resolve any remaining merge conflicts.
-- Complete an authenticated Sanity Studio smoke test.
-- Verify the complete editorial workflow.
-- Mark the pull request Ready for Review.
-- Merge into `main`.
-- Verify production deployment.
+See `docs/27_Sprint_5_Production_State.md` for the current Sprint 5 production baseline and immediate next work.
 
-## Completion and verification rule
+## Completion rule
 
-Always distinguish between:
-
-- designed;
-- implemented;
-- committed;
-- verified by CI;
-- verified in authenticated Sanity Studio;
-- merged into `main`;
-- deployed to production;
-- documented.
-
-No implementation is considered complete until it has been verified after merge.
+Always distinguish between implemented, committed, merged, deployed, verified in production, verified in authenticated Sanity Studio and documented.
