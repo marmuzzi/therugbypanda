@@ -73,6 +73,35 @@ main[style*="padding: 1.5rem"] .editorial-ai-card {
     min-width: 0;
   }
 
+  main[style*="padding: 1.5rem"] > section > article > section {
+    color: #374151 !important;
+    font-size: 1rem;
+    line-height: 1.5;
+  }
+
+  main[style*="padding: 1.5rem"] > section > article > section h2,
+  main[style*="padding: 1.5rem"] > section > article > section h3,
+  main[style*="padding: 1.5rem"] > section > article > section strong,
+  main[style*="padding: 1.5rem"] > section > article > section label {
+    color: #111827 !important;
+  }
+
+  main[style*="padding: 1.5rem"] > section > article > section h2,
+  main[style*="padding: 1.5rem"] > section > article > section h3 {
+    font-weight: 700 !important;
+  }
+
+  main[style*="padding: 1.5rem"] > section > article > section p,
+  main[style*="padding: 1.5rem"] > section > article > section li,
+  main[style*="padding: 1.5rem"] > section > article > section figcaption {
+    color: #4b5563 !important;
+  }
+
+  main[style*="padding: 1.5rem"] > section > article > section p strong,
+  main[style*="padding: 1.5rem"] > section > article > section li strong {
+    color: #111827 !important;
+  }
+
   main[style*="padding: 1.5rem"] .editorial-quality-card > div {
     grid-template-columns: minmax(0, 1fr) !important;
   }
@@ -111,6 +140,13 @@ main[style*="padding: 1.5rem"] .editorial-ai-card {
 
   main[style*="padding: 1.5rem"] textarea {
     min-height: 7rem;
+    color: #f9fafb !important;
+  }
+
+  main[style*="padding: 1.5rem"] textarea::placeholder,
+  main[style*="padding: 1.5rem"] input::placeholder {
+    color: #d1d5db !important;
+    opacity: 1;
   }
 
   main[style*="padding: 1.5rem"] button {
