@@ -36,7 +36,11 @@ type StudioTokenClient = {
 };
 
 export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.Element {
-  const client = useClient({ apiVersion: "2025-01-01" });
+  const client = useClient({
+    apiVersion: "2025-01-01",
+    perspective: "raw",
+    useCdn: false,
+  });
   const currentUser = useCurrentUser();
   const [articles, setArticles] = useState<ReviewArticle[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
