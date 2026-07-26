@@ -26,6 +26,12 @@ export default function SiteFooter() {
             <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-300">
               Independent rugby coverage, insight and analysis across Irish and European rugby.
             </p>
+            <a
+              href="mailto:hello@therugbypanda.ie"
+              className="mt-4 inline-flex text-sm font-bold uppercase tracking-wider text-zinc-300 transition hover:text-[#9BE564] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-[#9BE564]"
+            >
+              Contact us
+            </a>
           </div>
         </div>
 
