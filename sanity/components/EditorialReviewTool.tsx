@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useClient, type Tool } from "sanity";
+import { useClient, useCurrentUser, type Tool } from "sanity";
 
 import {
   EDITORIAL_API_BASE_URL,
@@ -30,33 +30,58 @@ import type {
   EditableDraft,
 } from "./EditorialReview/types";
 
+type StudioTokenClient = {
+  getToken?: () => Promise<string | undefined>;
+  config: () => { token?: string };
+};
+
 export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.Element {
   const client = useClient({ apiVersion: "2025-01-01" });
+  const currentUser = useCurrentUser();
   const [articles, setArticles] = useState<ReviewArticle[]>([]);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [draft, setDraft] = useState<EditableDraft | null>(null);
   const [isDirty, setIsDirty] = useState(false);
-  const [actor, setActor] = useState("The Rugby Panda editor");
   const [note, setNote] = useState("");
-  const [secret, setSecret] = useState("");
-  const [showCredentials, setShowCredentials] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [aiFindings, setAiFindings] = useState<AiEditorialFinding[] | null>(null);
   const [isAiReviewing, setIsAiReviewing] = useState(false);
 
+  const actor =
+    currentUser?.name?.trim() || currentUser?.email?.trim() || "Sanity editor";
   const selected = useMemo(
     () => articles.find((article) => article._id === selectedId) ?? articles[0],
     [articles, selectedId],
   );
 
   const availableActions = actionMap[selected?.workflowStatus ?? "draft"] ?? [];
-  const needsRejectionReason = availableActions.includes("reject");
+  const showReviewNote =
+    availableActions.includes("submit") || availableActions.includes("reject");
   const editorialReview = useMemo(
     () => (selected && draft ? createEditorialReview(selected, draft) : null),
     [selected, draft],
   );
+
+  async function getStudioToken() {
+    const tokenClient = client as unknown as StudioTokenClient;
+    const token = tokenClient.getToken
+      ? await tokenClient.getToken()
+      : tokenClient.config().token;
+    if (!token) {
+      throw new Error("Your Sanity Studio session could not be authenticated. Sign in again and retry.");
+    }
+    return token;
+  }
+
+  async function readJsonResponse<T>(response: Response): Promise<T> {
+    const contentType = response.headers.get("content-type") ?? "";
+    if (!contentType.includes("application/json")) {
+      throw new Error(`Editorial API returned an invalid response (${response.status}).`);
+    }
+    return (await response.json()) as T;
+  }
 
   async function loadQueue(preferredId?: string) {
     setIsLoading(true);
@@ -82,15 +107,6 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
   }
 
   useEffect(() => {
-    const savedSecret = window.sessionStorage.getItem(
-      "rugby-panda-editorial-secret",
-    );
-    const savedActor = window.sessionStorage.getItem(
-      "rugby-panda-editorial-actor",
-    );
-    if (savedSecret) setSecret(savedSecret);
-    if (savedActor) setActor(savedActor);
-    setShowCredentials(!savedSecret);
     void loadQueue();
   }, []);
 
@@ -113,22 +129,16 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
 
   async function runAiReview() {
     if (!selected || !draft) return;
-    if (!secret.trim()) {
-      setShowCredentials(true);
-      setMessage(
-        "Workflow authentication is required before running the AI Editorial Review.",
-      );
-      return;
-    }
 
     setIsAiReviewing(true);
     setMessage(null);
     try {
+      const token = await getStudioToken();
       const response = await fetch(`${EDITORIAL_API_BASE_URL}/api/editorial/review`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          authorization: `Bearer ${secret.trim()}`,
+          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           title: draft.title,
@@ -144,10 +154,10 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
           },
         }),
       });
-      const payload = (await response.json()) as {
+      const payload = await readJsonResponse<{
         findings?: AiEditorialFinding[];
         error?: string;
-      };
+      }>(response);
       if (!response.ok) {
         throw new Error(payload.error ?? `AI review failed with ${response.status}.`);
       }
@@ -230,18 +240,6 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
       const saved = await saveDraft();
       if (!saved) return;
     }
-    if (!secret.trim()) {
-      setShowCredentials(true);
-      setMessage(
-        "Workflow authentication is required. Open Workflow settings and enter the secret once for this browser session.",
-      );
-      return;
-    }
-    if (!actor.trim()) {
-      setShowCredentials(true);
-      setMessage("Enter the editor name or role in Workflow settings.");
-      return;
-    }
     if (action === "reject" && !note.trim()) {
       setMessage(
         "A rejection reason is required so replacement generation can avoid the same angle.",
@@ -258,34 +256,35 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
 
     setIsSaving(true);
     setMessage(null);
-    window.sessionStorage.setItem(
-      "rugby-panda-editorial-secret",
-      secret.trim(),
-    );
-    window.sessionStorage.setItem("rugby-panda-editorial-actor", actor.trim());
 
     try {
-      const response = await fetch("/api/editorial/workflow", {
+      const token = await getStudioToken();
+      const response = await fetch(`${EDITORIAL_API_BASE_URL}/api/editorial/workflow`, {
         method: "POST",
         headers: {
           "content-type": "application/json",
-          authorization: `Bearer ${secret.trim()}`,
+          authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
           articleId: normaliseId(selected._id),
           action,
-          actor: actor.trim(),
           note: note.trim() || undefined,
         }),
       });
-      const payload = await response.json();
-      if (!response.ok)
+      const payload = await readJsonResponse<{
+        error?: string;
+        status?: string;
+        workflow?: { status?: string };
+      }>(response);
+      if (!response.ok) {
         throw new Error(
           payload.error ?? `Workflow action failed with ${response.status}.`,
         );
-      setMessage(`${action} completed. Article status: ${payload.status}.`);
+      }
+      setMessage(
+        `${action} completed. Article status: ${payload.workflow?.status ?? payload.status ?? "ok"}.`,
+      );
       setNote("");
-      setShowCredentials(false);
       await loadQueue();
     } catch (error) {
       setMessage(
@@ -355,19 +354,12 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
             <WorkflowPanel
               actor={actor}
               note={note}
-              secret={secret}
-              showCredentials={showCredentials}
-              needsRejectionReason={needsRejectionReason}
+              showReviewNote={showReviewNote}
               availableActions={availableActions}
               editorialReview={editorialReview}
               isSaving={isSaving}
               message={message}
-              onActorChange={setActor}
               onNoteChange={setNote}
-              onSecretChange={setSecret}
-              onToggleCredentials={() =>
-                setShowCredentials((current) => !current)
-              }
               onRunAction={(action) => void runAction(action)}
             />
 
