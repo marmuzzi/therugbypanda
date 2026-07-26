@@ -17,7 +17,7 @@ function buildPayload(dryRun: boolean) {
       story: {
         id: inputId,
         title: "How scoring works in rugby union",
-        summary: "A controlled evergreen editorial QA article explaining the points awarded for a try, conversion, penalty goal and dropped goal.",
+        summary: "A controlled evergreen editorial QA article explaining the points awarded for a try, conversion, penalty goal and drop goal.",
         bodyText: "World Rugby Law 8 defines the standard scoring values used in rugby union.",
         discoveredAt: now,
         suggestedCategory: "Opinion",
@@ -37,7 +37,7 @@ function buildPayload(dryRun: boolean) {
           { id: "try-points", claim: "A try is worth five points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
           { id: "conversion-points", claim: "A successful conversion is worth two points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
           { id: "penalty-points", claim: "A successful penalty goal is worth three points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
-          { id: "drop-goal-points", claim: "A successful dropped goal is worth three points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
+          { id: "drop-goal-points", claim: "A successful drop goal is worth three points.", status: "confirmed", confidence: 100, sourceIds: [sourceId], usableInDraft: true },
         ],
         unsupportedClaims: [],
         conflicts: [],
