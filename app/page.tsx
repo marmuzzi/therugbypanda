@@ -1,10 +1,19 @@
 import ArticleCard from "@/components/ArticleCard";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
-import { getHomepageArticles, getSectionLinks } from "@/lib/cms";
+import { getHomepageArticles } from "@/lib/cms";
+
+const sections = [
+  { label: "News", href: "/" },
+  { label: "Provinces", href: "/categories/provinces" },
+  { label: "Ireland", href: "/categories/ireland" },
+  { label: "URC", href: "/categories/urc" },
+  { label: "International", href: "/categories/international" },
+  { label: "About", href: "/about" },
+];
 
 export default async function Home() {
-  const [{ featured, latest }, sections] = await Promise.all([getHomepageArticles(), getSectionLinks()]);
+  const { featured, latest } = await getHomepageArticles();
   const secondaryArticles = featured
     ? latest.filter((article) => article.title !== featured.title)
     : latest;
@@ -164,7 +173,7 @@ export default async function Home() {
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
             Sections
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
             {sections.map((section) => (
               <a
                 key={section.href}
