@@ -26,15 +26,24 @@ function scoreStars(score: number) {
   return `${"★".repeat(filled)}${"☆".repeat(5 - filled)}`;
 }
 
+function severityLabel(severity: string) {
+  if (severity === "blocking") return "Blocking";
+  if (severity === "warning") return "Warning";
+  return "Info";
+}
+
 export function EditorialReviewSummary({
   article,
   review,
 }: EditorialReviewSummaryProps): React.JSX.Element {
   const presentation = review ? scorePresentation(review.score) : null;
+  const infoCount = review
+    ? review.issues.filter((issue) => issue.severity !== "blocking" && issue.severity !== "warning").length
+    : 0;
 
   return (
-    <section className="editorial-quality-card" style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-      <h3 style={{ margin: 0 }}>Article quality</h3>
+    <section className="editorial-quality-card" style={{ ...cardStyle, display: "grid", gap: ".85rem" }}>
+      <h3 style={{ margin: 0, color: "#111827" }}>Article quality</h3>
 
       {review && presentation ? (
         <>
@@ -42,7 +51,7 @@ export function EditorialReviewSummary({
             style={{
               display: "grid",
               gridTemplateColumns: "minmax(145px, auto) minmax(0, 1fr)",
-              gap: ".75rem",
+              gap: ".85rem",
               alignItems: "center",
             }}
           >
@@ -62,10 +71,14 @@ export function EditorialReviewSummary({
             </div>
 
             <div
+              className="editorial-quality-metrics"
               style={{
                 display: "grid",
                 gridTemplateColumns: "repeat(auto-fit, minmax(120px, 1fr))",
-                gap: ".5rem",
+                gap: ".6rem",
+                color: "#1f2937",
+                fontSize: "1rem",
+                lineHeight: 1.4,
               }}
             >
               <strong>Readiness: {review.readiness}</strong>
@@ -76,16 +89,23 @@ export function EditorialReviewSummary({
             </div>
           </div>
 
+          <div className="editorial-issue-summary" aria-label="Editorial issue summary">
+            <strong className="editorial-summary-blocking">● {review.blockingCount} Blocking</strong>
+            <strong className="editorial-summary-warning">● {review.warningCount} Warnings</strong>
+            <strong className="editorial-summary-info">● {infoCount} Info</strong>
+          </div>
+
           {review.issues.length > 0 ? (
-            <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+            <ul className="editorial-issue-list">
               {review.issues.map((issue) => (
                 <li key={issue.id}>
-                  <strong>{issue.severity}</strong> · {issue.category}: {issue.message}
+                  <strong>{severityLabel(issue.severity)} · {issue.category}:</strong>{" "}
+                  {issue.message}
                 </li>
               ))}
             </ul>
           ) : (
-            <p style={{ margin: 0 }}>No local editorial issues found.</p>
+            <p style={{ margin: 0, color: "#1f2937" }}>No local editorial issues found.</p>
           )}
         </>
       ) : null}
