@@ -12,12 +12,32 @@ export type NotificationDelivery = {
 
 const destination = "editor@therugbypanda.ie";
 
+function logNotification(
+  level: "info" | "warn",
+  message: string,
+  details: Record<string, unknown>,
+) {
+  console[level](`[editorial-notification] ${message}`, details);
+}
+
 export async function notifyReviewQueue(input: ReviewQueueNotification): Promise<NotificationDelivery> {
   const webhookUrl = process.env.EDITORIAL_NOTIFICATION_WEBHOOK_URL?.trim();
   const webhookSecret = process.env.EDITORIAL_NOTIFICATION_WEBHOOK_SECRET?.trim();
   const eventId = `editorial-review:${input.articleId}:${input.occurredAt}`;
 
+  logNotification("info", "delivery-started", {
+    eventId,
+    articleId: input.articleId,
+    webhookConfigured: Boolean(webhookUrl),
+    webhookSecretConfigured: Boolean(webhookSecret),
+  });
+
   if (!webhookUrl) {
+    logNotification("warn", "delivery-skipped", {
+      eventId,
+      articleId: input.articleId,
+      reason: "webhook-not-configured",
+    });
     return { status: "skipped", eventId };
   }
 
@@ -46,19 +66,37 @@ export async function notifyReviewQueue(input: ReviewQueueNotification): Promise
     });
 
     if (!response.ok) {
+      const error = `Editorial notification webhook returned ${response.status}.`;
+      logNotification("warn", "delivery-failed", {
+        eventId,
+        articleId: input.articleId,
+        responseStatus: response.status,
+        error,
+      });
       return {
         status: "failed",
         eventId,
-        error: `Editorial notification webhook returned ${response.status}.`,
+        error,
       };
     }
 
+    logNotification("info", "delivery-sent", {
+      eventId,
+      articleId: input.articleId,
+      responseStatus: response.status,
+    });
     return { status: "sent", eventId };
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Editorial notification webhook failed.";
+    logNotification("warn", "delivery-failed", {
+      eventId,
+      articleId: input.articleId,
+      error: message,
+    });
     return {
       status: "failed",
       eventId,
-      error: error instanceof Error ? error.message : "Editorial notification webhook failed.",
+      error: message,
     };
   } finally {
     clearTimeout(timeout);
