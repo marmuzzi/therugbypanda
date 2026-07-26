@@ -50,8 +50,10 @@ export async function POST(request: NextRequest) {
       body.action === "submit"
         ? await notifyReviewQueue({
             articleId: result.articleId,
+            articleTitle: result.articleTitle,
             actor,
             occurredAt: new Date().toISOString(),
+            submissionNote: body.note?.trim() || undefined,
           })
         : undefined;
 

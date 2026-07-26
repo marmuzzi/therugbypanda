@@ -1,0 +1,55 @@
+main[style*="padding: 1.5rem"] > section > article > * {
+  order: 3;
+}
+
+main[style*="padding: 1.5rem"] .editorial-quality-card {
+  order: 1;
+}
+
+main[style*="padding: 1.5rem"] .editorial-ai-card {
+  order: 2;
+}
+
+@media (max-width: 767px) {
+  main[style*="padding: 1.5rem"] {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: hidden;
+    padding: 0.75rem !important;
+  }
+
+  main[style*="padding: 1.5rem"] > header {
+    min-width: 0;
+  }
+
+  main[style*="padding: 1.5rem"] > section[style*="grid-template-columns"] {
+    grid-template-columns: minmax(0, 1fr) !important;
+    width: 100%;
+    min-width: 0;
+  }
+
+  main[style*="padding: 1.5rem"] > section > article {
+    width: 100%;
+    min-width: 0;
+  }
+
+  main[style*="padding: 1.5rem"] .editorial-quality-card > div {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  main[style*="padding: 1.5rem"] input,
+  main[style*="padding: 1.5rem"] textarea,
+  main[style*="padding: 1.5rem"] select,
+  main[style*="padding: 1.5rem"] button {
+    box-sizing: border-box;
+    max-width: 100%;
+  }
+
+  main[style*="padding: 1.5rem"] textarea {
+    min-height: 7rem;
+  }
+
+  main[style*="padding: 1.5rem"] button {
+    min-height: 44px;
+  }
+}

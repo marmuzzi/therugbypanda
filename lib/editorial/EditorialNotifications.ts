@@ -1,7 +1,9 @@
 type ReviewQueueNotification = {
   articleId: string;
+  articleTitle: string;
   actor: string;
   occurredAt: string;
+  submissionNote?: string;
 };
 
 export type NotificationDelivery = {
@@ -11,6 +13,7 @@ export type NotificationDelivery = {
 };
 
 const destination = "editor@therugbypanda.ie";
+const reviewUrl = "https://therugbypanda.sanity.studio/structure/editorialReview";
 
 function logNotification(
   level: "info" | "warn",
@@ -57,9 +60,11 @@ export async function notifyReviewQueue(input: ReviewQueueNotification): Promise
         eventId,
         destination,
         articleId: input.articleId,
+        articleTitle: input.articleTitle,
         actor: input.actor,
         occurredAt: input.occurredAt,
-        reviewUrl: "https://therugbypanda.ie/studio/structure/editorialReview",
+        submissionNote: input.submissionNote,
+        reviewUrl,
       }),
       cache: "no-store",
       signal: controller.signal,

@@ -13,6 +13,7 @@ type WorkflowInput = {
 
 type ArticleState = {
   _id: string;
+  title?: string;
   workflowStatus?: string;
 };
 
@@ -42,7 +43,7 @@ export async function applyEditorialAction(input: WorkflowInput) {
   const publishedId = normaliseId(input.articleId);
   const draftId = `drafts.${publishedId}`;
   const article = await writeClient.fetch<ArticleState | null>(
-    `*[_type == "article" && _id in [$draftId, $publishedId]][0]{_id, workflowStatus}`,
+    `*[_type == "article" && _id in [$draftId, $publishedId]][0]{_id, title, workflowStatus}`,
     { draftId, publishedId },
   );
 
@@ -90,6 +91,7 @@ export async function applyEditorialAction(input: WorkflowInput) {
 
   return {
     articleId: publishedId,
+    articleTitle: article.title?.trim() || "Untitled article",
     previousStatus: current,
     status: transition.to,
     action: input.action,

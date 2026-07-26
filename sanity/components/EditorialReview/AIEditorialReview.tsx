@@ -22,7 +22,7 @@ export function AIEditorialReview({
   onRunReview,
 }: AIEditorialReviewProps): React.JSX.Element {
   return (
-    <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
+    <section className="editorial-ai-card" style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
       <div
         style={{
           display: "flex",
@@ -36,8 +36,7 @@ export function AIEditorialReview({
           <h3 style={{ margin: 0 }}>AI Editorial Review</h3>
 
           <small style={{ color: "#666" }}>
-            Runs on demand against the current draft and never changes article
-            copy.
+            Runs on demand against the current draft and never changes article copy.
           </small>
         </div>
 
@@ -65,30 +64,22 @@ export function AIEditorialReview({
             background: "#fff8d6",
           }}
         >
-          <strong>Out of date:</strong> the article has changed since this AI
-          review was generated. The findings remain visible for reference; run
-          the review again to refresh them.
+          <strong>Out of date:</strong> the article has changed since this AI review was generated. The findings remain visible for reference; run the review again to refresh them.
         </p>
       ) : null}
 
       {findings === null ? (
-        <p style={{ margin: 0 }}>
-          No AI review has been run for the current draft.
-        </p>
+        <p style={{ margin: 0 }}>No AI review has been run for the current draft.</p>
       ) : findings.length === 0 ? (
         <p style={{ margin: 0 }}>No AI editorial findings returned.</p>
       ) : (
         severities.map((severity) => {
-          const severityFindings = findings.filter(
-            (finding) => finding.severity === severity,
-          );
-
+          const severityFindings = findings.filter((finding) => finding.severity === severity);
           if (severityFindings.length === 0) return null;
 
-          const heading =
-            severity === "suggestion"
-              ? "Suggestions"
-              : `${severity[0].toUpperCase()}${severity.slice(1)}s`;
+          const heading = severity === "suggestion"
+            ? "Suggestions"
+            : `${severity[0].toUpperCase()}${severity.slice(1)}s`;
 
           return (
             <div key={severity} style={{ display: "grid", gap: ".5rem" }}>
@@ -100,12 +91,8 @@ export function AIEditorialReview({
                 {severityFindings.map((finding, index) => (
                   <li key={`${severity}-${finding.category}-${index}`}>
                     <strong>{finding.category}</strong>: {finding.message}
-                    {finding.excerpt
-                      ? ` Excerpt: “${finding.excerpt}”`
-                      : ""}
-                    {finding.recommendation
-                      ? ` Recommendation: ${finding.recommendation}`
-                      : ""}
+                    {finding.excerpt ? ` Excerpt: “${finding.excerpt}”` : ""}
+                    {finding.recommendation ? ` Recommendation: ${finding.recommendation}` : ""}
                   </li>
                 ))}
               </ul>
