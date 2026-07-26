@@ -71,7 +71,7 @@ Deterministic checks recalculate locally and block approval or publication when 
 
 After relevant draft edits, existing AI findings remain visible but are marked **Out of date**. The action changes to **Run Review Again**. Rerunning refreshes findings against the current draft. Switching articles clears prior findings.
 
-PR #63 introduced AI Editorial Review. PR #64 introduced a broken component. PR #66 repaired the build and Sanity Tool contract. PR #67 completed the refactor and QA improvements. The current production baseline is documented in `docs/27_Sprint_5_Production_State.md`.
+PR #63 introduced AI Editorial Review. PR #64 introduced a broken component. PR #66 repaired the build and Sanity Tool contract. PR #67 completed the refactor and QA improvements. PR #81 added real Sanity-backed website search. PR #82 added the application-side notification webhook foundation. The current production baseline is documented in `docs/27_Sprint_5_Production_State.md`.
 
 ## Rejection and replacement
 
@@ -84,6 +84,20 @@ Required routing:
 - When an article enters the Editorial Review queue, notify `editor@therugbypanda.ie`.
 - Send workflow failures and technical alerts to `admin@therugbypanda.ie`.
 - Public website contact must use `mailto:hello@therugbypanda.ie`.
+
+PR #82 emits `editorial.article.ready_for_review` only after a successful submit-to-review transition. It supports `EDITORIAL_NOTIFICATION_WEBHOOK_URL` and optional `EDITORIAL_NOTIFICATION_WEBHOOK_SECRET`, includes a stable event identifier for downstream deduplication, applies a 10-second timeout and isolates notification-delivery failures from the successful Sanity workflow transition.
+
+The Make.com MCP toolbox is connected and its temporary Health Check tool has executed successfully. Production-ready notification tools and the Make scenario are still pending.
+
+NOTIFY-001 is complete only after all of the following are verified:
+
+1. Make scenario receives and validates the webhook.
+2. Required Vercel production environment variables are configured.
+3. A controlled article submit reaches the scenario.
+4. Exactly one email is delivered to `editor@therugbypanda.ie`.
+5. Replaying the same stable event identifier does not produce a duplicate email.
+6. Notification failures do not alter Sanity workflow state.
+7. Sanity remains the mandatory human approval boundary and no notification triggers approval or publication.
 
 Notifications must be idempotent, must not expose secrets, and must record enough context to identify the article, workflow stage, timestamp and failure reason. Notification delivery must never bypass Sanity approval or trigger publication.
 

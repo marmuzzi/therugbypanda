@@ -6,7 +6,7 @@ v0.9 — Editorial Engine Foundation
 
 ## Last updated
 
-26 July 2026, after PR #67 production deployment.
+26 July 2026, after PR #82 merge and Make MCP connection verification.
 
 ## Source of truth
 
@@ -50,8 +50,12 @@ GitHub source of truth
 - Deterministic Editorial Review Intelligence is merged.
 - AI Editorial Review is merged.
 - The Editorial Review refactor is merged and deployed.
-- Latest verified `main` commit: `e934cc7ea8e2fe222eb1f4d06b131c717b5fefb1`.
-- Latest Vercel production deployment for that commit is `READY`.
+- PR #81 implemented real Sanity-backed website search and is merged; production search was previously reported verified and must remain part of production regression checks.
+- PR #82 implemented the application-side webhook foundation for article-ready-for-review notifications and is merged.
+- The Make.com MCP toolbox is connected. Its temporary Health Check tool executed successfully on 26 July 2026.
+- Latest verified GitHub `main` commit: `39f8e1ddc7ff3d31f07bc3879f2dbeac031360e7`.
+- The latest Vercel production deployment still requires fresh verification against this commit in the current work session.
+- NOTIFY-001 is not complete: Make scenario configuration, Vercel environment variables, controlled submit, email delivery and duplicate-event protection remain to be verified.
 
 See `docs/27_Sprint_5_Production_State.md` for the exact production baseline.
 
@@ -62,6 +66,8 @@ See `docs/27_Sprint_5_Production_State.md` for the exact production baseline.
 - PR #64 — follow-up integration; merged but introduced a broken component.
 - PR #66 — emergency repair; merged and restored production stability.
 - PR #67 — maintainability refactor and QA improvements; merged and deployed.
+- PR #81 — real website search; merged and previously production verified.
+- PR #82 — editorial review notification webhook foundation; merged, pending end-to-end production configuration and verification.
 
 Current AI-review behaviour preserves findings after edits, marks them **Out of date**, changes the action to **Run Review Again**, refreshes findings on rerun and clears findings when switching articles.
 
@@ -73,12 +79,14 @@ Current AI-review behaviour preserves findings after edits, marks them **Out of 
 
 ## Immediate priority
 
-1. Add the public Contact link.
-2. Add article-ready-for-review notifications to `editor@therugbypanda.ie`.
-3. Add workflow failure and technical alerts to `admin@therugbypanda.ie`.
-4. Continue persistent daily orchestration and automatic replacement after rejection.
-5. Complete the nine-article launch package and verify it in production.
-6. Implement analytics/accreditation and security/recovery baselines.
+1. Complete NOTIFY-001 end-to-end using the connected Make.com toolbox.
+2. Verify the latest Vercel production deployment and required environment variables.
+3. Execute a controlled submit-to-review test and confirm one email reaches `editor@therugbypanda.ie`.
+4. Verify duplicate-event protection.
+5. Add workflow failure and technical alerts to `admin@therugbypanda.ie`.
+6. Continue persistent daily orchestration and automatic replacement after rejection.
+7. Complete the nine-article launch package and verify it in production.
+8. Implement analytics/accreditation and security/recovery baselines.
 
 ## Launch minimum
 
