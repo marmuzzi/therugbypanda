@@ -1,434 +1,34 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useClient, type Tool } from "sanity";
 
-const EDITORIAL_API_BASE_URL = "https://therugbypanda.ie";
+import {
+  EDITORIAL_API_BASE_URL,
+  QUEUE_QUERY,
+  actionMap,
+} from "./EditorialReview/constants";
+import { normaliseId } from "./EditorialReview/formatting";
+import { textToBody } from "./EditorialReview/portableText";
+import {
+  createEditorialReview,
+  articleToEditable,
+} from "./EditorialReview/editorialReview";
 
-type WorkflowHistoryEvent = {
-  _key?: string;
-  action?: string;
-  fromStatus?: string;
-  toStatus?: string;
-  actor?: string;
-  note?: string;
-  occurredAt?: string;
-};
+import { ReviewQueue } from "./EditorialReview/ReviewQueue";
+import { EditorialReviewSummary } from "./EditorialReview/EditorialReviewSummary";
+import { DraftEditor } from "./EditorialReview/DraftEditor";
+import { AIEditorialReview } from "./EditorialReview/AIEditorialReview";
+import { FeaturedImagePanel } from "./EditorialReview/FeaturedImagePanel";
+import { SourcesPanel } from "./EditorialReview/SourcesPanel";
+import { FactLedgerPanel } from "./EditorialReview/FactLedgerPanel";
+import { WorkflowPanel } from "./EditorialReview/WorkflowPanel";
+import { AuditHistoryPanel } from "./EditorialReview/AuditHistoryPanel";
 
-type SourceRecord = {
-  id?: string;
-  title?: string;
-  publisher?: string;
-  url?: string;
-  publishedAt?: string;
-  isPrimarySource?: boolean;
-};
-
-type FactRecord = {
-  id?: string;
-  claim?: string;
-  status?: string;
-  confidence?: number;
-  sourceIds?: string[];
-  notes?: string;
-  usableInDraft?: boolean;
-};
-
-type PortableTextMember = {
-  _key?: string;
-  _type?: string;
-  style?: string;
-  children?: Array<{
-    _key?: string;
-    _type?: string;
-    text?: string;
-    marks?: string[];
-  }>;
-  [key: string]: unknown;
-};
-
-type ReviewArticle = {
-  _id: string;
-  title?: string;
-  standfirst?: string;
-  body?: PortableTextMember[];
-  seoTitle?: string;
-  seoDescription?: string;
-  workflowStatus?: string;
-  workflowUpdatedAt?: string;
-  rejectionReason?: string;
-  rejectionCount?: number;
-  replacementRequired?: boolean;
-  editorialConfidence?: number;
-  needsHumanFactCheck?: boolean;
-  editorialAngle?: string;
-  audiencePromise?: string;
-  sourceRecords?: SourceRecord[];
-  factLedger?: {
-    facts?: FactRecord[];
-    unsupportedClaims?: string[];
-    conflicts?: string[];
-  };
-  workflowHistory?: WorkflowHistoryEvent[];
-  featuredImageUrl?: string;
-  featuredImageAlt?: string;
-  featuredImageCaption?: string;
-  featuredImageCredit?: string;
-  slug?: string;
-};
-
-type EditorialAction = "submit" | "approve" | "reject" | "publish" | "discard";
-
-type EditorialIssueSeverity = "blocking" | "warning" | "info";
-type EditorialIssueCategory = "content" | "seo" | "readability" | "journalism";
-
-export type EditorialIssue = {
-  id: string;
-  severity: EditorialIssueSeverity;
-  category: EditorialIssueCategory;
-  message: string;
-};
-
-type EditorialReview = {
-  issues: EditorialIssue[];
-  score: number;
-  readiness: "Ready" | "Needs review" | "Blocking";
-  wordCount: number;
-  blockingCount: number;
-  warningCount: number;
-};
-
-type AiEditorialFindingSeverity = "blocking" | "warning" | "suggestion";
-type AiEditorialFindingCategory =
-  | "spelling"
-  | "grammar"
-  | "awkward-phrasing"
-  | "unsupported-claim"
-  | "speculation-presented-as-fact"
-  | "readability"
-  | "seo"
-  | "headline"
-  | "standfirst";
-
-type AiEditorialFinding = {
-  severity: AiEditorialFindingSeverity;
-  category: AiEditorialFindingCategory;
-  message: string;
-  excerpt: string;
-  recommendation: string;
-};
-
-type EditableDraft = {
-  title: string;
-  standfirst: string;
-  bodyText: string;
-  seoTitle: string;
-  seoDescription: string;
-};
-
-const QUEUE_QUERY = `*[
-  _type == "article" &&
-  _id match "drafts.*" &&
-  workflowStatus in ["draft", "under-review", "approved", "rejected", "amendment-required"]
-] | order(workflowUpdatedAt desc, _updatedAt desc) {
-  _id,
-  title,
-  standfirst,
-  body,
-  seoTitle,
-  seoDescription,
-  workflowStatus,
-  workflowUpdatedAt,
-  rejectionReason,
-  rejectionCount,
-  replacementRequired,
-  editorialConfidence,
-  needsHumanFactCheck,
-  editorialAngle,
-  audiencePromise,
-  sourceRecords,
-  factLedger,
-  workflowHistory,
-  "featuredImageUrl": featuredImage.asset->url,
-  "featuredImageAlt": featuredImage.alt,
-  "featuredImageCaption": featuredImage.caption,
-  "featuredImageCredit": featuredImage.photographer,
-  "slug": slug.current
-}`;
-
-const actionMap: Record<string, EditorialAction[]> = {
-  draft: ["submit", "discard"],
-  "amendment-required": ["submit", "discard"],
-  "under-review": ["approve", "reject", "discard"],
-  approved: ["publish", "reject", "discard"],
-  rejected: ["discard"],
-};
-
-const inputStyle: React.CSSProperties = {
-  display: "block",
-  width: "100%",
-  padding: ".65rem",
-  marginTop: ".25rem",
-  border: "1px solid #bbb",
-  borderRadius: 6,
-  boxSizing: "border-box",
-  font: "inherit",
-};
-
-const cardStyle: React.CSSProperties = {
-  border: "1px solid #ddd",
-  borderRadius: 10,
-  padding: "1rem",
-  background: "#fff",
-};
-
-function normaliseId(id: string) {
-  return id.replace(/^drafts\./, "");
-}
-
-function displayStatus(status?: string) {
-  return (status ?? "draft").replaceAll("-", " ");
-}
-
-function displayConfidence(value?: number) {
-  if (value == null) return "Not recorded";
-  return `${Math.round(value <= 1 ? value * 100 : value)}%`;
-}
-
-function bodyToText(body?: PortableTextMember[]) {
-  return (body ?? [])
-    .filter((member) => member._type === "block")
-    .map((member) =>
-      (member.children ?? []).map((child) => child.text ?? "").join(""),
-    )
-    .join("\n\n");
-}
-
-function textToBody(text: string, existingBody?: PortableTextMember[]) {
-  const preservedNonText = (existingBody ?? []).filter(
-    (member) => member._type !== "block",
-  );
-  const timestamp = Date.now();
-  const blocks = text
-    .split(/\n\s*\n/)
-    .map((paragraph) => paragraph.trim())
-    .filter(Boolean)
-    .map((paragraph, index) => ({
-      _key: `editorial-${timestamp}-${index}`,
-      _type: "block",
-      style: "normal",
-      markDefs: [],
-      children: [
-        {
-          _key: `span-${timestamp}-${index}`,
-          _type: "span",
-          marks: [],
-          text: paragraph,
-        },
-      ],
-    }));
-
-  return [...blocks, ...preservedNonText];
-}
-
-function countWords(value: string) {
-  return value.trim() ? value.trim().split(/\s+/).length : 0;
-}
-
-function createEditorialReview(
-  article: ReviewArticle,
-  draft: EditableDraft,
-): EditorialReview {
-  const issues: EditorialIssue[] = [];
-  const addIssue = (
-    id: string,
-    severity: EditorialIssueSeverity,
-    category: EditorialIssueCategory,
-    message: string,
-  ) => {
-    issues.push({ id, severity, category, message });
-  };
-  const headline = draft.title.trim();
-  const standfirst = draft.standfirst.trim();
-  const body = draft.bodyText.trim();
-  const seoTitle = draft.seoTitle.trim();
-  const seoDescription = draft.seoDescription.trim();
-  const wordCount = countWords(body);
-
-  if (!headline)
-    addIssue(
-      "missing-headline",
-      "blocking",
-      "content",
-      "Add a headline before approval.",
-    );
-  if (!standfirst)
-    addIssue(
-      "missing-standfirst",
-      "blocking",
-      "content",
-      "Add a standfirst before approval.",
-    );
-  if (!body)
-    addIssue(
-      "missing-body",
-      "blocking",
-      "content",
-      "Add article body copy before approval.",
-    );
-  if (!seoTitle)
-    addIssue(
-      "missing-seo-title",
-      "blocking",
-      "seo",
-      "Add an SEO title before approval.",
-    );
-  if (!seoDescription)
-    addIssue(
-      "missing-seo-description",
-      "blocking",
-      "seo",
-      "Add an SEO description before approval.",
-    );
-  if ((article.factLedger?.unsupportedClaims ?? []).length > 0)
-    addIssue(
-      "unsupported-claims",
-      "blocking",
-      "journalism",
-      "Resolve unsupported claims in the fact ledger.",
-    );
-  if ((article.factLedger?.conflicts ?? []).length > 0)
-    addIssue(
-      "fact-ledger-conflicts",
-      "blocking",
-      "journalism",
-      "Resolve conflicts in the fact ledger.",
-    );
-  if (article.needsHumanFactCheck)
-    addIssue(
-      "human-fact-check",
-      "blocking",
-      "journalism",
-      "A human fact-check is required before approval.",
-    );
-
-  if (!article.featuredImageUrl)
-    addIssue(
-      "missing-featured-image",
-      "warning",
-      "content",
-      "Assign an approved featured image.",
-    );
-  if (headline.length > 70)
-    addIssue(
-      "headline-too-long",
-      "warning",
-      "content",
-      "Headline exceeds 70 characters.",
-    );
-  if (standfirst.length > 220)
-    addIssue(
-      "standfirst-too-long",
-      "warning",
-      "content",
-      "Standfirst exceeds 220 characters.",
-    );
-  if (wordCount < 250)
-    addIssue(
-      "body-too-short",
-      "warning",
-      "readability",
-      "Article body is shorter than 250 words.",
-    );
-  if (seoTitle.length > 60)
-    addIssue(
-      "seo-title-too-long",
-      "warning",
-      "seo",
-      "SEO title exceeds 60 characters.",
-    );
-  if (seoDescription.length > 160)
-    addIssue(
-      "seo-description-too-long",
-      "warning",
-      "seo",
-      "SEO description exceeds 160 characters.",
-    );
-  if (body.split(/\n\s*\n/).some((paragraph) => countWords(paragraph) > 120))
-    addIssue(
-      "paragraph-too-long",
-      "warning",
-      "readability",
-      "At least one paragraph exceeds 120 words.",
-    );
-
-  if (headline.length > 0 && headline.length < 25)
-    addIssue(
-      "headline-too-short",
-      "info",
-      "content",
-      "Headline is shorter than 25 characters.",
-    );
-  if (seoDescription.length > 0 && seoDescription.length < 110)
-    addIssue(
-      "seo-description-too-short",
-      "info",
-      "seo",
-      "SEO description is shorter than 110 characters.",
-    );
-  const fillerWords = [
-    "actually",
-    "basically",
-    "just",
-    "quite",
-    "really",
-    "simply",
-    "very",
-  ];
-  const lowerCaseBody = body.toLowerCase();
-  fillerWords.forEach((word) => {
-    const occurrences =
-      lowerCaseBody.match(new RegExp(`\\b${word}\\b`, "g"))?.length ?? 0;
-    if (occurrences >= 3)
-      addIssue(
-        `repeated-filler-${word}`,
-        "info",
-        "readability",
-        `Repeated filler word detected: “${word}” appears ${occurrences} times.`,
-      );
-  });
-
-  const blockingCount = issues.filter(
-    (issue) => issue.severity === "blocking",
-  ).length;
-  const warningCount = issues.filter(
-    (issue) => issue.severity === "warning",
-  ).length;
-  const score = Math.max(
-    0,
-    100 -
-      blockingCount * 18 -
-      warningCount * 7 -
-      issues.filter((issue) => issue.severity === "info").length * 2,
-  );
-  return {
-    issues,
-    score,
-    readiness:
-      blockingCount > 0 ? "Blocking" : score >= 80 ? "Ready" : "Needs review",
-    wordCount,
-    blockingCount,
-    warningCount,
-  };
-}
-
-function articleToEditable(article: ReviewArticle): EditableDraft {
-  return {
-    title: article.title ?? "",
-    standfirst: article.standfirst ?? "",
-    bodyText: bodyToText(article.body),
-    seoTitle: article.seoTitle ?? "",
-    seoDescription: article.seoDescription ?? "",
-  };
-}
+import type {
+  ReviewArticle,
+  EditorialAction,
+  AiEditorialFinding,
+  EditableDraft,
+} from "./EditorialReview/types";
 
 export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.Element {
   const client = useClient({ apiVersion: "2025-01-01" });
@@ -509,7 +109,6 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
   function updateDraft(field: keyof EditableDraft, value: string) {
     setDraft((current) => (current ? { ...current, [field]: value } : current));
     setIsDirty(true);
-    setAiFindings(null);
   }
 
   async function runAiReview() {
@@ -652,7 +251,7 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
     if (
       (action === "discard" || action === "publish") &&
       !window.confirm(
-        `Confirm ${action} for “${draft?.title || selected.title || "this article"}”?`,
+        `Confirm ${action} for “${draft.title || selected.title || "this article"}”?`,
       )
     )
       return;
@@ -715,508 +314,64 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
           alignItems: "start",
         }}
       >
-        <aside
-          style={{
-            border: "1px solid #ddd",
-            borderRadius: 10,
-            overflow: "hidden",
-            background: "#fff",
-          }}
-        >
-          <div
-            style={{
-              padding: "0.75rem",
-              borderBottom: "1px solid #ddd",
-              display: "flex",
-              justifyContent: "space-between",
-              gap: "0.5rem",
-              alignItems: "center",
-            }}
-          >
-            <strong>Review queue ({articles.length})</strong>
-            <button
-              type="button"
-              onClick={() => void loadQueue()}
-              disabled={isLoading || isSaving}
-            >
-              Refresh
-            </button>
-          </div>
-          {isLoading ? <p style={{ padding: "0.75rem" }}>Loading…</p> : null}
-          {!isLoading && articles.length === 0 ? (
-            <p style={{ padding: "0.75rem" }}>
-              No drafts currently need review.
-            </p>
-          ) : null}
-          {articles.map((article) => (
-            <button
-              type="button"
-              key={article._id}
-              onClick={() => {
-                if (
-                  isDirty &&
-                  !window.confirm(
-                    "Discard unsaved changes and open another article?",
-                  )
-                )
-                  return;
-                setSelectedId(article._id);
-              }}
-              style={{
-                width: "100%",
-                textAlign: "left",
-                padding: "0.8rem",
-                border: 0,
-                borderBottom: "1px solid #eee",
-                background: selected?._id === article._id ? "#f0f0f0" : "#fff",
-                cursor: "pointer",
-                display: "grid",
-                gap: "0.25rem",
-              }}
-            >
-              <strong>{article.title ?? "Untitled draft"}</strong>
-              <small style={{ textTransform: "capitalize" }}>
-                {displayStatus(article.workflowStatus)}
-              </small>
-              {article.replacementRequired ? (
-                <small>Replacement required</small>
-              ) : null}
-            </button>
-          ))}
-        </aside>
+        <ReviewQueue
+          articles={articles}
+          selectedId={selected?._id ?? null}
+          isDirty={isDirty}
+          isLoading={isLoading}
+          isSaving={isSaving}
+          onRefresh={() => void loadQueue()}
+          onSelect={setSelectedId}
+        />
 
         {selected && draft ? (
           <article style={{ display: "grid", gap: "1rem" }}>
-            <section style={{ ...cardStyle, display: "grid", gap: "0.85rem" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "1rem",
-                  alignItems: "center",
-                }}
-              >
-                <small
-                  style={{ textTransform: "uppercase", letterSpacing: ".05em" }}
-                >
-                  {displayStatus(selected.workflowStatus)}
-                </small>
-                <strong style={{ color: isDirty ? "#a15c00" : "#39723b" }}>
-                  {isDirty ? "● Unsaved changes" : "Saved"}
-                </strong>
-              </div>
-              <label>
-                Headline
-                <input
-                  value={draft.title}
-                  onChange={(event) => updateDraft("title", event.target.value)}
-                  spellCheck={true}
-                  lang="en-IE"
-                  style={inputStyle}
-                />
-              </label>
-              <label>
-                Standfirst
-                <textarea
-                  value={draft.standfirst}
-                  onChange={(event) =>
-                    updateDraft("standfirst", event.target.value)
-                  }
-                  rows={3}
-                  spellCheck={true}
-                  lang="en-IE"
-                  style={inputStyle}
-                />
-              </label>
-              <label>
-                Article body
-                <textarea
-                  value={draft.bodyText}
-                  onChange={(event) =>
-                    updateDraft("bodyText", event.target.value)
-                  }
-                  rows={18}
-                  spellCheck={true}
-                  lang="en-IE"
-                  style={{
-                    ...inputStyle,
-                    lineHeight: 1.55,
-                    resize: "vertical",
-                  }}
-                />
-              </label>
-              <details>
-                <summary style={{ cursor: "pointer", fontWeight: 600 }}>
-                  SEO
-                </summary>
-                <div
-                  style={{
-                    display: "grid",
-                    gap: ".75rem",
-                    marginTop: ".75rem",
-                  }}
-                >
-                  <label>
-                    SEO title
-                    <input
-                      value={draft.seoTitle}
-                      onChange={(event) =>
-                        updateDraft("seoTitle", event.target.value)
-                      }
-                      spellCheck={true}
-                      lang="en-IE"
-                      style={inputStyle}
-                    />
-                  </label>
-                  <label>
-                    SEO description
-                    <textarea
-                      value={draft.seoDescription}
-                      onChange={(event) =>
-                        updateDraft("seoDescription", event.target.value)
-                      }
-                      rows={3}
-                      spellCheck={true}
-                      lang="en-IE"
-                      style={inputStyle}
-                    />
-                  </label>
-                </div>
-              </details>
-              <div
-                style={{
-                  display: "flex",
-                  gap: ".75rem",
-                  flexWrap: "wrap",
-                  alignItems: "center",
-                }}
-              >
-                <button
-                  type="button"
-                  onClick={() => void saveDraft()}
-                  disabled={!isDirty || isSaving}
-                >
-                  {isSaving ? "Saving…" : "Save draft"}
-                </button>
-                <small>Keyboard shortcut: Ctrl+S / Cmd+S</small>
-                <a
-                  href={`/intent/edit/id=${normaliseId(selected._id)};type=article/`}
-                >
-                  Open full Sanity editor
-                </a>
-              </div>
-            </section>
+            <DraftEditor
+              article={selected}
+              draft={draft}
+              isDirty={isDirty}
+              isSaving={isSaving}
+              onChange={updateDraft}
+              onSave={() => void saveDraft()}
+            />
 
-            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-              <h3 style={{ margin: 0 }}>Editorial Review</h3>
-              {editorialReview ? (
-                <>
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns:
-                        "repeat(auto-fit, minmax(130px, 1fr))",
-                      gap: ".65rem",
-                    }}
-                  >
-                    <strong>Quality score: {editorialReview.score}/100</strong>
-                    <strong>Readiness: {editorialReview.readiness}</strong>
-                    <span>Words: {editorialReview.wordCount}</span>
-                    <span>Blocking: {editorialReview.blockingCount}</span>
-                    <span>Warnings: {editorialReview.warningCount}</span>
-                    <span>
-                      Confidence:{" "}
-                      {displayConfidence(selected.editorialConfidence)}
-                    </span>
-                  </div>
-                  {editorialReview.issues.length > 0 ? (
-                    <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-                      {editorialReview.issues.map((issue) => (
-                        <li key={issue.id}>
-                          <strong>{issue.severity}</strong> · {issue.category}:{" "}
-                          {issue.message}
-                        </li>
-                      ))}
-                    </ul>
-                  ) : (
-                    <p style={{ margin: 0 }}>
-                      No local editorial issues found.
-                    </p>
-                  )}
-                </>
-              ) : null}
-            </section>
+            <EditorialReviewSummary
+              article={selected}
+              review={editorialReview}
+            />
 
-            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  gap: ".75rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <div>
-                  <h3 style={{ margin: 0 }}>AI Editorial Review</h3>
-                  <small style={{ color: "#666" }}>
-                    Runs on demand against the current draft and never changes article copy.
-                  </small>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => void runAiReview()}
-                  disabled={isAiReviewing || isSaving}
-                >
-                  {isAiReviewing ? "Running AI Review…" : "Run AI Review"}
-                </button>
-              </div>
-              {aiFindings === null ? (
-                <p style={{ margin: 0 }}>No AI review has been run for the current draft.</p>
-              ) : aiFindings.length === 0 ? (
-                <p style={{ margin: 0 }}>No AI editorial findings returned.</p>
-              ) : (
-                (["blocking", "warning", "suggestion"] as const).map((severity) => {
-                  const findings = aiFindings.filter((finding) => finding.severity === severity);
-                  if (findings.length === 0) return null;
-                  return (
-                    <div key={severity} style={{ display: "grid", gap: ".5rem" }}>
-                      <strong style={{ textTransform: "capitalize" }}>
-                        {severity === "suggestion" ? "Suggestions" : `${severity[0].toUpperCase()}${severity.slice(1)}s`} ({findings.length})
-                      </strong>
-                      <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
-                        {findings.map((finding, index) => (
-                          <li key={`${severity}-${finding.category}-${index}`}>
-                            <strong>{finding.category}</strong>: {finding.message}
-                            {finding.excerpt ? ` Excerpt: “${finding.excerpt}”` : ""}
-                            {finding.recommendation ? ` Recommendation: ${finding.recommendation}` : ""}
-                          </li>
-                        ))}
-                      </ul>
-                    </div>
-                  );
-                })
-              )}
-            </section>
+            <AIEditorialReview
+              findings={aiFindings}
+              isReviewing={isAiReviewing}
+              isSaving={isSaving}
+              isStale={isDirty && aiFindings !== null}
+              onRunReview={() => void runAiReview()}
+            />
 
-            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-              {selected.featuredImageUrl ? (
-                <figure style={{ margin: 0 }}>
-                  <img
-                    src={selected.featuredImageUrl}
-                    alt={selected.featuredImageAlt ?? ""}
-                    style={{
-                      width: "100%",
-                      maxHeight: 420,
-                      objectFit: "cover",
-                      borderRadius: 8,
-                    }}
-                  />
-                  <figcaption style={{ marginTop: ".35rem", color: "#666" }}>
-                    {[
-                      selected.featuredImageCaption,
-                      selected.featuredImageCredit,
-                    ]
-                      .filter(Boolean)
-                      .join(" — ")}
-                  </figcaption>
-                </figure>
-              ) : (
-                <p style={{ margin: 0 }}>
-                  <strong>Image:</strong> No approved featured image assigned.
-                </p>
-              )}
-              <p style={{ margin: 0 }}>
-                <strong>Editorial angle:</strong>{" "}
-                {selected.editorialAngle ?? "Not recorded"}
-              </p>
-              <p style={{ margin: 0 }}>
-                <strong>Audience promise:</strong>{" "}
-                {selected.audiencePromise ?? "Not recorded"}
-              </p>
-              <p style={{ margin: 0 }}>
-                <strong>Confidence:</strong>{" "}
-                {displayConfidence(selected.editorialConfidence)}{" "}
-                {selected.needsHumanFactCheck
-                  ? "— human fact-check required"
-                  : ""}
-              </p>
-            </section>
+            <FeaturedImagePanel article={selected} />
+            <SourcesPanel article={selected} />
+            <FactLedgerPanel article={selected} />
 
-            <section style={cardStyle}>
-              <h3 style={{ marginTop: 0 }}>Sources</h3>
-              {(selected.sourceRecords ?? []).length === 0 ? (
-                <p>No source records stored.</p>
-              ) : (
-                <ol>
-                  {selected.sourceRecords?.map((source) => (
-                    <li key={source.id ?? source.url}>
-                      <a href={source.url} target="_blank" rel="noreferrer">
-                        {source.publisher ?? source.title ?? source.url}
-                      </a>
-                      {source.isPrimarySource ? " — primary source" : ""}
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </section>
+            <WorkflowPanel
+              actor={actor}
+              note={note}
+              secret={secret}
+              showCredentials={showCredentials}
+              needsRejectionReason={needsRejectionReason}
+              availableActions={availableActions}
+              editorialReview={editorialReview}
+              isSaving={isSaving}
+              message={message}
+              onActorChange={setActor}
+              onNoteChange={setNote}
+              onSecretChange={setSecret}
+              onToggleCredentials={() =>
+                setShowCredentials((current) => !current)
+              }
+              onRunAction={(action) => void runAction(action)}
+            />
 
-            <section style={cardStyle}>
-              <h3 style={{ marginTop: 0 }}>Fact ledger</h3>
-              {(selected.factLedger?.facts ?? []).length === 0 ? (
-                <p>No fact ledger stored.</p>
-              ) : (
-                <div style={{ display: "grid", gap: ".65rem" }}>
-                  {selected.factLedger?.facts?.map((fact) => (
-                    <div
-                      key={fact.id ?? fact.claim}
-                      style={{
-                        borderBottom: "1px solid #eee",
-                        paddingBottom: ".65rem",
-                      }}
-                    >
-                      <strong>{fact.claim}</strong>
-                      <div>
-                        <small>
-                          {fact.status} · {displayConfidence(fact.confidence)} ·{" "}
-                          {fact.usableInDraft ? "usable" : "not usable"}
-                        </small>
-                      </div>
-                      {fact.notes ? <div>{fact.notes}</div> : null}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {(selected.factLedger?.unsupportedClaims ?? []).length ? (
-                <p>
-                  <strong>Unsupported claims:</strong>{" "}
-                  {selected.factLedger?.unsupportedClaims?.join("; ")}
-                </p>
-              ) : null}
-              {(selected.factLedger?.conflicts ?? []).length ? (
-                <p>
-                  <strong>Conflicts:</strong>{" "}
-                  {selected.factLedger?.conflicts?.join("; ")}
-                </p>
-              ) : null}
-            </section>
-
-            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "1rem",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                <h3 style={{ margin: 0 }}>Workflow action</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowCredentials((current) => !current)}
-                >
-                  {showCredentials
-                    ? "Hide workflow settings"
-                    : secret
-                      ? "Change workflow settings"
-                      : "Set up workflow"}
-                </button>
-              </div>
-
-              {showCredentials ? (
-                <div
-                  style={{
-                    display: "grid",
-                    gap: ".65rem",
-                    padding: ".75rem",
-                    background: "#f7f7f7",
-                    borderRadius: 8,
-                  }}
-                >
-                  <label>
-                    Editor / actor
-                    <input
-                      value={actor}
-                      onChange={(event) => setActor(event.target.value)}
-                      style={inputStyle}
-                    />
-                  </label>
-                  <label>
-                    Workflow authentication
-                    <input
-                      type="password"
-                      value={secret}
-                      onChange={(event) => setSecret(event.target.value)}
-                      autoComplete="off"
-                      style={inputStyle}
-                    />
-                  </label>
-                  <small style={{ color: "#666" }}>
-                    Stored only in this browser tab session and hidden after a
-                    successful workflow action.
-                  </small>
-                </div>
-              ) : secret ? (
-                <small style={{ color: "#39723b" }}>
-                  Workflow authentication is configured for this session.
-                </small>
-              ) : null}
-
-              {needsRejectionReason ? (
-                <label>
-                  Review note / rejection reason
-                  <textarea
-                    value={note}
-                    onChange={(event) => setNote(event.target.value)}
-                    rows={3}
-                    style={inputStyle}
-                  />
-                </label>
-              ) : null}
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem" }}>
-                {availableActions.map((action) => (
-                  <button
-                    type="button"
-                    key={action}
-                    disabled={
-                      isSaving ||
-                      ((action === "approve" || action === "publish") &&
-                        Boolean(editorialReview?.blockingCount))
-                    }
-                    onClick={() => void runAction(action)}
-                    style={{ textTransform: "capitalize" }}
-                  >
-                    {action}
-                  </button>
-                ))}
-              </div>
-              {message ? <p style={{ margin: 0 }}>{message}</p> : null}
-            </section>
-
-            <section style={cardStyle}>
-              <h3 style={{ marginTop: 0 }}>Audit history</h3>
-              {(selected.workflowHistory ?? []).length === 0 ? (
-                <p>No workflow events recorded.</p>
-              ) : (
-                <ol>
-                  {selected.workflowHistory
-                    ?.slice()
-                    .reverse()
-                    .map((event, index) => (
-                      <li key={event._key ?? `${event.occurredAt}-${index}`}>
-                        <strong>{event.action}</strong> {event.fromStatus} →{" "}
-                        {event.toStatus} by {event.actor}{" "}
-                        {event.occurredAt
-                          ? `at ${new Date(event.occurredAt).toLocaleString("en-IE", { timeZone: "Europe/Dublin" })}`
-                          : ""}
-                        {event.note ? ` — ${event.note}` : ""}
-                      </li>
-                    ))}
-                </ol>
-              )}
-            </section>
+            <AuditHistoryPanel article={selected} />
           </article>
         ) : null}
       </section>

@@ -4,109 +4,74 @@
 
 26 July 2026, Europe/Dublin.
 
-## Repository and connector status
-
-- Repository: `marmuzzi/therugbypanda`
-- Default branch: `main`
-- GitHub connector: available with read/write access
-- Documentation remains the source of truth
-
-## Verified pull-request state
-
-- PR #62 is merged and provides deterministic Editorial Review Intelligence.
-- PR #63 is merged and provides the first AI Editorial Review implementation.
-- PR #64 is merged but introduced a broken Editorial Review component.
-- PR #66 is merged and repaired the build and Sanity `Tool` component contract.
-- PR #65 remains open as a draft and duplicates/reworks the AI Editorial Review implementation. Do not merge it without a deliberate comparison and decision.
-
-## Verified `main` state
-
-At the time of this handoff, `main` contains the repaired monolithic file:
+## Working branch
 
 ```text
-sanity/components/EditorialReviewTool.tsx
+feat/pr67-editorial-dna
 ```
 
-The file is approximately 563 lines and still contains its types, constants, formatting helpers, Portable Text conversion, deterministic review logic and panel rendering in one component.
+## Objective
 
-The following modular files discussed and apparently committed during the 25 July browser-editing session are **not present on `main`**:
+Refactor `sanity/components/EditorialReviewTool.tsx` from a large monolithic component into a thin orchestration layer composed of focused React components and helper modules while preserving all existing editorial behaviour.
 
-```text
-sanity/components/EditorialReview/types.ts
-sanity/components/EditorialReview/constants.ts
-sanity/components/EditorialReview/formatting.ts
-sanity/components/EditorialReview/portableText.ts
-sanity/components/EditorialReview/editorialReview.ts
-sanity/components/EditorialReview/ReviewQueue.tsx
-sanity/components/EditorialReview/EditorialReviewSummary.tsx
-sanity/components/EditorialReview/DraftEditor.tsx
-sanity/components/EditorialReview/AIEditorialReview.tsx
-```
+## Repository status
 
-The current `main` version of `EditorialReviewTool.tsx` also does not import those modules.
+The feature branch is ahead of `main`.
 
-Therefore, do not describe the modular refactor as merged, deployed or present on `main` until the missing commits or branch are located, or the refactor is recreated and committed deliberately.
+The following work has been completed on `feat/pr67-editorial-dna`:
 
-## Work completed conceptually on 25 July
+### Helper modules
 
-A component extraction plan was designed and reviewed in this order:
+- `sanity/components/EditorialReview/types.ts`
+- `sanity/components/EditorialReview/constants.ts`
+- `sanity/components/EditorialReview/formatting.ts`
+- `sanity/components/EditorialReview/portableText.ts`
+- `sanity/components/EditorialReview/editorialReview.ts`
 
-1. helper types and utility modules;
-2. `ReviewQueue`;
-3. `EditorialReviewSummary`;
-4. `DraftEditor`;
-5. `AIEditorialReview`;
-6. `FeaturedImagePanel`;
-7. `SourcesPanel`;
-8. `FactLedgerPanel`;
-9. `WorkflowPanel`;
-10. `AuditHistoryPanel`.
+### Extracted components
 
-The user reported committing through `AIEditorialReview`, but those files and commits could not be found on `main` during the 26 July verification.
+- `ReviewQueue`
+- `EditorialReviewSummary`
+- `DraftEditor`
+- `AIEditorialReview`
+- `FeaturedImagePanel`
+- `SourcesPanel`
+- `FactLedgerPanel`
+- `WorkflowPanel`
+- `AuditHistoryPanel`
 
-## Required next action
+`EditorialReviewTool.tsx` now acts primarily as the orchestration component, coordinating state management, saving, AI review and workflow.
 
-Before creating `FeaturedImagePanel`, reconcile the missing refactor work:
+## Pull request status
 
-1. Check whether the 25 July GitHub web-editor commits exist on another branch or fork.
-2. If found, review and merge or move them safely onto `main`.
-3. If not found, recreate the refactor from the repaired `main` file using the established one-file-at-a-time workflow.
-4. Only after `AIEditorialReview` is genuinely integrated on `main`, continue with `FeaturedImagePanel`.
+Sprint 5 is tracked in **PR #67**.
 
-## Required browser-editing workflow
+Current status:
 
-The project owner works through the GitHub web editor. Preserve this sequence:
+- Draft pull request.
+- Vercel preview passing.
+- Awaiting conflict resolution and final review before merge.
 
-1. Create one new file.
-2. Review it.
-3. Commit it.
-4. Integrate it into `EditorialReviewTool.tsx`.
-5. Review the integration.
-6. Commit the integration.
+## Remaining work before merge
 
-Do not ask the user to edit several files before committing.
-
-## Remaining refactor order
-
-Once the missing work is reconciled:
-
-1. `FeaturedImagePanel`
-2. `SourcesPanel`
-3. `FactLedgerPanel`
-4. `WorkflowPanel`
-5. `AuditHistoryPanel`
+- Resolve any remaining merge conflicts.
+- Complete an authenticated Sanity Studio smoke test.
+- Verify the complete editorial workflow.
+- Mark the pull request Ready for Review.
+- Merge into `main`.
+- Verify production deployment.
 
 ## Completion and verification rule
 
-Always distinguish:
+Always distinguish between:
 
 - designed;
-- implemented locally or in an editor;
+- implemented;
 - committed;
-- present on `main`;
-- deployed;
-- verified in production;
+- verified by CI;
 - verified in authenticated Sanity Studio;
-- documentation updated.
+- merged into `main`;
+- deployed to production;
+- documented.
 
-No refactor step is complete merely because code appeared in a chat or an unverified browser editor session.
+No implementation is considered complete until it has been verified after merge.
