@@ -8,6 +8,7 @@ type AIEditorialReviewProps = {
   findings: AiEditorialFinding[] | null;
   isReviewing: boolean;
   isSaving: boolean;
+  isStale: boolean;
   onRunReview: () => void;
 };
 
@@ -17,6 +18,7 @@ export function AIEditorialReview({
   findings,
   isReviewing,
   isSaving,
+  isStale,
   onRunReview,
 }: AIEditorialReviewProps): React.JSX.Element {
   return (
@@ -44,9 +46,30 @@ export function AIEditorialReview({
           onClick={onRunReview}
           disabled={isReviewing || isSaving}
         >
-          {isReviewing ? "Running AI Review…" : "Run AI Review"}
+          {isReviewing
+            ? "Running AI Review…"
+            : isStale
+              ? "Run Review Again"
+              : "Run AI Review"}
         </button>
       </div>
+
+      {isStale ? (
+        <p
+          role="status"
+          style={{
+            margin: 0,
+            padding: ".65rem .75rem",
+            border: "1px solid #d7a900",
+            borderRadius: 6,
+            background: "#fff8d6",
+          }}
+        >
+          <strong>Out of date:</strong> the article has changed since this AI
+          review was generated. The findings remain visible for reference; run
+          the review again to refresh them.
+        </p>
+      ) : null}
 
       {findings === null ? (
         <p style={{ margin: 0 }}>
