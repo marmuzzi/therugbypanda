@@ -27,7 +27,9 @@ export default function ArticleCard({
   image,
   imageAlt,
 }: ArticleCardProps) {
-  const metadata = [publishedAt, readingTime, author].filter(Boolean);
+  const metadata = publishedAt || readingTime
+    ? [publishedAt, readingTime, author].filter(Boolean)
+    : [meta, author].filter(Boolean);
 
   return (
     <Link
@@ -69,8 +71,6 @@ export default function ArticleCard({
               </span>
             ))}
           </div>
-        ) : meta ? (
-          <p className="mt-6 text-sm font-semibold text-zinc-500">{meta}</p>
         ) : null}
       </div>
     </Link>
