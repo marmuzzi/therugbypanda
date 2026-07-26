@@ -7,7 +7,7 @@ export const EDITORIAL_API_BASE_URL = "https://therugbypanda.ie";
 export const QUEUE_QUERY = `*[
   _type == "article" &&
   _id match "drafts.*" &&
-  workflowStatus in [
+  coalesce(workflowStatus, "draft") in [
     "draft",
     "under-review",
     "approved",
@@ -21,7 +21,7 @@ export const QUEUE_QUERY = `*[
   body,
   seoTitle,
   seoDescription,
-  workflowStatus,
+  "workflowStatus": coalesce(workflowStatus, "draft"),
   workflowUpdatedAt,
   rejectionReason,
   rejectionCount,
