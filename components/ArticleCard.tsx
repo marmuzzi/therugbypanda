@@ -34,6 +34,11 @@ export default function ArticleCard({
   return (
     <Link
       href={href}
+      data-analytics-event="select_content"
+      data-analytics-content-type="article"
+      data-analytics-item-id={href}
+      data-analytics-item-name={title}
+      data-analytics-content-group={category}
       className="group block overflow-hidden rounded-3xl border border-zinc-200 bg-white transition hover:border-[#2E7D32] hover:shadow-sm"
     >
       {image ? (

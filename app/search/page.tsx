@@ -45,7 +45,12 @@ export default async function SearchPage({ searchParams }: SearchPageProps) {
           Find published coverage by article title, topic, province, competition or category.
         </p>
 
-        <form action="/search" method="get" className="mt-10 rounded-3xl border border-zinc-200 bg-zinc-50 p-6 md:p-8">
+        <form
+          action="/search"
+          method="get"
+          data-analytics-event="search"
+          className="mt-10 rounded-3xl border border-zinc-200 bg-zinc-50 p-6 md:p-8"
+        >
           <label htmlFor="search" className="block text-sm font-black uppercase tracking-[0.25em] text-zinc-500">
             Search published articles
           </label>

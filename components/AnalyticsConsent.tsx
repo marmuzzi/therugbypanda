@@ -3,7 +3,7 @@
 import Script from "next/script";
 import { useEffect, useState } from "react";
 
-const CONSENT_KEY = "trp-analytics-consent";
+import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics";
 
 type ConsentState = "accepted" | "rejected" | null;
 
@@ -13,15 +13,16 @@ export default function AnalyticsConsent() {
   const tagManagerId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(CONSENT_KEY);
+    const stored = window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
     if (stored === "accepted" || stored === "rejected") {
       setConsent(stored);
     }
   }, []);
 
   function saveConsent(next: Exclude<ConsentState, null>) {
-    window.localStorage.setItem(CONSENT_KEY, next);
+    window.localStorage.setItem(ANALYTICS_CONSENT_KEY, next);
     setConsent(next);
+    window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, { detail: next }));
   }
 
   return (
@@ -44,9 +45,9 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
           />
           <Script id="google-analytics" strategy="afterInteractive">
             {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments);}
-gtag('js', new Date());
-gtag('config', '${measurementId}', { anonymize_ip: true });`}
+window.gtag = window.gtag || function(){dataLayer.push(arguments);};
+window.gtag('js', new Date());
+window.gtag('config', '${measurementId}', { anonymize_ip: true, send_page_view: false });`}
           </Script>
         </>
       ) : null}
