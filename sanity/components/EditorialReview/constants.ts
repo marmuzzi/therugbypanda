@@ -6,7 +6,7 @@ export const EDITORIAL_API_BASE_URL = "https://therugbypanda.ie";
 
 export const QUEUE_QUERY = `*[
   _type == "article" &&
-  _id match "drafts.*" &&
+  _id in path("drafts.**") &&
   coalesce(workflowStatus, "draft") in [
     "draft",
     "under-review",
