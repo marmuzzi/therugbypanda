@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { notifyReviewQueue } from "@/lib/editorial/EditorialNotifications";
 import { applyEditorialAction, type EditorialAction } from "@/lib/editorial/EditorialWorkflow";
 
 export const runtime = "nodejs";
@@ -28,7 +29,16 @@ export async function POST(request: NextRequest) {
     }
 
     const result = await applyEditorialAction(body);
-    return NextResponse.json({ status: "ok", workflow: result });
+    const notification =
+      body.action === "submit"
+        ? await notifyReviewQueue({
+            articleId: result.articleId,
+            actor: body.actor.trim(),
+            occurredAt: new Date().toISOString(),
+          })
+        : undefined;
+
+    return NextResponse.json({ status: "ok", workflow: result, notification });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Editorial workflow failed";
     const status = message.startsWith("Cannot ") || message.includes("required") ? 409 : 500;
