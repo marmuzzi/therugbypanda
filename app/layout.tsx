@@ -1,11 +1,26 @@
 import type { Metadata, Viewport } from "next";
+import AnalyticsConsent from "@/components/AnalyticsConsent";
 import "./globals.css";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://therugbypanda.ie"),
-  title: "The Rugby Panda",
+  title: {
+    default: "The Rugby Panda",
+    template: "%s | The Rugby Panda",
+  },
   description:
-    "Digital rugby newsroom delivering independent coverage, insight and analysis of Irish and European rugby.",
+    "Independent digital rugby newsroom covering the game from Ireland to the international stage.",
+  applicationName: "The Rugby Panda",
+  authors: [{ name: "The Rugby Panda" }],
+  creator: "The Rugby Panda",
+  publisher: "The Rugby Panda",
+  openGraph: {
+    type: "website",
+    siteName: "The Rugby Panda",
+    title: "The Rugby Panda",
+    description: "The game. The people. The stories.",
+    url: "https://therugbypanda.ie",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico?v=8", sizes: "any" },
@@ -28,7 +43,10 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        {children}
+        <AnalyticsConsent />
+      </body>
     </html>
   );
 }
