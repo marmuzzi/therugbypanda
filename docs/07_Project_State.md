@@ -6,7 +6,7 @@ v0.9 — Editorial Engine Foundation
 
 ## Last updated
 
-26 July 2026, after PR #82 merge and Make MCP connection verification.
+26 July 2026, after PR #91 merge, successful Vercel deployment and authenticated mobile Sanity Studio verification.
 
 ## Source of truth
 
@@ -18,7 +18,7 @@ Read these files first in future sessions:
 4. `docs/10_New_Chat_Handoff.md`
 5. `docs/11_Editorial_Image_Archive.md`
 6. `docs/12_Brand_Assets_Library.md`
-7. All later numbered documents relevant to the task, especially `docs/23_Make_Orchestration_Architecture.md`, `docs/24_Editorial_Image_Canonical_Metadata_Review.md`, `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`, `docs/26_Sprint_5_Editorial_Review_Refactor_Handoff.md` and `docs/27_Sprint_5_Production_State.md`.
+7. All later numbered documents relevant to the task, especially `docs/23_Make_Orchestration_Architecture.md`, `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`, `docs/27_Sprint_5_Production_State.md`, `docs/31_NOTIFY_001_Desktop_Completion_Handoff.md` and `docs/32_Sprint_5_State_After_PR_91.md`.
 
 Do not rely on chat history for current status.
 
@@ -47,46 +47,56 @@ GitHub source of truth
 - Sprint 5 Editorial & Publishing Automation is in progress.
 - Editorial Brain, structured generation, approved-image assignment and controlled workflow endpoints are merged.
 - The authenticated Sanity Editorial Review workspace is implemented.
-- Deterministic Editorial Review Intelligence is merged.
-- AI Editorial Review is merged.
-- The Editorial Review refactor is merged and deployed.
-- PR #81 implemented real Sanity-backed website search and is merged; production search was previously reported verified and must remain part of production regression checks.
-- PR #82 implemented the application-side webhook foundation for article-ready-for-review notifications and is merged.
-- The Make.com MCP toolbox is connected. Its temporary Health Check tool executed successfully on 26 July 2026.
-- Latest verified GitHub `main` commit: `39f8e1ddc7ff3d31f07bc3879f2dbeac031360e7`.
-- The latest Vercel production deployment still requires fresh verification against this commit in the current work session.
-- NOTIFY-001 is not complete: Make scenario configuration, Vercel environment variables, controlled submit, email delivery and duplicate-event protection remain to be verified.
+- Deterministic Editorial Review Intelligence and on-demand AI Editorial Review are merged.
+- Real Sanity-backed website search is merged and production verified.
+- The review-ready notification webhook foundation is merged and reaches Make.
+- The Make.com MCP toolbox is connected, but the currently exposed toolset does not permit scenario editing.
+- Current verified GitHub `main` commit: `bb3c3fcc08f9d95bc35f2b39cd6dfd76b7cf74ec`.
+- The Vercel deployment for this commit completed successfully.
+- Automatic Sanity Studio deployment after merge is working.
+- The project owner verified the PR #91 mobile Editorial Review result in authenticated Sanity Studio.
 
-See `docs/27_Sprint_5_Production_State.md` for the exact production baseline.
+See `docs/32_Sprint_5_State_After_PR_91.md` for the exact current baseline.
 
-## Editorial Review history
+## Editorial Review production state
 
-- PR #62 — deterministic review framework; merged.
-- PR #63 — AI Editorial Review; merged.
-- PR #64 — follow-up integration; merged but introduced a broken component.
-- PR #66 — emergency repair; merged and restored production stability.
-- PR #67 — maintainability refactor and QA improvements; merged and deployed.
-- PR #81 — real website search; merged and previously production verified.
-- PR #82 — editorial review notification webhook foundation; merged, pending end-to-end production configuration and verification.
+Implemented, merged, deployed and authenticated-Studio verified through PR #91:
 
-Current AI-review behaviour preserves findings after edits, marks them **Out of date**, changes the action to **Run Review Again**, refreshes findings on rerun and clears findings when switching articles.
+- Studio-session authentication; no browser-entered workflow secret.
+- Restored submission and rejection note field.
+- Draft queue includes manually created unpublished documents before workflow metadata exists.
+- Raw draft-aware Sanity queries with supported `_id in path("drafts.**")` filtering.
+- Mobile-first single-column layout.
+- Article Quality first and AI Editorial Review immediately below it.
+- Improved contrast and typography across quality findings, metadata, Sources, Fact Ledger and Workflow cards.
+- Automatic hosted Studio deployment after relevant merges.
+
+## Notification state
+
+NOTIFY-001 is partially verified:
+
+- controlled submit reaches the workflow API;
+- Make receives the webhook;
+- the payload contains stable IDs, article title, optional submission note and hosted review URL;
+- a test email was delivered to `editor@therugbypanda.ie`.
+
+NOTIFY-001 is not complete until a correctly populated production email, persistent `eventId` deduplication, replay protection and failure-path behaviour are verified.
 
 ## Production mailboxes
 
 - `admin@therugbypanda.ie` — infrastructure, billing, security, workflow failures and technical alerts.
-- `hello@therugbypanda.ie` — public contact mailbox; add a website **Contact us** link using `mailto:hello@therugbypanda.ie`.
+- `hello@therugbypanda.ie` — public contact mailbox.
 - `editor@therugbypanda.ie` — article-ready-for-review, approval, accreditation and media communication.
 
 ## Immediate priority
 
-1. Complete NOTIFY-001 end-to-end using the connected Make.com toolbox.
-2. Verify the latest Vercel production deployment and required environment variables.
-3. Execute a controlled submit-to-review test and confirm one email reaches `editor@therugbypanda.ie`.
-4. Verify duplicate-event protection.
-5. Add workflow failure and technical alerts to `admin@therugbypanda.ie`.
-6. Continue persistent daily orchestration and automatic replacement after rejection.
-7. Complete the nine-article launch package and verify it in production.
-8. Implement analytics/accreditation and security/recovery baselines.
+1. Complete NOTIFY-001 email mapping and persistent deduplication.
+2. Verify one correctly populated email and a duplicate replay that sends no second email.
+3. Add workflow failure and technical alerts to `admin@therugbypanda.ie`.
+4. Execute a complete controlled editorial lifecycle test through production rendering.
+5. Continue persistent daily orchestration and automatic replacement after rejection.
+6. Complete the nine-article launch package and verify it in production.
+7. Implement analytics/accreditation and security/recovery baselines.
 
 ## Launch minimum
 
@@ -115,5 +125,5 @@ A feature is not complete until the relevant verification has passed.
 - Prefer maintainable reusable components.
 - Keep `main` deployable.
 - Keep `docs/08_Issue_Log.md` current.
-- Batch related work where practical to conserve Vercel deployments.
+- Batch related work where practical to conserve deployments.
 - Do not expose AI implementation references on reader-facing pages.
