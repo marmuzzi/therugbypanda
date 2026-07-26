@@ -1,5 +1,8 @@
 import type { Metadata, Viewport } from "next";
+import { Suspense } from "react";
+
 import AnalyticsConsent from "@/components/AnalyticsConsent";
+import AnalyticsTracker from "@/components/AnalyticsTracker";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -45,6 +48,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         {children}
+        <Suspense fallback={null}>
+          <AnalyticsTracker />
+        </Suspense>
         <AnalyticsConsent />
       </body>
     </html>
