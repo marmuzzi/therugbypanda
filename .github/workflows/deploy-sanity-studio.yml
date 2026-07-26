@@ -2,6 +2,16 @@ name: Deploy Sanity Studio
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - "sanity/**"
+      - "sanity.config.ts"
+      - "sanity.cli.ts"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/deploy-sanity-studio.yml"
 
 jobs:
   deploy-studio:
