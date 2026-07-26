@@ -26,7 +26,7 @@ export default function BrandLockup() {
           </span>
         </p>
         <p className="mt-2 max-w-[20rem] text-[0.52rem] font-black uppercase leading-4 tracking-[0.12em] text-[#005C2F] sm:mt-3 sm:max-w-none sm:text-[0.68rem] md:text-[0.68rem] md:tracking-[0.2em] lg:text-[0.72rem]">
-          Independent rugby news. Insight. Analysis.
+          The game. The people. The stories.
         </p>
       </Link>
     </div>
