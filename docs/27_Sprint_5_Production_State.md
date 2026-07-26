@@ -10,173 +10,130 @@ Repository: `marmuzzi/therugbypanda`
 
 Production website: `https://therugbypanda.ie`
 
-Current GitHub `main` commit:
+Current verified GitHub `main` commit:
 
 ```text
-39f8e1ddc7ff3d31f07bc3879f2dbeac031360e7
+bb3c3fcc08f9d95bc35f2b39cd6dfd76b7cf74ec
 ```
 
-This commit is the merge commit for PR #82. Fresh Vercel production verification against this commit is still required in the current work session.
+This is the merge commit for PR #91. The associated Vercel deployment completed successfully. The automatic `Deploy Sanity Studio` workflow ran after merge, and the project owner verified the resulting mobile Editorial Review interface in authenticated Sanity Studio.
+
+For the most recent detailed handoff, also read `docs/32_Sprint_5_State_After_PR_91.md`.
 
 ## Sprint status
 
 - Sprint 4 is complete.
 - Sprint 5 Editorial & Publishing Automation is in progress.
-- The Editorial Review refactor is merged into `main` and deployed.
-- PR #81 real website search is merged and was reported verified in production.
-- PR #82 editorial review notification webhook foundation is merged.
-- The Make.com MCP toolbox is connected; its temporary Health Check tool executed successfully.
-- NOTIFY-001 is not yet complete end-to-end.
+- Real Sanity-backed website search is merged and production verified.
+- The Editorial Review refactor, queue fixes, session authentication and mobile readability improvements are merged and deployed.
+- Automatic hosted Sanity Studio deployment after relevant merges is working.
+- The Make webhook receives review-ready events.
+- A test email reached `editor@therugbypanda.ie`.
+- NOTIFY-001 is still pending correctly populated production email mapping, persistent deduplication, duplicate replay and failure-path verification.
 
 ## Editorial Review production state
 
-Implemented and merged:
+Implemented, merged, deployed and authenticated-Studio verified:
 
-- Editorial Review orchestration refactor.
-- Focused helper modules for types, constants, formatting, Portable Text and deterministic review logic.
-- Review Queue.
+- Editorial Review orchestration and extracted helper/component structure.
+- Review Queue with filters, search and status counts.
 - Draft Editor.
-- Editorial Review Summary.
-- AI Editorial Review.
-- Featured Image panel.
-- Sources panel.
-- Fact Ledger panel.
-- Workflow panel.
-- Audit History panel.
+- Editorial Review Summary and deterministic publication gate.
+- On-demand, non-destructive AI Editorial Review.
+- Featured Image, Sources, Fact Ledger, Workflow and Audit History panels.
+- Studio-session authentication for workflow and AI-review requests.
+- Restored submission and rejection note field.
+- Manually created unpublished drafts appear before `workflowStatus` exists.
+- Draft-aware Sanity client using raw perspective, no CDN and `_id in path("drafts.**")`.
+- Mobile-first single-column ordering with Article Quality first and AI Review second.
+- Improved contrast and typography across quality findings, metadata and workflow cards.
 
-Current AI-review behaviour:
-
-- AI findings remain visible after the draft is edited.
-- Existing findings are marked **Out of date** after relevant edits.
-- The action changes to **Run Review Again**.
-- Rerunning refreshes the findings against the latest draft.
-- Switching articles clears findings from the previous article.
-
-Controlled QA terminology uses **drop goal**, not **dropped goal**.
-
-## Search production state
-
-PR #81 replaced the placeholder search with Sanity-backed published-article search across title, standfirst, category, province and competition. It supports shareable `?q=` URLs, renders results with the existing ArticleCard component and includes empty-query and no-results states.
-
-Repository status: merged at `bc8137f7aa35c2a19a8e09654468a94f0e5bd05a`.
-
-Production status: reported verified on 26 July 2026; retain as a regression check during future production verification.
+AI findings remain visible after relevant edits, are marked **Out of date**, and can be refreshed with **Run Review Again**. Switching articles clears the prior article's findings.
 
 ## Notification production state
 
-PR #82 added the application-side foundation for NOTIFY-001:
+Application-side capabilities:
 
 - emits `editorial.article.ready_for_review` only after a successful submit-to-review transition;
 - targets `editor@therugbypanda.ie`;
-- supports `EDITORIAL_NOTIFICATION_WEBHOOK_URL`;
-- supports optional `EDITORIAL_NOTIFICATION_WEBHOOK_SECRET` bearer authentication;
-- includes a stable event identifier for downstream deduplication;
-- applies a 10-second timeout;
-- isolates notification failures from successful Sanity workflow transitions;
+- supports protected webhook configuration;
+- includes stable `eventId` and article identifiers;
+- includes `articleTitle`, optional `submissionNote` and the hosted Studio `reviewUrl`;
+- applies a timeout and isolates notification failure from the successful Sanity transition;
+- records production-safe observability without exposing secrets;
 - does not alter approval or publication boundaries.
 
-Repository status: merged at `39f8e1ddc7ff3d31f07bc3879f2dbeac031360e7`.
+Verified:
 
-Production verification still required:
+1. A controlled submit reaches the production workflow API.
+2. Make receives the webhook.
+3. A test email reaches `editor@therugbypanda.ie`.
 
-1. Confirm latest Vercel deployment is `READY` for current `main`.
-2. Configure `EDITORIAL_NOTIFICATION_WEBHOOK_URL` in Vercel production.
-3. Configure `EDITORIAL_NOTIFICATION_WEBHOOK_SECRET` in Vercel production if the Make webhook validates bearer authentication.
-4. Configure the Make scenario to validate, deduplicate and email.
-5. Execute a controlled submit-to-review transition.
-6. Confirm exactly one email reaches `editor@therugbypanda.ie`.
-7. Replay the same stable event identifier and confirm no duplicate email is sent.
-8. Confirm a notification failure does not change the successful Sanity workflow transition.
-9. Confirm Sanity remains the mandatory human approval boundary.
+Still required:
 
-## Make.com MCP status
+1. Refresh Make sample data from the enriched payload.
+2. Map all dynamic email fields correctly.
+3. Deliver one correctly populated notification email.
+4. Add persistent deduplication keyed by `eventId`.
+5. Replay the same event and verify no duplicate email.
+6. Verify failure routing while preserving the successful Sanity workflow state.
+7. Document final Make scenario inputs, outputs, retries and failure paths.
 
-- Connector/toolbox availability: verified.
-- Temporary Health Check tool: executed successfully on 26 July 2026.
-- Currently exposed production Rugby Panda tools: none verified beyond Health Check.
-- Production NOTIFY-001 Make scenario: pending configuration and verification.
+## Make.com connector status
 
-## Relevant pull requests
+- Toolbox connection: verified.
+- Temporary Health Check: verified.
+- Current production webhook reception: verified.
+- Direct scenario editing through the currently exposed ChatGPT connector: unavailable.
+- Remaining NOTIFY-001 scenario work therefore requires the Make interface unless additional tools are exposed.
 
-- PR #62 — deterministic Editorial Review Intelligence framework; merged.
-- PR #63 — AI Editorial Review; merged 24 July 2026 at commit `05193c0c8a49a11cf51a8c8da3c1293a9d2ec6e2`.
-- PR #64 — follow-up AI Editorial Review integration; merged but introduced a broken Editorial Review component.
-- PR #66 — emergency repair restoring TypeScript parsing, the Sanity Tool contract and Editorial Review behaviour; merged 25 July 2026 at commit `0e036a13d2509237ddf376cd474f51fcb80a0050`.
-- PR #67 — Editorial Review component refactor and QA improvements; merged 26 July 2026 at commit `e934cc7ea8e2fe222eb1f4d06b131c717b5fefb1`.
-- PR #81 — real Sanity-backed website search; merged 26 July 2026 at commit `bc8137f7aa35c2a19a8e09654468a94f0e5bd05a`.
-- PR #82 — editorial review notification webhook foundation; merged 26 July 2026 at commit `39f8e1ddc7ff3d31f07bc3879f2dbeac031360e7`.
+## Relevant recent pull requests
 
-PR #65 remains a superseded duplicate/rework of the AI Editorial Review implementation and must not be treated as the production source.
+- PR #81 — real website search.
+- PR #82 — review-ready webhook foundation.
+- PR #84 — Studio-session authentication and workflow note restoration.
+- PR #85 — notification delivery observability.
+- PR #86 — manual draft inclusion and automatic Studio deployment.
+- PR #87 — raw draft perspective.
+- PR #88 — supported draft path filter.
+- PR #89 — enriched notification payload and desktop Make handoff.
+- PR #90 — mobile quality-panel readability.
+- PR #91 — remaining mobile card and workflow-field contrast.
+
+PR #65 remains superseded and must not be treated as the production source.
 
 ## Verification status
 
-- Repository merge state through PR #82: verified.
-- GitHub administrative and push access: verified.
-- Make MCP connection: verified through Health Check.
-- Vercel production deployment for current `main`: pending fresh verification.
-- Vercel notification environment variables: pending verification/configuration.
-- Controlled NOTIFY-001 submit test: pending.
-- Email delivery to `editor@therugbypanda.ie`: pending.
-- Duplicate-event protection: pending.
-- Authenticated Sanity Studio smoke testing: completed for the Editorial Review refactor baseline.
-- Full launch-package publication verification: still pending under `LAUNCH-001` and `AUTO-001`.
+- Repository merge state through PR #91: verified.
+- Vercel deployment for PR #91 merge commit: successful.
+- Automatic Sanity Studio deployment: verified operationally.
+- Authenticated mobile Studio result through PR #91: verified by project owner.
+- Controlled webhook reception by Make: verified.
+- Test email delivery: verified.
+- Correctly populated production notification email: pending.
+- Persistent duplicate-event protection: pending.
+- Notification failure-path verification: pending.
+- Full launch-package publication verification: pending under `LAUNCH-001` and `AUTO-001`.
 
 ## Mailboxes
 
-### `admin@therugbypanda.ie`
-
-Infrastructure and technical operations only:
-
-- Vercel, GitHub, Cloudflare, OpenAI, Apify, Make.com and Sanity accounts.
-- Billing, security, DNS and SSL.
-- Workflow failures and technical alerts.
-- No public or customer communication.
-
-### `hello@therugbypanda.ie`
-
-Public contact mailbox.
-
-The reader-facing website must include a **Contact us** link using:
-
-```text
-mailto:hello@therugbypanda.ie
-```
-
-### `editor@therugbypanda.ie`
-
-Editorial mailbox for:
-
-- article-ready-for-review notifications;
-- approval requests;
-- media and accreditation enquiries;
-- press conference invitations;
-- outgoing editorial and media communication.
+- `admin@therugbypanda.ie` — infrastructure, security, billing, workflow failures and technical alerts.
+- `hello@therugbypanda.ie` — public contact mailbox.
+- `editor@therugbypanda.ie` — review-ready notifications and editorial/media communication.
 
 ## Immediate next implementation order
 
-1. Merge these documentation corrections.
-2. Verify the latest Vercel production deployment for current `main`.
-3. Inspect and replace the temporary Make Health Check with production-ready Rugby Panda tooling where supported.
-4. Configure and verify NOTIFY-001 end-to-end.
-5. Add workflow-failure and technical-alert notifications to `admin@therugbypanda.ie`.
-6. Continue persistent orchestration, rejection replacement and launch-content work.
+1. Complete NOTIFY-001 mapping and persistent deduplication.
+2. Verify one populated email, duplicate replay and failure path.
+3. Add NOTIFY-002 technical alert routing.
+4. Execute a complete controlled editorial lifecycle through production rendering.
+5. Continue persistent orchestration and rejection replacement.
+6. Complete and verify the nine-article launch package.
 
 ## Non-negotiable editorial boundary
 
-Sanity remains the canonical CMS and mandatory human approval boundary.
-
-No acquired or AI-generated content may be automatically approved or published.
+Sanity remains the canonical CMS and mandatory human approval boundary. No acquired or AI-generated content may be automatically approved or published.
 
 ## Completion rule
 
-Always report separately:
-
-- implemented;
-- committed;
-- merged;
-- deployed;
-- verified in production;
-- verified in authenticated Sanity Studio;
-- documentation updated.
-
-A milestone is not complete until its relevant production or authenticated-Studio verification has passed.
+Always report separately implemented, committed, merged, deployed, verified in production, verified in authenticated Sanity Studio and documentation updated. A milestone is not complete until its relevant verification has passed.
