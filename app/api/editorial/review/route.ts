@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import { authenticateEditorialRequest } from "@/lib/editorial/EditorialApiAuth";
 import { runAiEditorialReview, type AiEditorialReviewInput } from "@/lib/editorial/OpenAIEditorialReview";
 
 export const runtime = "nodejs";
@@ -17,17 +18,13 @@ function jsonResponse(body: unknown, init?: ResponseInit) {
   return NextResponse.json(body, { ...init, headers: { ...corsHeaders, ...(init?.headers ?? {}) } });
 }
 
-function isAuthorized(request: NextRequest) {
-  const secret = process.env.EDITORIAL_AUTOMATION_SECRET;
-  return Boolean(secret) && request.headers.get("authorization") === `Bearer ${secret}`;
-}
-
 export async function OPTIONS() {
   return new NextResponse(null, { status: 204, headers: corsHeaders });
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) return jsonResponse({ error: "Unauthorized" }, { status: 401 });
+  const identity = await authenticateEditorialRequest(request);
+  if (!identity) return jsonResponse({ error: "Unauthorized" }, { status: 401 });
 
   try {
     const input = (await request.json()) as AiEditorialReviewInput;
