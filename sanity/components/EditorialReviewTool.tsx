@@ -28,6 +28,7 @@ import { EditorialReviewSummary } from "./EditorialReview/EditorialReviewSummary
 import { DraftEditor } from "./EditorialReview/DraftEditor";
 import { AIEditorialReview } from "./EditorialReview/AIEditorialReview";
 import { FeaturedImagePanel } from "./EditorialReview/FeaturedImagePanel";
+import { SourcesPanel } from "./EditorialReview/SourcesPanel";
 
 import type {
   WorkflowHistoryEvent,
@@ -338,24 +339,7 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
               onRunReview={() => void runAiReview()}
             />
             <FeaturedImagePanel article={selected} />
-            <section style={cardStyle}>
-              <h3 style={{ marginTop: 0 }}>Sources</h3>
-              {(selected.sourceRecords ?? []).length === 0 ? (
-                <p>No source records stored.</p>
-              ) : (
-                <ol>
-                  {selected.sourceRecords?.map((source) => (
-                    <li key={source.id ?? source.url}>
-                      <a href={source.url} target="_blank" rel="noreferrer">
-                        {source.publisher ?? source.title ?? source.url}
-                      </a>
-                      {source.isPrimarySource ? " — primary source" : ""}
-                    </li>
-                  ))}
-                </ol>
-              )}
-            </section>
-
+            <SourcesPanel article={selected} />
             <section style={cardStyle}>
               <h3 style={{ marginTop: 0 }}>Fact ledger</h3>
               {(selected.factLedger?.facts ?? []).length === 0 ? (
