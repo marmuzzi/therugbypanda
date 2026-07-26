@@ -27,6 +27,7 @@ import { ReviewQueue } from "./EditorialReview/ReviewQueue";
 import { EditorialReviewSummary } from "./EditorialReview/EditorialReviewSummary";
 import { DraftEditor } from "./EditorialReview/DraftEditor";
 import { AIEditorialReview } from "./EditorialReview/AIEditorialReview";
+import { FeaturedImagePanel } from "./EditorialReview/FeaturedImagePanel";
 
 import type {
   WorkflowHistoryEvent,
@@ -336,50 +337,7 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
               isSaving={isSaving}
               onRunReview={() => void runAiReview()}
             />
-            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-              {selected.featuredImageUrl ? (
-                <figure style={{ margin: 0 }}>
-                  <img
-                    src={selected.featuredImageUrl}
-                    alt={selected.featuredImageAlt ?? ""}
-                    style={{
-                      width: "100%",
-                      maxHeight: 420,
-                      objectFit: "cover",
-                      borderRadius: 8,
-                    }}
-                  />
-                  <figcaption style={{ marginTop: ".35rem", color: "#666" }}>
-                    {[
-                      selected.featuredImageCaption,
-                      selected.featuredImageCredit,
-                    ]
-                      .filter(Boolean)
-                      .join(" — ")}
-                  </figcaption>
-                </figure>
-              ) : (
-                <p style={{ margin: 0 }}>
-                  <strong>Image:</strong> No approved featured image assigned.
-                </p>
-              )}
-              <p style={{ margin: 0 }}>
-                <strong>Editorial angle:</strong>{" "}
-                {selected.editorialAngle ?? "Not recorded"}
-              </p>
-              <p style={{ margin: 0 }}>
-                <strong>Audience promise:</strong>{" "}
-                {selected.audiencePromise ?? "Not recorded"}
-              </p>
-              <p style={{ margin: 0 }}>
-                <strong>Confidence:</strong>{" "}
-                {displayConfidence(selected.editorialConfidence)}{" "}
-                {selected.needsHumanFactCheck
-                  ? "— human fact-check required"
-                  : ""}
-              </p>
-            </section>
-
+            <FeaturedImagePanel article={selected} />
             <section style={cardStyle}>
               <h3 style={{ marginTop: 0 }}>Sources</h3>
               {(selected.sourceRecords ?? []).length === 0 ? (
