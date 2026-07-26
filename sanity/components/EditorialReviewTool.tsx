@@ -5,19 +5,9 @@ import {
   EDITORIAL_API_BASE_URL,
   QUEUE_QUERY,
   actionMap,
-  inputStyle,
-  cardStyle,
 } from "./EditorialReview/constants";
-
-import {
-  normaliseId,
-  displayStatus,
-  displayConfidence,
-  countWords,
-} from "./EditorialReview/formatting";
-
+import { normaliseId } from "./EditorialReview/formatting";
 import { textToBody } from "./EditorialReview/portableText";
-
 import {
   createEditorialReview,
   articleToEditable,
@@ -29,14 +19,13 @@ import { DraftEditor } from "./EditorialReview/DraftEditor";
 import { AIEditorialReview } from "./EditorialReview/AIEditorialReview";
 import { FeaturedImagePanel } from "./EditorialReview/FeaturedImagePanel";
 import { SourcesPanel } from "./EditorialReview/SourcesPanel";
+import { FactLedgerPanel } from "./EditorialReview/FactLedgerPanel";
+import { WorkflowPanel } from "./EditorialReview/WorkflowPanel";
+import { AuditHistoryPanel } from "./EditorialReview/AuditHistoryPanel";
 
 import type {
-  WorkflowHistoryEvent,
-  SourceRecord,
-  FactRecord,
   ReviewArticle,
   EditorialAction,
-  EditorialReview,
   AiEditorialFinding,
   EditableDraft,
 } from "./EditorialReview/types";
@@ -263,7 +252,7 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
     if (
       (action === "discard" || action === "publish") &&
       !window.confirm(
-        `Confirm ${action} for “${draft?.title || selected.title || "this article"}”?`,
+        `Confirm ${action} for “${draft.title || selected.title || "this article"}”?`,
       )
     )
       return;
@@ -358,164 +347,31 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
               isSaving={isSaving}
               onRunReview={() => void runAiReview()}
             />
+
             <FeaturedImagePanel article={selected} />
             <SourcesPanel article={selected} />
-            <section style={cardStyle}>
-              <h3 style={{ marginTop: 0 }}>Fact ledger</h3>
-              {(selected.factLedger?.facts ?? []).length === 0 ? (
-                <p>No fact ledger stored.</p>
-              ) : (
-                <div style={{ display: "grid", gap: ".65rem" }}>
-                  {selected.factLedger?.facts?.map((fact) => (
-                    <div
-                      key={fact.id ?? fact.claim}
-                      style={{
-                        borderBottom: "1px solid #eee",
-                        paddingBottom: ".65rem",
-                      }}
-                    >
-                      <strong>{fact.claim}</strong>
-                      <div>
-                        <small>
-                          {fact.status} · {displayConfidence(fact.confidence)} ·{" "}
-                          {fact.usableInDraft ? "usable" : "not usable"}
-                        </small>
-                      </div>
-                      {fact.notes ? <div>{fact.notes}</div> : null}
-                    </div>
-                  ))}
-                </div>
-              )}
-              {(selected.factLedger?.unsupportedClaims ?? []).length ? (
-                <p>
-                  <strong>Unsupported claims:</strong>{" "}
-                  {selected.factLedger?.unsupportedClaims?.join("; ")}
-                </p>
-              ) : null}
-              {(selected.factLedger?.conflicts ?? []).length ? (
-                <p>
-                  <strong>Conflicts:</strong>{" "}
-                  {selected.factLedger?.conflicts?.join("; ")}
-                </p>
-              ) : null}
-            </section>
+            <FactLedgerPanel article={selected} />
 
-            <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  gap: "1rem",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                }}
-              >
-                <h3 style={{ margin: 0 }}>Workflow action</h3>
-                <button
-                  type="button"
-                  onClick={() => setShowCredentials((current) => !current)}
-                >
-                  {showCredentials
-                    ? "Hide workflow settings"
-                    : secret
-                      ? "Change workflow settings"
-                      : "Set up workflow"}
-                </button>
-              </div>
+            <WorkflowPanel
+              actor={actor}
+              note={note}
+              secret={secret}
+              showCredentials={showCredentials}
+              needsRejectionReason={needsRejectionReason}
+              availableActions={availableActions}
+              editorialReview={editorialReview}
+              isSaving={isSaving}
+              message={message}
+              onActorChange={setActor}
+              onNoteChange={setNote}
+              onSecretChange={setSecret}
+              onToggleCredentials={() =>
+                setShowCredentials((current) => !current)
+              }
+              onRunAction={(action) => void runAction(action)}
+            />
 
-              {showCredentials ? (
-                <div
-                  style={{
-                    display: "grid",
-                    gap: ".65rem",
-                    padding: ".75rem",
-                    background: "#f7f7f7",
-                    borderRadius: 8,
-                  }}
-                >
-                  <label>
-                    Editor / actor
-                    <input
-                      value={actor}
-                      onChange={(event) => setActor(event.target.value)}
-                      style={inputStyle}
-                    />
-                  </label>
-                  <label>
-                    Workflow authentication
-                    <input
-                      type="password"
-                      value={secret}
-                      onChange={(event) => setSecret(event.target.value)}
-                      autoComplete="off"
-                      style={inputStyle}
-                    />
-                  </label>
-                  <small style={{ color: "#666" }}>
-                    Stored only in this browser tab session and hidden after a
-                    successful workflow action.
-                  </small>
-                </div>
-              ) : secret ? (
-                <small style={{ color: "#39723b" }}>
-                  Workflow authentication is configured for this session.
-                </small>
-              ) : null}
-
-              {needsRejectionReason ? (
-                <label>
-                  Review note / rejection reason
-                  <textarea
-                    value={note}
-                    onChange={(event) => setNote(event.target.value)}
-                    rows={3}
-                    style={inputStyle}
-                  />
-                </label>
-              ) : null}
-
-              <div style={{ display: "flex", flexWrap: "wrap", gap: ".5rem" }}>
-                {availableActions.map((action) => (
-                  <button
-                    type="button"
-                    key={action}
-                    disabled={
-                      isSaving ||
-                      ((action === "approve" || action === "publish") &&
-                        Boolean(editorialReview?.blockingCount))
-                    }
-                    onClick={() => void runAction(action)}
-                    style={{ textTransform: "capitalize" }}
-                  >
-                    {action}
-                  </button>
-                ))}
-              </div>
-              {message ? <p style={{ margin: 0 }}>{message}</p> : null}
-            </section>
-
-            <section style={cardStyle}>
-              <h3 style={{ marginTop: 0 }}>Audit history</h3>
-              {(selected.workflowHistory ?? []).length === 0 ? (
-                <p>No workflow events recorded.</p>
-              ) : (
-                <ol>
-                  {selected.workflowHistory
-                    ?.slice()
-                    .reverse()
-                    .map((event, index) => (
-                      <li key={event._key ?? `${event.occurredAt}-${index}`}>
-                        <strong>{event.action}</strong> {event.fromStatus} →{" "}
-                        {event.toStatus} by {event.actor}{" "}
-                        {event.occurredAt
-                          ? `at ${new Date(event.occurredAt).toLocaleString("en-IE", { timeZone: "Europe/Dublin" })}`
-                          : ""}
-                        {event.note ? ` — ${event.note}` : ""}
-                      </li>
-                    ))}
-                </ol>
-              )}
-            </section>
+            <AuditHistoryPanel article={selected} />
           </article>
         ) : null}
       </section>
