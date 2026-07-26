@@ -18,6 +18,16 @@ Then check all available connectors before asking the user to configure anything
 
 Do not rely on chat history for current status.
 
+## User execution instruction
+
+When the project owner says **Proceed**, it is an execution command.
+
+- Continue the agreed implementation immediately.
+- Do not restate the plan or begin another strategy discussion.
+- Use the available project tools and connectors to make the change.
+- Report only completed work, verification results and genuine blockers that require a decision.
+- Never claim that a repository, deployment or external-system change was made unless it was actually executed and verified at the appropriate level.
+
 ## Operating context
 
 - Project owner timezone: `Europe/Dublin`.
@@ -83,5 +93,5 @@ Always distinguish implemented, committed, merged, deployed, verified in product
 ## Recommended continuation prompt
 
 ```text
-Continue The Rugby Panda in marmuzzi/therugbypanda. Read docs/07_Project_State.md through docs/12_Brand_Assets_Library.md and all later relevant numbered documents, especially docs/27_Sprint_5_Production_State.md. Verify GitHub and Vercel before changing anything. Continue from the verified production baseline by implementing WEB-006, then NOTIFY-001 and NOTIFY-002. Keep Sanity as the mandatory human approval boundary, update the Issue Log, use small green PRs, merge when appropriate, and report implemented, committed, merged, deployed and verified separately.
+Continue The Rugby Panda in marmuzzi/therugbypanda. Read docs/07_Project_State.md through docs/12_Brand_Assets_Library.md and all later relevant numbered documents, especially docs/27_Sprint_5_Production_State.md. Verify GitHub and Vercel before changing anything. Continue from the verified production baseline by implementing WEB-006, then NOTIFY-001 and NOTIFY-002. Keep Sanity as the mandatory human approval boundary, update the Issue Log, use small green PRs, merge when appropriate, and report implemented, committed, merged, deployed and verified separately. When I say Proceed, execute the agreed work immediately without restating the plan.
 ```
