@@ -38,7 +38,7 @@ When the project owner says **Proceed**, it is an execution command.
 - Sanity is the mandatory human approval boundary.
 - No AI-generated or acquired content is automatically approved or published.
 
-## Current verified production baseline
+## Current verified repository baseline
 
 - Sprint 4 is complete.
 - Sprint 5 is in progress.
@@ -50,8 +50,12 @@ When the project owner says **Proceed**, it is an execution command.
 - Deterministic Editorial Review Intelligence is merged.
 - AI Editorial Review is merged.
 - Editorial Review component refactor is merged and deployed.
-- Latest verified `main` commit: `e934cc7ea8e2fe222eb1f4d06b131c717b5fefb1`.
-- Latest production deployment for that commit is `READY`.
+- PR #81 — real Sanity-backed website search — is merged and was reported production verified.
+- PR #82 — editorial review notification webhook foundation — is merged.
+- GitHub `main` is `39f8e1ddc7ff3d31f07bc3879f2dbeac031360e7`.
+- The Make.com MCP toolbox is connected; the temporary Health Check tool executed successfully on 26 July 2026.
+- Fresh Vercel production verification against current `main` is required before claiming the latest deployment is verified.
+- NOTIFY-001 remains pending end-to-end configuration and verification.
 
 See `docs/27_Sprint_5_Production_State.md` for exact details.
 
@@ -69,6 +73,8 @@ Controlled QA terminology uses **drop goal**.
 - PR #64 — follow-up integration; merged but introduced a broken Editorial Review component.
 - PR #66 — emergency repair; merged and restored production stability.
 - PR #67 — Editorial Review refactor and QA improvements; merged and deployed.
+- PR #81 — real website search; merged and previously production verified.
+- PR #82 — review-ready notification webhook foundation; merged, not yet verified end-to-end.
 
 ## Mailboxes
 
@@ -78,13 +84,16 @@ Controlled QA terminology uses **drop goal**.
 
 ## Immediate next tasks
 
-1. Add **Contact us** using `mailto:hello@therugbypanda.ie`.
-2. Notify `editor@therugbypanda.ie` when an article enters the Editorial Review queue.
-3. Notify `admin@therugbypanda.ie` about workflow failures and technical alerts.
-4. Continue persistent orchestration for eight drafts by 08:00.
-5. Complete automatic rejection replacement verification.
-6. Complete the nine-article launch package and production verification.
-7. Implement analytics/accreditation and security/recovery baselines.
+1. Verify the latest Vercel production deployment and production environment configuration.
+2. Replace the temporary Make Health Check with production-ready Rugby Panda tools/scenarios where supported.
+3. Configure NOTIFY-001 in Make.
+4. Execute one controlled submit-to-review test and confirm one email reaches `editor@therugbypanda.ie`.
+5. Replay the same event and verify duplicate protection.
+6. Confirm notification delivery cannot approve or publish and Sanity remains the human boundary.
+7. Notify `admin@therugbypanda.ie` about workflow failures and technical alerts.
+8. Continue persistent orchestration for eight drafts by 08:00.
+9. Complete automatic rejection replacement verification.
+10. Complete the nine-article launch package and production verification.
 
 ## Completion rule
 
@@ -93,5 +102,5 @@ Always distinguish implemented, committed, merged, deployed, verified in product
 ## Recommended continuation prompt
 
 ```text
-Continue The Rugby Panda in marmuzzi/therugbypanda. Read docs/07_Project_State.md through docs/12_Brand_Assets_Library.md and all later relevant numbered documents, especially docs/27_Sprint_5_Production_State.md. Verify GitHub and Vercel before changing anything. Continue from the verified production baseline by implementing WEB-006, then NOTIFY-001 and NOTIFY-002. Keep Sanity as the mandatory human approval boundary, update the Issue Log, use small green PRs, merge when appropriate, and report implemented, committed, merged, deployed and verified separately. When I say Proceed, execute the agreed work immediately without restating the plan.
+Continue The Rugby Panda in marmuzzi/therugbypanda. Read docs/07_Project_State.md through docs/12_Brand_Assets_Library.md and all later relevant numbered documents, especially docs/27_Sprint_5_Production_State.md. Verify GitHub, Vercel and the connected Make toolbox before changing anything. Continue NOTIFY-001 from PR #82 by configuring Make and Vercel, running a controlled submit, confirming exactly one email to editor@therugbypanda.ie, verifying duplicate protection and preserving Sanity as the mandatory human approval boundary. Keep the Issue Log current and report implemented, committed, merged, deployed and verified separately.
 ```
