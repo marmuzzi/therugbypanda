@@ -109,7 +109,6 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
   function updateDraft(field: keyof EditableDraft, value: string) {
     setDraft((current) => (current ? { ...current, [field]: value } : current));
     setIsDirty(true);
-    setAiFindings(null);
   }
 
   async function runAiReview() {
@@ -345,6 +344,7 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
               findings={aiFindings}
               isReviewing={isAiReviewing}
               isSaving={isSaving}
+              isStale={isDirty && aiFindings !== null}
               onRunReview={() => void runAiReview()}
             />
 
