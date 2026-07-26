@@ -6,6 +6,9 @@ type ArticleCardProps = {
   excerpt: string;
   href: string;
   meta?: string;
+  publishedAt?: string;
+  readingTime?: string;
+  author?: string;
   featured?: boolean;
   image?: string;
   imageAlt?: string;
@@ -17,10 +20,17 @@ export default function ArticleCard({
   excerpt,
   href,
   meta,
+  publishedAt,
+  readingTime,
+  author = "The Rugby Panda",
   featured = false,
   image,
   imageAlt,
 }: ArticleCardProps) {
+  const metadata = publishedAt || readingTime
+    ? [publishedAt, readingTime, author].filter(Boolean)
+    : [meta, author].filter(Boolean);
+
   return (
     <Link
       href={href}
@@ -52,8 +62,15 @@ export default function ArticleCard({
 
         <p className={`${featured ? "mt-5 text-base leading-7" : "mt-4 text-base leading-7"} text-zinc-600`}>{excerpt}</p>
 
-        {meta ? (
-          <p className="mt-6 text-sm font-semibold text-zinc-500">{meta}</p>
+        {metadata.length ? (
+          <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold uppercase tracking-[0.12em] text-zinc-500">
+            {metadata.map((item, index) => (
+              <span key={`${item}-${index}`} className="inline-flex items-center gap-3">
+                {index > 0 ? <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-300" /> : null}
+                {item}
+              </span>
+            ))}
+          </div>
         ) : null}
       </div>
     </Link>

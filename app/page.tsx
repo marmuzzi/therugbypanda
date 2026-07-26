@@ -41,6 +41,11 @@ export default async function Home() {
               <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300 md:text-xl">
                 {featured.excerpt}
               </p>
+              <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold uppercase tracking-[0.14em] text-zinc-400">
+                {featured.meta ? <span>{featured.meta}</span> : null}
+                {featured.meta ? <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-600" /> : null}
+                <span>The Rugby Panda</span>
+              </div>
               <a
                 href={featured.href}
                 className="mt-8 inline-flex rounded-full bg-[#4CAF50] px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564]"
