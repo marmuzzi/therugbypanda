@@ -318,6 +318,26 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
         </p>
       </header>
 
+      <section
+        style={{
+          display: "grid",
+          gridTemplateColumns: "minmax(260px, 360px) minmax(0, 1fr)",
+          gap: "1rem",
+          alignItems: "start",
+        }}
+      >
+        <ReviewQueue
+          articles={articles}
+          selectedId={selected?._id ?? null}
+          isDirty={isDirty}
+          isLoading={isLoading}
+          isSaving={isSaving}
+          onRefresh={() => void loadQueue()}
+          onSelect={setSelectedId}
+        />
+
+        {selected && draft ? (
+          <article style={{ display: "grid", gap: "1rem" }}>
             <DraftEditor
               article={selected}
               draft={draft}
