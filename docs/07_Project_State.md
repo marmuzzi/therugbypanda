@@ -2,11 +2,11 @@
 
 ## Current version
 
-v0.9 — Editorial Engine Foundation
+v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last updated
 
-26 July 2026, after PR #91 merge, successful Vercel deployment and authenticated mobile Sanity Studio verification.
+27 July 2026, after the Version 1.0 product direction was approved and the implementation branch `feat/v1-newsroom-navigation-docs` was created.
 
 ## Source of truth
 
@@ -18,7 +18,8 @@ Read these files first in future sessions:
 4. `docs/10_New_Chat_Handoff.md`
 5. `docs/11_Editorial_Image_Archive.md`
 6. `docs/12_Brand_Assets_Library.md`
-7. All later numbered documents relevant to the task, especially `docs/23_Make_Orchestration_Architecture.md`, `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`, `docs/27_Sprint_5_Production_State.md`, `docs/31_NOTIFY_001_Desktop_Completion_Handoff.md` and `docs/32_Sprint_5_State_After_PR_91.md`.
+7. `docs/33_Version_1_Product_Roadmap.md`
+8. All later numbered documents relevant to the task, especially `docs/23_Make_Orchestration_Architecture.md`, `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`, `docs/27_Sprint_5_Production_State.md`, `docs/31_NOTIFY_001_Desktop_Completion_Handoff.md` and `docs/32_Sprint_5_State_After_PR_91.md`.
 
 Do not rely on chat history for current status.
 
@@ -29,6 +30,8 @@ Do not rely on chat history for current status.
 - GitHub is the source of truth.
 - Sanity is the canonical CMS and mandatory human approval boundary.
 - No acquired or AI-generated content is automatically approved or published.
+- Original Rugby Panda photography is the preferred image source.
+- Third-party photographs must have documented free-use rights or explicit permission.
 
 ## Architecture
 
@@ -39,6 +42,7 @@ GitHub source of truth
 → Editorial Brain and OpenAI generation
 → Sanity canonical CMS and editorial review
 → Vercel public website
+→ Meta social distribution after controlled publication
 ```
 
 ## Current production state
@@ -51,16 +55,38 @@ GitHub source of truth
 - Real Sanity-backed website search is merged and production verified.
 - The review-ready notification webhook foundation is merged and reaches Make.
 - The Make.com MCP toolbox is connected, but the currently exposed toolset does not permit scenario editing.
-- Current verified GitHub `main` commit: `bb3c3fcc08f9d95bc35f2b39cd6dfd76b7cf74ec`.
-- The Vercel deployment for this commit completed successfully.
+- The repository now contains later frontend commits beyond the older PR #91 documentation baseline; live repository state must be inspected before quoting a current `main` SHA.
 - Automatic Sanity Studio deployment after merge is working.
-- The project owner verified the PR #91 mobile Editorial Review result in authenticated Sanity Studio.
 
-See `docs/32_Sprint_5_State_After_PR_91.md` for the exact current baseline.
+## Version 1.0 product direction
+
+The approved immediate frontend work is:
+
+1. Increase the Panda icon while reducing the Rugby Panda wordmark.
+2. Add a dedicated `/news` page containing all published articles in reverse chronological order.
+3. Make the News navigation item point to `/news` instead of the homepage.
+4. Keep About in both the top navigation and footer.
+5. Replace overflowing mobile category links with a proper hamburger menu.
+6. Add Europe and Opinion as top-level navigation sections without changing the existing International taxonomy contract until an explicit taxonomy migration is approved.
+7. Keep article photography consistent between cards and article pages.
+8. Use branded Panda imagery only for articles explicitly marked for editorial branding.
+
+## Digital newsroom roadmap
+
+The approved next product phases are documented in `docs/33_Version_1_Product_Roadmap.md` and include:
+
+- automatic Facebook and Instagram snippets after controlled publication;
+- a social publishing opt-out field in Sanity;
+- secure phone-first photo uploads;
+- AI-assisted image metadata, quality scoring and duplicate detection;
+- a searchable Media Desk;
+- rights and attribution controls;
+- approved Sanity-hosted team and competition logos;
+- future fixtures, results, standings and editorial intelligence.
 
 ## Editorial Review production state
 
-Implemented, merged, deployed and authenticated-Studio verified through PR #91:
+Implemented, merged, deployed and authenticated-Studio verified through the PR #91 baseline:
 
 - Studio-session authentication; no browser-entered workflow secret.
 - Restored submission and rejection note field.
@@ -90,13 +116,15 @@ NOTIFY-001 is not complete until a correctly populated production email, persist
 
 ## Immediate priority
 
-1. Complete NOTIFY-001 email mapping and persistent deduplication.
-2. Verify one correctly populated email and a duplicate replay that sends no second email.
-3. Add workflow failure and technical alerts to `admin@therugbypanda.ie`.
-4. Execute a complete controlled editorial lifecycle test through production rendering.
-5. Continue persistent daily orchestration and automatic replacement after rejection.
-6. Complete the nine-article launch package and verify it in production.
-7. Implement analytics/accreditation and security/recovery baselines.
+1. Complete the Version 1.0 navigation and branding pass.
+2. Create and production-verify the dedicated News archive.
+3. Update the mobile navigation pattern.
+4. Complete NOTIFY-001 email mapping and persistent deduplication.
+5. Verify one correctly populated email and a duplicate replay that sends no second email.
+6. Add workflow failure and technical alerts to `admin@therugbypanda.ie`.
+7. Execute a complete controlled editorial lifecycle test through production rendering.
+8. Complete the nine-article launch package and verify it in production.
+9. Begin the Social Distribution and Media Desk foundations only after the Version 1.0 frontend is merged and verified.
 
 ## Launch minimum
 
@@ -104,7 +132,8 @@ NOTIFY-001 is not complete until a correctly populated production email, persist
 - At least eight additional reviewed, image-backed articles.
 - Coverage of recent internationals and Leinster, Munster, Ulster and Connacht.
 - Correct publication dates.
-- Production verification of homepage, category and article pages.
+- Production verification of homepage, news, category and article pages.
+- Mobile navigation verified on a phone-sized viewport.
 
 ## Completion rule
 
@@ -127,3 +156,5 @@ A feature is not complete until the relevant verification has passed.
 - Keep `docs/08_Issue_Log.md` current.
 - Batch related work where practical to conserve deployments.
 - Do not expose AI implementation references on reader-facing pages.
+- Do not publish third-party photographs without documented rights.
+- Do not use external candidate-logo URLs in public templates.
