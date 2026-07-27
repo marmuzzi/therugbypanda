@@ -10,6 +10,12 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Root cause | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| V1-UI-001 | In Progress | High | Frontend / Brand | Increase the Panda icon, reduce the wordmark and tighten the brand lockup. | Current header gives too much visual weight to the wordmark. | Pending PR | Implementation branch created | Pending desktop and mobile production verification | — |
+| V1-NAV-001 | In Progress | High | Frontend / Navigation | Create `/news`, point News to it, keep About in the header, add Europe and Opinion, and replace mobile overflow with a hamburger menu. | News currently behaves like a homepage link and horizontal mobile navigation does not fit. | Pending PR | Implementation branch created | Pending route, accessibility and mobile verification | — |
+| SOCIAL-001 | Open | High | Publishing / Social | Automatically publish platform-specific article snippets to Facebook and Instagram after controlled article publication, with a Sanity opt-out. | No official Meta publishing integration exists. | — | Not implemented | Pending official API configuration, controlled test posts, retry and failure-path verification | — |
+| MEDIA-005 | Open | High | Media / Rights | Add rights dashboard fields and publication gates for photography and reusable editorial assets. | Rights metadata exists but is not yet presented as a consolidated operational dashboard. | — | Not implemented | Pending Sanity Studio and controlled publication-gate verification | — |
+| MEDIA-006 | Open | High | Media / Intelligence | Add AI-assisted metadata, quality scoring, duplicate detection and article-image suggestions for uploaded photos. | Media processing is currently manual. | — | Not implemented | Pending representative upload batch and editorial suggestion verification | — |
+| BRAND-005 | Open | High | Brand Assets / Frontend | Upload approved team and competition logos into Sanity, link them to entities and expose only approved Sanity-hosted assets. | Candidate records exist, but public frontend use is not implemented. | — | Not implemented | Pending rights review and no-hotlink production verification | — |
 | LAUNCH-001 | In Progress | Critical | Go Live / Editorial | Publish one introduction article plus at least eight reviewed, image-backed articles covering recent internationals and all four Irish provinces. | Launch content package is incomplete. | — | Not completed | Pending editorial review, publication and production rendering checks | — |
 | AUTO-001 | Pending Verification | Critical | Editorial Automation | End-to-end candidate, draft, editor review, approve/amend/reject, publish/discard workflow. | Launch-package publication and full production lifecycle verification remain incomplete. | #47–#50, #53, #55–#64, #66, #67, #80, #84, #86–#91 | Core workflow and mobile Editorial Review are merged, deployed and Studio verified | Controlled launch publication verification remains pending | — |
 | AUTO-002 | In Progress | Critical | Editorial Automation | Generate a genuinely new replacement article after rejection without reusing the rejected angle or source set. | Persistent orchestrator must supply and run the replacement candidate. | #50, #54 | Replacement endpoint foundation merged | Pending orchestrated rejection/replacement test | — |
@@ -31,7 +37,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | BRAND-002 | Closed | High | Brand Assets | Build approved-scope candidate collector output. | Completed. | #28 | Deployed | Verified | 2026-07-05 |
 | BRAND-001 | Closed | Medium | Brand Assets | Build separate Brand Assets library. | Completed. | #27 | Deployed | Verified in authenticated Sanity Studio | 2026-07-05 |
 | BUILD-001 | Closed | High | Build / Frontend | Restore lost CMS helper exports. | Missing exports broke the build. | Direct commits | Deployed | Production verified | 2026-07-05 |
-| TAX-001 | Closed | Medium | Taxonomy | Replace Europe with International and avoid legacy 404s. | Legacy taxonomy mismatch. | Direct commits | Deployed | Production verified | 2026-07-05 |
+| TAX-001 | Closed | High | Taxonomy | Replace Europe with International and avoid legacy 404s. | Legacy taxonomy mismatch. | Direct commits | Deployed | Production verified | 2026-07-05 |
 | INF-001 | Closed | High | Infrastructure | Reduce Vercel deployment-rate risk. | Excess deployment volume. | #20, #21, #23, #24 | Deployed | Production verified | 2026-07-04 |
 | DOC-001 | Closed | High | Documentation | Establish project state, Issue Log and publishing workflow. | Documentation continuity requirement. | #22 | Merged | Repository verified | 2026-07-04 |
 | CMS-001 | Closed | High | CMS | Use hosted Sanity content on homepage and article pages. | Static/local content path needed replacement. | #14 | Deployed | Production verified | 2026-07-03 |
@@ -53,7 +59,7 @@ Merged, deployed and authenticated-Studio-verified capabilities include:
 - Mobile-first ordering, contrast and readability through PR #91.
 - Automatic hosted Sanity Studio deployment after relevant merges.
 
-Current verified GitHub `main` is `bb3c3fcc08f9d95bc35f2b39cd6dfd76b7cf74ec`. The associated Vercel deployment completed successfully, and the PR #91 Studio result was verified by the project owner on a phone.
+The repository contains newer frontend commits beyond the PR #91 baseline. Always inspect live `main` before quoting a current SHA or deployment state.
 
 ## Make.com integration status
 
