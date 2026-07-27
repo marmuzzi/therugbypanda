@@ -30,18 +30,18 @@ export default async function Home() {
       <SiteHeader />
 
       <section className="border-b border-zinc-800 bg-zinc-950 text-white">
-        <div className="mx-auto max-w-6xl px-5 py-6 md:px-6 md:py-8">
-          <div className="relative min-h-[620px] overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900 shadow-2xl md:min-h-[680px]">
+        <div className="mx-auto max-w-6xl px-0 py-0 sm:px-5 sm:py-6 md:px-6 md:py-8">
+          <div className="relative overflow-hidden bg-zinc-900 sm:rounded-[2rem] sm:border sm:border-white/10 sm:shadow-2xl">
             <img
               src={heroImage}
               alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
-              className="absolute inset-0 h-full w-full object-cover"
+              className="absolute inset-0 h-full w-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/15" />
-            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/25" />
+            <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/55 to-black" />
+            <div className="absolute inset-0 hidden bg-gradient-to-r from-black via-black/75 to-black/15 md:block" />
 
-            <div className="relative z-10 flex min-h-[620px] flex-col justify-between p-6 md:min-h-[680px] md:p-10 lg:p-12">
-              <div className="flex flex-wrap items-center justify-between gap-4">
+            <div className="relative z-10 flex min-h-[520px] flex-col justify-end px-5 pb-8 pt-24 sm:min-h-[590px] sm:p-8 md:min-h-[680px] md:justify-between md:p-10 lg:p-12">
+              <div className="hidden flex-wrap items-center justify-between gap-4 md:flex">
                 <p className="rounded-full border border-white/20 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.3em] text-[#9BE564] backdrop-blur-sm">
                   The Rugby Panda newsroom
                 </p>
@@ -52,17 +52,17 @@ export default async function Home() {
 
               <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_320px] lg:items-end">
                 <article className="max-w-4xl">
-                  <p className="text-sm font-black uppercase tracking-[0.3em] text-[#9BE564]">
+                  <p className="text-xs font-black uppercase tracking-[0.26em] text-[#9BE564] sm:text-sm sm:tracking-[0.3em]">
                     {featured ? "Lead story" : "Coming soon"}
                   </p>
-                  <h1 className="mt-5 text-5xl font-black leading-[0.95] tracking-tight text-white drop-shadow-lg md:text-7xl lg:text-8xl">
+                  <h1 className="mt-3 max-w-[22ch] text-[2.55rem] font-black leading-[0.98] tracking-[-0.035em] text-white drop-shadow-lg sm:mt-5 sm:text-5xl md:text-7xl lg:text-8xl">
                     {featured?.title ?? "Irish rugby, told with context."}
                   </h1>
-                  <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-200 drop-shadow md:text-xl">
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-200 drop-shadow sm:mt-6 sm:text-lg sm:leading-8 md:text-xl">
                     {featured?.excerpt ??
                       "A visual preview of The Rugby Panda: match coverage, analysis and stories from Ireland, the provinces, the URC and international rugby."}
                   </p>
-                  <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold uppercase tracking-[0.14em] text-zinc-300">
+                  <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-zinc-300 sm:mt-6 sm:gap-x-3 sm:text-xs sm:tracking-[0.14em]">
                     {featured?.meta ? <span>{featured.meta}</span> : null}
                     {featured?.meta ? <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-500" /> : null}
                     <span>The Rugby Panda</span>
@@ -70,14 +70,14 @@ export default async function Home() {
                   {featured ? (
                     <a
                       href={featured.href}
-                      className="mt-8 inline-flex rounded-full bg-[#4CAF50] px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564]"
+                      className="mt-6 inline-flex rounded-full bg-[#4CAF50] px-5 py-3 text-xs font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564] sm:mt-8 sm:px-6 sm:text-sm"
                     >
                       Read the lead story
                     </a>
                   ) : null}
                 </article>
 
-                <aside className="rounded-3xl border border-white/15 bg-black/40 p-6 backdrop-blur-md">
+                <aside className="hidden rounded-3xl border border-white/15 bg-black/40 p-6 backdrop-blur-md lg:block">
                   <p className="text-xs font-black uppercase tracking-[0.25em] text-[#9BE564]">
                     Coverage focus
                   </p>
@@ -94,7 +94,7 @@ export default async function Home() {
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-12 md:px-6 md:py-16">
+      <section className="mx-auto max-w-6xl px-5 py-10 md:px-6 md:py-16">
         <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
