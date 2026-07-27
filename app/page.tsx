@@ -14,13 +14,14 @@ const sections = [
 
 export default async function Home() {
   const { featured, latest } = await getHomepageArticles();
-  const secondaryArticles = featured
-    ? latest.filter((article) => article.title !== featured.title)
+  const nonFeaturedArticles = featured
+    ? latest.filter((article) => article.href !== featured.href)
     : latest;
-  const provinceArticles = latest.filter((article) =>
+  const secondaryArticles = nonFeaturedArticles;
+  const provinceArticles = nonFeaturedArticles.filter((article) =>
     ["Leinster", "Munster", "Ulster", "Connacht"].includes(article.section ?? ""),
   );
-  const analysisArticles = latest.filter((article) =>
+  const analysisArticles = nonFeaturedArticles.filter((article) =>
     ["Analysis", "Column", "Notebook"].some(
       (label) => article.meta?.includes(label) || article.category.includes(label),
     ),
@@ -36,12 +37,12 @@ export default async function Home() {
           <img
             src={heroImage}
             alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
-            className="absolute inset-0 h-full w-full object-cover object-center brightness-105 saturate-110"
+            className="absolute inset-0 h-full w-full object-cover object-center brightness-115 saturate-110"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10 md:bg-gradient-to-r md:from-black/95 md:via-black/65 md:to-black/5" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent md:bg-gradient-to-r md:from-black/80 md:via-black/35 md:to-transparent" />
 
           <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl items-end px-5 py-7 sm:min-h-[450px] sm:px-6 sm:py-9 md:min-h-[470px] md:items-center md:px-8 md:py-10 lg:min-h-[500px]">
-            <article className="max-w-2xl rounded-2xl bg-black/35 p-5 backdrop-blur-[2px] sm:p-6 md:max-w-xl md:bg-transparent md:p-0 md:backdrop-blur-none lg:max-w-2xl">
+            <article className="max-w-2xl rounded-2xl bg-black/25 p-5 backdrop-blur-[1px] sm:p-6 md:max-w-xl md:bg-transparent md:p-0 md:backdrop-blur-none lg:max-w-2xl">
               <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-[#9BE564] sm:text-xs sm:tracking-[0.28em]">
                 {featured?.category ?? (featured ? "Lead story" : "Coming soon")}
               </p>
