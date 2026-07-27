@@ -1,5 +1,6 @@
 import React from "react";
 import { defineArrayMember, defineField, defineType } from "sanity";
+import { socialPublishEventType, socialPublishingFields } from "./socialPublishing";
 
 const slugField = defineField({
   name: "slug",
@@ -235,6 +236,7 @@ export const articleType = defineType({
     }),
     defineField({ name: "seoTitle", title: "SEO title", type: "string" }),
     defineField({ name: "seoDescription", title: "SEO description", type: "text", rows: 3 }),
+    ...socialPublishingFields,
   ],
   preview: {
     select: {
@@ -297,96 +299,25 @@ export const editorialImageType = defineType({
       description: "Use Rejected to remove an image from the normal review queue without deleting its source record.",
     }),
     defineField({ name: "usageApproved", title: "Usage approved", type: "boolean", group: "editorial", initialValue: false }),
-    defineField({
-      name: "editorialRating",
-      title: "Editorial rating",
-      type: "number",
-      group: "editorial",
-      options: {
-        list: [
-          { title: "5 — Hero quality", value: 5 },
-          { title: "4 — Strong article/header image", value: 4 },
-          { title: "3 — Supporting/gallery image", value: 3 },
-          { title: "2 — Archive only unless needed", value: 2 },
-          { title: "1 — Reject unless historically important", value: 1 },
-        ],
-      },
-      validation: (rule) => rule.min(1).max(5),
-    }),
     defineField({ name: "editorialCategory", title: "Editorial category", type: "string", group: "editorial", options: { list: editorialCategoryOptions } }),
-    defineField({
-      name: "photoType",
-      title: "Photo type",
-      type: "array",
-      group: "editorial",
-      of: [{ type: "string" }],
-      options: { list: photoTypeOptions, layout: "tags" },
-      description: "Optional. Add one or more visual types when useful; imports should not be blocked when this is blank.",
-    }),
-    defineField({ name: "eventAlbum", title: "Event / album", type: "string", group: "editorial", description: "Groups related images, e.g. Aviva Stadium Internationals or Sevilla Veterans Rugby." }),
-    defineField({ name: "venue", title: "Venue", type: "string", group: "editorial" }),
-    defineField({ name: "teams", title: "Teams", type: "array", group: "editorial", of: [{ type: "string" }], options: { layout: "tags" } }),
-    defineField({ name: "tags", title: "Tags", type: "array", group: "editorial", of: [{ type: "string" }], options: { layout: "tags" } }),
+    defineField({ name: "photoType", title: "Photo type", type: "string", group: "editorial", options: { list: photoTypeOptions } }),
     defineField({ name: "editorialValue", title: "Editorial value", type: "string", group: "editorial", options: { list: editorialValueOptions } }),
     defineField({ name: "suggestedUse", title: "Suggested use", type: "array", group: "editorial", of: [{ type: "string" }], options: { list: suggestedUseOptions } }),
-    defineField({
-      name: "sourceClassification",
-      title: "Source classification",
-      type: "string",
-      group: "rights",
-      options: { list: sourceClassificationOptions },
-      initialValue: "open-licence",
-    }),
-    defineField({
-      name: "publicCredit",
-      title: "Public credit",
-      type: "string",
-      group: "rights",
-      description: "For Rugby Panda originals use: Photo: The Rugby Panda",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { sourceClassification?: string } | undefined;
-          if (parent?.sourceClassification === "the-rugby-panda-original" && value !== "Photo: The Rugby Panda") {
-            return "Original Rugby Panda images must use public credit: Photo: The Rugby Panda";
-          }
-          return true;
-        }),
-    }),
-    defineField({
-      name: "copyrightLine",
-      title: "Copyright line",
-      type: "string",
-      group: "rights",
-      description: "For Rugby Panda originals use: © The Rugby Panda",
-      validation: (rule) =>
-        rule.custom((value, context) => {
-          const parent = context.parent as { sourceClassification?: string } | undefined;
-          if (parent?.sourceClassification === "the-rugby-panda-original" && value !== "© The Rugby Panda") {
-            return "Original Rugby Panda images must use copyright line: © The Rugby Panda";
-          }
-          return true;
-        }),
-    }),
-    defineField({ name: "creator", title: "Creator", type: "string", group: "rights" }),
-    defineField({ name: "creatorUrl", title: "Creator URL", type: "url", group: "rights" }),
-    defineField({ name: "license", title: "Licence", type: "string", group: "rights" }),
-    defineField({ name: "licenseUrl", title: "Licence URL", type: "url", group: "rights" }),
-    defineField({ name: "licenseVersion", title: "Licence version", type: "string", group: "rights" }),
-    defineField({ name: "attribution", title: "Attribution", type: "text", rows: 3, group: "rights" }),
-    defineField({ name: "source", title: "Source", type: "string", group: "rights" }),
+    defineField({ name: "sourceClassification", title: "Source classification", type: "string", group: "rights", options: { list: sourceClassificationOptions } }),
+    defineField({ name: "sourceName", title: "Source name", type: "string", group: "rights" }),
     defineField({ name: "sourceUrl", title: "Source URL", type: "url", group: "rights" }),
-    defineField({ name: "foreignLandingUrl", title: "Original landing page", type: "url", group: "rights" }),
-    defineField({ name: "originalLandingPage", title: "Original landing page (pipeline field)", type: "url", group: "rights" }),
+    defineField({ name: "photographer", title: "Photographer", type: "string", group: "rights" }),
+    defineField({ name: "rightsHolder", title: "Rights holder", type: "string", group: "rights" }),
+    defineField({ name: "licence", title: "Licence", type: "string", group: "rights" }),
+    defineField({ name: "licenceUrl", title: "Licence URL", type: "url", group: "rights" }),
     defineField({ name: "rightsNotes", title: "Rights notes", type: "text", rows: 4, group: "rights" }),
-    defineField({ name: "width", title: "Width", type: "number", group: "metadata", readOnly: true }),
-    defineField({ name: "height", title: "Height", type: "number", group: "metadata", readOnly: true }),
-    defineField({ name: "dimensions", title: "Dimensions", type: "string", group: "metadata", readOnly: true }),
-    defineField({ name: "orientation", title: "Orientation", type: "string", group: "metadata" }),
-    defineField({ name: "searchKeywords", title: "Search keywords", type: "array", group: "metadata", of: [{ type: "string" }], options: { layout: "tags" } }),
-    defineField({ name: "apifyRunId", title: "Apify run ID", type: "string", group: "metadata", readOnly: true }),
-    defineField({ name: "apifyDatasetId", title: "Apify dataset ID", type: "string", group: "metadata", readOnly: true }),
+    defineField({ name: "attribution", title: "Attribution", type: "text", rows: 3, group: "rights" }),
+    defineField({ name: "copyright", title: "Copyright", type: "string", group: "rights" }),
+    defineField({ name: "creditLine", title: "Credit line", type: "string", group: "rights" }),
+    defineField({ name: "sourceRecordId", title: "Source record ID", type: "string", group: "metadata", readOnly: true }),
+    defineField({ name: "sourceActorRunId", title: "Source actor run ID", type: "string", group: "metadata", readOnly: true }),
+    defineField({ name: "sourceDatasetId", title: "Source dataset ID", type: "string", group: "metadata", readOnly: true }),
     defineField({ name: "importedAt", title: "Imported at", type: "datetime", group: "metadata", readOnly: true }),
-    defineField({ name: "rawImport", title: "Raw import payload", type: "text", rows: 8, group: "metadata", readOnly: true }),
   ],
   initialValue: {
     lifecycleStatus: "candidate",
@@ -427,4 +358,5 @@ export const schemaTypes = [
   competitionType,
   tagType,
   editorialImageType,
+  socialPublishEventType,
 ];
