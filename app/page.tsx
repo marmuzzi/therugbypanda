@@ -21,7 +21,9 @@ export default async function Home() {
     ["Leinster", "Munster", "Ulster", "Connacht"].includes(article.section ?? ""),
   );
   const analysisArticles = latest.filter((article) =>
-    ["Analysis", "Column", "Notebook"].some((label) => article.meta?.includes(label) || article.category.includes(label)),
+    ["Analysis", "Column", "Notebook"].some(
+      (label) => article.meta?.includes(label) || article.category.includes(label),
+    ),
   );
   const heroImage = featured?.image ?? "/landing-bg.png";
 
@@ -30,87 +32,61 @@ export default async function Home() {
       <SiteHeader />
 
       <section className="border-b border-zinc-800 bg-zinc-950 text-white">
-        <div className="mx-auto max-w-6xl px-0 py-0 sm:px-5 sm:py-6 md:px-6 md:py-8">
-          <div className="relative overflow-hidden bg-zinc-900 sm:rounded-[2rem] sm:border sm:border-white/10 sm:shadow-2xl">
-            <img
-              src={heroImage}
-              alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
-              className="absolute inset-0 h-full w-full object-cover object-center"
-            />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/55 to-black" />
-            <div className="absolute inset-0 hidden bg-gradient-to-r from-black via-black/75 to-black/15 md:block" />
+        <div className="relative mx-auto min-h-[430px] max-w-[1600px] overflow-hidden sm:min-h-[450px] md:min-h-[470px] lg:min-h-[500px]">
+          <img
+            src={heroImage}
+            alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
+            className="absolute inset-0 h-full w-full object-cover object-center brightness-105 saturate-110"
+          />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/35 to-black/10 md:bg-gradient-to-r md:from-black/95 md:via-black/65 md:to-black/5" />
 
-            <div className="relative z-10 flex min-h-[520px] flex-col justify-end px-5 pb-8 pt-24 sm:min-h-[590px] sm:p-8 md:min-h-[680px] md:justify-between md:p-10 lg:p-12">
-              <div className="hidden flex-wrap items-center justify-between gap-4 md:flex">
-                <p className="rounded-full border border-white/20 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.3em] text-[#9BE564] backdrop-blur-sm">
-                  The Rugby Panda newsroom
-                </p>
-                <p className="rounded-full border border-white/15 bg-black/25 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-200 backdrop-blur-sm">
-                  Independent Irish rugby coverage
-                </p>
+          <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl items-end px-5 py-7 sm:min-h-[450px] sm:px-6 sm:py-9 md:min-h-[470px] md:items-center md:px-8 md:py-10 lg:min-h-[500px]">
+            <article className="max-w-2xl rounded-2xl bg-black/35 p-5 backdrop-blur-[2px] sm:p-6 md:max-w-xl md:bg-transparent md:p-0 md:backdrop-blur-none lg:max-w-2xl">
+              <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-[#9BE564] sm:text-xs sm:tracking-[0.28em]">
+                {featured?.category ?? (featured ? "Lead story" : "Coming soon")}
+              </p>
+              <h1 className="mt-2 max-w-[18ch] text-[2.15rem] font-black leading-[0.98] tracking-[-0.035em] text-white drop-shadow-lg sm:mt-3 sm:text-[2.7rem] md:max-w-[15ch] md:text-[3.5rem] lg:text-[4.25rem]">
+                {featured?.title ?? "Irish rugby, told with context."}
+              </h1>
+              <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-100 drop-shadow sm:mt-4 sm:text-base sm:leading-7 md:text-lg">
+                {featured?.excerpt ??
+                  "Independent coverage, analysis and stories from Ireland, the provinces, the URC and international rugby."}
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-zinc-200 sm:mt-4 sm:text-[0.68rem]">
+                {featured?.meta ? <span>{featured.meta}</span> : null}
+                {featured?.meta ? (
+                  <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-400" />
+                ) : null}
+                <span>The Rugby Panda</span>
               </div>
-
-              <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_320px] lg:items-end">
-                <article className="max-w-4xl">
-                  <p className="text-xs font-black uppercase tracking-[0.26em] text-[#9BE564] sm:text-sm sm:tracking-[0.3em]">
-                    {featured ? "Lead story" : "Coming soon"}
-                  </p>
-                  <h1 className="mt-3 max-w-[22ch] text-[2.55rem] font-black leading-[0.98] tracking-[-0.035em] text-white drop-shadow-lg sm:mt-5 sm:text-5xl md:text-7xl lg:text-8xl">
-                    {featured?.title ?? "Irish rugby, told with context."}
-                  </h1>
-                  <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-200 drop-shadow sm:mt-6 sm:text-lg sm:leading-8 md:text-xl">
-                    {featured?.excerpt ??
-                      "A visual preview of The Rugby Panda: match coverage, analysis and stories from Ireland, the provinces, the URC and international rugby."}
-                  </p>
-                  <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-zinc-300 sm:mt-6 sm:gap-x-3 sm:text-xs sm:tracking-[0.14em]">
-                    {featured?.meta ? <span>{featured.meta}</span> : null}
-                    {featured?.meta ? <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-500" /> : null}
-                    <span>The Rugby Panda</span>
-                  </div>
-                  {featured ? (
-                    <a
-                      href={featured.href}
-                      className="mt-6 inline-flex rounded-full bg-[#4CAF50] px-5 py-3 text-xs font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564] sm:mt-8 sm:px-6 sm:text-sm"
-                    >
-                      Read the lead story
-                    </a>
-                  ) : null}
-                </article>
-
-                <aside className="hidden rounded-3xl border border-white/15 bg-black/40 p-6 backdrop-blur-md lg:block">
-                  <p className="text-xs font-black uppercase tracking-[0.25em] text-[#9BE564]">
-                    Coverage focus
-                  </p>
-                  <h2 className="mt-4 text-2xl font-black leading-tight tracking-tight text-white">
-                    Four provinces. Ireland. Europe. One clear voice.
-                  </h2>
-                  <p className="mt-4 text-sm leading-6 text-zinc-300">
-                    Match understanding, squad context, tactical trends and the stories that explain why the rugby matters.
-                  </p>
-                </aside>
-              </div>
-            </div>
+              {featured ? (
+                <a
+                  href={featured.href}
+                  className="mt-4 inline-flex items-center rounded-full bg-[#7CB342] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564] sm:mt-5"
+                >
+                  Read the full story
+                </a>
+              ) : null}
+            </article>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-6xl px-5 py-10 md:px-6 md:py-16">
-        <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
+      <section className="mx-auto max-w-7xl px-5 py-10 md:px-8 md:py-14">
+        <div className="mb-7 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
           <div>
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
-              Latest
-            </p>
+            <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">Latest</p>
             <h2 className="mt-2 text-3xl font-black tracking-tight text-zinc-950 md:text-4xl">
               Fresh from the newsroom
             </h2>
           </div>
-          <p className="max-w-2xl text-sm leading-6 text-zinc-500">
-            Live stories are powered by the canonical hosted Sanity CMS.
-          </p>
+          <a href="/" className="text-sm font-black text-[#2E7D32] hover:underline">
+            View all news →
+          </a>
         </div>
 
         {secondaryArticles.length ? (
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {secondaryArticles.map((article) => (
               <ArticleCard key={article.href} {...article} />
             ))}
@@ -124,7 +100,7 @@ export default async function Home() {
 
       {provinceArticles.length ? (
         <section className="border-y border-zinc-200 bg-zinc-50">
-          <div className="mx-auto max-w-6xl px-5 py-12 md:px-6 md:py-16">
+          <div className="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-14">
             <div className="mb-8 flex flex-col gap-3 md:flex-row md:items-end md:justify-between">
               <div>
                 <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
@@ -149,7 +125,7 @@ export default async function Home() {
       ) : null}
 
       {analysisArticles.length ? (
-        <section className="mx-auto grid max-w-6xl gap-8 px-5 py-12 md:px-6 md:py-16 lg:grid-cols-[minmax(0,1fr)_360px]">
+        <section className="mx-auto grid max-w-7xl gap-8 px-5 py-12 md:px-8 md:py-14 lg:grid-cols-[minmax(0,1fr)_360px]">
           <div>
             <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
               Analysis
@@ -179,7 +155,7 @@ export default async function Home() {
       ) : null}
 
       <section className="border-t border-zinc-200 bg-zinc-50">
-        <div className="mx-auto max-w-6xl px-5 py-12 md:px-6 md:py-16">
+        <div className="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-14">
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
             Sections
           </p>

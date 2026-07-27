@@ -1,3 +1,4 @@
+import { sanityFetch, urlForImage } from "@/lib/sanity";
 import Link from "next/link";
 
 type ArticleCardProps = {
@@ -14,7 +15,60 @@ type ArticleCardProps = {
   imageAlt?: string;
 };
 
-export default function ArticleCard({
+type ApprovedEditorialImage = {
+  title?: string;
+  altText?: string;
+  image?: {
+    asset?: {
+      _ref?: string;
+      _type?: "reference";
+    };
+    alt?: string;
+  };
+};
+
+const approvedEditorialImagesQuery = `*[
+  _type == "editorialImage" &&
+  lifecycleStatus == "approved" &&
+  usageApproved == true &&
+  sourceClassification == "the-rugby-panda-original" &&
+  defined(image.asset)
+] | order(editorialRating desc, title asc)[0...24]{
+  title,
+  altText,
+  image
+}`;
+
+function stableIndex(value: string, size: number) {
+  let hash = 0;
+
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+
+  return size ? hash % size : 0;
+}
+
+async function approvedFallbackImage(title: string) {
+  const approvedImages =
+    (await sanityFetch<ApprovedEditorialImage[]>({ query: approvedEditorialImagesQuery })) ?? [];
+
+  if (!approvedImages.length) return undefined;
+
+  const selected = approvedImages[stableIndex(title, approvedImages.length)];
+  const src = selected.image?.asset?._ref
+    ? urlForImage(selected.image).width(1200).height(800).fit("crop").url()
+    : undefined;
+
+  if (!src) return undefined;
+
+  return {
+    src,
+    alt: selected.image?.alt ?? selected.altText ?? selected.title ?? "Rugby action",
+  };
+}
+
+export default async function ArticleCard({
   category,
   title,
   excerpt,
@@ -27,6 +81,9 @@ export default function ArticleCard({
   image,
   imageAlt,
 }: ArticleCardProps) {
+  const fallback = image ? undefined : await approvedFallbackImage(title);
+  const displayImage = image ?? fallback?.src;
+  const displayImageAlt = imageAlt ?? fallback?.alt ?? title;
   const metadata = publishedAt || readingTime
     ? [publishedAt, readingTime, author].filter(Boolean)
     : [meta, author].filter(Boolean);
@@ -41,14 +98,14 @@ export default function ArticleCard({
       data-analytics-content-group={category}
       className="group block overflow-hidden rounded-3xl border border-zinc-200 bg-white transition hover:border-[#2E7D32] hover:shadow-sm"
     >
-      {image ? (
+      {displayImage ? (
         <div className={`relative overflow-hidden bg-zinc-100 ${featured ? "aspect-[16/9]" : "aspect-[4/3]"}`}>
           <img
-            src={image}
-            alt={imageAlt ?? ""}
+            src={displayImage}
+            alt={displayImageAlt}
             className="h-full w-full object-cover transition duration-300 group-hover:scale-105"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/5 to-transparent" />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/20 via-transparent to-transparent" />
         </div>
       ) : null}
 
