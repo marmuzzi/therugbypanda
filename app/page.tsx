@@ -4,11 +4,13 @@ import SiteHeader from "@/components/SiteHeader";
 import { getHomepageArticles } from "@/lib/cms";
 
 const sections = [
-  { label: "News", href: "/categories/news" },
+  { label: "News", href: "/news" },
   { label: "Provinces", href: "/categories/provinces" },
   { label: "Ireland", href: "/categories/ireland" },
   { label: "URC", href: "/categories/urc" },
+  { label: "Europe", href: "/categories/europe" },
   { label: "International", href: "/categories/international" },
+  { label: "Opinion", href: "/categories/opinion" },
   { label: "About", href: "/about" },
 ];
 
@@ -81,7 +83,7 @@ export default async function Home() {
               Fresh from the newsroom
             </h2>
           </div>
-          <a href="/categories/news" className="text-sm font-black text-[#2E7D32] hover:underline">
+          <a href="/news" className="text-sm font-black text-[#2E7D32] hover:underline">
             View all news →
           </a>
         </div>
@@ -160,7 +162,7 @@ export default async function Home() {
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
             Sections
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-6">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             {sections.map((section) => (
               <a
                 key={section.href}
