@@ -17,11 +17,11 @@ const socialStatusOptions = [
 export const socialPublishingFields = [
   defineField({
     name: "doNotPublishToSocial",
-    title: "Do not publish to social",
+    title: "Skip automatic social distribution",
     type: "boolean",
     initialValue: false,
     description:
-      "Editorial override. When enabled, publishing the article must not trigger Facebook or Instagram distribution.",
+      "Exception override only. Article approval also approves automatic Facebook and Instagram distribution. Enable this only when the article must not be promoted socially.",
   }),
   defineField({
     name: "socialPublishing",
@@ -119,7 +119,35 @@ export const socialPublishEventType = defineType({
     defineField({ name: "articleUrl", title: "Article URL", type: "url", validation: (rule) => rule.required() }),
     defineField({ name: "headline", title: "Headline", type: "string", validation: (rule) => rule.required() }),
     defineField({ name: "standfirst", title: "Standfirst", type: "text", rows: 3 }),
-    defineField({ name: "imageUrl", title: "Image URL", type: "url" }),
+    defineField({
+      name: "imageUrl",
+      title: "Image URL",
+      type: "url",
+      description: "Required public image URL. Text-only article promotion is not permitted.",
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "imageAltText",
+      title: "Image alt text",
+      type: "string",
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "facebookSnippet",
+      title: "Facebook snippet",
+      type: "text",
+      rows: 4,
+      description: "Automatically generated teaser that links readers back to the article.",
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: "instagramSnippet",
+      title: "Instagram snippet",
+      type: "text",
+      rows: 5,
+      description: "Automatically generated caption derived from the approved article and including the article call to action.",
+      validation: (rule) => rule.required(),
+    }),
     defineField({ name: "requestedAt", title: "Requested at", type: "datetime", validation: (rule) => rule.required() }),
     defineField({
       name: "platforms",
