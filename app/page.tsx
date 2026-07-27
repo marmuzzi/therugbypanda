@@ -35,10 +35,10 @@ export default async function Home() {
             <img
               src={heroImage}
               alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
-              className="absolute inset-0 h-full w-full object-cover object-center"
+              className="absolute inset-0 h-full w-full object-cover object-center brightness-110 saturate-110"
             />
-            <div className="absolute inset-0 bg-gradient-to-b from-black/25 via-black/55 to-black" />
-            <div className="absolute inset-0 hidden bg-gradient-to-r from-black via-black/75 to-black/15 md:block" />
+            <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/20 to-black/85" />
+            <div className="absolute inset-0 hidden bg-gradient-to-r from-black/65 via-black/35 to-transparent md:block" />
 
             <div className="relative z-10 flex min-h-[520px] flex-col justify-end px-5 pb-8 pt-24 sm:min-h-[590px] sm:p-8 md:min-h-[680px] md:justify-between md:p-10 lg:p-12">
               <div className="hidden flex-wrap items-center justify-between gap-4 md:flex">
@@ -58,13 +58,13 @@ export default async function Home() {
                   <h1 className="mt-3 max-w-[22ch] text-[2.55rem] font-black leading-[0.98] tracking-[-0.035em] text-white drop-shadow-lg sm:mt-5 sm:text-5xl md:text-7xl lg:text-8xl">
                     {featured?.title ?? "Irish rugby, told with context."}
                   </h1>
-                  <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-200 drop-shadow sm:mt-6 sm:text-lg sm:leading-8 md:text-xl">
+                  <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-100 drop-shadow sm:mt-6 sm:text-lg sm:leading-8 md:text-xl">
                     {featured?.excerpt ??
                       "A visual preview of The Rugby Panda: match coverage, analysis and stories from Ireland, the provinces, the URC and international rugby."}
                   </p>
-                  <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-zinc-300 sm:mt-6 sm:gap-x-3 sm:text-xs sm:tracking-[0.14em]">
+                  <div className="mt-4 flex flex-wrap items-center gap-x-2 gap-y-2 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-zinc-200 sm:mt-6 sm:gap-x-3 sm:text-xs sm:tracking-[0.14em]">
                     {featured?.meta ? <span>{featured.meta}</span> : null}
-                    {featured?.meta ? <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-500" /> : null}
+                    {featured?.meta ? <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-400" /> : null}
                     <span>The Rugby Panda</span>
                   </div>
                   {featured ? (
@@ -77,14 +77,14 @@ export default async function Home() {
                   ) : null}
                 </article>
 
-                <aside className="hidden rounded-3xl border border-white/15 bg-black/40 p-6 backdrop-blur-md lg:block">
+                <aside className="hidden rounded-3xl border border-white/15 bg-black/35 p-6 backdrop-blur-md lg:block">
                   <p className="text-xs font-black uppercase tracking-[0.25em] text-[#9BE564]">
                     Coverage focus
                   </p>
                   <h2 className="mt-4 text-2xl font-black leading-tight tracking-tight text-white">
                     Four provinces. Ireland. Europe. One clear voice.
                   </h2>
-                  <p className="mt-4 text-sm leading-6 text-zinc-300">
+                  <p className="mt-4 text-sm leading-6 text-zinc-200">
                     Match understanding, squad context, tactical trends and the stories that explain why the rugby matters.
                   </p>
                 </aside>
