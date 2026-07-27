@@ -13,7 +13,15 @@ export type NotificationDelivery = {
 };
 
 const destination = "editor@therugbypanda.ie";
-const reviewUrl = "https://therugbypanda.sanity.studio/structure/editorialReview";
+const studioBaseUrl = "https://therugbypanda.sanity.studio";
+
+function buildReviewUrl(articleId: string) {
+  const documentId = articleId.replace(/^drafts\./, "");
+  const intent = new URL(`${studioBaseUrl}/intent/edit`);
+  intent.searchParams.set("id", documentId);
+  intent.searchParams.set("type", "article");
+  return intent.toString();
+}
 
 function logNotification(
   level: "info" | "warn",
@@ -64,7 +72,7 @@ export async function notifyReviewQueue(input: ReviewQueueNotification): Promise
         actor: input.actor,
         occurredAt: input.occurredAt,
         submissionNote: input.submissionNote,
-        reviewUrl,
+        reviewUrl: buildReviewUrl(input.articleId),
       }),
       cache: "no-store",
       signal: controller.signal,
