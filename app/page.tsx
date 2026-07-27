@@ -23,69 +23,74 @@ export default async function Home() {
   const analysisArticles = latest.filter((article) =>
     ["Analysis", "Column", "Notebook"].some((label) => article.meta?.includes(label) || article.category.includes(label)),
   );
+  const heroImage = featured?.image ?? "/landing-bg.png";
 
   return (
     <main className="min-h-screen bg-white text-zinc-950">
       <SiteHeader />
 
-      <section className="border-b border-zinc-200 bg-zinc-950 text-white">
-        <div className="mx-auto grid max-w-6xl gap-10 px-5 py-12 md:px-6 md:py-16 lg:grid-cols-[minmax(0,1.45fr)_minmax(320px,0.85fr)] lg:items-stretch">
-          {featured ? (
-            <article className="rounded-[2rem] border border-white/10 bg-white/5 p-6 md:p-8">
-              <p className="text-sm font-black uppercase tracking-[0.3em] text-[#4CAF50]">
-                Lead story
-              </p>
-              <h1 className="mt-5 max-w-4xl text-5xl font-black leading-none tracking-tight md:text-7xl">
-                {featured.title}
-              </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300 md:text-xl">
-                {featured.excerpt}
-              </p>
-              <div className="mt-5 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold uppercase tracking-[0.14em] text-zinc-400">
-                {featured.meta ? <span>{featured.meta}</span> : null}
-                {featured.meta ? <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-600" /> : null}
-                <span>The Rugby Panda</span>
-              </div>
-              <a
-                href={featured.href}
-                className="mt-8 inline-flex rounded-full bg-[#4CAF50] px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564]"
-              >
-                Read the lead story
-              </a>
-            </article>
-          ) : (
-            <article className="rounded-[2rem] border border-white/10 bg-white/5 p-6 md:p-8">
-              <p className="text-sm font-black uppercase tracking-[0.3em] text-[#4CAF50]">
-                Newsroom
-              </p>
-              <h1 className="mt-5 max-w-4xl text-5xl font-black leading-none tracking-tight md:text-7xl">
-                The Rugby Panda CMS is ready for publishing.
-              </h1>
-              <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-300 md:text-xl">
-                Publish articles in the hosted Sanity Studio to populate the homepage, categories and article pages.
-              </p>
-            </article>
-          )}
+      <section className="border-b border-zinc-800 bg-zinc-950 text-white">
+        <div className="mx-auto max-w-6xl px-5 py-6 md:px-6 md:py-8">
+          <div className="relative min-h-[620px] overflow-hidden rounded-[2rem] border border-white/10 bg-zinc-900 shadow-2xl md:min-h-[680px]">
+            <img
+              src={heroImage}
+              alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-black via-black/75 to-black/15" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/25" />
 
-          <aside className="rounded-[2rem] border border-white/10 bg-white p-6 text-zinc-950 md:p-8">
-            <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
-              Editor’s note
-            </p>
-            <h2 className="mt-4 text-3xl font-black leading-tight tracking-tight">
-              Built for Irish rugby readers who want context.
-            </h2>
-            <p className="mt-4 text-base leading-7 text-zinc-600">
-              The Rugby Panda is taking shape as an independent newsroom for the four provinces, Ireland, the URC and international rugby.
-            </p>
-            <div className="mt-6 rounded-2xl bg-zinc-100 p-5">
-              <p className="text-xs font-black uppercase tracking-[0.2em] text-zinc-500">
-                Coverage focus
-              </p>
-              <p className="mt-2 text-sm leading-6 text-zinc-600">
-                Match understanding, squad context, tactical trends and stories that explain why the rugby matters.
-              </p>
+            <div className="relative z-10 flex min-h-[620px] flex-col justify-between p-6 md:min-h-[680px] md:p-10 lg:p-12">
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <p className="rounded-full border border-white/20 bg-black/30 px-4 py-2 text-xs font-black uppercase tracking-[0.3em] text-[#9BE564] backdrop-blur-sm">
+                  The Rugby Panda newsroom
+                </p>
+                <p className="rounded-full border border-white/15 bg-black/25 px-4 py-2 text-xs font-bold uppercase tracking-[0.18em] text-zinc-200 backdrop-blur-sm">
+                  Independent Irish rugby coverage
+                </p>
+              </div>
+
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1.35fr)_320px] lg:items-end">
+                <article className="max-w-4xl">
+                  <p className="text-sm font-black uppercase tracking-[0.3em] text-[#9BE564]">
+                    {featured ? "Lead story" : "Coming soon"}
+                  </p>
+                  <h1 className="mt-5 text-5xl font-black leading-[0.95] tracking-tight text-white drop-shadow-lg md:text-7xl lg:text-8xl">
+                    {featured?.title ?? "Irish rugby, told with context."}
+                  </h1>
+                  <p className="mt-6 max-w-3xl text-lg leading-8 text-zinc-200 drop-shadow md:text-xl">
+                    {featured?.excerpt ??
+                      "A visual preview of The Rugby Panda: match coverage, analysis and stories from Ireland, the provinces, the URC and international rugby."}
+                  </p>
+                  <div className="mt-6 flex flex-wrap items-center gap-x-3 gap-y-2 text-xs font-bold uppercase tracking-[0.14em] text-zinc-300">
+                    {featured?.meta ? <span>{featured.meta}</span> : null}
+                    {featured?.meta ? <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-500" /> : null}
+                    <span>The Rugby Panda</span>
+                  </div>
+                  {featured ? (
+                    <a
+                      href={featured.href}
+                      className="mt-8 inline-flex rounded-full bg-[#4CAF50] px-6 py-3 text-sm font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564]"
+                    >
+                      Read the lead story
+                    </a>
+                  ) : null}
+                </article>
+
+                <aside className="rounded-3xl border border-white/15 bg-black/40 p-6 backdrop-blur-md">
+                  <p className="text-xs font-black uppercase tracking-[0.25em] text-[#9BE564]">
+                    Coverage focus
+                  </p>
+                  <h2 className="mt-4 text-2xl font-black leading-tight tracking-tight text-white">
+                    Four provinces. Ireland. Europe. One clear voice.
+                  </h2>
+                  <p className="mt-4 text-sm leading-6 text-zinc-300">
+                    Match understanding, squad context, tactical trends and the stories that explain why the rugby matters.
+                  </p>
+                </aside>
+              </div>
             </div>
-          </aside>
+          </div>
         </div>
       </section>
 
