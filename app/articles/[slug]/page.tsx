@@ -29,9 +29,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const article = await getArticleBySlug(slug);
 
   if (!article) {
-    return {
-      title: "Article not found | The Rugby Panda",
-    };
+    return { title: "Article not found | The Rugby Panda" };
   }
 
   const featuredImage = getFeaturedImage(article);
@@ -42,9 +40,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   return {
     title,
     description,
-    alternates: {
-      canonical: url,
-    },
+    alternates: { canonical: url },
     openGraph: {
       title,
       description,
@@ -54,14 +50,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
       publishedTime: article.publishedAt,
       modifiedTime: article.updatedAt ?? article.publishedAt,
       section: articleLabel(article),
-      images: featuredImage
-        ? [
-            {
-              url: featuredImage.src,
-              alt: featuredImage.alt || article.title,
-            },
-          ]
-        : undefined,
+      images: featuredImage ? [{ url: featuredImage.src, alt: featuredImage.alt || article.title }] : undefined,
     },
     twitter: {
       card: featuredImage ? "summary_large_image" : "summary",
@@ -79,15 +68,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     getContinueReading(slug),
   ]);
 
-  if (!cmsArticle) {
-    notFound();
-  }
+  if (!cmsArticle) notFound();
 
   const category = [cmsArticle.category, cmsArticle.province ?? cmsArticle.competition]
     .filter(Boolean)
     .join(" • ");
   const sections = portableTextToSections(cmsArticle.body);
   const featuredImage = getFeaturedImage(cmsArticle);
+  const isBrandImage = cmsArticle.useBrandImage === true;
   const canonicalUrl = cmsArticle.slug ? articleUrl(cmsArticle.slug) : siteUrl("/");
   const jsonLd = {
     "@context": "https://schema.org",
@@ -127,9 +115,13 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
 
       {featuredImage ? (
-        <figure className="mx-auto max-w-6xl px-5 pb-10 md:px-6">
-          <div className="overflow-hidden rounded-[2rem] border border-zinc-200 bg-zinc-100">
-            <img src={featuredImage.src} alt={featuredImage.alt} className="aspect-[16/9] w-full object-cover" />
+        <figure className="mx-auto max-w-7xl px-5 py-8 md:px-8 md:py-10">
+          <div className={`overflow-hidden rounded-[2rem] border border-zinc-200 ${isBrandImage ? "bg-zinc-50 p-8 md:p-14" : "bg-zinc-100"}`}>
+            <img
+              src={featuredImage.src}
+              alt={featuredImage.alt}
+              className={isBrandImage ? "mx-auto max-h-[520px] w-full object-contain" : "aspect-[16/9] w-full object-cover"}
+            />
           </div>
           {featuredImage.caption || featuredImage.credit ? (
             <figcaption className="mt-3 text-sm leading-6 text-zinc-500">
@@ -159,21 +151,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         <aside className="space-y-6 md:pt-2">
           <div className="rounded-3xl border border-zinc-200 bg-zinc-50 p-6">
-            <p className="text-xs font-black uppercase tracking-[0.25em] text-[#2E7D32]">
-              The Rugby Panda
-            </p>
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-[#2E7D32]">The Rugby Panda</p>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
               Independent Irish and European rugby coverage, built around context, analysis and match understanding.
             </p>
           </div>
 
           <div className="rounded-3xl border border-zinc-200 p-6">
-            <p className="text-xs font-black uppercase tracking-[0.25em] text-zinc-400">
-              Newsletter
-            </p>
-            <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-950">
-              Follow the newsroom build
-            </h2>
+            <p className="text-xs font-black uppercase tracking-[0.25em] text-zinc-400">Newsletter</p>
+            <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-950">Follow the newsroom build</h2>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
               Newsletter sign-up will be added in a later version as the publishing workflow develops.
             </p>
