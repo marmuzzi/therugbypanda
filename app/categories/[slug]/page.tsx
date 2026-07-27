@@ -53,18 +53,20 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
       <SiteHeader />
 
       <section className="border-b border-zinc-800 bg-zinc-950 text-white">
-        <div className="mx-auto max-w-6xl px-5 py-8 md:px-6 md:py-10">
-          <p className="text-xs font-black uppercase tracking-[0.28em] text-[#4CAF50]">
+        <div className="mx-auto max-w-6xl px-5 py-4 md:px-6 md:py-5">
+          <p className="text-[0.65rem] font-black uppercase tracking-[0.25em] text-[#4CAF50]">
             {category.title} rugby
           </p>
-          <h1 className="mt-2 text-4xl font-black leading-none tracking-tight md:text-5xl">
-            {category.title}
-          </h1>
-          {category.description ? (
-            <p className="mt-3 max-w-3xl text-base leading-7 text-zinc-300">
-              {category.description}
-            </p>
-          ) : null}
+          <div className="mt-1 flex flex-col gap-2 md:flex-row md:items-end md:justify-between md:gap-8">
+            <h1 className="text-3xl font-black leading-none tracking-tight md:text-4xl">
+              {category.title}
+            </h1>
+            {category.description ? (
+              <p className="max-w-2xl text-sm leading-6 text-zinc-300 md:text-right">
+                {category.description}
+              </p>
+            ) : null}
+          </div>
         </div>
       </section>
 
