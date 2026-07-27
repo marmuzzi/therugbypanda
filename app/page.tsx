@@ -4,7 +4,7 @@ import SiteHeader from "@/components/SiteHeader";
 import { getHomepageArticles } from "@/lib/cms";
 
 const sections = [
-  { label: "News", href: "/" },
+  { label: "News", href: "/categories/news" },
   { label: "Provinces", href: "/categories/provinces" },
   { label: "Ireland", href: "/categories/ireland" },
   { label: "URC", href: "/categories/urc" },
@@ -81,7 +81,7 @@ export default async function Home() {
               Fresh from the newsroom
             </h2>
           </div>
-          <a href="/" className="text-sm font-black text-[#2E7D32] hover:underline">
+          <a href="/categories/news" className="text-sm font-black text-[#2E7D32] hover:underline">
             View all news →
           </a>
         </div>
@@ -94,7 +94,7 @@ export default async function Home() {
           </div>
         ) : (
           <p className="rounded-3xl border border-dashed border-zinc-300 p-8 text-sm font-semibold text-zinc-500">
-            No published articles yet. Seed or publish CMS content to fill this section.
+            No published articles yet.
           </p>
         )}
       </section>
@@ -112,7 +112,7 @@ export default async function Home() {
                 </h2>
               </div>
               <p className="max-w-2xl text-sm leading-6 text-zinc-500">
-                Leinster, Munster, Ulster and Connacht coverage from live CMS articles.
+                The latest stories from Leinster, Munster, Ulster and Connacht.
               </p>
             </div>
 
