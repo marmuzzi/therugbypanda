@@ -108,6 +108,7 @@ const articleSummaryFields = `
 `;
 
 const homepageArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(isLead desc, publishedAt desc)[0...12]{${articleSummaryFields}}`;
+const newsArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(publishedAt desc)[0...100]{${articleSummaryFields}}`;
 
 const articleBySlugQuery = `*[_type == "article" && slug.current == $slug][0]{
   title,
@@ -134,7 +135,7 @@ const categoryArticlesQuery = `*[_type == "article" && defined(slug.current) && 
 const sitemapArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(publishedAt desc){title,"slug":slug.current,standfirst,publishedAt,updatedAt,"category":category->title,"categorySlug":category->slug.current,"province":province->title,"competition":competition->title}`;
 const sitemapCategoriesQuery = `*[_type == "category" && defined(slug.current)] | order(title asc){title,"slug":slug.current,description}`;
 
-const primarySectionOrder = ["Provinces", "Ireland", "URC", "International"];
+const primarySectionOrder = ["Provinces", "Ireland", "URC", "Europe", "International", "Opinion"];
 const BRAND_ARTICLE_IMAGE = "/rugby-panda-logo.png";
 
 function categorySlugs(slug: string) {
@@ -275,6 +276,11 @@ export async function getHomepageArticles() {
   };
 }
 
+export async function getNewsArticles() {
+  const articles = await sanityFetch<SanityArticleSummary[]>({ query: newsArticlesQuery });
+  return articles?.map(mapArticleSummary) ?? [];
+}
+
 export async function getArticleBySlug(slug: string) {
   return sanityFetch<CmsArticle>({ query: articleBySlugQuery, params: { slug } });
 }
@@ -313,7 +319,7 @@ export async function getSectionLinks(): Promise<SectionLink[]> {
   });
 
   return [
-    { label: "News", href: "/categories/news" },
+    { label: "News", href: "/news" },
     ...sorted.filter((section) => section.href !== "/categories/news"),
   ];
 }
