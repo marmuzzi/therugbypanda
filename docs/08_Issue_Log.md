@@ -10,9 +10,13 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Root cause | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PUB-004 | In Progress | Critical | Publishing / Architecture | Establish one-click publication preparation after a single editorial approval. | Website, social, preview and readiness responsibilities were not yet represented as one explicit pipeline. | #100, #101 | Foundation merged; PR #101 open | Pending merge, schema build, Studio verification and end-to-end orchestration test | — |
+| SOCIAL-001 | In Progress | High | Publishing / Social | Automatically publish image-backed, platform-specific article posts to Facebook and Instagram after controlled article publication, with a Sanity skip override. | No official Meta publishing integration or Make.com scenario exists. | #100, #101 | Data contract implemented; delivery not implemented | Pending Meta configuration, controlled posts, idempotency, partial success, retries and failure-path verification | — |
+| MEDIA-007 | In Progress | High | Media / Intelligence | Select the best usage-approved image separately for website, Facebook and Instagram. | Featured-image-only selection cannot optimise platform fit and engagement. | #101 | Schema and workflow contract in PR #101 | Pending ranking implementation, representative image-set test and editor review of selections | — |
+| PUB-005 | Open | High | CMS / Preview | Build the visual Publication Preview component in Sanity Studio. | Readiness fields exist only as a contract; editors cannot yet inspect the prepared website and social presentation in one view. | #101 foundation | Not implemented | Pending authenticated Studio verification on desktop and mobile | — |
+| PUB-006 | Open | High | Publishing / Quality | Implement website preview, SEO, accessibility and social-readiness checks with automatic fixes where safe. | No automatic preparation service currently evaluates final presentation before downstream delivery. | #101 foundation | Not implemented | Pending controlled article test, warning/failure behaviour and no-second-approval verification | — |
 | V1-UI-001 | In Progress | High | Frontend / Brand | Increase the Panda icon, reduce the wordmark and tighten the brand lockup. | Current header gives too much visual weight to the wordmark. | Pending PR | Implementation branch created | Pending desktop and mobile production verification | — |
 | V1-NAV-001 | In Progress | High | Frontend / Navigation | Create `/news`, point News to it, keep About in the header, add Europe and Opinion, and replace mobile overflow with a hamburger menu. | News currently behaves like a homepage link and horizontal mobile navigation does not fit. | Pending PR | Implementation branch created | Pending route, accessibility and mobile verification | — |
-| SOCIAL-001 | Open | High | Publishing / Social | Automatically publish platform-specific article snippets to Facebook and Instagram after controlled article publication, with a Sanity opt-out. | No official Meta publishing integration exists. | — | Not implemented | Pending official API configuration, controlled test posts, retry and failure-path verification | — |
 | MEDIA-005 | Open | High | Media / Rights | Add rights dashboard fields and publication gates for photography and reusable editorial assets. | Rights metadata exists but is not yet presented as a consolidated operational dashboard. | — | Not implemented | Pending Sanity Studio and controlled publication-gate verification | — |
 | MEDIA-006 | Open | High | Media / Intelligence | Add AI-assisted metadata, quality scoring, duplicate detection and article-image suggestions for uploaded photos. | Media processing is currently manual. | — | Not implemented | Pending representative upload batch and editorial suggestion verification | — |
 | BRAND-005 | Open | High | Brand Assets / Frontend | Upload approved team and competition logos into Sanity, link them to entities and expose only approved Sanity-hosted assets. | Candidate records exist, but public frontend use is not implemented. | — | Not implemented | Pending rights review and no-hotlink production verification | — |
@@ -42,6 +46,21 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | DOC-001 | Closed | High | Documentation | Establish project state, Issue Log and publishing workflow. | Documentation continuity requirement. | #22 | Merged | Repository verified | 2026-07-04 |
 | CMS-001 | Closed | High | CMS | Use hosted Sanity content on homepage and article pages. | Static/local content path needed replacement. | #14 | Deployed | Production verified | 2026-07-03 |
 
+## Publication architecture decisions
+
+The following are approved and must not be silently reversed:
+
+- One human approval in Sanity authorises website publication and automatic social distribution unless the editor uses the exception override.
+- There is no second social approval.
+- Website publication is technically independent from social preparation and delivery.
+- A social failure must never roll back, unpublish or block a website article.
+- Every social article post must include a picture; text-only promotion is prohibited.
+- Missing-image cases wait and retry rather than creating a text-only post.
+- Only usage-approved imagery with adequate rights metadata may enter AI selection.
+- Website, Facebook and Instagram may use different selected images.
+- Platform success is recorded independently; one successful platform must not be rolled back because another failed.
+- Stable `eventId` idempotency must prevent duplicate platform posts.
+
 ## AUTO-001 current baseline
 
 Merged, deployed and authenticated-Studio-verified capabilities include:
@@ -59,7 +78,7 @@ Merged, deployed and authenticated-Studio-verified capabilities include:
 - Mobile-first ordering, contrast and readability through PR #91.
 - Automatic hosted Sanity Studio deployment after relevant merges.
 
-The repository contains newer frontend commits beyond the PR #91 baseline. Always inspect live `main` before quoting a current SHA or deployment state.
+The repository contains newer frontend and publication-pipeline work beyond the PR #91 baseline. Always inspect live `main` and open PRs before quoting a current SHA or deployment state.
 
 ## Make.com integration status
 
@@ -67,6 +86,7 @@ The repository contains newer frontend commits beyond the PR #91 baseline. Alway
 - A production webhook receives review-ready events.
 - A test email reached `editor@therugbypanda.ie`.
 - The currently exposed connector does not permit Make scenario editing.
+- The publication-preparation and social-distribution Make scenario is not implemented.
 - NOTIFY-001 remains incomplete until production field mapping, persistent deduplication, duplicate replay and failure-path behaviour are verified.
 
 ## Mail routing requirements
