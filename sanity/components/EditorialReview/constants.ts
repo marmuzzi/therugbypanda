@@ -40,12 +40,14 @@ export const QUEUE_QUERY = `*[
   "featuredImageCaption": featuredImage.caption,
   "featuredImageCredit": featuredImage.photographer,
   "slug": slug.current,
+  readingTime,
   isLead,
   useBrandImage,
   "category": category->{_id, title},
   "author": author->{_id, name},
   "province": province->{_id, title},
-  "competition": competition->{_id, title}
+  "competition": competition->{_id, title},
+  "tags": tags[]->{_id, title}
 }`;
 
 export const actionMap: Record<string, EditorialAction[]> = {
