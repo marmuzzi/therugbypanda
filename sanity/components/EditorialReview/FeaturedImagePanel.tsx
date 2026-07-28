@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useClient } from "sanity";
 
 import { cardStyle, inputStyle } from "./constants";
@@ -24,6 +24,13 @@ type ApprovedImage = {
     crop?: Record<string, number>;
     hotspot?: Record<string, number>;
   };
+};
+
+type CurrentImage = {
+  url?: string;
+  alt?: string;
+  caption?: string;
+  credit?: string;
 };
 
 type FeaturedImagePanelProps = {
@@ -66,16 +73,27 @@ function toFeaturedImage(image: ApprovedImage) {
   };
 }
 
+function articleImage(article: ReviewArticle): CurrentImage {
+  return {
+    url: article.featuredImageUrl,
+    alt: article.featuredImageAlt,
+    caption: article.featuredImageCaption,
+    credit: article.featuredImageCredit,
+  };
+}
+
 export function FeaturedImagePanel({
   article,
   onChanged,
 }: FeaturedImagePanelProps): React.JSX.Element {
   const client = useClient({ apiVersion: "2025-01-01" }).withConfig({ perspective: "raw", useCdn: false });
   const [images, setImages] = useState<ApprovedImage[]>([]);
+  const [currentImage, setCurrentImage] = useState<CurrentImage>(() => articleImage(article));
   const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const autoAssignmentAttempted = useRef<string | null>(null);
 
   async function loadImages() {
     setIsLoading(true);
@@ -90,8 +108,19 @@ export function FeaturedImagePanel({
   }
 
   useEffect(() => {
+    setCurrentImage(articleImage(article));
+    autoAssignmentAttempted.current = null;
+  }, [article._id, article.featuredImageUrl]);
+
+  useEffect(() => {
     void loadImages();
   }, []);
+
+  useEffect(() => {
+    if (currentImage.url || images.length === 0 || isSaving || autoAssignmentAttempted.current === article._id) return;
+    autoAssignmentAttempted.current = article._id;
+    void assignImage(images[0], true);
+  }, [article._id, currentImage.url, images, isSaving]);
 
   const filteredImages = useMemo(() => {
     const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
@@ -105,12 +134,20 @@ export function FeaturedImagePanel({
     });
   }, [images, query]);
 
-  async function assignImage(image: ApprovedImage) {
+  async function assignImage(image: ApprovedImage, automatic = false) {
     setIsSaving(true);
-    setMessage(null);
+    setMessage(automatic ? "Assigning an approved featured image automatically…" : null);
     try {
       await client.patch(article._id).set({ featuredImage: toFeaturedImage(image), updatedAt: new Date().toISOString() }).commit();
-      setMessage(`Featured image changed to “${image.title ?? "approved image"}”.`);
+      setCurrentImage({
+        url: image.imageUrl,
+        alt: image.altText ?? image.title,
+        caption: image.caption,
+        credit: image.creditLine ?? image.photographer,
+      });
+      setMessage(automatic
+        ? `Approved featured image assigned automatically: “${image.title ?? "Editorial image"}”.`
+        : `Featured image changed to “${image.title ?? "approved image"}”.`);
       await onChanged?.();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to assign the featured image.");
@@ -120,12 +157,14 @@ export function FeaturedImagePanel({
   }
 
   async function removeImage() {
-    if (!window.confirm("Remove the featured image from this article?")) return;
+    if (!window.confirm("Remove the featured image from this article? A replacement can be selected immediately below.")) return;
     setIsSaving(true);
     setMessage(null);
+    autoAssignmentAttempted.current = article._id;
     try {
       await client.patch(article._id).unset(["featuredImage"]).set({ updatedAt: new Date().toISOString() }).commit();
-      setMessage("Featured image removed.");
+      setCurrentImage({});
+      setMessage("Featured image removed. Choose a replacement from the approved library.");
       await onChanged?.();
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "Unable to remove the featured image.");
@@ -139,30 +178,30 @@ export function FeaturedImagePanel({
       <div style={{ display: "flex", justifyContent: "space-between", gap: ".75rem", alignItems: "center", flexWrap: "wrap" }}>
         <div>
           <h3 style={{ margin: 0 }}>Featured image</h3>
-          <small style={{ color: "#666" }}>New drafts receive an approved image automatically. Replace it here when another approved image is a better fit.</small>
+          <small style={{ color: "#666" }}>An approved image is assigned automatically. Replace it here whenever another approved image is a better fit.</small>
         </div>
-        {article.featuredImageUrl ? (
+        {currentImage.url ? (
           <button type="button" onClick={() => void removeImage()} disabled={isSaving}>Remove image</button>
         ) : null}
       </div>
 
-      {article.featuredImageUrl ? (
+      {currentImage.url ? (
         <figure style={{ margin: 0 }}>
           <img
-            src={article.featuredImageUrl}
-            alt={article.featuredImageAlt ?? ""}
+            src={currentImage.url}
+            alt={currentImage.alt ?? ""}
             style={{ width: "100%", maxHeight: 420, objectFit: "cover", borderRadius: 8 }}
           />
           <figcaption style={{ marginTop: ".35rem", color: "#666" }}>
-            {[article.featuredImageCaption, article.featuredImageCredit].filter(Boolean).join(" — ")}
+            {[currentImage.caption, currentImage.credit].filter(Boolean).join(" — ")}
           </figcaption>
         </figure>
       ) : (
-        <p style={{ margin: 0 }}><strong>Image:</strong> No approved featured image assigned. Choose one below.</p>
+        <p style={{ margin: 0 }}><strong>Image:</strong> {isSaving ? "Assigning approved image…" : "No approved featured image is currently available."}</p>
       )}
 
       <details>
-        <summary style={{ cursor: "pointer", fontWeight: 600 }}>Browse approved images</summary>
+        <summary style={{ cursor: "pointer", fontWeight: 600 }}>Replace from approved image library</summary>
         <div style={{ display: "grid", gap: ".75rem", marginTop: ".75rem" }}>
           <div style={{ display: "flex", gap: ".5rem", flexWrap: "wrap" }}>
             <input
@@ -186,7 +225,7 @@ export function FeaturedImagePanel({
                   <strong>{image.title ?? "Untitled image"}</strong>
                   <small style={{ color: "#666" }}>{[image.editorialCategory, image.photoType, image.creditLine ?? image.photographer].filter(Boolean).join(" · ")}</small>
                   <button type="button" onClick={() => void assignImage(image)} disabled={isSaving}>
-                    {article.featuredImageUrl ? "Use this image" : "Assign image"}
+                    Use this image
                   </button>
                 </div>
               </article>
