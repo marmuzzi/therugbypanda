@@ -1,3 +1,4 @@
+import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 import { authenticateEditorialRequest } from "@/lib/editorial/EditorialApiAuth";
@@ -61,6 +62,10 @@ export async function POST(request: NextRequest) {
         ? identity.actor
         : body.actor?.trim() || identity.actor;
     const result = await applyEditorialAction({ ...body, actor });
+
+    // Publishing, unpublishing, rejecting or removing an article must be reflected
+    // on the public website on the next request rather than waiting for the normal cache window.
+    revalidatePath("/", "layout");
 
     return jsonResponse({ status: "ok", workflow: result });
   } catch (error) {
