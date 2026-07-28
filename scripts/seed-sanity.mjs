@@ -61,17 +61,21 @@ function ref(_ref) {
   return { _type: "reference", _ref };
 }
 
-const introductionArticle = {
-  _id: "article-welcome-to-the-rugby-panda",
+const introductionArticleId = "article-welcome-to-the-rugby-panda";
+const introductionDraftId = `drafts.${introductionArticleId}`;
+
+const introductionDraft = {
+  _id: introductionDraftId,
+  _type: "article",
   title: "Welcome to The Rugby Panda: rugby worth reading",
-  slug: "welcome-to-the-rugby-panda",
+  slug: { _type: "slug", current: "welcome-to-the-rugby-panda" },
   standfirst: "A new independent rugby newsroom built for supporters who want clear reporting, useful context and thoughtful analysis of the game.",
-  publishedAt: "2026-07-28T21:00:00Z",
   readingTime: "4 min read",
-  isLead: true,
+  isLead: false,
   useBrandImage: true,
-  category: "category-news",
-  tags: ["tag-introduction"],
+  author: ref(author._id),
+  category: ref("category-news"),
+  tags: [ref("tag-introduction")],
   keyPoints: [
     "The Rugby Panda will focus on Irish provincial rugby, the URC and the international game.",
     "Coverage will favour accuracy, context and clear analysis over manufactured controversy.",
@@ -81,7 +85,7 @@ const introductionArticle = {
     block("Rugby does not suffer from a shortage of noise. Every team selection becomes a crisis, every defeat becomes a collapse and every promising player is immediately presented as the answer to a question nobody has properly asked."),
     block("The Rugby Panda is being built as an alternative: an independent digital newsroom for supporters who enjoy the game, care about the detail and want coverage that respects their intelligence."),
     block("What we will cover", "h2"),
-    block("Our core focus is Irish rugby: Leinster, Munster, Ulster and Connacht, the United Rugby Championship and the Ireland team. We will also follow the wider international game whenever the story matters to Irish and European supporters."),
+    block("Our core focus is Irish rugby: Leinster, Munster, Ulster and Connacht, the United Rugby Championship and the Ireland team. Ireland national-team coverage belongs within our International section, alongside the wider Test game."),
     block("That means match reporting, selection context, tactical trends, squad development and the decisions that shape a season. It also means knowing when a story needs depth and when it simply needs to be explained clearly."),
     block("How we want to cover it", "h2"),
     block("The aim is not to be the loudest voice in rugby. It is to be a useful one. Reporting should separate confirmed information from interpretation. Analysis should explain why something matters rather than merely declaring that it does."),
@@ -127,16 +131,13 @@ transaction.createOrReplace(author);
 
 for (const articleId of legacySeedArticleIds) {
   transaction.delete(articleId);
+  transaction.delete(`drafts.${articleId}`);
 }
 
-transaction.createOrReplace({
-  _type: "article",
-  ...introductionArticle,
-  slug: { _type: "slug", current: introductionArticle.slug },
-  author: ref(author._id),
-  category: ref(introductionArticle.category),
-  tags: introductionArticle.tags.map(ref),
-});
+// Enforce the human approval boundary: remove any published launch document and
+// create only a Studio draft for editorial review and amendment.
+transaction.delete(introductionArticleId);
+transaction.createOrReplace(introductionDraft);
 
 await transaction.commit();
-console.log(`Removed ${legacySeedArticleIds.length} legacy seed articles and published the launch introduction in ${projectId}/${dataset}.`);
+console.log(`Removed legacy seed articles, unpublished the launch introduction, and created ${introductionDraftId} for editorial review in ${projectId}/${dataset}.`);
