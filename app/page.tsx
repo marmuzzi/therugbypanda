@@ -31,7 +31,7 @@ export default async function Home() {
     <main className="min-h-screen bg-white text-zinc-950">
       <SiteHeader />
 
-      <section className="border-b border-zinc-800 bg-zinc-950 text-white">
+      <section className="bg-zinc-950 text-white">
         <div className="mx-auto grid max-w-[1600px] lg:grid-cols-[minmax(0,0.88fr)_minmax(520px,1.12fr)]">
           <div className="flex min-h-[390px] items-center px-5 py-12 sm:px-8 md:min-h-[430px] md:px-12 lg:min-h-[500px] lg:px-16 xl:px-24">
             <article className="max-w-2xl">
@@ -63,13 +63,13 @@ export default async function Home() {
             </article>
           </div>
 
-          <div className="relative min-h-[300px] overflow-hidden border-t border-zinc-800 lg:min-h-[500px] lg:border-l lg:border-t-0">
+          <div className="relative min-h-[300px] overflow-hidden lg:min-h-[500px]">
             <img
               src={heroImage}
               alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
               className="absolute inset-0 h-full w-full object-cover object-center"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black/20 lg:via-transparent lg:to-transparent" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent lg:bg-gradient-to-r lg:from-zinc-950/35 lg:via-transparent lg:to-transparent" />
           </div>
         </div>
       </section>
