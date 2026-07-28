@@ -71,12 +71,14 @@ export type ReviewArticle = {
   featuredImageCaption?: string;
   featuredImageCredit?: string;
   slug?: string;
+  readingTime?: string;
   isLead?: boolean;
   useBrandImage?: boolean;
   category?: { _id?: string; title?: string };
   author?: { _id?: string; name?: string };
   province?: { _id?: string; title?: string };
   competition?: { _id?: string; title?: string };
+  tags?: Array<{ _id?: string; title?: string }>;
 };
 
 export type EditorialAction =
@@ -125,7 +127,10 @@ export type AiEditorialFindingCategory =
   | "readability"
   | "seo"
   | "headline"
-  | "standfirst";
+  | "standfirst"
+  | "rugby-voice"
+  | "originality"
+  | "ai-likeness";
 
 export type AiEditorialFinding = {
   severity: AiEditorialFindingSeverity;
@@ -133,6 +138,12 @@ export type AiEditorialFinding = {
   message: string;
   excerpt: string;
   recommendation: string;
+};
+
+export type AiEditorialVoiceAssessment = {
+  aiLikeness: "low" | "moderate" | "high";
+  rugbyPandaTone: "strong-match" | "partial-match" | "weak-match";
+  explanation: string;
 };
 
 export type EditableDraft = {

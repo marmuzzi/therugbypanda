@@ -27,6 +27,7 @@ import type {
   ReviewArticle,
   EditorialAction,
   AiEditorialFinding,
+  AiEditorialVoiceAssessment,
   EditableDraft,
 } from "./EditorialReview/types";
 
@@ -48,6 +49,7 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [aiFindings, setAiFindings] = useState<AiEditorialFinding[] | null>(null);
+  const [aiVoiceAssessment, setAiVoiceAssessment] = useState<AiEditorialVoiceAssessment | null>(null);
   const [isAiReviewing, setIsAiReviewing] = useState(false);
 
   const actor =
@@ -116,11 +118,13 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
       setDraft(null);
       setIsDirty(false);
       setAiFindings(null);
+      setAiVoiceAssessment(null);
       return;
     }
     setDraft(articleToEditable(selected));
     setIsDirty(false);
     setAiFindings(null);
+    setAiVoiceAssessment(null);
   }, [selected?._id]);
 
   function updateDraft(field: keyof EditableDraft, value: string) {
@@ -157,12 +161,14 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
       });
       const payload = await readJsonResponse<{
         findings?: AiEditorialFinding[];
+        voiceAssessment?: AiEditorialVoiceAssessment;
         error?: string;
       }>(response);
       if (!response.ok) {
         throw new Error(payload.error ?? `AI review failed with ${response.status}.`);
       }
       setAiFindings(payload.findings ?? []);
+      setAiVoiceAssessment(payload.voiceAssessment ?? null);
     } catch (error) {
       setMessage(error instanceof Error ? error.message : "AI editorial review failed.");
     } finally {
@@ -342,6 +348,7 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
 
             <AIEditorialReview
               findings={aiFindings}
+              voiceAssessment={aiVoiceAssessment}
               isReviewing={isAiReviewing}
               isSaving={isSaving}
               isStale={isDirty && aiFindings !== null}

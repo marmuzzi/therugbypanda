@@ -20,7 +20,8 @@ export type AiEditorialFindingCategory =
   | "headline"
   | "standfirst"
   | "rugby-voice"
-  | "originality";
+  | "originality"
+  | "ai-likeness";
 
 export type AiEditorialFinding = {
   severity: AiEditorialFindingSeverity;
@@ -33,6 +34,11 @@ export type AiEditorialFinding = {
 export type AiEditorialReview = {
   findings: AiEditorialFinding[];
   scorecard: EditorialScorecard;
+  voiceAssessment: {
+    aiLikeness: "low" | "moderate" | "high";
+    rugbyPandaTone: "strong-match" | "partial-match" | "weak-match";
+    explanation: string;
+  };
 };
 
 export type AiEditorialReviewInput = {
@@ -63,7 +69,7 @@ const categoryScoreSchema = {
 const EDITORIAL_REVIEW_SCHEMA = {
   type: "object",
   additionalProperties: false,
-  required: ["findings", "scorecard"],
+  required: ["findings", "scorecard", "voiceAssessment"],
   properties: {
     findings: {
       type: "array",
@@ -87,6 +93,7 @@ const EDITORIAL_REVIEW_SCHEMA = {
               "standfirst",
               "rugby-voice",
               "originality",
+              "ai-likeness",
             ],
           },
           message: { type: "string" },
@@ -119,6 +126,19 @@ const EDITORIAL_REVIEW_SCHEMA = {
         accuracyNotice: { type: "string" },
       },
     },
+    voiceAssessment: {
+      type: "object",
+      additionalProperties: false,
+      required: ["aiLikeness", "rugbyPandaTone", "explanation"],
+      properties: {
+        aiLikeness: { type: "string", enum: ["low", "moderate", "high"] },
+        rugbyPandaTone: {
+          type: "string",
+          enum: ["strong-match", "partial-match", "weak-match"],
+        },
+        explanation: { type: "string" },
+      },
+    },
   },
 } as const;
 
@@ -144,10 +164,15 @@ function extractOutputText(payload: ResponsesPayload): string | undefined {
   return undefined;
 }
 
-function normaliseReview(review: { findings: AiEditorialFinding[]; scorecard: RawScorecard }): AiEditorialReview {
+function normaliseReview(review: {
+  findings: AiEditorialFinding[];
+  scorecard: RawScorecard;
+  voiceAssessment: AiEditorialReview["voiceAssessment"];
+}): AiEditorialReview {
   const overall = calculateWeightedEditorialScore(review.scorecard);
   return {
     findings: review.findings,
+    voiceAssessment: review.voiceAssessment,
     scorecard: {
       ...review.scorecard,
       overall,
@@ -176,6 +201,10 @@ export async function runAiEditorialReview(input: AiEditorialReviewInput): Promi
           buildEditorialDnaPrompt(),
           "Return only the requested JSON schema. Do not rewrite or modify the article.",
           "Score Accuracy, Grammar, Readability, SEO, Rugby Voice and Originality independently from 0 to 100.",
+          "Assess whether the prose displays machine-like traits, but never claim authorship or certainty about whether AI wrote it.",
+          "Classify AI-likeness as low, moderate or high using observable style signals such as formulaic transitions, repetitive syntax, generic conclusions, vague authority language, excessive balance, unnatural keyword repetition and over-polished rhythm.",
+          "Classify Rugby Panda tone as strong-match, partial-match or weak-match against the supplied Editorial DNA.",
+          "When AI-likeness or tone match is not strong, add precise ai-likeness or rugby-voice findings with a short excerpt and an actionable rewrite recommendation.",
           "Accuracy carries the greatest importance. Do not present the score as proof of independent factual verification.",
           "For accuracy, distinguish supported facts, apparent internal consistency and facts requiring human verification.",
           "Use blocking only for a material factual-support or misleading-certainty concern; warning for clear editorial errors; suggestion for improvements.",
@@ -206,7 +235,11 @@ export async function runAiEditorialReview(input: AiEditorialReviewInput): Promi
     if (!outputText) throw new Error("OpenAI returned no structured editorial review output.");
 
     try {
-      return normaliseReview(JSON.parse(outputText) as { findings: AiEditorialFinding[]; scorecard: RawScorecard });
+      return normaliseReview(JSON.parse(outputText) as {
+        findings: AiEditorialFinding[];
+        scorecard: RawScorecard;
+        voiceAssessment: AiEditorialReview["voiceAssessment"];
+      });
     } catch (error) {
       throw new Error(`OpenAI returned invalid structured editorial review JSON: ${error instanceof Error ? error.message : "parse failed"}`);
     }
