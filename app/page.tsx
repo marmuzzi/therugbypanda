@@ -32,42 +32,44 @@ export default async function Home() {
       <SiteHeader />
 
       <section className="border-b border-zinc-800 bg-zinc-950 text-white">
-        <div className="relative mx-auto min-h-[430px] max-w-[1600px] overflow-hidden sm:min-h-[450px] md:min-h-[470px] lg:min-h-[500px]">
-          <img
-            src={heroImage}
-            alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
-            className="absolute inset-0 h-full w-full object-cover object-center brightness-125 saturate-110"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/55 via-black/10 to-transparent md:bg-gradient-to-r md:from-black/60 md:via-black/20 md:to-transparent" />
-
-          <div className="relative z-10 mx-auto flex min-h-[430px] max-w-7xl items-end px-5 py-7 sm:min-h-[450px] sm:px-6 sm:py-9 md:min-h-[470px] md:items-center md:px-8 md:py-10 lg:min-h-[500px]">
-            <article className="max-w-2xl rounded-2xl bg-black/15 p-5 backdrop-blur-[1px] sm:p-6 md:max-w-xl md:bg-transparent md:p-0 md:backdrop-blur-none lg:max-w-2xl">
-              <p className="text-[0.68rem] font-black uppercase tracking-[0.24em] text-[#9BE564] sm:text-xs sm:tracking-[0.28em]">
+        <div className="mx-auto grid max-w-[1600px] lg:grid-cols-[minmax(0,0.88fr)_minmax(520px,1.12fr)]">
+          <div className="flex min-h-[390px] items-center px-5 py-12 sm:px-8 md:min-h-[430px] md:px-12 lg:min-h-[500px] lg:px-16 xl:px-24">
+            <article className="max-w-2xl">
+              <p className="text-xs font-black uppercase tracking-[0.28em] text-[#9BE564]">
                 {featured?.category ?? (featured ? "Lead story" : "Coming soon")}
               </p>
-              <h1 className="mt-2 max-w-[18ch] text-[2.15rem] font-black leading-[0.98] tracking-[-0.035em] text-white drop-shadow-lg sm:mt-3 sm:text-[2.7rem] md:max-w-[15ch] md:text-[3.5rem] lg:text-[4.25rem]">
+              <h1 className="mt-4 max-w-[14ch] text-[2.6rem] font-black leading-[0.98] tracking-[-0.04em] text-white sm:text-[3.25rem] lg:text-[4.35rem]">
                 {featured?.title ?? "Irish rugby, told with context."}
               </h1>
-              <p className="mt-3 max-w-xl text-sm leading-6 text-zinc-100 drop-shadow sm:mt-4 sm:text-base sm:leading-7 md:text-lg">
+              <p className="mt-5 max-w-xl text-base leading-7 text-zinc-300 md:text-lg">
                 {featured?.excerpt ??
                   "Independent coverage, analysis and stories from Ireland, the provinces, the URC and international rugby."}
               </p>
-              <div className="mt-3 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.62rem] font-bold uppercase tracking-[0.12em] text-zinc-200 sm:mt-4 sm:text-[0.68rem]">
+              <div className="mt-5 flex flex-wrap items-center gap-x-2 gap-y-1 text-[0.68rem] font-bold uppercase tracking-[0.12em] text-zinc-400">
                 {featured?.meta ? <span>{featured.meta}</span> : null}
                 {featured?.meta ? (
-                  <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-400" />
+                  <span aria-hidden="true" className="h-1 w-1 rounded-full bg-zinc-600" />
                 ) : null}
                 <span>The Rugby Panda</span>
               </div>
               {featured ? (
                 <a
                   href={featured.href}
-                  className="mt-4 inline-flex items-center rounded-full bg-[#7CB342] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564] sm:mt-5"
+                  className="mt-6 inline-flex items-center rounded-full bg-[#7CB342] px-5 py-2.5 text-xs font-black uppercase tracking-wider text-zinc-950 transition hover:bg-[#9BE564]"
                 >
                   Read the full story
                 </a>
               ) : null}
             </article>
+          </div>
+
+          <div className="relative min-h-[300px] overflow-hidden border-t border-zinc-800 lg:min-h-[500px] lg:border-l lg:border-t-0">
+            <img
+              src={heroImage}
+              alt={featured?.imageAlt ?? "Rugby stadium atmosphere"}
+              className="absolute inset-0 h-full w-full object-cover object-center"
+            />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent lg:bg-gradient-to-r lg:from-black/20 lg:via-transparent lg:to-transparent" />
           </div>
         </div>
       </section>
