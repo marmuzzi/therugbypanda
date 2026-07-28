@@ -4,11 +4,7 @@ import { useClient } from "sanity";
 import { cardStyle, inputStyle } from "./constants";
 import type { ReviewArticle } from "./types";
 
-type ReferenceOption = {
-  _id: string;
-  label: string;
-};
-
+type ReferenceOption = { _id: string; label: string };
 type OptionSets = {
   categories: ReferenceOption[];
   authors: ReferenceOption[];
@@ -20,8 +16,6 @@ type OptionSets = {
 type MetadataPanelProps = {
   article: ReviewArticle;
   isSaving: boolean;
-  onUpdated: (articleId: string) => Promise<void> | void;
-  onMessage: (message: string) => void;
 };
 
 const OPTIONS_QUERY = `{
@@ -32,23 +26,9 @@ const OPTIONS_QUERY = `{
   "tags": *[_type == "tag"] | order(title asc) { _id, "label": title }
 }`;
 
-export function MetadataPanel({
-  article,
-  isSaving,
-  onUpdated,
-  onMessage,
-}: MetadataPanelProps): React.JSX.Element {
-  const client = useClient({ apiVersion: "2025-01-01" }).withConfig({
-    perspective: "raw",
-    useCdn: false,
-  });
-  const [options, setOptions] = useState<OptionSets>({
-    categories: [],
-    authors: [],
-    provinces: [],
-    competitions: [],
-    tags: [],
-  });
+export function MetadataPanel({ article, isSaving }: MetadataPanelProps): React.JSX.Element {
+  const client = useClient({ apiVersion: "2025-01-01" }).withConfig({ perspective: "raw", useCdn: false });
+  const [options, setOptions] = useState<OptionSets>({ categories: [], authors: [], provinces: [], competitions: [], tags: [] });
   const [categoryId, setCategoryId] = useState("");
   const [authorId, setAuthorId] = useState("");
   const [provinceId, setProvinceId] = useState("");
@@ -59,10 +39,11 @@ export function MetadataPanel({
   const [isLead, setIsLead] = useState(false);
   const [useBrandImage, setUseBrandImage] = useState(false);
   const [isMetadataSaving, setIsMetadataSaving] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
 
   useEffect(() => {
     void client.fetch<OptionSets>(OPTIONS_QUERY).then(setOptions).catch(() => {
-      onMessage("Unable to load editorial metadata options.");
+      setMessage("Unable to load editorial metadata options.");
     });
   }, []);
 
@@ -76,25 +57,20 @@ export function MetadataPanel({
     setReadingTime(article.readingTime ?? "");
     setIsLead(article.isLead === true);
     setUseBrandImage(article.useBrandImage === true);
+    setMessage(null);
   }, [article._id]);
-
-  function reference(id: string) {
-    return id ? { _type: "reference", _ref: id } : null;
-  }
 
   async function saveMetadata() {
     if (!categoryId) {
-      onMessage("Choose a category before saving article metadata.");
+      setMessage("Choose a category before saving article settings.");
       return;
     }
 
     setIsMetadataSaving(true);
+    setMessage(null);
     try {
       const patch = client.patch(article._id).set({
-        category: reference(categoryId),
-        author: reference(authorId),
-        province: reference(provinceId),
-        competition: reference(competitionId),
+        category: { _type: "reference", _ref: categoryId },
         tags: tagIds.map((id) => ({
           _key: id.replace(/[^a-zA-Z0-9]/g, "").slice(-12),
           _type: "reference",
@@ -107,15 +83,14 @@ export function MetadataPanel({
         updatedAt: new Date().toISOString(),
       });
 
-      if (!authorId) patch.unset(["author"]);
-      if (!provinceId) patch.unset(["province"]);
-      if (!competitionId) patch.unset(["competition"]);
+      authorId ? patch.set({ author: { _type: "reference", _ref: authorId } }) : patch.unset(["author"]);
+      provinceId ? patch.set({ province: { _type: "reference", _ref: provinceId } }) : patch.unset(["province"]);
+      competitionId ? patch.set({ competition: { _type: "reference", _ref: competitionId } }) : patch.unset(["competition"]);
 
       await patch.commit();
-      onMessage("Article metadata saved in Sanity.");
-      await onUpdated(article._id);
+      setMessage("Article settings saved in Sanity.");
     } catch (error) {
-      onMessage(error instanceof Error ? error.message : "Unable to save article metadata.");
+      setMessage(error instanceof Error ? error.message : "Unable to save article settings.");
     } finally {
       setIsMetadataSaving(false);
     }
@@ -137,12 +112,10 @@ export function MetadataPanel({
         <ReferenceSelect label="Author" value={authorId} options={options.authors} onChange={setAuthorId} />
         <ReferenceSelect label="Province" value={provinceId} options={options.provinces} onChange={setProvinceId} />
         <ReferenceSelect label="Competition" value={competitionId} options={options.competitions} onChange={setCompetitionId} />
-
         <label>
           Story type
           <input value={storyType} onChange={(event) => setStoryType(event.target.value)} placeholder="News, analysis, opinion…" style={inputStyle} />
         </label>
-
         <label>
           Reading time
           <input value={readingTime} onChange={(event) => setReadingTime(event.target.value)} placeholder="4 min read" style={inputStyle} />
@@ -157,9 +130,7 @@ export function MetadataPanel({
           onChange={(event) => setTagIds(Array.from(event.target.selectedOptions, (option) => option.value))}
           style={{ ...inputStyle, minHeight: 120 }}
         >
-          {options.tags.map((option) => (
-            <option key={option._id} value={option._id}>{option.label}</option>
-          ))}
+          {options.tags.map((option) => <option key={option._id} value={option._id}>{option.label}</option>)}
         </select>
         <small>Use Ctrl/Cmd to select more than one tag.</small>
       </label>
@@ -175,22 +146,17 @@ export function MetadataPanel({
         </label>
       </div>
 
-      <div>
+      <div style={{ display: "flex", gap: ".75rem", alignItems: "center", flexWrap: "wrap" }}>
         <button type="button" onClick={() => void saveMetadata()} disabled={disabled}>
           {isMetadataSaving ? "Saving settings…" : "Save article settings"}
         </button>
+        {message ? <span role="status">{message}</span> : null}
       </div>
     </section>
   );
 }
 
-function ReferenceSelect({
-  label,
-  value,
-  options,
-  required = false,
-  onChange,
-}: {
+function ReferenceSelect({ label, value, options, required = false, onChange }: {
   label: string;
   value: string;
   options: ReferenceOption[];
@@ -202,9 +168,7 @@ function ReferenceSelect({
       {label}{required ? " *" : ""}
       <select value={value} onChange={(event) => onChange(event.target.value)} style={inputStyle}>
         <option value="">{required ? `Choose ${label.toLowerCase()}` : `No ${label.toLowerCase()}`}</option>
-        {options.map((option) => (
-          <option key={option._id} value={option._id}>{option.label}</option>
-        ))}
+        {options.map((option) => <option key={option._id} value={option._id}>{option.label}</option>)}
       </select>
     </label>
   );
