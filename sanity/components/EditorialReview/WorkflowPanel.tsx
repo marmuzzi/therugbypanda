@@ -16,6 +16,18 @@ type WorkflowPanelProps = {
   onRunAction: (action: EditorialAction) => void;
 };
 
+const actionLabels: Record<EditorialAction, string> = {
+  submit: "Submit",
+  approve: "Approve",
+  reject: "Reject",
+  publish: "Publish article",
+  unpublish: "Unpublish article",
+  reopen: "Reopen as draft",
+  archive: "Archive article",
+  restore: "Restore to draft",
+  discard: "Discard permanently",
+};
+
 export function WorkflowPanel({
   actor,
   note,
@@ -27,10 +39,12 @@ export function WorkflowPanel({
   onNoteChange,
   onRunAction,
 }: WorkflowPanelProps): React.JSX.Element {
+  const isPublished = availableActions.includes("unpublish");
+
   return (
     <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
       <div style={{ display: "grid", gap: ".2rem" }}>
-        <h3 style={{ margin: 0 }}>Workflow action</h3>
+        <h3 style={{ margin: 0 }}>{isPublished ? "Published article actions" : "Workflow action"}</h3>
         <small style={{ color: "#666" }}>
           Signed in as {actor}. Authentication uses your Sanity Studio session.
         </small>
@@ -60,12 +74,18 @@ export function WorkflowPanel({
                 Boolean(editorialReview?.blockingCount))
             }
             onClick={() => onRunAction(action)}
-            style={{ textTransform: "capitalize" }}
+            style={action === "unpublish" ? { fontWeight: 700 } : undefined}
           >
-            {action}
+            {actionLabels[action]}
           </button>
         ))}
       </div>
+
+      {isPublished ? (
+        <small style={{ color: "#666" }}>
+          Unpublishing removes the live article and restores it as an editable draft without deleting its content or audit history.
+        </small>
+      ) : null}
 
       {message ? <p style={{ margin: 0 }}>{message}</p> : null}
     </section>

@@ -1,4 +1,5 @@
 import React from "react";
+import { PortableText, type PortableTextComponents } from "@portabletext/react";
 import { IntentLink } from "sanity/router";
 
 import { cardStyle, inputStyle } from "./constants";
@@ -14,6 +15,34 @@ type DraftEditorProps = {
   isSaving: boolean;
   onChange: (field: keyof EditableDraft, value: string) => void;
   onSave: () => void;
+};
+
+const portableTextComponents: PortableTextComponents = {
+  block: {
+    normal: ({ children }) => <p style={{ margin: "0 0 1rem", lineHeight: 1.65 }}>{children}</p>,
+    h1: ({ children }) => <h1>{children}</h1>,
+    h2: ({ children }) => <h2 style={{ margin: "1.4rem 0 .65rem" }}>{children}</h2>,
+    h3: ({ children }) => <h3 style={{ margin: "1.2rem 0 .55rem" }}>{children}</h3>,
+    blockquote: ({ children }) => (
+      <blockquote style={{ margin: "1rem 0", paddingLeft: "1rem", borderLeft: "4px solid #bbb" }}>
+        {children}
+      </blockquote>
+    ),
+  },
+  marks: {
+    strong: ({ children }) => <strong>{children}</strong>,
+    em: ({ children }) => <em>{children}</em>,
+    underline: ({ children }) => <u>{children}</u>,
+    link: ({ children, value }) => (
+      <a href={typeof value?.href === "string" ? value.href : undefined} target="_blank" rel="noreferrer">
+        {children}
+      </a>
+    ),
+  },
+  list: {
+    bullet: ({ children }) => <ul style={{ margin: "0 0 1rem", paddingLeft: "1.5rem" }}>{children}</ul>,
+    number: ({ children }) => <ol style={{ margin: "0 0 1rem", paddingLeft: "1.5rem" }}>{children}</ol>,
+  },
 };
 
 export function DraftEditor({
@@ -67,8 +96,30 @@ export function DraftEditor({
           />
         </label>
 
+        <div style={{ display: "grid", gap: ".5rem" }}>
+          <strong>Formatted article preview</strong>
+          <div
+            style={{
+              border: "1px solid #ccc",
+              borderRadius: 8,
+              padding: "1rem 1.1rem",
+              background: "#fff",
+              minHeight: 160,
+            }}
+          >
+            {article.body?.length ? (
+              <PortableText value={article.body as any} components={portableTextComponents} />
+            ) : (
+              <p style={{ margin: 0, color: "#666" }}>No article body is available.</p>
+            )}
+          </div>
+          <small style={{ color: "#666" }}>
+            Bold, italic, headings, quotes, lists and links are rendered here exactly from Portable Text.
+          </small>
+        </div>
+
         <label>
-          Article body
+          Plain-text body editor
           <textarea
             value={draft.bodyText}
             onChange={(event) => onChange("bodyText", event.target.value)}
@@ -80,9 +131,8 @@ export function DraftEditor({
         </label>
 
         <p style={{ margin: 0, color: "#666" }}>
-          Use the full Sanity editor for rich formatting such as bold text, headings,
-          links, lists and inline images. The review workspace will preserve those
-          structures when no plain-text body edits are made.
+          Plain-text edits replace body formatting. Use the full Sanity editor when adding or changing bold text,
+          headings, links, lists or inline images. Existing formatting remains preserved until the plain-text body is edited.
         </p>
 
         <details>
@@ -131,7 +181,7 @@ export function DraftEditor({
             intent="edit"
             params={{ id: normaliseId(article._id), type: "article" }}
           >
-            Open full Sanity editor
+            Open full Sanity editor for rich formatting
           </IntentLink>
         </div>
       </section>

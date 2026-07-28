@@ -9,9 +9,16 @@ type ApprovedEditorialImage = {
   title?: string;
   altText?: string;
   caption?: string;
+  editorialCategory?: string;
+  photoType?: string;
+  suggestedUse?: string[];
   publicCredit?: string;
+  creditLine?: string;
+  photographer?: string;
   copyrightLine?: string;
+  copyright?: string;
   source?: string;
+  sourceName?: string;
   rightsNotes?: string;
   image: {
     _type?: "image";
@@ -64,15 +71,55 @@ export async function validateSanityConnectivity(categoryTitle: string) {
   return { connected: true, projectId, dataset, categoryId: category._id };
 }
 
-async function fetchApprovedEditorialImage(writeClient: ReturnType<typeof createClient>, editorialImageId?: string): Promise<ApprovedEditorialImage | undefined> {
-  if (!editorialImageId) return undefined;
-  const publishedId = normaliseDocumentId(editorialImageId);
-  const image = await writeClient.fetch<ApprovedEditorialImage | null>(
-    `*[_type == "editorialImage" && _id in [$publishedId, $draftId] && usageApproved == true && lifecycleStatus in ["approved", "published"] && defined(image.asset._ref)][0]{_id,title,altText,caption,publicCredit,copyrightLine,source,rightsNotes,image}`,
-    { publishedId, draftId: `drafts.${publishedId}` },
+const APPROVED_IMAGE_PROJECTION = `_id,title,altText,caption,editorialCategory,photoType,suggestedUse,publicCredit,creditLine,photographer,copyrightLine,copyright,source,sourceName,rightsNotes,image`;
+
+function imageSearchText(image: ApprovedEditorialImage): string {
+  return [image.title, image.altText, image.caption, image.editorialCategory, image.photoType]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+}
+
+function imageRelevanceScore(image: ApprovedEditorialImage, searchTerms: string[]): number {
+  const haystack = imageSearchText(image);
+  const termScore = searchTerms.reduce((score, term) => score + (term.length > 2 && haystack.includes(term) ? 3 : 0), 0);
+  const useScore = image.suggestedUse?.some((use) => use === "hero-image" || use === "article-header") ? 4 : 0;
+  return termScore + useScore;
+}
+
+async function fetchApprovedEditorialImage(
+  writeClient: ReturnType<typeof createClient>,
+  pkg: EditorialDraftPackage,
+  editorialImageId?: string,
+): Promise<ApprovedEditorialImage | undefined> {
+  if (editorialImageId) {
+    const publishedId = normaliseDocumentId(editorialImageId);
+    const image = await writeClient.fetch<ApprovedEditorialImage | null>(
+      `*[_type == "editorialImage" && _id in [$publishedId, $draftId] && usageApproved == true && lifecycleStatus in ["approved", "published"] && defined(image.asset._ref)][0]{${APPROVED_IMAGE_PROJECTION}}`,
+      { publishedId, draftId: `drafts.${publishedId}` },
+    );
+    if (!image) throw new Error(`Editorial Image ${editorialImageId} is unavailable, lacks a Sanity asset, or is not approved for use.`);
+    return image;
+  }
+
+  const images = await writeClient.fetch<ApprovedEditorialImage[]>(
+    `*[_type == "editorialImage" && !(_id in path("drafts.**")) && usageApproved == true && lifecycleStatus in ["approved", "published"] && defined(image.asset._ref)] | order(_updatedAt desc)[0...100]{${APPROVED_IMAGE_PROJECTION}}`,
   );
-  if (!image) throw new Error(`Editorial Image ${editorialImageId} is unavailable, lacks a Sanity asset, or is not approved for use.`);
-  return image;
+  if (images.length === 0) return undefined;
+
+  const searchTerms = [
+    pkg.article.title,
+    pkg.article.standfirst,
+    pkg.editorial.category,
+    pkg.editorial.storyType,
+    pkg.editorial.brief.angle,
+  ]
+    .join(" ")
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter((term) => term.length > 2);
+
+  return [...images].sort((left, right) => imageRelevanceScore(right, searchTerms) - imageRelevanceScore(left, searchTerms))[0];
 }
 
 function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
@@ -81,9 +128,9 @@ function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
     _type: "image",
     alt: editorialImage.altText ?? editorialImage.title ?? "Rugby editorial image",
     caption: editorialImage.caption,
-    photographer: editorialImage.publicCredit,
-    source: editorialImage.source,
-    rights: [editorialImage.copyrightLine, editorialImage.rightsNotes].filter(Boolean).join(" — ") || undefined,
+    photographer: editorialImage.publicCredit ?? editorialImage.creditLine ?? editorialImage.photographer,
+    source: editorialImage.source ?? editorialImage.sourceName,
+    rights: [editorialImage.copyrightLine ?? editorialImage.copyright, editorialImage.rightsNotes].filter(Boolean).join(" — ") || undefined,
   };
 }
 
@@ -94,7 +141,7 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage, optio
       `*[_type == "category" && (title == $title || slug.current == $slug)][0]{_id}`,
       { title: pkg.editorial.category, slug: slugify(pkg.editorial.category) },
     ),
-    fetchApprovedEditorialImage(writeClient, options.editorialImageId),
+    fetchApprovedEditorialImage(writeClient, pkg, options.editorialImageId),
   ]);
 
   if (!category?._id) throw new Error(`No Sanity category found for ${pkg.editorial.category}.`);
