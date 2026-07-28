@@ -2,10 +2,14 @@ import React from "react";
 
 import { cardStyle } from "./constants";
 
-import type { AiEditorialFinding } from "./types";
+import type {
+  AiEditorialFinding,
+  AiEditorialVoiceAssessment,
+} from "./types";
 
 type AIEditorialReviewProps = {
   findings: AiEditorialFinding[] | null;
+  voiceAssessment: AiEditorialVoiceAssessment | null;
   isReviewing: boolean;
   isSaving: boolean;
   isStale: boolean;
@@ -14,8 +18,16 @@ type AIEditorialReviewProps = {
 
 const severities = ["blocking", "warning", "suggestion"] as const;
 
+function labelValue(value: string): string {
+  return value
+    .split("-")
+    .map((part) => `${part[0]?.toUpperCase() ?? ""}${part.slice(1)}`)
+    .join(" ");
+}
+
 export function AIEditorialReview({
   findings,
+  voiceAssessment,
   isReviewing,
   isSaving,
   isStale,
@@ -36,7 +48,7 @@ export function AIEditorialReview({
           <h3 style={{ margin: 0 }}>AI Editorial Review</h3>
 
           <small style={{ color: "#666" }}>
-            Runs on demand against the current draft and never changes article copy.
+            Reviews accuracy, editorial quality, AI-like phrasing and Rugby Panda tone. It never changes article copy.
           </small>
         </div>
 
@@ -68,6 +80,31 @@ export function AIEditorialReview({
         </p>
       ) : null}
 
+      {voiceAssessment ? (
+        <div
+          style={{
+            display: "grid",
+            gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
+            gap: ".75rem",
+            padding: ".75rem",
+            border: "1px solid #ddd",
+            borderRadius: 6,
+          }}
+        >
+          <div>
+            <small style={{ display: "block", color: "#666" }}>AI-likeness</small>
+            <strong>{labelValue(voiceAssessment.aiLikeness)}</strong>
+          </div>
+          <div>
+            <small style={{ display: "block", color: "#666" }}>Rugby Panda tone</small>
+            <strong>{labelValue(voiceAssessment.rugbyPandaTone)}</strong>
+          </div>
+          <p style={{ gridColumn: "1 / -1", margin: 0 }}>
+            {voiceAssessment.explanation}
+          </p>
+        </div>
+      ) : null}
+
       {findings === null ? (
         <p style={{ margin: 0 }}>No AI review has been run for the current draft.</p>
       ) : findings.length === 0 ? (
@@ -90,7 +127,7 @@ export function AIEditorialReview({
               <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
                 {severityFindings.map((finding, index) => (
                   <li key={`${severity}-${finding.category}-${index}`}>
-                    <strong>{finding.category}</strong>: {finding.message}
+                    <strong>{labelValue(finding.category)}</strong>: {finding.message}
                     {finding.excerpt ? ` Excerpt: “${finding.excerpt}”` : ""}
                     {finding.recommendation ? ` Recommendation: ${finding.recommendation}` : ""}
                   </li>
