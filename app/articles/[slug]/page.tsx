@@ -65,7 +65,7 @@ async function resolveFeaturedImage(article: CmsArticle): Promise<FeaturedImage 
 
   const selected = approvedImages[stableIndex(`${article.title}-${article.standfirst ?? ""}`, approvedImages.length)];
   const src = selected.image?.asset?._ref
-    ? urlForImage(selected.image).width(1600).height(900).fit("crop").url()
+    ? urlForImage(selected.image).width(1400).height(800).fit("crop").url()
     : undefined;
 
   if (!src) return undefined;
@@ -80,9 +80,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
 
-  if (!article) {
-    return { title: "Article not found | The Rugby Panda" };
-  }
+  if (!article) return { title: "Article not found | The Rugby Panda" };
 
   const featuredImage = await resolveFeaturedImage(article);
   const title = `${article.title} | The Rugby Panda`;
@@ -126,6 +124,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     .filter(Boolean)
     .join(" • ");
   const featuredImage = await resolveFeaturedImage(cmsArticle);
+  const showEditorialImage = Boolean(featuredImage && !cmsArticle.useBrandImage);
   const canonicalUrl = cmsArticle.slug ? articleUrl(cmsArticle.slug) : siteUrl("/");
   const jsonLd = {
     "@context": "https://schema.org",
@@ -164,26 +163,27 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         readingTime={cmsArticle.readingTime ?? "Read"}
       />
 
-      {featuredImage ? (
-        <figure className="mx-auto max-w-5xl px-5 pb-8 pt-6 md:px-6 md:pb-10 md:pt-8">
-          <div className={`overflow-hidden rounded-3xl border border-zinc-200 ${cmsArticle.useBrandImage ? "bg-zinc-50 p-6 md:p-8" : "bg-zinc-100"}`}>
-            <img
-              src={featuredImage.src}
-              alt={featuredImage.alt}
-              className={cmsArticle.useBrandImage ? "mx-auto h-[240px] w-full object-contain md:h-[300px]" : "h-[300px] w-full object-cover md:h-[420px]"}
-            />
-          </div>
-          {featuredImage.caption || featuredImage.credit ? (
-            <figcaption className="mt-3 text-sm leading-6 text-zinc-500">
-              {[featuredImage.caption, featuredImage.credit].filter(Boolean).join(" — ")}
-            </figcaption>
-          ) : null}
-        </figure>
-      ) : null}
+      <div className="mx-auto max-w-5xl px-5 pb-20 pt-7 md:px-6 md:pt-10">
+        {showEditorialImage ? (
+          <figure className="mb-8 max-w-4xl">
+            <div className="overflow-hidden rounded-2xl bg-zinc-100">
+              <img
+                src={featuredImage.src}
+                alt={featuredImage.alt}
+                className="h-[220px] w-full object-cover sm:h-[280px] md:h-[340px]"
+              />
+            </div>
+            {featuredImage.caption || featuredImage.credit ? (
+              <figcaption className="mt-2 text-xs leading-5 text-zinc-500">
+                {[featuredImage.caption, featuredImage.credit].filter(Boolean).join(" — ")}
+              </figcaption>
+            ) : null}
+          </figure>
+        ) : null}
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-20 md:grid-cols-[minmax(0,1fr)_300px] md:px-6">
-        <div className="min-w-0 space-y-10">
+        <div className="max-w-[820px] space-y-9">
           {cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
+
           {cmsArticle.body?.length ? (
             <ArticleBody body={cmsArticle.body} />
           ) : (
@@ -191,6 +191,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               This article has no body content yet.
             </p>
           )}
+
           <ReaderSupport
             title="Independent rugby coverage takes time."
             body="Future partner placements will sit clearly outside the editorial copy, helping support the newsroom without interrupting the reader experience."
@@ -198,20 +199,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           {cmsArticle.tags?.length ? <TagList tags={cmsArticle.tags} /> : null}
           {continueReading.length ? <ContinueReading articles={continueReading} /> : null}
         </div>
-
-        <aside className="space-y-6 md:pt-2">
-          <div className="rounded-3xl border border-zinc-200 p-6">
-            <p className="text-xs font-black uppercase tracking-[0.25em] text-zinc-400">
-              Newsletter
-            </p>
-            <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-950">
-              Follow the newsroom build
-            </h2>
-            <p className="mt-3 text-sm leading-6 text-zinc-600">
-              Newsletter sign-up will be added in a later version as the publishing workflow develops.
-            </p>
-          </div>
-        </aside>
       </div>
 
       <SiteFooter />
