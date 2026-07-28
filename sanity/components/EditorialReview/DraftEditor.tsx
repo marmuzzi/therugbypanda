@@ -1,12 +1,10 @@
 import React from "react";
+import { IntentLink } from "sanity/router";
 
 import { cardStyle, inputStyle } from "./constants";
 import { displayStatus, normaliseId } from "./formatting";
 
-import type {
-  EditableDraft,
-  ReviewArticle,
-} from "./types";
+import type { EditableDraft, ReviewArticle } from "./types";
 
 type DraftEditorProps = {
   article: ReviewArticle;
@@ -35,12 +33,7 @@ export function DraftEditor({
           alignItems: "center",
         }}
       >
-        <small
-          style={{
-            textTransform: "uppercase",
-            letterSpacing: ".05em",
-          }}
-        >
+        <small style={{ textTransform: "uppercase", letterSpacing: ".05em" }}>
           {displayStatus(article.workflowStatus)}
         </small>
 
@@ -80,26 +73,19 @@ export function DraftEditor({
           rows={18}
           spellCheck={true}
           lang="en-IE"
-          style={{
-            ...inputStyle,
-            lineHeight: 1.55,
-            resize: "vertical",
-          }}
+          style={{ ...inputStyle, lineHeight: 1.55, resize: "vertical" }}
         />
       </label>
 
-      <details>
-        <summary style={{ cursor: "pointer", fontWeight: 600 }}>
-          SEO
-        </summary>
+      <p style={{ margin: 0, color: "#666" }}>
+        Use the full Sanity editor for rich formatting such as bold text, headings,
+        links, lists and inline images. The review workspace will preserve those
+        structures when no plain-text body edits are made.
+      </p>
 
-        <div
-          style={{
-            display: "grid",
-            gap: ".75rem",
-            marginTop: ".75rem",
-          }}
-        >
+      <details>
+        <summary style={{ cursor: "pointer", fontWeight: 600 }}>SEO</summary>
+        <div style={{ display: "grid", gap: ".75rem", marginTop: ".75rem" }}>
           <label>
             SEO title
             <input
@@ -115,9 +101,7 @@ export function DraftEditor({
             SEO description
             <textarea
               value={draft.seoDescription}
-              onChange={(event) =>
-                onChange("seoDescription", event.target.value)
-              }
+              onChange={(event) => onChange("seoDescription", event.target.value)}
               rows={3}
               spellCheck={true}
               lang="en-IE"
@@ -135,21 +119,18 @@ export function DraftEditor({
           alignItems: "center",
         }}
       >
-        <button
-          type="button"
-          onClick={onSave}
-          disabled={!isDirty || isSaving}
-        >
+        <button type="button" onClick={onSave} disabled={!isDirty || isSaving}>
           {isSaving ? "Saving…" : "Save draft"}
         </button>
 
         <small>Keyboard shortcut: Ctrl+S / Cmd+S</small>
 
-        <a
-          href={`/intent/edit/id=${normaliseId(article._id)};type=article/`}
+        <IntentLink
+          intent="edit"
+          params={{ id: normaliseId(article._id), type: "article" }}
         >
           Open full Sanity editor
-        </a>
+        </IntentLink>
       </div>
     </section>
   );
