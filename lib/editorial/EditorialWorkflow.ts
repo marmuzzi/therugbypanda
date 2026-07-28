@@ -47,6 +47,7 @@ const transitions: Record<EditorialAction, { from: string[]; to: string }> = {
       "draft",
       "under-review",
       "approved",
+      "published",
       "rejected",
       "amendment-required",
       "archived",
@@ -139,12 +140,16 @@ export async function applyEditorialAction(input: WorkflowInput) {
       _id: draftId,
       workflowStatus: "draft",
       workflowUpdatedAt: now,
+      replacementRequired: false,
       workflowHistory: history,
     };
     delete (draft as { _rev?: string })._rev;
     await writeClient.transaction().createOrReplace(draft).delete(publishedId).commit();
   } else if (input.action === "discard") {
-    await writeClient.delete(article._id);
+    const transaction = writeClient.transaction();
+    if (await writeClient.getDocument(draftId)) transaction.delete(draftId);
+    if (await writeClient.getDocument(publishedId)) transaction.delete(publishedId);
+    await transaction.commit();
   } else {
     const patch = writeClient
       .patch(article._id)

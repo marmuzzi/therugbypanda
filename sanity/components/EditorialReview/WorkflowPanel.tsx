@@ -19,13 +19,13 @@ type WorkflowPanelProps = {
 const actionLabels: Record<EditorialAction, string> = {
   submit: "Submit",
   approve: "Approve",
-  reject: "Reject",
+  reject: "Reject article",
   publish: "Publish article",
-  unpublish: "Unpublish article",
-  reopen: "Reopen as draft",
+  unpublish: "Move back to drafts",
+  reopen: "Move back to drafts",
   archive: "Archive article",
-  restore: "Restore to draft",
-  discard: "Discard permanently",
+  restore: "Move back to drafts",
+  discard: "Remove article",
 };
 
 export function WorkflowPanel({
@@ -44,7 +44,7 @@ export function WorkflowPanel({
   return (
     <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
       <div style={{ display: "grid", gap: ".2rem" }}>
-        <h3 style={{ margin: 0 }}>{isPublished ? "Published article actions" : "Workflow action"}</h3>
+        <h3 style={{ margin: 0 }}>{isPublished ? "Published article actions" : "Article actions"}</h3>
         <small style={{ color: "#666" }}>
           Signed in as {actor}. Authentication uses your Sanity Studio session.
         </small>
@@ -52,12 +52,12 @@ export function WorkflowPanel({
 
       {showReviewNote ? (
         <label>
-          Submission note / rejection reason
+          Rejection reason
           <textarea
             value={note}
             onChange={(event) => onNoteChange(event.target.value)}
             rows={3}
-            placeholder="Add context for the next editorial step. A reason is required when rejecting."
+            placeholder="A reason is required when rejecting an article."
             style={inputStyle}
           />
         </label>
@@ -74,7 +74,7 @@ export function WorkflowPanel({
                 Boolean(editorialReview?.blockingCount))
             }
             onClick={() => onRunAction(action)}
-            style={action === "unpublish" ? { fontWeight: 700 } : undefined}
+            style={action === "unpublish" || action === "publish" ? { fontWeight: 700 } : undefined}
           >
             {actionLabels[action]}
           </button>
@@ -83,7 +83,7 @@ export function WorkflowPanel({
 
       {isPublished ? (
         <small style={{ color: "#666" }}>
-          Unpublishing removes the live article and restores it as an editable draft without deleting its content or audit history.
+          Moving an article back to drafts removes it from the public website and keeps its content and audit history editable.
         </small>
       ) : null}
 

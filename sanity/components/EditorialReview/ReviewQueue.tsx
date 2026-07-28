@@ -13,30 +13,21 @@ type ReviewQueueProps = {
   onSelect: (articleId: string) => void;
 };
 
-type QueueFilter =
-  | "all"
-  | "needs-review"
-  | "approved"
-  | "rejected"
-  | "replacement";
+type QueueFilter = "all" | "drafts" | "published" | "rejected";
 
 const filterLabels: Array<{ value: QueueFilter; label: string }> = [
   { value: "all", label: "All" },
-  { value: "needs-review", label: "Needs review" },
-  { value: "approved", label: "Approved" },
+  { value: "drafts", label: "Drafts" },
+  { value: "published", label: "Published" },
   { value: "rejected", label: "Rejected" },
-  { value: "replacement", label: "Replacement" },
 ];
 
 function matchesFilter(article: ReviewArticle, filter: QueueFilter): boolean {
   if (filter === "all") return true;
-  if (filter === "approved") return article.workflowStatus === "approved";
+  if (filter === "published") return article.workflowStatus === "published";
   if (filter === "rejected") return article.workflowStatus === "rejected";
-  if (filter === "replacement") return Boolean(article.replacementRequired);
 
-  return ["draft", "under-review", "amendment-required"].includes(
-    article.workflowStatus ?? "draft",
-  );
+  return !["published", "rejected"].includes(article.workflowStatus ?? "draft");
 }
 
 function formatUpdatedAt(value?: string): string | null {
@@ -63,7 +54,7 @@ export function ReviewQueue({
   onRefresh,
   onSelect,
 }: ReviewQueueProps): React.JSX.Element {
-  const [filter, setFilter] = useState<QueueFilter>("needs-review");
+  const [filter, setFilter] = useState<QueueFilter>("drafts");
   const [searchTerm, setSearchTerm] = useState("");
 
   const counts = useMemo(
@@ -113,7 +104,7 @@ export function ReviewQueue({
           alignItems: "center",
         }}
       >
-        <strong>Review queue ({articles.length})</strong>
+        <strong>Articles ({articles.length})</strong>
 
         <button
           type="button"
@@ -135,14 +126,14 @@ export function ReviewQueue({
       >
         <label style={{ display: "grid", gap: "0.3rem" }}>
           <span style={{ fontSize: "0.75rem", fontWeight: 700 }}>
-            Search queue
+            Search articles
           </span>
           <input
             type="search"
             value={searchTerm}
             onChange={(event) => setSearchTerm(event.currentTarget.value)}
             placeholder="Title, standfirst or status"
-            aria-label="Search editorial review queue"
+            aria-label="Search editorial articles"
             style={{
               width: "100%",
               border: "1px solid #ccc",
@@ -154,7 +145,7 @@ export function ReviewQueue({
         </label>
 
         <div
-          aria-label="Filter editorial review queue"
+          aria-label="Filter editorial articles"
           style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}
         >
           {filterLabels.map(({ value, label }) => {
@@ -187,9 +178,7 @@ export function ReviewQueue({
       {isLoading ? <p style={{ padding: "0.75rem" }}>Loading…</p> : null}
 
       {!isLoading && articles.length === 0 ? (
-        <p style={{ padding: "0.75rem" }}>
-          No drafts currently need review.
-        </p>
+        <p style={{ padding: "0.75rem" }}>No articles are currently available.</p>
       ) : null}
 
       {!isLoading && articles.length > 0 && visibleArticles.length === 0 ? (
@@ -229,7 +218,7 @@ export function ReviewQueue({
               gap: "0.25rem",
             }}
           >
-            <strong>{article.title ?? "Untitled draft"}</strong>
+            <strong>{article.title ?? "Untitled article"}</strong>
 
             <small style={{ textTransform: "capitalize" }}>
               {displayStatus(article.workflowStatus)}
@@ -237,12 +226,6 @@ export function ReviewQueue({
 
             {updatedAt ? (
               <small style={{ color: "#666" }}>Updated {updatedAt}</small>
-            ) : null}
-
-            {article.replacementRequired ? (
-              <small style={{ color: "#9a3412", fontWeight: 700 }}>
-                Replacement required
-              </small>
             ) : null}
           </button>
         );

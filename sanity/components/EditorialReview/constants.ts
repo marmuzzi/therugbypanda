@@ -51,12 +51,12 @@ export const QUEUE_QUERY = `*[
 }`;
 
 export const actionMap: Record<string, EditorialAction[]> = {
-  draft: ["publish", "reject", "archive", "discard"],
-  "amendment-required": ["publish", "reject", "archive", "discard"],
-  "under-review": ["publish", "reject", "archive", "discard"],
-  approved: ["publish", "reject", "archive", "discard"],
-  published: ["unpublish", "archive"],
-  rejected: ["reopen", "publish", "archive", "discard"],
+  draft: ["publish", "reject", "discard"],
+  "amendment-required": ["publish", "reject", "discard"],
+  "under-review": ["publish", "reject", "discard"],
+  approved: ["publish", "reject", "discard"],
+  published: ["unpublish", "discard"],
+  rejected: ["reopen", "publish", "discard"],
   archived: ["restore", "discard"],
 };
 
