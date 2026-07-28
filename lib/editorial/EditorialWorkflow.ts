@@ -85,10 +85,14 @@ export async function applyEditorialAction(input: WorkflowInput) {
   const writeClient = getClient();
   const publishedId = normaliseId(input.articleId);
   const draftId = `drafts.${publishedId}`;
-  const article = await writeClient.fetch<ArticleState | null>(
-    `*[_type == "article" && _id in [$draftId, $publishedId]] | order(_id match "drafts.*" desc)[0]{_id, title, workflowStatus}`,
+  const articles = await writeClient.fetch<ArticleState[]>(
+    `*[_type == "article" && _id in [$draftId, $publishedId]]{_id, title, workflowStatus}`,
     { draftId, publishedId },
   );
+  const article =
+    articles.find((candidate) => candidate._id === draftId) ??
+    articles.find((candidate) => candidate._id === publishedId) ??
+    null;
 
   if (!article) throw new Error(`Article ${input.articleId} was not found.`);
 
