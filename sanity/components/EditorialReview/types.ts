@@ -49,36 +49,34 @@ export type ReviewArticle = {
   body?: PortableTextMember[];
   seoTitle?: string;
   seoDescription?: string;
-
   workflowStatus?: string;
   workflowUpdatedAt?: string;
-
   rejectionReason?: string;
   rejectionCount?: number;
   replacementRequired?: boolean;
-
   editorialConfidence?: number;
   needsHumanFactCheck?: boolean;
-
   editorialAngle?: string;
   audiencePromise?: string;
-
+  editorialStoryType?: string;
   sourceRecords?: SourceRecord[];
-
   factLedger?: {
     facts?: FactRecord[];
     unsupportedClaims?: string[];
     conflicts?: string[];
   };
-
   workflowHistory?: WorkflowHistoryEvent[];
-
   featuredImageUrl?: string;
   featuredImageAlt?: string;
   featuredImageCaption?: string;
   featuredImageCredit?: string;
-
   slug?: string;
+  isLead?: boolean;
+  useBrandImage?: boolean;
+  category?: { _id?: string; title?: string };
+  author?: { _id?: string; name?: string };
+  province?: { _id?: string; title?: string };
+  competition?: { _id?: string; title?: string };
 };
 
 export type EditorialAction =
@@ -86,12 +84,13 @@ export type EditorialAction =
   | "approve"
   | "reject"
   | "publish"
+  | "unpublish"
+  | "reopen"
+  | "archive"
+  | "restore"
   | "discard";
 
-export type EditorialIssueSeverity =
-  | "blocking"
-  | "warning"
-  | "info";
+export type EditorialIssueSeverity = "blocking" | "warning" | "info";
 
 export type EditorialIssueCategory =
   | "content"
@@ -115,10 +114,7 @@ export type EditorialReview = {
   warningCount: number;
 };
 
-export type AiEditorialFindingSeverity =
-  | "blocking"
-  | "warning"
-  | "suggestion";
+export type AiEditorialFindingSeverity = "blocking" | "warning" | "suggestion";
 
 export type AiEditorialFindingCategory =
   | "spelling"
