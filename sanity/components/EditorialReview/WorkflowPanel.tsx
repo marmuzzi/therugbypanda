@@ -16,6 +16,18 @@ type WorkflowPanelProps = {
   onRunAction: (action: EditorialAction) => void;
 };
 
+const actionLabels: Record<EditorialAction, string> = {
+  submit: "Submit",
+  approve: "Approve",
+  reject: "Reject",
+  publish: "Publish article",
+  unpublish: "Unpublish article",
+  reopen: "Reopen as draft",
+  archive: "Archive article",
+  restore: "Restore to draft",
+  discard: "Discard permanently",
+};
+
 export function WorkflowPanel({
   actor,
   note,
@@ -60,12 +72,17 @@ export function WorkflowPanel({
                 Boolean(editorialReview?.blockingCount))
             }
             onClick={() => onRunAction(action)}
-            style={{ textTransform: "capitalize" }}
           >
-            {action}
+            {actionLabels[action]}
           </button>
         ))}
       </div>
+
+      {availableActions.includes("unpublish") ? (
+        <small style={{ color: "#666" }}>
+          Unpublishing removes the live article and restores it as an editable draft without deleting its history.
+        </small>
+      ) : null}
 
       {message ? <p style={{ margin: 0 }}>{message}</p> : null}
     </section>
