@@ -72,19 +72,42 @@ export async function validateSanityConnectivity(categoryTitle: string) {
 }
 
 const APPROVED_IMAGE_PROJECTION = `_id,title,altText,caption,editorialCategory,photoType,suggestedUse,publicCredit,creditLine,photographer,copyrightLine,copyright,source,sourceName,rightsNotes,image`;
+const GENERIC_IMAGE_TERMS = ["rugby panda", "panda logo", "brand logo", "newsroom logo", "the rugby panda"];
 
 function imageSearchText(image: ApprovedEditorialImage): string {
-  return [image.title, image.altText, image.caption, image.editorialCategory, image.photoType]
+  return [
+    image.title,
+    image.altText,
+    image.caption,
+    image.editorialCategory,
+    image.photoType,
+    ...(image.suggestedUse ?? []),
+  ]
     .filter(Boolean)
     .join(" ")
     .toLowerCase();
 }
 
-function imageRelevanceScore(image: ApprovedEditorialImage, searchTerms: string[]): number {
+function stableHash(value: string): number {
+  let hash = 0;
+  for (let index = 0; index < value.length; index += 1) {
+    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
+  }
+  return hash;
+}
+
+function imageRelevanceScore(image: ApprovedEditorialImage, searchTerms: string[], storyText: string): number {
   const haystack = imageSearchText(image);
-  const termScore = searchTerms.reduce((score, term) => score + (term.length > 2 && haystack.includes(term) ? 3 : 0), 0);
+  const uniqueTerms = [...new Set(searchTerms)];
+  const termScore = uniqueTerms.reduce((score, term) => {
+    if (term.length < 3 || !haystack.includes(term)) return score;
+    return score + (term.length >= 7 ? 5 : term.length >= 5 ? 3 : 2);
+  }, 0);
   const useScore = image.suggestedUse?.some((use) => use === "hero-image" || use === "article-header") ? 4 : 0;
-  return termScore + useScore;
+  const genericImage = GENERIC_IMAGE_TERMS.some((term) => haystack.includes(term));
+  const storyIsAboutBrand = GENERIC_IMAGE_TERMS.some((term) => storyText.includes(term));
+  const genericPenalty = genericImage && !storyIsAboutBrand ? 12 : 0;
+  return termScore + useScore - genericPenalty;
 }
 
 async function fetchApprovedEditorialImage(
@@ -107,7 +130,7 @@ async function fetchApprovedEditorialImage(
   );
   if (images.length === 0) return undefined;
 
-  const searchTerms = [
+  const storyText = [
     pkg.article.title,
     pkg.article.standfirst,
     pkg.editorial.category,
@@ -115,11 +138,18 @@ async function fetchApprovedEditorialImage(
     pkg.editorial.brief.angle,
   ]
     .join(" ")
-    .toLowerCase()
+    .toLowerCase();
+  const searchTerms = storyText
     .split(/[^a-z0-9]+/)
     .filter((term) => term.length > 2);
 
-  return [...images].sort((left, right) => imageRelevanceScore(right, searchTerms) - imageRelevanceScore(left, searchTerms))[0];
+  const ranked = images
+    .map((image) => ({ image, score: imageRelevanceScore(image, searchTerms, storyText) }))
+    .sort((left, right) => right.score - left.score);
+  const bestScore = ranked[0]?.score ?? 0;
+  const relevantPool = ranked.filter((candidate) => candidate.score >= bestScore - 2).slice(0, 8);
+  const pool = relevantPool.length ? relevantPool : ranked.slice(0, 8);
+  return pool[stableHash(`${pkg.article.title}|${pkg.editorial.inputId}`) % pool.length]?.image;
 }
 
 function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
