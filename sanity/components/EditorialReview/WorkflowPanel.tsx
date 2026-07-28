@@ -39,10 +39,12 @@ export function WorkflowPanel({
   onNoteChange,
   onRunAction,
 }: WorkflowPanelProps): React.JSX.Element {
+  const isPublished = availableActions.includes("unpublish");
+
   return (
     <section style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
       <div style={{ display: "grid", gap: ".2rem" }}>
-        <h3 style={{ margin: 0 }}>Workflow action</h3>
+        <h3 style={{ margin: 0 }}>{isPublished ? "Published article actions" : "Workflow action"}</h3>
         <small style={{ color: "#666" }}>
           Signed in as {actor}. Authentication uses your Sanity Studio session.
         </small>
@@ -72,15 +74,16 @@ export function WorkflowPanel({
                 Boolean(editorialReview?.blockingCount))
             }
             onClick={() => onRunAction(action)}
+            style={action === "unpublish" ? { fontWeight: 700 } : undefined}
           >
             {actionLabels[action]}
           </button>
         ))}
       </div>
 
-      {availableActions.includes("unpublish") ? (
+      {isPublished ? (
         <small style={{ color: "#666" }}>
-          Unpublishing removes the live article and restores it as an editable draft without deleting its history.
+          Unpublishing removes the live article and restores it as an editable draft without deleting its content or audit history.
         </small>
       ) : null}
 
