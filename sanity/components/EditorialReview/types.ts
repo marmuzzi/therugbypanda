@@ -71,12 +71,14 @@ export type ReviewArticle = {
   featuredImageCaption?: string;
   featuredImageCredit?: string;
   slug?: string;
+  readingTime?: string;
   isLead?: boolean;
   useBrandImage?: boolean;
   category?: { _id?: string; title?: string };
   author?: { _id?: string; name?: string };
   province?: { _id?: string; title?: string };
   competition?: { _id?: string; title?: string };
+  tags?: Array<{ _id?: string; title?: string }>;
 };
 
 export type EditorialAction =
