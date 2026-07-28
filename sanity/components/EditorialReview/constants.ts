@@ -6,13 +6,14 @@ export const EDITORIAL_API_BASE_URL = "https://therugbypanda.ie";
 
 export const QUEUE_QUERY = `*[
   _type == "article" &&
-  _id in path("drafts.**") &&
-  coalesce(workflowStatus, "draft") in [
+  coalesce(workflowStatus, select(_id in path("drafts.**") => "draft", "published")) in [
     "draft",
     "under-review",
     "approved",
+    "published",
     "rejected",
-    "amendment-required"
+    "amendment-required",
+    "archived"
   ]
 ] | order(workflowUpdatedAt desc, _updatedAt desc) {
   _id,
@@ -21,7 +22,7 @@ export const QUEUE_QUERY = `*[
   body,
   seoTitle,
   seoDescription,
-  "workflowStatus": coalesce(workflowStatus, "draft"),
+  "workflowStatus": coalesce(workflowStatus, select(_id in path("drafts.**") => "draft", "published")),
   workflowUpdatedAt,
   rejectionReason,
   rejectionCount,
@@ -30,6 +31,7 @@ export const QUEUE_QUERY = `*[
   needsHumanFactCheck,
   editorialAngle,
   audiencePromise,
+  editorialStoryType,
   sourceRecords,
   factLedger,
   workflowHistory,
@@ -37,15 +39,23 @@ export const QUEUE_QUERY = `*[
   "featuredImageAlt": featuredImage.alt,
   "featuredImageCaption": featuredImage.caption,
   "featuredImageCredit": featuredImage.photographer,
-  "slug": slug.current
+  "slug": slug.current,
+  isLead,
+  useBrandImage,
+  "category": category->{_id, title},
+  "author": author->{_id, name},
+  "province": province->{_id, title},
+  "competition": competition->{_id, title}
 }`;
 
 export const actionMap: Record<string, EditorialAction[]> = {
-  draft: ["submit", "discard"],
-  "amendment-required": ["submit", "discard"],
-  "under-review": ["approve", "reject", "discard"],
-  approved: ["publish", "reject", "discard"],
-  rejected: ["discard"],
+  draft: ["publish", "reject", "archive", "discard"],
+  "amendment-required": ["publish", "reject", "archive", "discard"],
+  "under-review": ["publish", "reject", "archive", "discard"],
+  approved: ["publish", "reject", "archive", "discard"],
+  published: ["unpublish", "archive"],
+  rejected: ["reopen", "publish", "archive", "discard"],
+  archived: ["restore", "discard"],
 };
 
 export const inputStyle: React.CSSProperties = {
