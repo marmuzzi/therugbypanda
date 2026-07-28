@@ -16,7 +16,6 @@ import {
   getArticleBySlug,
   getContinueReading,
   getFeaturedImage,
-  portableTextToSections,
   siteUrl,
   type CmsArticle,
   type FeaturedImage,
@@ -64,7 +63,7 @@ async function resolveFeaturedImage(article: CmsArticle): Promise<FeaturedImage 
     (await sanityFetch<ApprovedEditorialImage[]>({ query: approvedEditorialImagesQuery })) ?? [];
   if (!approvedImages.length) return undefined;
 
-  const selected = approvedImages[stableIndex(article.title, approvedImages.length)];
+  const selected = approvedImages[stableIndex(`${article.title}-${article.standfirst ?? ""}`, approvedImages.length)];
   const src = selected.image?.asset?._ref
     ? urlForImage(selected.image).width(1600).height(900).fit("crop").url()
     : undefined;
@@ -126,7 +125,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const category = [cmsArticle.category, cmsArticle.province ?? cmsArticle.competition]
     .filter(Boolean)
     .join(" • ");
-  const sections = portableTextToSections(cmsArticle.body);
   const featuredImage = await resolveFeaturedImage(cmsArticle);
   const canonicalUrl = cmsArticle.slug ? articleUrl(cmsArticle.slug) : siteUrl("/");
   const jsonLd = {
@@ -167,12 +165,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
 
       {featuredImage ? (
-        <figure className="mx-auto max-w-6xl px-5 pt-8 pb-10 md:px-6 md:pt-10">
-          <div className={`overflow-hidden rounded-[2rem] border border-zinc-200 ${cmsArticle.useBrandImage ? "bg-white p-8 md:p-12" : "bg-zinc-100"}`}>
+        <figure className="mx-auto max-w-5xl px-5 pb-8 pt-6 md:px-6 md:pb-10 md:pt-8">
+          <div className={`overflow-hidden rounded-3xl border border-zinc-200 ${cmsArticle.useBrandImage ? "bg-zinc-50 p-6 md:p-8" : "bg-zinc-100"}`}>
             <img
               src={featuredImage.src}
               alt={featuredImage.alt}
-              className={cmsArticle.useBrandImage ? "mx-auto max-h-[420px] w-full object-contain" : "aspect-[16/9] w-full object-cover"}
+              className={cmsArticle.useBrandImage ? "mx-auto h-[240px] w-full object-contain md:h-[300px]" : "h-[300px] w-full object-cover md:h-[420px]"}
             />
           </div>
           {featuredImage.caption || featuredImage.credit ? (
@@ -183,11 +181,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         </figure>
       ) : null}
 
-      <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-20 md:grid-cols-[minmax(0,1fr)_320px] md:px-6">
-        <div className="min-w-0 space-y-12">
+      <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-20 md:grid-cols-[minmax(0,1fr)_300px] md:px-6">
+        <div className="min-w-0 space-y-10">
           {cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
-          {sections.length ? (
-            <ArticleBody sections={sections} />
+          {cmsArticle.body?.length ? (
+            <ArticleBody body={cmsArticle.body} />
           ) : (
             <p className="rounded-3xl border border-dashed border-zinc-300 p-8 text-sm font-semibold text-zinc-500">
               This article has no body content yet.

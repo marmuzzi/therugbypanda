@@ -19,18 +19,18 @@ type DraftEditorProps = {
 
 const portableTextComponents: PortableTextComponents = {
   block: {
-    normal: ({ children }) => <p style={{ margin: "0 0 1rem", lineHeight: 1.65 }}>{children}</p>,
+    normal: ({ children }) => <p style={{ margin: "0 0 1rem", lineHeight: 1.75, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "1.05rem" }}>{children}</p>,
     h1: ({ children }) => <h1>{children}</h1>,
-    h2: ({ children }) => <h2 style={{ margin: "1.4rem 0 .65rem" }}>{children}</h2>,
-    h3: ({ children }) => <h3 style={{ margin: "1.2rem 0 .55rem" }}>{children}</h3>,
+    h2: ({ children }) => <h2 style={{ margin: "1.4rem 0 .65rem", fontWeight: 900 }}>{children}</h2>,
+    h3: ({ children }) => <h3 style={{ margin: "1.2rem 0 .55rem", fontWeight: 900 }}>{children}</h3>,
     blockquote: ({ children }) => (
-      <blockquote style={{ margin: "1rem 0", paddingLeft: "1rem", borderLeft: "4px solid #bbb" }}>
+      <blockquote style={{ margin: "1rem 0", paddingLeft: "1rem", borderLeft: "4px solid #2E7D32", fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" }}>
         {children}
       </blockquote>
     ),
   },
   marks: {
-    strong: ({ children }) => <strong>{children}</strong>,
+    strong: ({ children }) => <strong style={{ fontWeight: 900, color: "#111" }}>{children}</strong>,
     em: ({ children }) => <em>{children}</em>,
     underline: ({ children }) => <u>{children}</u>,
     link: ({ children, value }) => (
@@ -40,8 +40,8 @@ const portableTextComponents: PortableTextComponents = {
     ),
   },
   list: {
-    bullet: ({ children }) => <ul style={{ margin: "0 0 1rem", paddingLeft: "1.5rem" }}>{children}</ul>,
-    number: ({ children }) => <ol style={{ margin: "0 0 1rem", paddingLeft: "1.5rem" }}>{children}</ol>,
+    bullet: ({ children }) => <ul style={{ margin: "0 0 1rem", paddingLeft: "1.5rem", fontFamily: "Georgia, 'Times New Roman', serif" }}>{children}</ul>,
+    number: ({ children }) => <ol style={{ margin: "0 0 1rem", paddingLeft: "1.5rem", fontFamily: "Georgia, 'Times New Roman', serif" }}>{children}</ol>,
   },
 };
 
