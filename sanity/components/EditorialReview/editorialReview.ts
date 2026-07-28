@@ -29,41 +29,26 @@ export function createEditorialReview(
   const seoTitle = draft.seoTitle.trim();
   const seoDescription = draft.seoDescription.trim();
   const wordCount = countWords(body);
+  const shortFormTypes = new Set(["welcome", "editorial", "opinion", "column", "notebook"]);
+  const isShortForm =
+    shortFormTypes.has((article.editorialStoryType ?? "").trim().toLowerCase()) ||
+    article.useBrandImage === true;
+  const minimumSuggestedWords = isShortForm ? 100 : 150;
 
   if (!headline)
-    addIssue(
-      "missing-headline",
-      "blocking",
-      "content",
-      "Add a headline before approval.",
-    );
+    addIssue("missing-headline", "blocking", "content", "Add a headline before publication.");
   if (!standfirst)
-    addIssue(
-      "missing-standfirst",
-      "blocking",
-      "content",
-      "Add a standfirst before approval.",
-    );
+    addIssue("missing-standfirst", "blocking", "content", "Add a standfirst before publication.");
   if (!body)
-    addIssue(
-      "missing-body",
-      "blocking",
-      "content",
-      "Add article body copy before approval.",
-    );
+    addIssue("missing-body", "blocking", "content", "Add article body copy before publication.");
   if (!seoTitle)
-    addIssue(
-      "missing-seo-title",
-      "blocking",
-      "seo",
-      "Add an SEO title before approval.",
-    );
+    addIssue("missing-seo-title", "blocking", "seo", "Add an SEO title before publication.");
   if (!seoDescription)
     addIssue(
       "missing-seo-description",
       "blocking",
       "seo",
-      "Add an SEO description before approval.",
+      "Add an SEO description before publication.",
     );
   if ((article.factLedger?.unsupportedClaims ?? []).length > 0)
     addIssue(
@@ -84,7 +69,7 @@ export function createEditorialReview(
       "human-fact-check",
       "blocking",
       "journalism",
-      "A human fact-check is required before approval.",
+      "A human fact-check is required before publication.",
     );
 
   if (!article.featuredImageUrl)
@@ -95,33 +80,18 @@ export function createEditorialReview(
       "Assign an approved featured image.",
     );
   if (headline.length > 70)
-    addIssue(
-      "headline-too-long",
-      "warning",
-      "content",
-      "Headline exceeds 70 characters.",
-    );
+    addIssue("headline-too-long", "warning", "content", "Headline exceeds 70 characters.");
   if (standfirst.length > 220)
-    addIssue(
-      "standfirst-too-long",
-      "warning",
-      "content",
-      "Standfirst exceeds 220 characters.",
-    );
-  if (wordCount < 250)
+    addIssue("standfirst-too-long", "warning", "content", "Standfirst exceeds 220 characters.");
+  if (wordCount < minimumSuggestedWords)
     addIssue(
       "body-too-short",
       "warning",
       "readability",
-      "Article body is shorter than 250 words.",
+      `Article body is shorter than the suggested ${minimumSuggestedWords} words for this article type.`,
     );
   if (seoTitle.length > 60)
-    addIssue(
-      "seo-title-too-long",
-      "warning",
-      "seo",
-      "SEO title exceeds 60 characters.",
-    );
+    addIssue("seo-title-too-long", "warning", "seo", "SEO title exceeds 60 characters.");
   if (seoDescription.length > 160)
     addIssue(
       "seo-description-too-long",
@@ -138,12 +108,7 @@ export function createEditorialReview(
     );
 
   if (headline.length > 0 && headline.length < 25)
-    addIssue(
-      "headline-too-short",
-      "info",
-      "content",
-      "Headline is shorter than 25 characters.",
-    );
+    addIssue("headline-too-short", "info", "content", "Headline is shorter than 25 characters.");
   if (seoDescription.length > 0 && seoDescription.length < 110)
     addIssue(
       "seo-description-too-short",
@@ -151,19 +116,10 @@ export function createEditorialReview(
       "seo",
       "SEO description is shorter than 110 characters.",
     );
-  const fillerWords = [
-    "actually",
-    "basically",
-    "just",
-    "quite",
-    "really",
-    "simply",
-    "very",
-  ];
+  const fillerWords = ["actually", "basically", "just", "quite", "really", "simply", "very"];
   const lowerCaseBody = body.toLowerCase();
   fillerWords.forEach((word) => {
-    const occurrences =
-      lowerCaseBody.match(new RegExp(`\\b${word}\\b`, "g"))?.length ?? 0;
+    const occurrences = lowerCaseBody.match(new RegExp(`\\b${word}\\b`, "g"))?.length ?? 0;
     if (occurrences >= 3)
       addIssue(
         `repeated-filler-${word}`,
@@ -173,12 +129,8 @@ export function createEditorialReview(
       );
   });
 
-  const blockingCount = issues.filter(
-    (issue) => issue.severity === "blocking",
-  ).length;
-  const warningCount = issues.filter(
-    (issue) => issue.severity === "warning",
-  ).length;
+  const blockingCount = issues.filter((issue) => issue.severity === "blocking").length;
+  const warningCount = issues.filter((issue) => issue.severity === "warning").length;
   const score = Math.max(
     0,
     100 -
@@ -189,17 +141,14 @@ export function createEditorialReview(
   return {
     issues,
     score,
-    readiness:
-      blockingCount > 0 ? "Blocking" : score >= 80 ? "Ready" : "Needs review",
+    readiness: blockingCount > 0 ? "Blocking" : score >= 80 ? "Ready" : "Needs review",
     wordCount,
     blockingCount,
     warningCount,
   };
 }
 
-export function articleToEditable(
-  article: ReviewArticle,
-): EditableDraft {
+export function articleToEditable(article: ReviewArticle): EditableDraft {
   return {
     title: article.title ?? "",
     standfirst: article.standfirst ?? "",
