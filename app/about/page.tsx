@@ -6,38 +6,62 @@ export default function AboutPage() {
     <main className="min-h-screen bg-white text-zinc-950">
       <SiteHeader />
 
-      <section className="mx-auto max-w-5xl px-5 py-16 md:px-6 md:py-24">
-        <p className="text-sm font-black uppercase tracking-[0.3em] text-[#2E7D32]">
-          About The Rugby Panda
-        </p>
-        <h1 className="mt-5 max-w-4xl text-5xl font-black leading-none tracking-tight md:text-7xl">
-          Independent rugby coverage, built with trust first.
-        </h1>
-        <p className="mt-8 max-w-3xl text-xl leading-9 text-zinc-600">
-          The Rugby Panda is an independent digital rugby newsroom covering Irish and European rugby with context, analysis and match understanding.
-        </p>
+      <section className="mx-auto max-w-6xl px-5 py-12 md:px-8 md:py-16">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)] lg:items-end">
+          <div>
+            <p className="text-sm font-black uppercase tracking-[0.3em] text-[#2E7D32]">
+              About The Rugby Panda
+            </p>
+            <h1 className="mt-4 max-w-4xl text-4xl font-black leading-[0.98] tracking-[-0.04em] md:text-6xl">
+              Independent rugby journalism with an Irish point of view.
+            </h1>
+          </div>
+
+          <div className="border-l-4 border-[#7CB342] pl-6">
+            <p className="text-lg leading-8 text-zinc-600">
+              The Rugby Panda is a digital newsroom covering Ireland, the four provinces, the URC and European rugby with reporting, analysis and clear editorial judgement.
+            </p>
+          </div>
+        </div>
       </section>
 
-      <section className="border-t border-zinc-200 bg-zinc-50">
-        <div className="mx-auto grid max-w-5xl gap-8 px-5 py-12 md:grid-cols-3 md:px-6 md:py-16">
+      <section className="border-y border-zinc-200 bg-zinc-50">
+        <div className="mx-auto grid max-w-6xl gap-5 px-5 py-10 md:grid-cols-3 md:px-8 md:py-12">
           <div className="rounded-3xl border border-zinc-200 bg-white p-6">
-            <h2 className="text-xl font-black tracking-tight text-zinc-950">Serious</h2>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2E7D32]">Coverage</p>
+            <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-950">Irish rugby first</h2>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
-              A publication-first approach, not a fan blog or content farm.
+              Ireland, Leinster, Munster, Ulster and Connacht, with the competitions that shape their seasons.
             </p>
           </div>
           <div className="rounded-3xl border border-zinc-200 bg-white p-6">
-            <h2 className="text-xl font-black tracking-tight text-zinc-950">Independent</h2>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2E7D32]">Approach</p>
+            <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-950">Context over noise</h2>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
-              Coverage that puts readers, context and rugby understanding ahead of noise.
+              Stories are reviewed before publication and written to help readers understand what matters and why.
             </p>
           </div>
           <div className="rounded-3xl border border-zinc-200 bg-white p-6">
-            <h2 className="text-xl font-black tracking-tight text-zinc-950">Irish at heart</h2>
+            <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2E7D32]">Standards</p>
+            <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-950">Independent and accountable</h2>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
-              Focused on the four provinces, Ireland, the URC and European rugby.
+              Sources, image rights and editorial decisions are managed through a human-controlled publishing workflow.
             </p>
           </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 py-10 md:px-8 md:py-12">
+        <div className="grid gap-6 rounded-3xl bg-zinc-950 p-7 text-white md:grid-cols-[1fr_auto] md:items-center md:p-9">
+          <div>
+            <h2 className="text-2xl font-black tracking-tight md:text-3xl">The game. The people. The stories.</h2>
+            <p className="mt-3 max-w-3xl text-sm leading-6 text-zinc-300">
+              The newsroom is being built for regular, credible coverage rather than volume for its own sake.
+            </p>
+          </div>
+          <a href="/news" className="inline-flex rounded-full bg-[#7CB342] px-5 py-3 text-xs font-black uppercase tracking-wider text-zinc-950 hover:bg-[#9BE564]">
+            Read the latest
+          </a>
         </div>
       </section>
 
