@@ -6,11 +6,8 @@ import { getHomepageArticles } from "@/lib/cms";
 const sections = [
   { label: "News", href: "/news" },
   { label: "Provinces", href: "/categories/provinces" },
-  { label: "Ireland", href: "/categories/ireland" },
   { label: "URC", href: "/categories/urc" },
-  { label: "Europe", href: "/categories/europe" },
   { label: "International", href: "/categories/international" },
-  { label: "Opinion", href: "/categories/opinion" },
   { label: "About", href: "/about" },
 ];
 
@@ -160,9 +157,9 @@ export default async function Home() {
       <section className="border-t border-zinc-200 bg-zinc-50">
         <div className="mx-auto max-w-7xl px-5 py-12 md:px-8 md:py-14">
           <p className="text-sm font-black uppercase tracking-[0.25em] text-[#2E7D32]">
-            Sections
+            Explore
           </p>
-          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <div className="mt-6 grid gap-3 sm:grid-cols-2 lg:grid-cols-5">
             {sections.map((section) => (
               <a
                 key={section.href}
