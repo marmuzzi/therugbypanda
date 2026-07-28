@@ -124,7 +124,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     .filter(Boolean)
     .join(" • ");
   const featuredImage = await resolveFeaturedImage(cmsArticle);
-  const showEditorialImage = Boolean(featuredImage && !cmsArticle.useBrandImage);
+  const editorialImage = cmsArticle.useBrandImage ? undefined : featuredImage;
   const canonicalUrl = cmsArticle.slug ? articleUrl(cmsArticle.slug) : siteUrl("/");
   const jsonLd = {
     "@context": "https://schema.org",
@@ -164,18 +164,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       />
 
       <div className="mx-auto max-w-5xl px-5 pb-20 pt-7 md:px-6 md:pt-10">
-        {showEditorialImage ? (
+        {editorialImage ? (
           <figure className="mb-8 max-w-4xl">
             <div className="overflow-hidden rounded-2xl bg-zinc-100">
               <img
-                src={featuredImage.src}
-                alt={featuredImage.alt}
+                src={editorialImage.src}
+                alt={editorialImage.alt}
                 className="h-[220px] w-full object-cover sm:h-[280px] md:h-[340px]"
               />
             </div>
-            {featuredImage.caption || featuredImage.credit ? (
+            {editorialImage.caption || editorialImage.credit ? (
               <figcaption className="mt-2 text-xs leading-5 text-zinc-500">
-                {[featuredImage.caption, featuredImage.credit].filter(Boolean).join(" — ")}
+                {[editorialImage.caption, editorialImage.credit].filter(Boolean).join(" — ")}
               </figcaption>
             ) : null}
           </figure>
