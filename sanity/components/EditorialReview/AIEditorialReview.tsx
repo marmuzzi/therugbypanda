@@ -25,6 +25,18 @@ function labelValue(value: string): string {
     .join(" ");
 }
 
+function riskLabel(value: AiEditorialVoiceAssessment["aiLikeness"]): string {
+  if (value === "high") return "High — publication blocked";
+  if (value === "moderate") return "Moderate — rewrite required";
+  return "Low — editorial checks still required";
+}
+
+function riskStyle(value: AiEditorialVoiceAssessment["aiLikeness"]): React.CSSProperties {
+  if (value === "high") return { color: "#8b1e1e", background: "#fff0f0", borderColor: "#d99" };
+  if (value === "moderate") return { color: "#7a4b00", background: "#fff8dd", borderColor: "#d9b85f" };
+  return { color: "#245b2a", background: "#eef8ef", borderColor: "#9bc39f" };
+}
+
 export function AIEditorialReview({
   findings,
   voiceAssessment,
@@ -33,8 +45,11 @@ export function AIEditorialReview({
   isStale,
   onRunReview,
 }: AIEditorialReviewProps): React.JSX.Element {
+  const blockingCount = findings?.filter((finding) => finding.severity === "blocking").length ?? 0;
+  const warningCount = findings?.filter((finding) => finding.severity === "warning").length ?? 0;
+
   return (
-    <section className="editorial-ai-card" style={{ ...cardStyle, display: "grid", gap: ".75rem" }}>
+    <section className="editorial-ai-card" style={{ ...cardStyle, display: "grid", gap: ".85rem" }}>
       <div
         style={{
           display: "flex",
@@ -45,10 +60,10 @@ export function AIEditorialReview({
         }}
       >
         <div>
-          <h3 style={{ margin: 0 }}>AI Editorial Review</h3>
+          <h3 style={{ margin: 0 }}>Publication Risk Review</h3>
 
           <small style={{ color: "#666" }}>
-            Reviews accuracy, editorial quality, AI-like phrasing and Rugby Panda tone. It never changes article copy.
+            A deliberately conservative quality gate for factual support, readability, formulaic phrasing and Rugby Panda voice. It does not prove who wrote the copy.
           </small>
         </div>
 
@@ -58,10 +73,10 @@ export function AIEditorialReview({
           disabled={isReviewing || isSaving}
         >
           {isReviewing
-            ? "Running AI Review…"
+            ? "Running Publication Review…"
             : isStale
               ? "Run Review Again"
-              : "Run AI Review"}
+              : "Run Publication Review"}
         </button>
       </div>
 
@@ -76,7 +91,7 @@ export function AIEditorialReview({
             background: "#fff8d6",
           }}
         >
-          <strong>Out of date:</strong> the article has changed since this AI review was generated. The findings remain visible for reference; run the review again to refresh them.
+          <strong>Out of date:</strong> the article has changed since this review was generated. Publication remains blocked until the review is run again.
         </p>
       ) : null}
 
@@ -86,18 +101,23 @@ export function AIEditorialReview({
             display: "grid",
             gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr))",
             gap: ".75rem",
-            padding: ".75rem",
-            border: "1px solid #ddd",
-            borderRadius: 6,
+            padding: ".85rem",
+            border: "1px solid",
+            borderRadius: 8,
+            ...riskStyle(voiceAssessment.aiLikeness),
           }}
         >
           <div>
-            <small style={{ display: "block", color: "#666" }}>AI-likeness</small>
-            <strong>{labelValue(voiceAssessment.aiLikeness)}</strong>
+            <small style={{ display: "block", opacity: 0.75 }}>Publication risk</small>
+            <strong style={{ fontSize: "1.05rem" }}>{riskLabel(voiceAssessment.aiLikeness)}</strong>
           </div>
           <div>
-            <small style={{ display: "block", color: "#666" }}>Rugby Panda tone</small>
+            <small style={{ display: "block", opacity: 0.75 }}>Rugby Panda tone</small>
             <strong>{labelValue(voiceAssessment.rugbyPandaTone)}</strong>
+          </div>
+          <div>
+            <small style={{ display: "block", opacity: 0.75 }}>Gate findings</small>
+            <strong>{blockingCount} blocking · {warningCount} warnings</strong>
           </div>
           <p style={{ gridColumn: "1 / -1", margin: 0 }}>
             {voiceAssessment.explanation}
@@ -106,9 +126,11 @@ export function AIEditorialReview({
       ) : null}
 
       {findings === null ? (
-        <p style={{ margin: 0 }}>No AI review has been run for the current draft.</p>
+        <p style={{ margin: 0, padding: ".75rem", border: "1px solid #d9b85f", borderRadius: 6, background: "#fff8dd" }}>
+          <strong>Publication review required.</strong> No current risk assessment exists for this draft.
+        </p>
       ) : findings.length === 0 ? (
-        <p style={{ margin: 0 }}>No AI editorial findings returned.</p>
+        <p style={{ margin: 0 }}>No publication-risk findings returned. Human editorial judgement is still required.</p>
       ) : (
         severities.map((severity) => {
           const severityFindings = findings.filter((finding) => finding.severity === severity);
@@ -124,7 +146,7 @@ export function AIEditorialReview({
                 {heading} ({severityFindings.length})
               </strong>
 
-              <ul style={{ margin: 0, paddingLeft: "1.25rem" }}>
+              <ul style={{ margin: 0, paddingLeft: "1.25rem", display: "grid", gap: ".45rem" }}>
                 {severityFindings.map((finding, index) => (
                   <li key={`${severity}-${finding.category}-${index}`}>
                     <strong>{labelValue(finding.category)}</strong>: {finding.message}
