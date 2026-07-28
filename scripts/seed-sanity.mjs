@@ -32,7 +32,7 @@ const competitions = [
   { _id: "competition-international", title: "International", slug: "international" },
 ];
 
-const tags = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland", "URC", "International", "Analysis", "Season preview"].map((title) => ({
+const tags = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland", "URC", "International", "Analysis", "Introduction"].map((title) => ({
   _id: `tag-${title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "")}`,
   title,
   slug: title.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, ""),
@@ -41,10 +41,10 @@ const tags = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland", "URC", "In
 const author = {
   _id: "author-rugby-panda-newsroom",
   _type: "author",
-  name: "The Rugby Panda Newsroom",
-  slug: { _type: "slug", current: "rugby-panda-newsroom" },
+  name: "The Rugby Panda",
+  slug: { _type: "slug", current: "the-rugby-panda" },
   role: "Editorial team",
-  bio: "Independent Irish and international rugby coverage built around context, analysis and match understanding.",
+  bio: "Independent coverage and analysis of Irish, European and international rugby.",
 };
 
 function block(text, style = "normal") {
@@ -61,105 +61,48 @@ function ref(_ref) {
   return { _type: "reference", _ref };
 }
 
-const articles = [
-  {
-    _id: "article-leinster-season-preview-2026",
-    title: "Leinster season preview: building towards another defining campaign",
-    slug: "leinster-season-preview-2026",
-    standfirst: "A first look at the storylines, selection questions and European ambitions shaping Leinster’s 2026/27 season.",
-    publishedAt: "2026-07-02T09:00:00Z",
-    readingTime: "6 min read",
-    isLead: true,
-    category: "category-provinces",
-    province: "province-leinster",
-    tags: ["tag-leinster", "tag-urc", "tag-international", "tag-season-preview"],
-    keyPoints: [
-      "Leinster enter the 2026/27 season with familiar expectations and a squad still built to compete on multiple fronts.",
-      "Selection depth, European game management and the next wave of academy graduates are likely to shape the campaign.",
-      "The biggest question is not whether Leinster have enough talent, but whether they can turn control into silverware when the margins tighten.",
-    ],
-    body: [
-      block("Leinster seasons rarely begin quietly. There is always a familiar combination of expectation, scrutiny and possibility around a squad that has spent years setting standards in Ireland and beyond."),
-      block("The familiar challenge of depth", "h2"),
-      block("Few leading sides can rotate heavily while still putting international-level players across the pitch. That depth is a strength, but it also creates pressure: combinations need rhythm, younger players need meaningful minutes and senior players need to peak when the knockout matches arrive."),
-      block("Big nights will define the mood", "h2"),
-      block("For all the importance of domestic consistency, Leinster’s wider reputation is often measured against the biggest nights. Control, territory and defensive pressure have carried them a long way, but the final steps usually demand adaptability when a plan is disrupted."),
-      block("The bottom line", "h2"),
-      block("Leinster have enough quality to make this another serious campaign. The real test is whether they can turn squad strength into sharper big-game solutions and keep their rugby fresh across a long season."),
-    ],
-  },
-  {
-    _id: "article-ireland-depth-chart-autumn-window",
-    title: "Ireland’s depth chart questions before the autumn window",
-    slug: "ireland-depth-chart-autumn-window",
-    standfirst: "The early selection debates that could matter most once the international calendar returns.",
-    publishedAt: "2026-07-02T08:00:00Z",
-    readingTime: "4 min read",
-    category: "category-ireland",
-    tags: ["tag-ireland", "tag-analysis"],
-    keyPoints: ["Selection depth is becoming one of Ireland’s most important strategic advantages.", "The autumn window will test how quickly form can shift the conversation."],
-    body: [block("Ireland’s depth chart is never static for long. Form, fitness and provincial momentum can all change the shape of a national debate before squads are named."), block("The useful questions are rarely about one position in isolation. They are about combinations, bench impact and whether newer players can make selection feel less predictable.")],
-  },
-  {
-    _id: "article-urc-storylines-opening-month",
-    title: "The URC storylines that could shape the opening month",
-    slug: "urc-storylines-opening-month",
-    standfirst: "Fixture rhythm, squad rotation and early momentum will define how contenders settle into the campaign.",
-    publishedAt: "2026-07-01T13:00:00Z",
-    readingTime: "5 min read",
-    category: "category-urc",
-    competition: "competition-urc",
-    tags: ["tag-urc"],
-    body: [block("The URC’s opening month often looks messy before it looks meaningful, but that does not make it empty. Rotation patterns, away performances and early discipline usually reveal more than the table does.")],
-  },
-  {
-    _id: "article-european-game-management-big-nights",
-    title: "Why game management still decides the biggest international nights",
-    slug: "international-game-management-big-nights",
-    standfirst: "Control matters, but major rugby nights often turn on adaptation, pressure and precision after momentum swings.",
-    publishedAt: "2026-07-01T10:00:00Z",
-    readingTime: "5 min read",
-    category: "category-europe",
-    competition: "competition-international",
-    tags: ["tag-international", "tag-analysis"],
-    body: [block("International rugby rewards power and detail, but the decisive moments often arrive when the original plan has stopped being enough."), block("The teams that survive those passages are usually the ones that can keep their kicking, discipline and set-piece decisions connected under pressure.")],
-  },
-  {
-    _id: "article-munster-control-not-emotion",
-    title: "Munster’s next step is about control, not emotion",
-    slug: "munster-control-not-emotion",
-    standfirst: "The province already has intensity. The question is whether they can turn that into repeatable shape and discipline.",
-    publishedAt: "2026-06-30T09:00:00Z",
-    readingTime: "4 min read",
-    category: "category-provinces",
-    province: "province-munster",
-    tags: ["tag-munster", "tag-analysis"],
-    body: [block("Munster rarely need help finding emotional energy. Their next step is making the sharpest parts of their game repeatable when matches become slower, tighter and more tactical.")],
-  },
-  {
-    _id: "article-ulster-need-clarity",
-    title: "Ulster need clarity before they need miracles",
-    slug: "ulster-need-clarity",
-    standfirst: "The squad has enough talent to move forward, but the first job is making the plan feel coherent again.",
-    publishedAt: "2026-06-29T09:00:00Z",
-    readingTime: "4 min read",
-    category: "category-provinces",
-    province: "province-ulster",
-    tags: ["tag-ulster", "tag-analysis"],
-    body: [block("Ulster’s route forward does not need to begin with a grand statement. It needs clarity: of selection, of territory strategy and of how their best players are being asked to influence games.")],
-  },
-  {
-    _id: "article-connacht-edge-awkward-games",
-    title: "Connacht’s edge remains their best route into awkward games",
-    slug: "connacht-edge-awkward-games",
-    standfirst: "At their best, Connacht make opponents uncomfortable early and keep the contest alive deep into the final quarter.",
-    publishedAt: "2026-06-28T09:00:00Z",
-    readingTime: "4 min read",
-    category: "category-provinces",
-    province: "province-connacht",
-    tags: ["tag-connacht"],
-    body: [block("Connacht’s best rugby has always carried a disruptive edge. They make rhythm difficult, force opponents into repeat decisions and keep games close enough for belief to matter.")],
-  },
+const introductionArticle = {
+  _id: "article-welcome-to-the-rugby-panda",
+  title: "Welcome to The Rugby Panda: rugby worth reading",
+  slug: "welcome-to-the-rugby-panda",
+  standfirst: "A new independent rugby newsroom built for supporters who want clear reporting, useful context and thoughtful analysis of the game.",
+  publishedAt: "2026-07-28T21:00:00Z",
+  readingTime: "4 min read",
+  isLead: true,
+  useBrandImage: true,
+  category: "category-news",
+  tags: ["tag-introduction"],
+  keyPoints: [
+    "The Rugby Panda will focus on Irish provincial rugby, the URC and the international game.",
+    "Coverage will favour accuracy, context and clear analysis over manufactured controversy.",
+    "Every published article will pass through a human editorial review before reaching readers.",
+  ],
+  body: [
+    block("Rugby does not suffer from a shortage of noise. Every team selection becomes a crisis, every defeat becomes a collapse and every promising player is immediately presented as the answer to a question nobody has properly asked."),
+    block("The Rugby Panda is being built as an alternative: an independent digital newsroom for supporters who enjoy the game, care about the detail and want coverage that respects their intelligence."),
+    block("What we will cover", "h2"),
+    block("Our core focus is Irish rugby: Leinster, Munster, Ulster and Connacht, the United Rugby Championship and the Ireland team. We will also follow the wider international game whenever the story matters to Irish and European supporters."),
+    block("That means match reporting, selection context, tactical trends, squad development and the decisions that shape a season. It also means knowing when a story needs depth and when it simply needs to be explained clearly."),
+    block("How we want to cover it", "h2"),
+    block("The aim is not to be the loudest voice in rugby. It is to be a useful one. Reporting should separate confirmed information from interpretation. Analysis should explain why something matters rather than merely declaring that it does."),
+    block("We will make room for strong opinions, but opinion will be presented as opinion. Headlines should earn attention without misleading the reader, and criticism should remain fair even when the subject is difficult."),
+    block("Built around editorial standards", "h2"),
+    block("Every article published by The Rugby Panda will pass through a human editorial review. Sources, factual support, image rights and presentation all matter. Speed is valuable, but not when it comes at the expense of accuracy or trust."),
+    block("We are starting small and deliberately. The first job is to establish a consistent standard, publish work worth returning to and build a newsroom that can cover rugby reliably throughout the season."),
+    block("A newsroom for supporters", "h2"),
+    block("The Rugby Panda is for people who watch closely, argue honestly and still remember that rugby is meant to be enjoyed. We will take the reporting seriously without taking ourselves too seriously."),
+    block("This is the beginning. The site will grow, the coverage will widen and the voice will develop, but the promise is straightforward: clear reporting, thoughtful analysis and rugby worth reading."),
+  ],
+};
+
+const legacySeedArticleIds = [
+  "article-leinster-season-preview-2026",
+  "article-ireland-depth-chart-autumn-window",
+  "article-urc-storylines-opening-month",
+  "article-european-game-management-big-nights",
+  "article-munster-control-not-emotion",
+  "article-ulster-need-clarity",
+  "article-connacht-edge-awkward-games",
 ];
 
 const transaction = client.transaction();
@@ -180,20 +123,20 @@ for (const item of tags) {
   transaction.createOrReplace({ _type: "tag", ...item, slug: { _type: "slug", current: item.slug } });
 }
 
-transaction.createIfNotExists(author);
+transaction.createOrReplace(author);
 
-for (const article of articles) {
-  transaction.createOrReplace({
-    _type: "article",
-    ...article,
-    slug: { _type: "slug", current: article.slug },
-    author: ref(author._id),
-    category: ref(article.category),
-    province: article.province ? ref(article.province) : undefined,
-    competition: article.competition ? ref(article.competition) : undefined,
-    tags: article.tags?.map(ref),
-  });
+for (const articleId of legacySeedArticleIds) {
+  transaction.delete(articleId);
 }
 
+transaction.createOrReplace({
+  _type: "article",
+  ...introductionArticle,
+  slug: { _type: "slug", current: introductionArticle.slug },
+  author: ref(author._id),
+  category: ref(introductionArticle.category),
+  tags: introductionArticle.tags.map(ref),
+});
+
 await transaction.commit();
-console.log(`Seeded ${categories.length} categories and ${articles.length} articles into ${projectId}/${dataset}.`);
+console.log(`Removed ${legacySeedArticleIds.length} legacy seed articles and published the launch introduction in ${projectId}/${dataset}.`);
