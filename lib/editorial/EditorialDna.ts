@@ -17,7 +17,7 @@ export type EditorialCategoryScore = {
 
 export type EditorialScorecard = Record<EditorialScoreCategory, EditorialCategoryScore> & {
   overall: number;
-  status: "strong" | "needs-attention" | "substantial-problems";
+  status: "strong" | "needs-attention" | "substantial-problems" | "blocking";
   summary: string;
   accuracyNotice: string;
 };
@@ -118,8 +118,7 @@ export function buildEditorialDnaPrompt(): string {
     `Voice: ${dna.voice.join("; ")}.`,
     `Reward: ${dna.reward.join("; ")}.`,
     `Penalise: ${dna.penalise.join("; ")}.`,
-    `Challenge these phrases and close equivalents: ${dna.prohibitedPhrases.join(", ")}.`,
-    `Accuracy rules: ${dna.accuracyRules.join(" ")}`,
-    "Explain explicitly why the draft does or does not sound like The Rugby Panda.",
+    `Prohibited phrases: ${dna.prohibitedPhrases.join("; ")}.`,
+    `Accuracy rules: ${dna.accuracyRules.join("; ")}.`,
   ].join("\n");
 }

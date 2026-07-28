@@ -234,15 +234,41 @@ export function EditorialReviewTool({ tool: _tool }: { tool: Tool }): React.JSX.
 
   async function runAction(action: EditorialAction) {
     if (!selected || !draft) return;
-    if (
-      (action === "approve" || action === "publish") &&
-      editorialReview?.blockingCount
-    ) {
+    const protectedAction = action === "approve" || action === "publish";
+
+    if (protectedAction && editorialReview?.blockingCount) {
       setMessage(
         "Resolve all blocking Editorial Review issues before approval or publication.",
       );
       return;
     }
+
+    if (protectedAction && (aiFindings === null || aiVoiceAssessment === null)) {
+      setMessage(
+        "Run the Publication Risk Review before approval or publication. Publishing without a current review is blocked.",
+      );
+      return;
+    }
+
+    if (protectedAction && isDirty) {
+      setMessage(
+        "The article changed after the Publication Risk Review. Save it, run the review again, then publish.",
+      );
+      return;
+    }
+
+    const blockingAiFindings = aiFindings?.filter((finding) => finding.severity === "blocking") ?? [];
+    const warningAiFindings = aiFindings?.filter((finding) => finding.severity === "warning") ?? [];
+    if (
+      protectedAction &&
+      (aiVoiceAssessment?.aiLikeness !== "low" || blockingAiFindings.length > 0 || warningAiFindings.length > 0)
+    ) {
+      setMessage(
+        "Publication blocked by the conservative risk gate. Resolve all blocking and warning findings and achieve Low publication risk, then run the review again.",
+      );
+      return;
+    }
+
     if (isDirty && action !== "discard") {
       const saved = await saveDraft();
       if (!saved) return;
