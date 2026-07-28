@@ -127,7 +127,10 @@ export type AiEditorialFindingCategory =
   | "readability"
   | "seo"
   | "headline"
-  | "standfirst";
+  | "standfirst"
+  | "rugby-voice"
+  | "originality"
+  | "ai-likeness";
 
 export type AiEditorialFinding = {
   severity: AiEditorialFindingSeverity;
@@ -135,6 +138,12 @@ export type AiEditorialFinding = {
   message: string;
   excerpt: string;
   recommendation: string;
+};
+
+export type AiEditorialVoiceAssessment = {
+  aiLikeness: "low" | "moderate" | "high";
+  rugbyPandaTone: "strong-match" | "partial-match" | "weak-match";
+  explanation: string;
 };
 
 export type EditableDraft = {
