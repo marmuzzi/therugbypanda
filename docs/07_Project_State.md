@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last updated
 
-28 July 2026, after the one-click publication workflow, automatic image-backed social distribution contract and AI-assisted publication preview direction were approved.
+28 July 2026, after PR #101 merged the one-click publication preparation, automatic image-backed social distribution and AI-assisted publication preview data contracts.
 
 ## Source of truth
 
@@ -64,8 +64,10 @@ GitHub source of truth
 - The Make.com MCP toolbox is connected, but the currently exposed toolset does not permit scenario editing.
 - Automatic Sanity Studio deployment after merge is working.
 - PR #100, Social Publishing Foundation, is merged.
-- PR #101, Publication Preview and AI Image Selection contract, is open and mergeable. It is not yet merged, deployed or production verified.
-- `main` currently includes the approved automatic image-backed social workflow document.
+- PR #101, Publication Preview and AI Image Selection contract, is merged at commit `cc76b3642117e58c11c865c4ca14eabd523849de`.
+- The PR #101 Vercel preview status passed before merge.
+- Production deployment and authenticated Sanity Studio verification for the PR #101 merge remain pending.
+- `main` includes `docs/35_Automatic_Social_Distribution.md` and `docs/36_Publication_Preview_and_AI_Image_Selection.md`.
 
 ## Approved publication model
 
@@ -175,15 +177,16 @@ NOTIFY-001 is not complete until a correctly populated production email, persist
 
 ## Immediate priority
 
-1. Merge and verify PR #101.
-2. Build the visual Publication Preview component in Sanity Studio.
-3. Define and implement the Make.com publication-preparation and social-distribution scenario.
-4. Implement AI image candidate collection and ranking using only usage-approved assets.
-5. Implement platform-specific captions, image transforms, idempotency, partial-success handling and retries.
-6. Complete NOTIFY-001 email mapping and persistent deduplication.
-7. Add workflow failure and technical alerts to `admin@therugbypanda.ie`.
-8. Execute a complete controlled editorial lifecycle test through production rendering and social preparation.
-9. Complete the nine-article launch package and verify it in production.
+1. Verify the PR #101 merge deployment and authenticated Studio schema result.
+2. Merge the updated publication-pipeline documentation handoff.
+3. Build the visual Publication Preview component in Sanity Studio.
+4. Define and implement the Make.com publication-preparation and social-distribution scenario.
+5. Implement AI image candidate collection and ranking using only usage-approved assets.
+6. Implement platform-specific captions, image transforms, idempotency, partial-success handling and retries.
+7. Complete NOTIFY-001 email mapping and persistent deduplication.
+8. Add workflow failure and technical alerts to `admin@therugbypanda.ie`.
+9. Execute a complete controlled editorial lifecycle test through production rendering and social preparation.
+10. Complete the nine-article launch package and verify it in production.
 
 ## Launch minimum
 
