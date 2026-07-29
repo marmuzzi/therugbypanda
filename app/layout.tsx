@@ -1,22 +1,9 @@
 import type { Metadata, Viewport } from "next";
-import { Newsreader, Source_Sans_3 } from "next/font/google";
 import { Suspense } from "react";
 
 import AnalyticsConsent from "@/components/AnalyticsConsent";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import "./globals.css";
-
-const editorialFont = Newsreader({
-  subsets: ["latin"],
-  variable: "--font-editorial",
-  display: "swap",
-});
-
-const interfaceFont = Source_Sans_3({
-  subsets: ["latin"],
-  variable: "--font-interface",
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://therugbypanda.ie"),
@@ -58,7 +45,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${editorialFont.variable} ${interfaceFont.variable}`}>
+    <html lang="en">
       <body>
         {children}
         <Suspense fallback={null}>
