@@ -19,12 +19,12 @@ type DraftEditorProps = {
 
 const portableTextComponents: PortableTextComponents = {
   block: {
-    normal: ({ children }) => <p style={{ margin: "0 0 1rem", lineHeight: 1.75, fontFamily: "Georgia, 'Times New Roman', serif", fontSize: "1.05rem" }}>{children}</p>,
+    normal: ({ children }) => <p style={{ margin: "0 0 1rem", lineHeight: 1.75, fontSize: "1.05rem" }}>{children}</p>,
     h1: ({ children }) => <h1>{children}</h1>,
     h2: ({ children }) => <h2 style={{ margin: "1.4rem 0 .65rem", fontWeight: 900 }}>{children}</h2>,
     h3: ({ children }) => <h3 style={{ margin: "1.2rem 0 .55rem", fontWeight: 900 }}>{children}</h3>,
     blockquote: ({ children }) => (
-      <blockquote style={{ margin: "1rem 0", paddingLeft: "1rem", borderLeft: "4px solid #2E7D32", fontFamily: "Georgia, 'Times New Roman', serif", fontStyle: "italic" }}>
+      <blockquote style={{ margin: "1rem 0", paddingLeft: "1rem", borderLeft: "4px solid #2E7D32", fontStyle: "italic" }}>
         {children}
       </blockquote>
     ),
@@ -40,8 +40,8 @@ const portableTextComponents: PortableTextComponents = {
     ),
   },
   list: {
-    bullet: ({ children }) => <ul style={{ margin: "0 0 1rem", paddingLeft: "1.5rem", fontFamily: "Georgia, 'Times New Roman', serif" }}>{children}</ul>,
-    number: ({ children }) => <ol style={{ margin: "0 0 1rem", paddingLeft: "1.5rem", fontFamily: "Georgia, 'Times New Roman', serif" }}>{children}</ol>,
+    bullet: ({ children }) => <ul style={{ margin: "0 0 1rem", paddingLeft: "1.5rem" }}>{children}</ul>,
+    number: ({ children }) => <ol style={{ margin: "0 0 1rem", paddingLeft: "1.5rem" }}>{children}</ol>,
   },
 };
 
@@ -71,6 +71,40 @@ export function DraftEditor({
           <strong style={{ color: isDirty ? "#a15c00" : "#39723b" }}>
             {isDirty ? "● Unsaved changes" : "Saved"}
           </strong>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gap: ".45rem",
+            padding: "1rem",
+            borderRadius: 10,
+            border: "1px solid #b7d7b9",
+            background: "#f3faf4",
+          }}
+        >
+          <strong>Full article editor</strong>
+          <p style={{ margin: 0, color: "#4b5f4d", lineHeight: 1.5 }}>
+            Use Sanity&apos;s full Portable Text editor for the article body, headings, bold text, links, lists and images.
+          </p>
+          <div>
+            <IntentLink
+              intent="edit"
+              params={{ id: normaliseId(article._id), type: "article" }}
+              style={{
+                display: "inline-block",
+                marginTop: ".35rem",
+                padding: ".65rem .9rem",
+                borderRadius: 8,
+                background: "#2E7D32",
+                color: "#fff",
+                fontWeight: 700,
+                textDecoration: "none",
+              }}
+            >
+              Open full Sanity editor
+            </IntentLink>
+          </div>
         </div>
 
         <label>
@@ -114,26 +148,9 @@ export function DraftEditor({
             )}
           </div>
           <small style={{ color: "#666" }}>
-            Bold, italic, headings, quotes, lists and links are rendered here exactly from Portable Text.
+            This preview reflects the stored Portable Text. Open the full editor above to change article formatting and structure.
           </small>
         </div>
-
-        <label>
-          Plain-text body editor
-          <textarea
-            value={draft.bodyText}
-            onChange={(event) => onChange("bodyText", event.target.value)}
-            rows={18}
-            spellCheck={true}
-            lang="en-IE"
-            style={{ ...inputStyle, lineHeight: 1.55, resize: "vertical" }}
-          />
-        </label>
-
-        <p style={{ margin: 0, color: "#666" }}>
-          Plain-text edits replace body formatting. Use the full Sanity editor when adding or changing bold text,
-          headings, links, lists or inline images. Existing formatting remains preserved until the plain-text body is edited.
-        </p>
 
         <details>
           <summary style={{ cursor: "pointer", fontWeight: 600 }}>SEO</summary>
@@ -172,17 +189,10 @@ export function DraftEditor({
           }}
         >
           <button type="button" onClick={onSave} disabled={!isDirty || isSaving}>
-            {isSaving ? "Saving…" : "Save draft"}
+            {isSaving ? "Saving…" : "Save headline and metadata"}
           </button>
 
           <small>Keyboard shortcut: Ctrl+S / Cmd+S</small>
-
-          <IntentLink
-            intent="edit"
-            params={{ id: normaliseId(article._id), type: "article" }}
-          >
-            Open full Sanity editor for rich formatting
-          </IntentLink>
         </div>
       </section>
 
