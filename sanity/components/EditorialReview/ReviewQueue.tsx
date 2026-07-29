@@ -13,21 +13,35 @@ type ReviewQueueProps = {
   onSelect: (articleId: string) => void;
 };
 
-type QueueFilter = "all" | "drafts" | "published" | "rejected";
+type QueueFilter = "all" | "drafts" | "ready" | "published" | "replacement" | "rejected";
 
 const filterLabels: Array<{ value: QueueFilter; label: string }> = [
   { value: "all", label: "All" },
   { value: "drafts", label: "Drafts" },
+  { value: "ready", label: "Ready to publish" },
   { value: "published", label: "Published" },
+  { value: "replacement", label: "Replacement required" },
   { value: "rejected", label: "Rejected" },
 ];
 
+function readInitialFilter(): QueueFilter {
+  if (typeof window === "undefined") return "drafts";
+  const requested = new URLSearchParams(window.location.search).get("filter");
+  return filterLabels.some(({ value }) => value === requested)
+    ? (requested as QueueFilter)
+    : "drafts";
+}
+
 function matchesFilter(article: ReviewArticle, filter: QueueFilter): boolean {
   if (filter === "all") return true;
+  if (filter === "ready") return article.workflowStatus === "approved";
   if (filter === "published") return article.workflowStatus === "published";
+  if (filter === "replacement") return article.replacementRequired === true;
   if (filter === "rejected") return article.workflowStatus === "rejected";
 
-  return !["published", "rejected"].includes(article.workflowStatus ?? "draft");
+  return !["approved", "published", "rejected"].includes(
+    article.workflowStatus ?? "draft",
+  );
 }
 
 function formatUpdatedAt(value?: string): string | null {
@@ -54,7 +68,7 @@ export function ReviewQueue({
   onRefresh,
   onSelect,
 }: ReviewQueueProps): React.JSX.Element {
-  const [filter, setFilter] = useState<QueueFilter>("drafts");
+  const [filter, setFilter] = useState<QueueFilter>(readInitialFilter);
   const [searchTerm, setSearchTerm] = useState("");
 
   const counts = useMemo(
