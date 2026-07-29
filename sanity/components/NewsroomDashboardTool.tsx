@@ -88,7 +88,8 @@ function formatStatus(status?: string) {
 }
 
 export function NewsroomDashboardTool(_props: { tool: Tool }) {
-  const client = useClient({ apiVersion: "2026-07-26", perspective: "raw", useCdn: false });
+  const studioClient = useClient({ apiVersion: "2026-07-26" });
+  const client = studioClient.withConfig({ perspective: "raw", useCdn: false });
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
   const [recent, setRecent] = useState<DashboardArticle[]>([]);
   const [publicationQueue, setPublicationQueue] = useState<DashboardArticle[]>([]);
