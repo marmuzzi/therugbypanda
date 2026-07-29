@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 import { authenticateEditorialRequest } from "@/lib/editorial/EditorialApiAuth";
+import { notifyArticlePublished } from "@/lib/editorial/EditorialSocialDistribution";
 import { applyEditorialAction, type EditorialAction } from "@/lib/editorial/EditorialWorkflow";
 
 export const runtime = "nodejs";
@@ -67,7 +68,12 @@ export async function POST(request: NextRequest) {
     // on the public website on the next request rather than waiting for the normal cache window.
     revalidatePath("/", "layout");
 
-    return jsonResponse({ status: "ok", workflow: result });
+    const socialDistribution =
+      body.action === "publish"
+        ? await notifyArticlePublished(result.articleId)
+        : undefined;
+
+    return jsonResponse({ status: "ok", workflow: result, socialDistribution });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Editorial workflow failed";
     const status =
