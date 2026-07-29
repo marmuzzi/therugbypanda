@@ -19,7 +19,7 @@ export default function ArticleHeader({
 
   return (
     <header className="border-b border-zinc-200 bg-zinc-50">
-      <div className="mx-auto max-w-[820px] px-5 py-9 md:px-6 md:py-12">
+      <div className="mx-auto max-w-[920px] px-5 py-9 md:px-6 md:py-12">
         <nav aria-label="Breadcrumb" className="mb-5 text-sm font-bold text-zinc-500">
           <a href="/" className="hover:text-[#2E7D32] hover:underline">Home</a>
           <span className="mx-2" aria-hidden="true">→</span>
@@ -34,7 +34,7 @@ export default function ArticleHeader({
           {title}
         </h1>
 
-        <p className="mt-5 max-w-[760px] text-lg leading-8 text-zinc-600 md:text-xl">
+        <p className="mt-5 max-w-[820px] text-lg leading-8 text-zinc-600 md:text-xl">
           {subtitle}
         </p>
 
