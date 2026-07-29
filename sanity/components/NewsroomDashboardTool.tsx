@@ -27,6 +27,12 @@ type DashboardArticle = {
   updatedAt?: string;
 };
 
+type DashboardCard = {
+  label: string;
+  value: number;
+  destination: string;
+};
+
 const query = `{
   "totalArticles": count(*[_type == "article" && !(_id in path("drafts.**"))]),
   "publishedArticles": count(*[_type == "article" && !(_id in path("drafts.**")) && workflowStatus == "published"]),
@@ -95,6 +101,11 @@ function articleUrl(articleId: string) {
   return url.toString();
 }
 
+function navigateTo(destination: string) {
+  const url = new URL(destination, studioBaseUrl);
+  window.location.assign(url.toString());
+}
+
 export function NewsroomDashboardTool(_props: { tool: Tool }) {
   const studioClient = useClient({ apiVersion: "2026-07-26" });
   const client = useMemo(
@@ -133,17 +144,17 @@ export function NewsroomDashboardTool(_props: { tool: Tool }) {
     void load();
   }, [load]);
 
-  const cards = metrics
+  const cards: DashboardCard[] = metrics
     ? [
-        { label: "Draft", value: metrics.draftArticles, href: `${studioBaseUrl}/structure/article` },
-        { label: "Ready to publish", value: metrics.approvedArticles, href: `${studioBaseUrl}/editorial-review` },
-        { label: "Published today", value: metrics.publishedToday, href: `${studioBaseUrl}/structure/article` },
-        { label: "Published this month", value: metrics.publishedThisMonth, href: `${studioBaseUrl}/structure/article` },
-        { label: "All published", value: metrics.publishedArticles, href: `${studioBaseUrl}/structure/article` },
-        { label: "Original-photo stories", value: metrics.originalPhotoArticles, href: `${studioBaseUrl}/structure/article` },
-        { label: "Competitions covered", value: metrics.competitionsCovered, href: `${studioBaseUrl}/structure/competition` },
-        { label: "Replacement required", value: metrics.replacementRequired, href: `${studioBaseUrl}/editorial-review` },
-        { label: "Rejected", value: metrics.rejectedArticles, href: `${studioBaseUrl}/editorial-review` },
+        { label: "Draft", value: metrics.draftArticles, destination: "/editorial-review?filter=drafts" },
+        { label: "Ready to publish", value: metrics.approvedArticles, destination: "/editorial-review?filter=ready" },
+        { label: "Published today", value: metrics.publishedToday, destination: "/editorial-review?filter=published" },
+        { label: "Published this month", value: metrics.publishedThisMonth, destination: "/editorial-review?filter=published" },
+        { label: "All published", value: metrics.publishedArticles, destination: "/editorial-review?filter=published" },
+        { label: "Original-photo stories", value: metrics.originalPhotoArticles, destination: "/editorial-review?filter=published" },
+        { label: "Competitions covered", value: metrics.competitionsCovered, destination: "/structure/competition" },
+        { label: "Replacement required", value: metrics.replacementRequired, destination: "/editorial-review?filter=replacement" },
+        { label: "Rejected", value: metrics.rejectedArticles, destination: "/editorial-review?filter=rejected" },
       ]
     : [];
 
@@ -164,16 +175,17 @@ export function NewsroomDashboardTool(_props: { tool: Tool }) {
         {error ? <div style={{ ...cardStyle, borderColor: "#b42318", color: "#b42318", marginBottom: 18 }}>{error}</div> : null}
 
         <section aria-label="Newsroom metrics" style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(190px, 1fr))", gap: 14, marginBottom: 22 }}>
-          {cards.map(({ label, value, href }) => (
-            <a
+          {cards.map(({ label, value, destination }) => (
+            <button
               key={label}
-              href={href}
-              style={{ ...cardStyle, display: "block", color: "inherit", textDecoration: "none", cursor: "pointer", transition: "transform 120ms ease, box-shadow 120ms ease" }}
+              type="button"
+              onClick={() => navigateTo(destination)}
+              style={{ ...cardStyle, display: "block", width: "100%", color: "inherit", textAlign: "left", cursor: "pointer", transition: "transform 120ms ease, box-shadow 120ms ease" }}
               aria-label={`${label}: ${value}. Open destination.`}
             >
               <p style={{ margin: 0, color: "#627269", fontSize: 13, fontWeight: 700 }}>{label}</p>
               <p style={{ margin: "8px 0 0", fontSize: 34, lineHeight: 1, fontWeight: 900, color: "#003d2b" }}>{value}</p>
-            </a>
+            </button>
           ))}
         </section>
 
