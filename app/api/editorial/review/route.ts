@@ -7,6 +7,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const ALLOWED_STUDIO_ORIGIN = "https://therugbypanda.sanity.studio";
+const DEFAULT_REVIEW_MODEL = "gpt-5-mini";
 const corsHeaders = {
   "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -31,11 +32,28 @@ export async function POST(request: NextRequest) {
     if (!input || typeof input.title !== "string" || typeof input.bodyText !== "string") {
       return jsonResponse({ error: "A structured editorial review input is required." }, { status: 400 });
     }
+
+    // The publication gate is a well-defined structured classification task. Use the
+    // dedicated faster model unless Vercel explicitly configures another review model.
+    process.env.OPENAI_EDITORIAL_REVIEW_MODEL ??= DEFAULT_REVIEW_MODEL;
+
     return jsonResponse(await runAiEditorialReview(input));
   } catch (error) {
+    const message = error instanceof Error ? error.message : "AI editorial review failed.";
+    const timedOut = /timeout|timed out|exceeded/i.test(message);
+
+    console.error("Publication review failed", {
+      message,
+      timedOut,
+    });
+
     return jsonResponse(
-      { error: error instanceof Error ? error.message : "AI editorial review failed." },
-      { status: 500 },
+      {
+        error: timedOut
+          ? "The publication review took too long. Please run it again."
+          : message,
+      },
+      { status: timedOut ? 504 : 500 },
     );
   }
 }
