@@ -163,9 +163,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         readingTime={cmsArticle.readingTime ?? "Read"}
       />
 
-      <div className="mx-auto max-w-5xl px-5 pb-20 pt-7 md:px-6 md:pt-10">
+      <div className="mx-auto max-w-6xl px-5 pb-20 pt-8 md:px-6 md:pt-12">
         {editorialImage ? (
-          <figure className="mb-8 max-w-4xl">
+          <figure className="mx-auto mb-10 max-w-5xl">
             <div className="overflow-hidden rounded-2xl bg-zinc-100">
               <img
                 src={editorialImage.src}
@@ -181,9 +181,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </figure>
         ) : null}
 
-        <div className="max-w-[820px] space-y-9">
-          {cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
-
+        <div className="mx-auto max-w-[820px] space-y-10">
           {cmsArticle.body?.length ? (
             <ArticleBody body={cmsArticle.body} />
           ) : (
@@ -191,6 +189,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
               This article has no body content yet.
             </p>
           )}
+
+          {cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
 
           <ReaderSupport
             title="Independent rugby coverage takes time."
