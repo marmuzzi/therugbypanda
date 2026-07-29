@@ -2,8 +2,6 @@ import React, { useCallback, useEffect, useMemo, useState } from "react";
 import type { Tool } from "sanity";
 import { useClient } from "sanity";
 
-const studioBaseUrl = "https://therugbypanda.sanity.studio";
-
 type DashboardMetrics = {
   totalArticles: number;
   publishedArticles: number;
@@ -93,17 +91,28 @@ function formatStatus(status?: string) {
     .join(" ");
 }
 
+function workspaceUrl(destination: string) {
+  const current = new URL(window.location.href);
+  const [destinationPath, destinationQuery] = destination.split("?", 2);
+  const currentToolBoundary = current.pathname.lastIndexOf("/");
+  const workspacePath = current.pathname.slice(0, currentToolBoundary);
+
+  current.pathname = `${workspacePath}/${destinationPath.replace(/^\//, "")}`;
+  current.search = destinationQuery ? `?${destinationQuery}` : "";
+  current.hash = "";
+  return current;
+}
+
 function articleUrl(articleId: string) {
   const documentId = articleId.replace(/^drafts\./, "");
-  const url = new URL(`${studioBaseUrl}/intent/edit`);
+  const url = workspaceUrl("intent/edit");
   url.searchParams.set("id", documentId);
   url.searchParams.set("type", "article");
   return url.toString();
 }
 
 function navigateTo(destination: string) {
-  const url = new URL(destination, studioBaseUrl);
-  window.location.assign(url.toString());
+  window.location.assign(workspaceUrl(destination).toString());
 }
 
 export function NewsroomDashboardTool(_props: { tool: Tool }) {
@@ -146,15 +155,15 @@ export function NewsroomDashboardTool(_props: { tool: Tool }) {
 
   const cards: DashboardCard[] = metrics
     ? [
-        { label: "Draft", value: metrics.draftArticles, destination: "/editorial-review?filter=drafts" },
-        { label: "Ready to publish", value: metrics.approvedArticles, destination: "/editorial-review?filter=ready" },
-        { label: "Published today", value: metrics.publishedToday, destination: "/editorial-review?filter=published" },
-        { label: "Published this month", value: metrics.publishedThisMonth, destination: "/editorial-review?filter=published" },
-        { label: "All published", value: metrics.publishedArticles, destination: "/editorial-review?filter=published" },
-        { label: "Original-photo stories", value: metrics.originalPhotoArticles, destination: "/editorial-review?filter=published" },
-        { label: "Competitions covered", value: metrics.competitionsCovered, destination: "/structure/competition" },
-        { label: "Replacement required", value: metrics.replacementRequired, destination: "/editorial-review?filter=replacement" },
-        { label: "Rejected", value: metrics.rejectedArticles, destination: "/editorial-review?filter=rejected" },
+        { label: "Draft", value: metrics.draftArticles, destination: "editorial-review?filter=drafts" },
+        { label: "Ready to publish", value: metrics.approvedArticles, destination: "editorial-review?filter=ready" },
+        { label: "Published today", value: metrics.publishedToday, destination: "editorial-review?filter=published" },
+        { label: "Published this month", value: metrics.publishedThisMonth, destination: "editorial-review?filter=published" },
+        { label: "All published", value: metrics.publishedArticles, destination: "editorial-review?filter=published" },
+        { label: "Original-photo stories", value: metrics.originalPhotoArticles, destination: "editorial-review?filter=published" },
+        { label: "Competitions covered", value: metrics.competitionsCovered, destination: "structure/competition" },
+        { label: "Replacement required", value: metrics.replacementRequired, destination: "editorial-review?filter=replacement" },
+        { label: "Rejected", value: metrics.rejectedArticles, destination: "editorial-review?filter=rejected" },
       ]
     : [];
 
