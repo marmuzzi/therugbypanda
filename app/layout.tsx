@@ -1,9 +1,23 @@
 import type { Metadata, Viewport } from "next";
+import { Merriweather, Source_Sans_3 } from "next/font/google";
 import { Suspense } from "react";
 
 import AnalyticsConsent from "@/components/AnalyticsConsent";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
 import "./globals.css";
+
+const sourceSans = Source_Sans_3({
+  subsets: ["latin"],
+  variable: "--font-sans",
+  display: "swap",
+});
+
+const merriweather = Merriweather({
+  subsets: ["latin"],
+  variable: "--font-editorial",
+  display: "swap",
+  weight: ["400", "700", "900"],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://therugbypanda.ie"),
@@ -45,7 +59,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${sourceSans.variable} ${merriweather.variable}`}>
       <body>
         {children}
         <Suspense fallback={null}>
