@@ -5,7 +5,9 @@ import { useClient } from "sanity";
 type DashboardMetrics = {
   totalArticles: number;
   publishedArticles: number;
+  draftArticles: number;
   reviewQueue: number;
+  approvedArticles: number;
   rejectedArticles: number;
   replacementRequired: number;
   publishedThisMonth: number;
@@ -14,19 +16,22 @@ type DashboardMetrics = {
   competitionsCovered: number;
 };
 
-type RecentArticle = {
+type DashboardArticle = {
   _id: string;
   title: string;
   workflowStatus?: string;
   publishedAt?: string;
   category?: string;
   competition?: string;
+  updatedAt?: string;
 };
 
 const query = `{
   "totalArticles": count(*[_type == "article" && !(_id in path("drafts.**"))]),
   "publishedArticles": count(*[_type == "article" && !(_id in path("drafts.**")) && workflowStatus == "published"]),
+  "draftArticles": count(*[_type == "article" && _id in path("drafts.**") && (!defined(workflowStatus) || workflowStatus == "draft")]),
   "reviewQueue": count(*[_type == "article" && workflowStatus in ["submitted", "in-review", "review"]]),
+  "approvedArticles": count(*[_type == "article" && workflowStatus == "approved"]),
   "rejectedArticles": count(*[_type == "article" && workflowStatus == "rejected"]),
   "replacementRequired": count(*[_type == "article" && replacementRequired == true]),
   "publishedThisMonth": count(*[_type == "article" && workflowStatus == "published" && publishedAt >= $monthStart]),
@@ -38,6 +43,16 @@ const query = `{
     title,
     workflowStatus,
     publishedAt,
+    "updatedAt": _updatedAt,
+    "category": category->title,
+    "competition": competition->title
+  },
+  "publicationQueue": *[_type == "article" && workflowStatus in ["approved", "submitted", "in-review", "review"]] | order(_updatedAt desc)[0...10] {
+    _id,
+    title,
+    workflowStatus,
+    publishedAt,
+    "updatedAt": _updatedAt,
     "category": category->title,
     "competition": competition->title
   }
@@ -64,10 +79,20 @@ const cardStyle: React.CSSProperties = {
   boxShadow: "0 4px 14px rgba(0, 61, 43, 0.06)",
 };
 
+function formatStatus(status?: string) {
+  if (!status) return "Draft";
+  return status
+    .split("-")
+    .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+    .join(" ");
+}
+
 export function NewsroomDashboardTool(_props: { tool: Tool }) {
-  const client = useClient({ apiVersion: "2026-07-26" });
+  const studioClient = useClient({ apiVersion: "2026-07-26" });
+  const client = studioClient.withConfig({ perspective: "raw", useCdn: false });
   const [metrics, setMetrics] = useState<DashboardMetrics | null>(null);
-  const [recent, setRecent] = useState<RecentArticle[]>([]);
+  const [recent, setRecent] = useState<DashboardArticle[]>([]);
+  const [publicationQueue, setPublicationQueue] = useState<DashboardArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [updatedAt, setUpdatedAt] = useState<Date | null>(null);
@@ -77,13 +102,14 @@ export function NewsroomDashboardTool(_props: { tool: Tool }) {
     setError(null);
 
     try {
-      const result = await client.fetch<DashboardMetrics & { recent: RecentArticle[] }>(query, {
+      const result = await client.fetch<DashboardMetrics & { recent: DashboardArticle[]; publicationQueue: DashboardArticle[] }>(query, {
         dayStart: startOfDayIso(),
         monthStart: startOfMonthIso(),
       });
-      const { recent: recentArticles, ...metricValues } = result;
+      const { recent: recentArticles, publicationQueue: queuedArticles, ...metricValues } = result;
       setMetrics(metricValues);
       setRecent(recentArticles);
+      setPublicationQueue(queuedArticles);
       setUpdatedAt(new Date());
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Unable to load newsroom metrics.");
@@ -98,8 +124,10 @@ export function NewsroomDashboardTool(_props: { tool: Tool }) {
 
   const cards = metrics
     ? [
-        ["Published today", metrics.publishedToday],
+        ["Draft", metrics.draftArticles],
         ["In review", metrics.reviewQueue],
+        ["Ready to publish", metrics.approvedArticles],
+        ["Published today", metrics.publishedToday],
         ["Published this month", metrics.publishedThisMonth],
         ["All published", metrics.publishedArticles],
         ["Original-photo stories", metrics.originalPhotoArticles],
@@ -116,7 +144,7 @@ export function NewsroomDashboardTool(_props: { tool: Tool }) {
           <div>
             <p style={{ margin: 0, color: "#005c2f", fontWeight: 800, textTransform: "uppercase", letterSpacing: ".12em", fontSize: 12 }}>The Rugby Panda</p>
             <h1 style={{ margin: "4px 0 0", fontSize: 32, color: "#003d2b" }}>Newsroom Dashboard</h1>
-            <p style={{ margin: "6px 0 0", color: "#51645b" }}>Editorial operations and accreditation evidence from Sanity.</p>
+            <p style={{ margin: "6px 0 0", color: "#51645b" }}>Editorial operations, publication readiness and accreditation evidence from Sanity.</p>
           </div>
           <button type="button" onClick={() => void load()} disabled={loading} style={{ border: 0, borderRadius: 8, background: "#003d2b", color: "white", padding: "11px 16px", fontWeight: 700, cursor: loading ? "wait" : "pointer" }}>
             {loading ? "Refreshing…" : "Refresh"}
@@ -132,6 +160,39 @@ export function NewsroomDashboardTool(_props: { tool: Tool }) {
               <p style={{ margin: "8px 0 0", fontSize: 34, lineHeight: 1, fontWeight: 900, color: "#003d2b" }}>{value}</p>
             </article>
           ))}
+        </section>
+
+        <section style={{ ...cardStyle, marginBottom: 22 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12, flexWrap: "wrap" }}>
+            <div>
+              <h2 style={{ margin: 0, color: "#003d2b" }}>Publication queue</h2>
+              <p style={{ margin: "5px 0 0", color: "#627269", fontSize: 14 }}>Articles currently awaiting review or ready for controlled publication.</p>
+            </div>
+            <small style={{ color: "#6b7a72" }}>{updatedAt ? `Updated ${updatedAt.toLocaleTimeString()}` : ""}</small>
+          </div>
+          <div style={{ overflowX: "auto", marginTop: 14 }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 680 }}>
+              <thead>
+                <tr>
+                  {["Article", "Status", "Category", "Competition", "Last updated"].map((heading) => (
+                    <th key={heading} style={{ textAlign: "left", padding: "10px 8px", borderBottom: "2px solid #d8e2dc", color: "#51645b", fontSize: 12, textTransform: "uppercase", letterSpacing: ".08em" }}>{heading}</th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {publicationQueue.map((article) => (
+                  <tr key={article._id}>
+                    <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7", fontWeight: 700 }}>{article.title}</td>
+                    <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{formatStatus(article.workflowStatus)}</td>
+                    <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{article.category ?? "—"}</td>
+                    <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{article.competition ?? "—"}</td>
+                    <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{article.updatedAt ? new Date(article.updatedAt).toLocaleString("en-IE") : "—"}</td>
+                  </tr>
+                ))}
+                {!loading && publicationQueue.length === 0 ? <tr><td colSpan={5} style={{ padding: 18, color: "#6b7a72" }}>No articles are currently awaiting review or publication.</td></tr> : null}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section style={cardStyle}>
@@ -152,7 +213,7 @@ export function NewsroomDashboardTool(_props: { tool: Tool }) {
                 {recent.map((article) => (
                   <tr key={article._id}>
                     <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7", fontWeight: 700 }}>{article.title}</td>
-                    <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{article.workflowStatus ?? "Not set"}</td>
+                    <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{formatStatus(article.workflowStatus)}</td>
                     <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{article.category ?? "—"}</td>
                     <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{article.competition ?? "—"}</td>
                     <td style={{ padding: "12px 8px", borderBottom: "1px solid #e5ebe7" }}>{article.publishedAt ? new Date(article.publishedAt).toLocaleDateString("en-IE") : "—"}</td>
