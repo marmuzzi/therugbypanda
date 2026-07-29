@@ -47,29 +47,29 @@ function expandMarkdownStrong(body: unknown[]): PortableBlock[] {
 const components: PortableTextComponents = {
   block: {
     normal: ({ children }) => (
-      <p className="mb-6 font-serif text-[1.08rem] leading-[1.78] text-zinc-800 sm:text-[1.14rem] md:text-[1.2rem]">
+      <p className="mb-5 font-[family-name:var(--font-editorial)] text-[1.16rem] leading-[1.68] tracking-[-0.006em] text-zinc-800 sm:text-[1.2rem] md:text-[1.24rem]">
         {children}
       </p>
     ),
     h2: ({ children }) => (
-      <h2 className="mb-5 mt-12 text-[1.85rem] font-black leading-[1.08] tracking-[-0.03em] text-zinc-950 md:text-[2.3rem]">
+      <h2 className="mb-4 mt-11 font-[family-name:var(--font-interface)] text-[1.9rem] font-extrabold leading-[1.08] tracking-[-0.035em] text-zinc-950 md:text-[2.35rem]">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="mb-4 mt-9 text-[1.45rem] font-black leading-tight tracking-[-0.02em] text-zinc-950 md:text-[1.75rem]">
+      <h3 className="mb-3 mt-8 font-[family-name:var(--font-interface)] text-[1.45rem] font-bold leading-tight tracking-[-0.02em] text-zinc-950 md:text-[1.75rem]">
         {children}
       </h3>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="my-9 border-l-4 border-[#2E7D32] bg-zinc-50 px-6 py-5 font-serif text-[1.28rem] font-semibold italic leading-[1.62] text-zinc-900 md:text-[1.48rem]">
+      <blockquote className="my-9 border-l-4 border-[#2E7D32] bg-[#f7faf7] px-6 py-5 font-[family-name:var(--font-editorial)] text-[1.32rem] font-semibold italic leading-[1.5] text-zinc-900 md:text-[1.52rem]">
         {children}
       </blockquote>
     ),
   },
   marks: {
     strong: ({ children }) => (
-      <strong className="font-serif font-black text-zinc-950" style={{ fontWeight: 900 }}>
+      <strong className="font-[family-name:var(--font-editorial)] font-extrabold text-zinc-950">
         {children}
       </strong>
     ),
@@ -83,7 +83,7 @@ const components: PortableTextComponents = {
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noreferrer" : undefined}
-          className="font-bold text-[#246b2a] underline decoration-[#7CB342] decoration-2 underline-offset-4 hover:text-[#174f1d]"
+          className="font-semibold text-[#246b2a] underline decoration-[#7CB342] decoration-2 underline-offset-4 hover:text-[#174f1d]"
         >
           {children}
         </a>
@@ -92,12 +92,12 @@ const components: PortableTextComponents = {
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="mb-7 ml-6 list-disc space-y-2.5 font-serif text-[1.08rem] leading-[1.75] text-zinc-800 marker:text-[#2E7D32] sm:text-[1.14rem] md:text-[1.2rem]">
+      <ul className="mb-7 ml-6 list-disc space-y-2 font-[family-name:var(--font-editorial)] text-[1.14rem] leading-[1.66] text-zinc-800 marker:text-[#2E7D32] sm:text-[1.18rem] md:text-[1.22rem]">
         {children}
       </ul>
     ),
     number: ({ children }) => (
-      <ol className="mb-7 ml-6 list-decimal space-y-2.5 font-serif text-[1.08rem] leading-[1.75] text-zinc-800 marker:font-bold marker:text-[#2E7D32] sm:text-[1.14rem] md:text-[1.2rem]">
+      <ol className="mb-7 ml-6 list-decimal space-y-2 font-[family-name:var(--font-editorial)] text-[1.14rem] leading-[1.66] text-zinc-800 marker:font-bold marker:text-[#2E7D32] sm:text-[1.18rem] md:text-[1.22rem]">
         {children}
       </ol>
     ),
