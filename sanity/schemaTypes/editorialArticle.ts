@@ -17,6 +17,7 @@ export const editorialArticleType = defineType({
     { name: "seo", title: "SEO" },
     { name: "intelligence", title: "Editorial Intelligence" },
     { name: "sources", title: "Sources & Fact Ledger" },
+    { name: "social", title: "Social Distribution" },
     { name: "workflow", title: "Workflow" },
   ],
   fields: [
@@ -145,6 +146,40 @@ export const editorialArticleType = defineType({
         }),
         defineField({ name: "unsupportedClaims", title: "Unsupported claims", type: "array", of: [{ type: "string" }] }),
         defineField({ name: "conflicts", title: "Conflicts", type: "array", of: [{ type: "string" }] }),
+      ],
+    }),
+
+    defineField({
+      name: "doNotPublishToSocial",
+      title: "Do not publish to social",
+      description: "Prevents automatic Facebook and Instagram distribution for this article.",
+      type: "boolean",
+      group: "social",
+      initialValue: false,
+    }),
+    defineField({
+      name: "socialDistribution",
+      title: "Social distribution",
+      type: "object",
+      group: "social",
+      fields: [
+        defineField({ name: "facebookTeaser", title: "Facebook teaser override", type: "text", rows: 3 }),
+        defineField({ name: "instagramCaption", title: "Instagram caption override", type: "text", rows: 5 }),
+        defineField({ name: "hashtags", title: "Instagram hashtags", type: "array", of: [{ type: "string" }] }),
+        defineField({
+          name: "status",
+          title: "Delivery status",
+          type: "string",
+          readOnly: true,
+          options: { list: ["not-started", "queued", "sent", "partially-sent", "failed", "skipped"] },
+          initialValue: "not-started",
+        }),
+        defineField({ name: "lastEventId", title: "Last event ID", type: "string", readOnly: true }),
+        defineField({ name: "lastAttemptAt", title: "Last attempt at", type: "datetime", readOnly: true }),
+        defineField({ name: "lastSentAt", title: "Last sent at", type: "datetime", readOnly: true }),
+        defineField({ name: "facebookPostId", title: "Facebook post ID", type: "string", readOnly: true }),
+        defineField({ name: "instagramPostId", title: "Instagram post ID", type: "string", readOnly: true }),
+        defineField({ name: "lastError", title: "Last error", type: "text", rows: 3, readOnly: true }),
       ],
     }),
 
