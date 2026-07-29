@@ -47,33 +47,29 @@ function expandMarkdownStrong(body: unknown[]): PortableBlock[] {
 const components: PortableTextComponents = {
   block: {
     normal: ({ children }) => (
-      <p className="mb-5 font-[family-name:var(--font-editorial)] text-[1.16rem] leading-[1.68] tracking-[-0.006em] text-zinc-800 sm:text-[1.2rem] md:text-[1.24rem]">
+      <p className="mb-5 text-lg leading-8 text-zinc-700 md:text-[1.2rem] md:leading-9">
         {children}
       </p>
     ),
     h2: ({ children }) => (
-      <h2 className="mb-4 mt-11 font-[family-name:var(--font-interface)] text-[1.9rem] font-extrabold leading-[1.08] tracking-[-0.035em] text-zinc-950 md:text-[2.35rem]">
+      <h2 className="mb-5 mt-12 text-2xl font-black leading-tight tracking-tight text-zinc-950 md:text-3xl">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="mb-3 mt-8 font-[family-name:var(--font-interface)] text-[1.45rem] font-bold leading-tight tracking-[-0.02em] text-zinc-950 md:text-[1.75rem]">
+      <h3 className="mb-4 mt-9 text-xl font-black leading-tight tracking-tight text-zinc-950 md:text-2xl">
         {children}
       </h3>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="my-9 border-l-4 border-[#2E7D32] bg-[#f7faf7] px-6 py-5 font-[family-name:var(--font-editorial)] text-[1.32rem] font-semibold italic leading-[1.5] text-zinc-900 md:text-[1.52rem]">
+      <blockquote className="my-9 border-l-4 border-[#2E7D32] pl-6 text-xl font-semibold italic leading-8 text-zinc-800 md:text-2xl md:leading-9">
         {children}
       </blockquote>
     ),
   },
   marks: {
-    strong: ({ children }) => (
-      <strong className="font-[family-name:var(--font-editorial)] font-extrabold text-zinc-950">
-        {children}
-      </strong>
-    ),
-    em: ({ children }) => <em className="italic text-zinc-900">{children}</em>,
+    strong: ({ children }) => <strong className="font-black text-zinc-950">{children}</strong>,
+    em: ({ children }) => <em className="italic text-zinc-800">{children}</em>,
     underline: ({ children }) => <span className="underline decoration-2 underline-offset-2">{children}</span>,
     link: ({ children, value }) => {
       const href = typeof value?.href === "string" ? value.href : undefined;
@@ -83,7 +79,7 @@ const components: PortableTextComponents = {
           href={href}
           target={external ? "_blank" : undefined}
           rel={external ? "noreferrer" : undefined}
-          className="font-semibold text-[#246b2a] underline decoration-[#7CB342] decoration-2 underline-offset-4 hover:text-[#174f1d]"
+          className="font-bold text-[#246b2a] underline decoration-[#7CB342] decoration-2 underline-offset-4 hover:text-[#174f1d]"
         >
           {children}
         </a>
@@ -92,12 +88,12 @@ const components: PortableTextComponents = {
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="mb-7 ml-6 list-disc space-y-2 font-[family-name:var(--font-editorial)] text-[1.14rem] leading-[1.66] text-zinc-800 marker:text-[#2E7D32] sm:text-[1.18rem] md:text-[1.22rem]">
+      <ul className="mb-7 ml-6 list-disc space-y-3 text-lg leading-8 text-zinc-700 marker:text-[#2E7D32] md:text-[1.2rem] md:leading-9">
         {children}
       </ul>
     ),
     number: ({ children }) => (
-      <ol className="mb-7 ml-6 list-decimal space-y-2 font-[family-name:var(--font-editorial)] text-[1.14rem] leading-[1.66] text-zinc-800 marker:font-bold marker:text-[#2E7D32] sm:text-[1.18rem] md:text-[1.22rem]">
+      <ol className="mb-7 ml-6 list-decimal space-y-3 text-lg leading-8 text-zinc-700 marker:font-bold marker:text-[#2E7D32] md:text-[1.2rem] md:leading-9">
         {children}
       </ol>
     ),
@@ -112,7 +108,7 @@ export default function ArticleBody({ body }: ArticleBodyProps) {
   const normalizedBody = expandMarkdownStrong(body);
 
   return (
-    <article className="mx-auto w-full max-w-[760px]">
+    <article className="w-full max-w-[760px]">
       <PortableText value={normalizedBody as never[]} components={components} />
     </article>
   );
