@@ -163,7 +163,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         readingTime={cmsArticle.readingTime ?? "Read"}
       />
 
-      <div className="mx-auto max-w-[820px] px-5 pb-20 pt-7 md:px-6 md:pt-9">
+      <div className="mx-auto max-w-[920px] px-5 pb-20 pt-7 md:px-6 md:pt-9">
         {editorialImage ? (
           <figure className="mb-9">
             <div className="overflow-hidden rounded-2xl bg-zinc-100">
