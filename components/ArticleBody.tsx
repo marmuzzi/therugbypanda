@@ -44,32 +44,40 @@ function expandMarkdownStrong(body: unknown[]): PortableBlock[] {
   });
 }
 
+const editorialFont = { fontFamily: "var(--font-editorial)" };
+
 const components: PortableTextComponents = {
   block: {
     normal: ({ children }) => (
-      <p className="mb-6 font-serif text-[1.08rem] leading-[1.78] text-zinc-800 sm:text-[1.14rem] md:text-[1.2rem]">
+      <p
+        className="mb-7 text-[1.06rem] leading-[1.82] text-zinc-800 sm:text-[1.12rem] md:text-[1.18rem]"
+        style={editorialFont}
+      >
         {children}
       </p>
     ),
     h2: ({ children }) => (
-      <h2 className="mb-5 mt-12 text-[1.85rem] font-black leading-[1.08] tracking-[-0.03em] text-zinc-950 md:text-[2.3rem]">
+      <h2 className="mb-5 mt-14 border-t border-zinc-200 pt-8 text-[1.9rem] font-black leading-[1.08] tracking-[-0.035em] text-zinc-950 md:text-[2.35rem]">
         {children}
       </h2>
     ),
     h3: ({ children }) => (
-      <h3 className="mb-4 mt-9 text-[1.45rem] font-black leading-tight tracking-[-0.02em] text-zinc-950 md:text-[1.75rem]">
+      <h3 className="mb-4 mt-10 text-[1.45rem] font-black leading-tight tracking-[-0.025em] text-zinc-950 md:text-[1.75rem]">
         {children}
       </h3>
     ),
     blockquote: ({ children }) => (
-      <blockquote className="my-9 border-l-4 border-[#2E7D32] bg-zinc-50 px-6 py-5 font-serif text-[1.28rem] font-semibold italic leading-[1.62] text-zinc-900 md:text-[1.48rem]">
+      <blockquote
+        className="my-10 border-l-4 border-[#2E7D32] bg-[#F6F8F5] px-6 py-6 text-[1.28rem] font-bold italic leading-[1.62] text-zinc-900 md:text-[1.5rem]"
+        style={editorialFont}
+      >
         {children}
       </blockquote>
     ),
   },
   marks: {
     strong: ({ children }) => (
-      <strong className="font-serif font-black text-zinc-950" style={{ fontWeight: 900 }}>
+      <strong className="font-black text-zinc-950" style={{ ...editorialFont, fontWeight: 900 }}>
         {children}
       </strong>
     ),
@@ -92,12 +100,18 @@ const components: PortableTextComponents = {
   },
   list: {
     bullet: ({ children }) => (
-      <ul className="mb-7 ml-6 list-disc space-y-2.5 font-serif text-[1.08rem] leading-[1.75] text-zinc-800 marker:text-[#2E7D32] sm:text-[1.14rem] md:text-[1.2rem]">
+      <ul
+        className="mb-8 ml-6 list-disc space-y-3 text-[1.06rem] leading-[1.78] text-zinc-800 marker:text-[#2E7D32] sm:text-[1.12rem] md:text-[1.18rem]"
+        style={editorialFont}
+      >
         {children}
       </ul>
     ),
     number: ({ children }) => (
-      <ol className="mb-7 ml-6 list-decimal space-y-2.5 font-serif text-[1.08rem] leading-[1.75] text-zinc-800 marker:font-bold marker:text-[#2E7D32] sm:text-[1.14rem] md:text-[1.2rem]">
+      <ol
+        className="mb-8 ml-6 list-decimal space-y-3 text-[1.06rem] leading-[1.78] text-zinc-800 marker:font-black marker:text-[#2E7D32] sm:text-[1.12rem] md:text-[1.18rem]"
+        style={editorialFont}
+      >
         {children}
       </ol>
     ),
@@ -112,7 +126,7 @@ export default function ArticleBody({ body }: ArticleBodyProps) {
   const normalizedBody = expandMarkdownStrong(body);
 
   return (
-    <article className="mx-auto w-full max-w-[760px]">
+    <article className="mx-auto w-full max-w-[740px] [&>p:first-child]:text-[1.18rem] [&>p:first-child]:leading-[1.78] md:[&>p:first-child]:text-[1.28rem]">
       <PortableText value={normalizedBody as never[]} components={components} />
     </article>
   );
