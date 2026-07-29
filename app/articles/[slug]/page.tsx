@@ -163,9 +163,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         readingTime={cmsArticle.readingTime ?? "Read"}
       />
 
-      <div className="mx-auto max-w-6xl px-5 pb-20 pt-8 md:px-6 md:pt-12">
+      <div className="mx-auto max-w-[820px] px-5 pb-20 pt-7 md:px-6 md:pt-9">
         {editorialImage ? (
-          <figure className="mx-auto mb-10 max-w-5xl">
+          <figure className="mb-9">
             <div className="overflow-hidden rounded-2xl bg-zinc-100">
               <img
                 src={editorialImage.src}
@@ -181,7 +181,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </figure>
         ) : null}
 
-        <div className="mx-auto max-w-[820px] space-y-10">
+        <div className="space-y-10">
           {cmsArticle.body?.length ? (
             <ArticleBody body={cmsArticle.body} />
           ) : (
