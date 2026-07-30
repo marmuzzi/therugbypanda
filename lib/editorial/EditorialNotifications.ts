@@ -29,10 +29,8 @@ const studioBaseUrl = "https://therugbypanda.sanity.studio";
 
 function buildDraftUrl(articleId: string) {
   const documentId = articleId.replace(/^drafts\./, "");
-  const intent = new URL(`${studioBaseUrl}/intent/edit`);
-  intent.searchParams.set("id", documentId);
-  intent.searchParams.set("type", "article");
-  return intent.toString();
+  const params = `id=${encodeURIComponent(documentId)};type=article`;
+  return `${studioBaseUrl}/intent/edit/${params}`;
 }
 
 function logNotification(
