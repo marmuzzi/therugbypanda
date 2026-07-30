@@ -14,16 +14,16 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | WEB-008 | Implemented | Medium | Frontend / Category UI | Match the Provinces category banner height and typography to the other category pages. | Provinces used a separate legacy hero layout with substantially larger vertical spacing. | Pending PR | Implemented on `feat/simplify-navigation-and-province-banner` | Pending preview and production visual verification | — |
 | V1-UI-001 | In Progress | High | Frontend / Brand | Increase the Panda icon, reduce the wordmark and tighten the brand lockup. | Current header gives too much visual weight to the wordmark. | #99 | Merged and deployed | Pending final desktop and mobile production verification | — |
 | V1-NAV-001 | In Progress | High | Frontend / Navigation | Maintain the `/news` archive and accessible hamburger menu while reducing top-level sections to distinct coverage destinations. | The first Version 1 navigation added overlapping Europe, International, Ireland and Opinion destinations. | #99, pending WEB-007 PR | Initial navigation merged; simplification implemented | Pending desktop, mobile, route and production verification | — |
-| SOCIAL-001 | In Progress | High | Publishing / Social | Automatically publish image-backed, platform-specific article posts to Facebook and Instagram after controlled article publication, with a Sanity skip override. | No official Meta publishing integration or Make.com scenario exists. | #100, #101 | Data contract merged; delivery not implemented | Pending Meta configuration, controlled posts, idempotency, partial success, retries and failure-path verification | — |
+| SOCIAL-001 | In Progress | High | Publishing / Social | Automatically publish image-backed, platform-specific article posts to Facebook and Instagram after controlled article publication, with a Sanity skip override. | No official Meta publishing integration or Make.com scenario exists. | #100, #101, #131 | Application data contract and event foundation merged; delivery not implemented | Pending Meta configuration, controlled posts, idempotency, partial success, retries and failure-path verification | — |
 | MEDIA-005 | Open | High | Media / Rights | Add rights dashboard fields and publication gates for photography and reusable editorial assets. | Rights metadata exists but is not yet presented as a consolidated operational dashboard. | — | Not implemented | Pending Sanity Studio and controlled publication-gate verification | — |
 | MEDIA-006 | Open | High | Media / Intelligence | Add AI-assisted metadata, quality scoring, duplicate detection and article-image suggestions for uploaded photos. | Media processing is currently manual. | — | Not implemented | Pending representative upload batch and editorial suggestion verification | — |
 | BRAND-005 | Open | High | Brand Assets / Frontend | Upload approved team and competition logos into Sanity, link them to entities and expose only approved Sanity-hosted assets. | Candidate records exist, but public frontend use is not implemented. | — | Not implemented | Pending rights review and no-hotlink production verification | — |
 | LAUNCH-001 | In Progress | Critical | Go Live / Editorial | Publish one introduction article plus at least eight reviewed, image-backed articles covering recent internationals and all four Irish provinces as soon as possible. | The publicly accessible pre-launch site contains insufficient launch-quality content and may be crawled before the editorial package is ready. | — | Not completed | Pending editorial review, publication, indexing checks and production rendering verification | — |
-| AUTO-001 | Pending Verification | Critical | Editorial Automation | End-to-end candidate, draft, editor review, approve/amend/reject, publish/discard workflow. | Launch-package publication and full production lifecycle verification remain incomplete. | #47–#50, #53, #55–#64, #66, #67, #80, #84, #86–#91 | Core workflow and mobile Editorial Review are merged, deployed and Studio verified | Controlled launch publication verification remains pending | — |
+| AUTO-001 | Pending Verification | Critical | Editorial Automation | End-to-end candidate, draft, editor review, approve/amend/reject, publish/discard workflow. | Launch-package publication and full production lifecycle verification remain incomplete. | #47–#50, #53, #55–#64, #66, #67, #80, #84, #86–#91, #131 | Core workflow, mobile Editorial Review and daily-package application foundation are merged and deployed | Controlled launch publication, real five-article package and repeated morning delivery verification remain pending | — |
 | AUTO-002 | In Progress | Critical | Editorial Automation | Generate a genuinely new replacement article after rejection without reusing the rejected angle or source set. | Persistent orchestrator must supply and run the replacement candidate. | #50, #54 | Replacement endpoint foundation merged | Pending orchestrated rejection/replacement test | — |
-| AUTO-003 | In Progress | Critical | Scheduling / Orchestration | Prepare eight review-ready articles by 08:00 Europe/Dublin daily. | Persistent Make.com orchestration is not configured. | #47–#54 foundation | Make connection verified; production orchestration scenarios not yet configured | Pending repeated successful daily runs, retries and deadline monitoring | — |
-| NOTIFY-001 | Pending Verification | High | Editorial Notifications | Email `editor@therugbypanda.ie` when an article enters the Editorial Review queue. | Webhook delivery works, but production email mapping, persistent deduplication and replay verification remain incomplete. | #82, #85, #89 | Application webhook, observability and enriched payload merged; Make receives events; test email delivery succeeded | Pending correctly populated email, persistent `eventId` deduplication, duplicate replay and failure-path verification | — |
-| NOTIFY-002 | Open | High | Technical Alerts | Email `admin@therugbypanda.ie` for workflow failures and technical alerts. | No central alert-routing integration exists. | — | Not implemented | Pending simulated workflow failure and alert delivery test | — |
+| AUTO-003 | In Progress | Critical | Scheduling / Orchestration | Prepare five review-ready articles and one consolidated editorial email by 08:00 Europe/Dublin daily. | Persistent overnight acquisition, generation and Make.com scheduling are not fully configured. | #47–#54, #131 foundation | Daily-package application endpoint deployed; production Make package scenario and trigger remain incomplete | Pending real package payload, exactly five eligible drafts, 07:50 trigger, retries and three consecutive on-time runs | — |
+| NOTIFY-001 | Closed | High | Editorial Notifications | Email `editor@therugbypanda.ie` when an article enters the Editorial Review queue. | The initial webhook foundation lacked production mapping, persistent deduplication and a valid Sanity intent link. A hidden 50-second OpenAI timeout clamp also blocked controlled QA generation. | #82, #85, #89, #142, #143, #144 | Application fixes merged and deployed; Make scenario `NOTIFY-001 – New Draft Notification` configured | Correctly populated email delivered; Sanity link opened the intended draft; persistent `eventId` record written; duplicate replay returned `Exists = true`, was blocked by `New event only`, and sent no second email | 2026-07-30 |
+| NOTIFY-002 | Open | High | Technical Alerts | Email `admin@therugbypanda.ie` for workflow failures and technical alerts. | No central Make failure route has been production verified. | Application technical-alert webhook foundation exists | Partially implemented application-side | Pending simulated workflow failure and alert delivery test | — |
 | WEB-006 | Implemented | High | Frontend / Contact | Add a public **Contact us** link using `mailto:hello@therugbypanda.ie`. | Public mailbox existed but was not linked from the website. | Pending PR | Footer implementation committed on `feat/web-006-contact-link` | Pending merge, deployment and production link verification on desktop and mobile | — |
 | ACCRED-001 | Implemented | Critical | Analytics / Accreditation | Build durable evidence of publishing cadence, traffic, engagement and search visibility. | Analytics and evidence-pack architecture was not implemented. | #76, pending dashboard PR | Consent-aware GA4/GTM loader is merged; Sanity Newsroom Dashboard implemented | Pending merge, production deployment, Studio verification and provider-ID event verification | — |
 | SEC-001 | Open | Critical | Security / Resilience | Establish and verify security, backup and recovery across GitHub, Sanity, Vercel, Cloudflare, Make.com and Apify. | Security baseline and tested restore procedures are incomplete. | — | Not implemented | Pending access review, backups, restore test and credential rotation | — |
@@ -60,8 +60,23 @@ Merged, deployed and authenticated-Studio-verified capabilities include:
 - Studio-session authentication and restored workflow notes.
 - Mobile-first ordering, contrast and readability through PR #91.
 - Automatic hosted Sanity Studio deployment after relevant merges.
+- Daily-package selection and event foundation from PR #131.
 
-The repository contains newer frontend and publication-pipeline commits beyond the PR #91 baseline. Always inspect live `main` before quoting a current SHA or deployment state.
+## NOTIFY-001 verified baseline
+
+`NOTIFY-001 – New Draft Notification` is closed after production verification on 30 July 2026.
+
+Verified Make scenario:
+
+```text
+Custom webhook
+→ Check existence of eventId in Rugby Panda Event Deduplication
+→ Filter: New event only / Exists = false
+→ Send email to editor@therugbypanda.ie
+→ Add/replace the successful event record
+```
+
+The stored record uses `eventId` as the key and records event type, processing time, article ID, `review_notification_sent` status and pending social states. Duplicate replay was explicitly tested: the existence check returned true, the filter processed zero bundles and neither the email nor final write module ran.
 
 ## Taxonomy decision
 
@@ -82,10 +97,10 @@ The site is publicly accessible before formal launch. Launch-quality articles mu
 ## Make.com integration status
 
 - The Make.com toolbox connection and Health Check are verified.
-- A production webhook receives review-ready events.
-- A test email reached `editor@therugbypanda.ie`.
-- The currently exposed connector does not permit Make scenario editing.
-- NOTIFY-001 remains incomplete until production field mapping, persistent deduplication, duplicate replay and failure-path behaviour are verified.
+- `NOTIFY-001 – New Draft Notification` is active and production verified.
+- The `Rugby Panda Event Deduplication` data store is populated and replay protection is verified.
+- The current ChatGPT Make connector does not permit direct scenario editing; configuration was completed through the Make interface.
+- Next Make priorities are `NOTIFY-002` failure routing and `AUTO-001 – Morning Editorial Package`.
 
 ## Mail routing requirements
 
