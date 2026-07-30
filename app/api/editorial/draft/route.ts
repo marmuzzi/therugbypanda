@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import type { FactLedger, RawStoryInput } from "@/lib/editorial/EditorialTypes";
 import { EditorialBrain } from "@/lib/editorial/EditorialBrain";
+import { notifyDraftCreated } from "@/lib/editorial/EditorialNotifications";
 import { generateArticleDraft } from "@/lib/editorial/OpenAIArticleGenerator";
 import { createSanityArticleDraft, validateSanityConnectivity } from "@/lib/editorial/SanityDraftWriter";
 
@@ -121,13 +122,25 @@ export async function POST(request: NextRequest) {
       editorialImageId: body.editorialImageId,
       story: body.story,
     });
+
+    const draftOccurredAt = new Date().toISOString();
+    const notification = await notifyDraftCreated({
+      articleId: sanityDraft.id,
+      articleTitle: article.title,
+      actor: "editorial-automation",
+      occurredAt: draftOccurredAt,
+      submissionNote: "A new draft is ready for editorial review and one-click publication.",
+    });
+
     console.info("Editorial pipeline completed", {
       requestId,
       inputId: body.story.id,
       sanityDraftId: sanityDraft.id,
+      notificationStatus: notification.status,
+      notificationEventId: notification.eventId,
       durationMs: Date.now() - startedAt,
     });
-    return jsonResponse({ status: "draft-created", editorial, article, sanityDraft, requestId });
+    return jsonResponse({ status: "draft-created", editorial, article, sanityDraft, notification, requestId });
   } catch (error) {
     console.error("Editorial draft pipeline failed", {
       requestId,
