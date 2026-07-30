@@ -5,7 +5,25 @@ import { useEffect, useState } from "react";
 
 import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics";
 
-type ConsentState = "loading" | "accepted" | "rejected" | null;
+type StoredConsent = "accepted" | "rejected";
+type ConsentState = "loading" | StoredConsent | null;
+
+const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
+
+function readConsentCookie(): StoredConsent | null {
+  const prefix = `${ANALYTICS_CONSENT_KEY}=`;
+  const value = document.cookie
+    .split(";")
+    .map((part) => part.trim())
+    .find((part) => part.startsWith(prefix))
+    ?.slice(prefix.length);
+
+  return value === "accepted" || value === "rejected" ? value : null;
+}
+
+function writeConsentCookie(value: StoredConsent) {
+  document.cookie = `${ANALYTICS_CONSENT_KEY}=${value}; Path=/; Max-Age=${CONSENT_MAX_AGE_SECONDS}; SameSite=Lax; Secure`;
+}
 
 export default function AnalyticsConsent() {
   const [consent, setConsent] = useState<ConsentState>("loading");
@@ -13,24 +31,42 @@ export default function AnalyticsConsent() {
   const tagManagerId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
+    let stored: StoredConsent | null = null;
+
     try {
-      const stored = window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
-      if (stored === "accepted" || stored === "rejected") {
-        setConsent(stored);
-        return;
+      const localValue = window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
+      if (localValue === "accepted" || localValue === "rejected") {
+        stored = localValue;
       }
     } catch {
-      // If browser storage is unavailable, show the consent choice rather than loading analytics.
+      // Corporate or privacy-focused browsers may block persistent local storage.
     }
+
+    stored ??= readConsentCookie();
+
+    if (stored) {
+      // Repair whichever persistence mechanism was unavailable on the previous visit.
+      try {
+        window.localStorage.setItem(ANALYTICS_CONSENT_KEY, stored);
+      } catch {
+        // The first-party cookie remains the fallback.
+      }
+      writeConsentCookie(stored);
+      setConsent(stored);
+      return;
+    }
+
     setConsent(null);
   }, []);
 
-  function saveConsent(next: Exclude<ConsentState, "loading" | null>) {
+  function saveConsent(next: StoredConsent) {
     try {
       window.localStorage.setItem(ANALYTICS_CONSENT_KEY, next);
     } catch {
-      // The current page can still honour the choice even when storage is unavailable.
+      // The cookie below still persists the user's choice.
     }
+
+    writeConsentCookie(next);
     setConsent(next);
     window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, { detail: next }));
   }
