@@ -42,18 +42,70 @@ When the project owner says **Proceed**, it is an execution command.
 - Sprint 4 is complete; Sprint 5 is in progress.
 - PR #131, **Add daily editorial package and social distribution foundation**, is merged into `main`.
 - PR #131 merge commit: `466c8f1831d7f95b6707fb85789fa2f0fab45316`.
-- The PR preview Vercel build was green.
 - The project owner confirmed the post-merge production Vercel deployment completed successfully.
-- Automatic Sanity Studio deployment remains operational, but authenticated verification of the new social-distribution fields is still pending.
+- Automatic Sanity Studio deployment remains operational, but authenticated verification of the PR #131 social-distribution fields is still pending.
 - Real Sanity-backed website search is production verified.
-- The review-ready webhook reaches Make and a test email reached `editor@therugbypanda.ie`.
-- NOTIFY-001 remains pending correctly populated production field mapping, persistent `eventId` deduplication, duplicate replay and failure-path verification.
+- PR #142 increased the editorial API/OpenAI generation timeout.
+- PR #143 removed the hidden 50-second generator clamp.
+- PR #144 corrected the Sanity Studio review deep link.
+- Controlled QA draft generation now succeeds.
+- `NOTIFY-001 – New Draft Notification` is complete and production verified.
 - AUTO-001 application-side morning-package foundation is implemented, merged and deployed, but not yet verified end-to-end.
 - SOCIAL-001 application-side event and Sanity-field foundation is implemented, merged and deployed, but Meta/Make delivery is not configured or verified.
 
+## NOTIFY-001 completed state
+
+Verified production path:
+
+```text
+Editorial QA
+→ Editorial API
+→ OpenAI generation
+→ Sanity draft
+→ Make webhook
+→ persistent eventId check
+→ editorial email
+→ persistent successful-event record
+```
+
+The Make scenario is named:
+
+```text
+NOTIFY-001 – New Draft Notification
+```
+
+Its verified module sequence is:
+
+```text
+Webhooks — Custom webhook
+→ Data Store — Check the existence of a record
+→ Filter — New event only / Exists = false
+→ Email — Send an Email
+→ Data Store — Add/replace a record
+```
+
+Data store:
+
+```text
+Rugby Panda Event Deduplication
+```
+
+Verified behaviour:
+
+- the webhook receives `editorial.article.draft_created`;
+- the email reaches `editor@therugbypanda.ie`;
+- the email review link opens the intended Sanity draft;
+- `eventId` is used as the data-store key;
+- successful events are persisted only after email delivery;
+- a duplicate replay returns `Exists = true`;
+- the `New event only` filter processes zero bundles;
+- no second email is sent and no second workflow record is written.
+
+`NOTIFY-001` is closed. Failure and technical-alert routing belongs to `NOTIFY-002` and is still pending.
+
 ## PR #131 automation foundation
 
-The application now provides:
+The application provides:
 
 - authenticated `POST /api/editorial/daily-package`;
 - selection and webhook delivery of five eligible Sanity drafts;
@@ -74,29 +126,28 @@ Configured for Production and Preview:
 
 The project was redeployed after the daily-package variables were added. Secret values and webhook URLs must never be committed.
 
-## Make.com state and blocker
+## Make.com state
 
-- The Make account is currently on the Free plan.
-- The Free plan allows two active scenarios.
-- `AUTO-001 – Morning Editorial Package` would be the third active scenario.
-- The project owner agreed that Make must be upgraded, with Core recommended.
-- Do not collapse separate workflows into one large scenario solely to remain under the Free-plan limit.
+- The Make account had previously been on the Free plan with a two-active-scenario limit; verify the current plan before creating additional active scenarios.
+- Do not collapse separate workflows into one large scenario solely to remain under a plan limit.
 - The current ChatGPT Make connector does not expose scenario editing, so scenario construction requires the Make interface unless new tools become available.
+- `NOTIFY-001` is already configured and verified; do not rebuild it.
 
 ## Exact resume point
 
-1. Upgrade Make to a plan that permits more than two active scenarios.
-2. Create or reopen `AUTO-001 – Morning Editorial Package`.
-3. Use `Webhooks → Custom webhook` named `Rugby Panda Daily Package`.
-4. Click **Run once** so Make waits for a real event.
-5. Trigger `POST https://therugbypanda.ie/api/editorial/daily-package` using the existing `EDITORIAL_AUTOMATION_SECRET`.
-6. Capture the real `editorial.daily_package.ready` payload before mapping any fields.
-7. If the endpoint returns `409`, verify whether five eligible Sanity drafts exist before treating it as an application defect.
-8. Add persistent deduplication keyed by `eventId`.
-9. Build one consolidated HTML email to `editor@therugbypanda.ie`.
-10. Verify one correctly populated email, duplicate replay with no second email, and failure routing to `admin@therugbypanda.ie`.
-11. Create the separate daily HTTP trigger scheduled for 07:50 Europe/Dublin.
-12. Configure SOCIAL-001 only after AUTO-001 passes.
+1. Verify the current Make plan and available active-scenario capacity.
+2. Add `NOTIFY-002` failure routing to `admin@therugbypanda.ie`, or continue `AUTO-001 – Morning Editorial Package` if failure routing is intentionally deferred.
+3. Create or reopen `AUTO-001 – Morning Editorial Package`.
+4. Use `Webhooks → Custom webhook` named `Rugby Panda Daily Package`.
+5. Click **Run once** so Make waits for a real event.
+6. Trigger `POST https://therugbypanda.ie/api/editorial/daily-package` using the existing `EDITORIAL_AUTOMATION_SECRET`.
+7. Capture the real `editorial.daily_package.ready` payload before mapping any fields.
+8. If the endpoint returns `409`, verify whether five eligible Sanity drafts exist before treating it as an application defect.
+9. Reuse the persistent deduplication pattern proven in NOTIFY-001, keyed by `eventId`.
+10. Build one consolidated HTML email to `editor@therugbypanda.ie` containing five ordered articles.
+11. Verify one correctly populated email, duplicate replay with no second email, and failure routing to `admin@therugbypanda.ie`.
+12. Create the separate daily HTTP trigger scheduled for 07:50 Europe/Dublin.
+13. Configure SOCIAL-001 only after AUTO-001 passes.
 
 ## Verification still pending
 
@@ -104,7 +155,7 @@ The project was redeployed after the daily-package variables were added. Secret 
 - real AUTO-001 payload capture;
 - successful packaging of exactly five eligible drafts;
 - populated morning email delivery;
-- persistent duplicate-event protection;
+- duplicate package replay protection;
 - failure-path verification;
 - 07:50 schedule activation;
 - three consecutive deliveries before 08:00;
@@ -116,7 +167,7 @@ The project was redeployed after the daily-package variables were added. Secret 
 
 ## Completion rule
 
-Always distinguish implemented, committed, merged, deployed, verified in production, verified in authenticated Sanity Studio and documentation updated. A feature is not complete until its relevant verification has passed.
+Always distinguish implemented, committed, merged, deployed, verified in production, verified in authenticated Sanity Studio, verified in Make.com and documentation updated. A feature is not complete until its relevant verification has passed.
 
 ## Recommended continuation prompt
 
@@ -141,15 +192,15 @@ Do not rely on prior chat memory until those files have been read. Then verify t
 
 Current expected state to verify:
 - PR #131 is merged into main at merge commit 466c8f1831d7f95b6707fb85789fa2f0fab45316.
-- The project owner confirmed the production Vercel deployment completed successfully.
-- The daily operating target is five review-ready drafts and one consolidated email to editor@therugbypanda.ie by 08:00 Europe/Dublin.
+- PRs #142, #143 and #144 are merged and deployed.
+- Controlled QA article generation succeeds.
+- NOTIFY-001 is complete and verified in Make, including persistent eventId deduplication, successful email delivery, working Sanity review link and duplicate replay protection.
 - Sanity remains the mandatory human approval boundary.
-- AUTO-001 application-side foundation is deployed, but Make is not configured end-to-end.
+- AUTO-001 application-side foundation is deployed, but the Morning Editorial Package Make workflow is not verified end-to-end.
 - SOCIAL-001 application-side foundation is deployed, but Meta/Make publishing is not configured.
-- The Make account is on the Free plan and the third active scenario requires an upgrade.
-- Vercel already contains EDITORIAL_AUTOMATION_SECRET, EDITORIAL_DAILY_PACKAGE_WEBHOOK_URL and EDITORIAL_DAILY_PACKAGE_WEBHOOK_SECRET for Production and Preview.
+- Vercel contains EDITORIAL_AUTOMATION_SECRET, EDITORIAL_DAILY_PACKAGE_WEBHOOK_URL and EDITORIAL_DAILY_PACKAGE_WEBHOOK_SECRET for Production and Preview.
 
-First continue AUTO-001. Confirm whether Make has been upgraded. Then create or reopen the Morning Editorial Package scenario, capture the real editorial.daily_package.ready payload, add persistent eventId deduplication, deliver one consolidated populated email, replay the same event to prove no duplicate email, verify failure routing, and only then configure the 07:50 Europe/Dublin trigger and SOCIAL-001.
+Do not rebuild NOTIFY-001. First verify the current Make plan, then add NOTIFY-002 failure routing or continue AUTO-001. Capture the real editorial.daily_package.ready payload, reuse the proven eventId deduplication pattern, deliver one consolidated populated email, replay the same event to prove no duplicate email, verify failure routing, and only then configure the 07:50 Europe/Dublin trigger and SOCIAL-001.
 
 Keep the Issue Log and handoff documentation current. Report implemented, committed, PR, merged, deployed, production verified, authenticated Sanity Studio verified and Make/Meta verified as separate statuses.
 ```
