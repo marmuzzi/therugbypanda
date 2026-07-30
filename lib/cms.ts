@@ -107,10 +107,12 @@ const articleSummaryFields = `
   featuredImage
 `;
 
-const homepageArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(isLead desc, publishedAt desc)[0...12]{${articleSummaryFields}}`;
-const newsArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(publishedAt desc)[0...100]{${articleSummaryFields}}`;
+const publishedArticleFilter = `_type == "article" && workflowStatus == "published" && defined(slug.current)`;
 
-const articleBySlugQuery = `*[_type == "article" && slug.current == $slug][0]{
+const homepageArticlesQuery = `*[${publishedArticleFilter}] | order(isLead desc, publishedAt desc)[0...12]{${articleSummaryFields}}`;
+const newsArticlesQuery = `*[${publishedArticleFilter}] | order(publishedAt desc)[0...100]{${articleSummaryFields}}`;
+
+const articleBySlugQuery = `*[_type == "article" && workflowStatus == "published" && slug.current == $slug][0]{
   title,
   "slug": slug.current,
   standfirst,
@@ -128,11 +130,11 @@ const articleBySlugQuery = `*[_type == "article" && slug.current == $slug][0]{
   body
 }`;
 
-const continueReadingQuery = `*[_type == "article" && defined(slug.current) && slug.current != $slug] | order(publishedAt desc)[0...3]{${articleSummaryFields}}`;
+const continueReadingQuery = `*[${publishedArticleFilter} && slug.current != $slug] | order(publishedAt desc)[0...3]{${articleSummaryFields}}`;
 const categoryLinksQuery = `*[_type == "category" && defined(slug.current)] | order(title asc){title,"slug":slug.current}`;
 const categoryBySlugQuery = `*[_type == "category" && slug.current in $slugs][0]{title,"slug":slug.current,description}`;
-const categoryArticlesQuery = `*[_type == "article" && defined(slug.current) && category->slug.current in $slugs] | order(publishedAt desc)[0...24]{${articleSummaryFields}}`;
-const sitemapArticlesQuery = `*[_type == "article" && defined(slug.current)] | order(publishedAt desc){title,"slug":slug.current,standfirst,publishedAt,updatedAt,"category":category->title,"categorySlug":category->slug.current,"province":province->title,"competition":competition->title}`;
+const categoryArticlesQuery = `*[${publishedArticleFilter} && category->slug.current in $slugs] | order(publishedAt desc)[0...24]{${articleSummaryFields}}`;
+const sitemapArticlesQuery = `*[${publishedArticleFilter}] | order(publishedAt desc){title,"slug":slug.current,standfirst,publishedAt,updatedAt,"category":category->title,"categorySlug":category->slug.current,"province":province->title,"competition":competition->title}`;
 const sitemapCategoriesQuery = `*[_type == "category" && defined(slug.current)] | order(title asc){title,"slug":slug.current,description}`;
 
 const primarySectionOrder = ["Provinces", "Ireland", "URC", "Europe", "International", "Opinion"];
