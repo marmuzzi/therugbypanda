@@ -7,7 +7,7 @@ import { generateArticleDraft } from "@/lib/editorial/OpenAIArticleGenerator";
 import { createSanityArticleDraft, validateSanityConnectivity } from "@/lib/editorial/SanityDraftWriter";
 
 export const runtime = "nodejs";
-export const maxDuration = 60;
+export const maxDuration = 120;
 
 const ALLOWED_STUDIO_ORIGIN = "https://therugbypanda.sanity.studio";
 
@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     console.info("Editorial OpenAI stage starting", { requestId, inputId: body.story.id });
     const article = await generateArticleDraft(body.story, editorial, {
       targetLengthWords: body.qaMode === true ? "250-400" : "700-1100",
-      timeoutMs: body.qaMode === true ? 42_000 : 45_000,
+      timeoutMs: body.qaMode === true ? 90_000 : 90_000,
     });
     const pkg = { editorial, article };
 
