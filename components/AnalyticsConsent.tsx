@@ -5,22 +5,32 @@ import { useEffect, useState } from "react";
 
 import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics";
 
-type ConsentState = "accepted" | "rejected" | null;
+type ConsentState = "loading" | "accepted" | "rejected" | null;
 
 export default function AnalyticsConsent() {
-  const [consent, setConsent] = useState<ConsentState>(null);
+  const [consent, setConsent] = useState<ConsentState>("loading");
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const tagManagerId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
-    const stored = window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
-    if (stored === "accepted" || stored === "rejected") {
-      setConsent(stored);
+    try {
+      const stored = window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
+      if (stored === "accepted" || stored === "rejected") {
+        setConsent(stored);
+        return;
+      }
+    } catch {
+      // If browser storage is unavailable, show the consent choice rather than loading analytics.
     }
+    setConsent(null);
   }, []);
 
-  function saveConsent(next: Exclude<ConsentState, null>) {
-    window.localStorage.setItem(ANALYTICS_CONSENT_KEY, next);
+  function saveConsent(next: Exclude<ConsentState, "loading" | null>) {
+    try {
+      window.localStorage.setItem(ANALYTICS_CONSENT_KEY, next);
+    } catch {
+      // The current page can still honour the choice even when storage is unavailable.
+    }
     setConsent(next);
     window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, { detail: next }));
   }
