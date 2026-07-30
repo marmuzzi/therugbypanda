@@ -25,12 +25,21 @@ function writeConsentCookie(value: StoredConsent) {
   document.cookie = `${ANALYTICS_CONSENT_KEY}=${value}; Path=/; Max-Age=${CONSENT_MAX_AGE_SECONDS}; SameSite=Lax; Secure`;
 }
 
-export default function AnalyticsConsent() {
-  const [consent, setConsent] = useState<ConsentState>("loading");
+export default function AnalyticsConsent({
+  initialConsent,
+}: {
+  initialConsent: StoredConsent | null;
+}) {
+  const [consent, setConsent] = useState<ConsentState>(initialConsent ?? "loading");
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const tagManagerId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
+    if (initialConsent) {
+      setConsent(initialConsent);
+      return;
+    }
+
     let stored: StoredConsent | null = null;
 
     try {
@@ -45,7 +54,6 @@ export default function AnalyticsConsent() {
     stored ??= readConsentCookie();
 
     if (stored) {
-      // Repair whichever persistence mechanism was unavailable on the previous visit.
       try {
         window.localStorage.setItem(ANALYTICS_CONSENT_KEY, stored);
       } catch {
@@ -57,7 +65,7 @@ export default function AnalyticsConsent() {
     }
 
     setConsent(null);
-  }, []);
+  }, [initialConsent]);
 
   function saveConsent(next: StoredConsent) {
     try {

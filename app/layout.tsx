@@ -1,8 +1,10 @@
 import type { Metadata, Viewport } from "next";
+import { cookies } from "next/headers";
 import { Suspense } from "react";
 
 import AnalyticsConsent from "@/components/AnalyticsConsent";
 import AnalyticsTracker from "@/components/AnalyticsTracker";
+import { ANALYTICS_CONSENT_KEY } from "@/lib/analytics";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -39,11 +41,16 @@ export const viewport: Viewport = {
   themeColor: "#003D2B",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const cookieStore = await cookies();
+  const storedConsent = cookieStore.get(ANALYTICS_CONSENT_KEY)?.value;
+  const initialConsent =
+    storedConsent === "accepted" || storedConsent === "rejected" ? storedConsent : null;
+
   return (
     <html lang="en">
       <body>
@@ -51,7 +58,7 @@ export default function RootLayout({
         <Suspense fallback={null}>
           <AnalyticsTracker />
         </Suspense>
-        <AnalyticsConsent />
+        <AnalyticsConsent initialConsent={initialConsent} />
       </body>
     </html>
   );
