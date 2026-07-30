@@ -44,7 +44,6 @@ export async function POST(request: Request) {
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
-    domain: process.env.NODE_ENV === "production" ? ".therugbypanda.ie" : undefined,
     maxAge: CONSENT_MAX_AGE_SECONDS,
   });
 
