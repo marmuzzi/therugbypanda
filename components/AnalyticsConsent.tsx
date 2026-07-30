@@ -8,34 +8,56 @@ import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics"
 type StoredConsent = "accepted" | "rejected";
 type ConsentState = "loading" | StoredConsent | null;
 
-export default function AnalyticsConsent({
-  initialConsent,
-}: {
-  initialConsent: StoredConsent | null;
-}) {
-  const [consent, setConsent] = useState<ConsentState>(initialConsent ?? "loading");
+export default function AnalyticsConsent() {
+  const [consent, setConsent] = useState<ConsentState>("loading");
   const [isSaving, setIsSaving] = useState(false);
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const tagManagerId = process.env.NEXT_PUBLIC_GTM_ID;
 
   useEffect(() => {
-    if (initialConsent) {
-      setConsent(initialConsent);
-      return;
-    }
+    let cancelled = false;
 
-    try {
-      const localValue = window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
-      if (localValue === "accepted" || localValue === "rejected") {
-        setConsent(localValue);
-        return;
+    async function resolveConsent() {
+      try {
+        const localValue = window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
+        if (localValue === "accepted" || localValue === "rejected") {
+          if (!cancelled) setConsent(localValue);
+          return;
+        }
+      } catch {
+        // Fall through to the authoritative server cookie check.
       }
-    } catch {
-      // The server-set cookie remains the authoritative persistence mechanism.
+
+      try {
+        const response = await fetch("/api/analytics-consent", {
+          method: "GET",
+          credentials: "include",
+          cache: "no-store",
+        });
+        if (response.ok) {
+          const data = (await response.json()) as { consent?: unknown };
+          if (data.consent === "accepted" || data.consent === "rejected") {
+            try {
+              window.localStorage.setItem(ANALYTICS_CONSENT_KEY, data.consent);
+            } catch {
+              // The server cookie remains authoritative.
+            }
+            if (!cancelled) setConsent(data.consent);
+            return;
+          }
+        }
+      } catch {
+        // Show the banner when no stored decision can be confirmed.
+      }
+
+      if (!cancelled) setConsent(null);
     }
 
-    setConsent(null);
-  }, [initialConsent]);
+    void resolveConsent();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   async function saveConsent(next: StoredConsent) {
     setIsSaving(true);
@@ -45,7 +67,8 @@ export default function AnalyticsConsent({
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ consent: next }),
-        credentials: "same-origin",
+        credentials: "include",
+        cache: "no-store",
       });
 
       if (!response.ok) {
@@ -55,7 +78,7 @@ export default function AnalyticsConsent({
       try {
         window.localStorage.setItem(ANALYTICS_CONSENT_KEY, next);
       } catch {
-        // The HttpOnly first-party cookie is sufficient for repeat visits.
+        // The shared-domain server cookie is sufficient for repeat visits.
       }
 
       setConsent(next);
