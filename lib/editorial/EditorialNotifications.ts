@@ -1,4 +1,4 @@
-type ReviewQueueNotification = {
+type DraftCreatedNotification = {
   articleId: string;
   articleTitle: string;
   actor: string;
@@ -27,7 +27,7 @@ const destination = "editor@therugbypanda.ie";
 const technicalDestination = "admin@therugbypanda.ie";
 const studioBaseUrl = "https://therugbypanda.sanity.studio";
 
-function buildReviewUrl(articleId: string) {
+function buildDraftUrl(articleId: string) {
   const documentId = articleId.replace(/^drafts\./, "");
   const intent = new URL(`${studioBaseUrl}/intent/edit`);
   intent.searchParams.set("id", documentId);
@@ -82,7 +82,7 @@ async function notifyTechnicalFailure(
         failureType: input.failureType,
         failureMessage: input.failureMessage,
         responseStatus: input.responseStatus,
-        reviewUrl: buildReviewUrl(input.articleId),
+        reviewUrl: buildDraftUrl(input.articleId),
       }),
       cache: "no-store",
       signal: controller.signal,
@@ -118,10 +118,10 @@ async function notifyTechnicalFailure(
   }
 }
 
-export async function notifyReviewQueue(input: ReviewQueueNotification): Promise<NotificationDelivery> {
+export async function notifyDraftCreated(input: DraftCreatedNotification): Promise<NotificationDelivery> {
   const webhookUrl = process.env.EDITORIAL_NOTIFICATION_WEBHOOK_URL?.trim();
   const webhookSecret = process.env.EDITORIAL_NOTIFICATION_WEBHOOK_SECRET?.trim();
-  const eventId = `editorial-review:${input.articleId}:${input.occurredAt}`;
+  const eventId = `editorial-draft:${input.articleId}:${input.occurredAt}`;
 
   logNotification("info", "delivery-started", {
     eventId,
@@ -160,7 +160,7 @@ export async function notifyReviewQueue(input: ReviewQueueNotification): Promise
         ...(webhookSecret ? { authorization: `Bearer ${webhookSecret}` } : {}),
       },
       body: JSON.stringify({
-        event: "editorial.article.ready_for_review",
+        event: "editorial.article.draft_created",
         eventId,
         destination,
         articleId: input.articleId,
@@ -168,7 +168,7 @@ export async function notifyReviewQueue(input: ReviewQueueNotification): Promise
         actor: input.actor,
         occurredAt: input.occurredAt,
         submissionNote: input.submissionNote,
-        reviewUrl: buildReviewUrl(input.articleId),
+        reviewUrl: buildDraftUrl(input.articleId),
       }),
       cache: "no-store",
       signal: controller.signal,
@@ -191,12 +191,7 @@ export async function notifyReviewQueue(input: ReviewQueueNotification): Promise
         failureMessage: error,
         responseStatus: response.status,
       });
-      return {
-        status: "failed",
-        eventId,
-        error,
-        technicalAlertStatus,
-      };
+      return { status: "failed", eventId, error, technicalAlertStatus };
     }
 
     logNotification("info", "delivery-sent", {
@@ -220,12 +215,7 @@ export async function notifyReviewQueue(input: ReviewQueueNotification): Promise
       failureType: "webhook-request-error",
       failureMessage: message,
     });
-    return {
-      status: "failed",
-      eventId,
-      error: message,
-      technicalAlertStatus,
-    };
+    return { status: "failed", eventId, error: message, technicalAlertStatus };
   } finally {
     clearTimeout(timeout);
   }
