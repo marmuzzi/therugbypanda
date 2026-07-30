@@ -8,7 +8,10 @@ export const client = createClient({
   dataset,
   projectId,
   perspective: "published",
-  useCdn: true,
+  // Editorial publish and unpublish actions must be reflected immediately.
+  // Next.js still provides the controlled 60-second application cache below,
+  // while bypassing Sanity's edge CDN avoids stale deleted/published documents.
+  useCdn: false,
 });
 
 const builder = imageUrlBuilder(client);
