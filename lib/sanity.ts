@@ -9,8 +9,7 @@ export const client = createClient({
   projectId,
   perspective: "published",
   // Editorial publish and unpublish actions must be reflected immediately.
-  // Next.js still provides the controlled 60-second application cache below,
-  // while bypassing Sanity's edge CDN avoids stale deleted/published documents.
+  // Bypass Sanity's edge CDN so deleted or newly published documents are authoritative.
   useCdn: false,
 });
 
@@ -34,7 +33,9 @@ export async function sanityFetch<QueryResponse>({
   }
 
   try {
-    return await client.fetch<QueryResponse>(query, params, { next: { revalidate: 60 } });
+    // Public editorial pages must reflect publish/unpublish actions immediately.
+    // Disabling the Next.js data cache prevents stale prerendered article lists and routes.
+    return await client.fetch<QueryResponse>(query, params, { cache: "no-store" });
   } catch (error) {
     console.warn("Sanity fetch failed; falling back to local sample content.", error);
     return null;
