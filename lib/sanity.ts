@@ -1,5 +1,6 @@
 import imageUrlBuilder from "@sanity/image-url";
 import { createClient } from "next-sanity";
+import { unstable_noStore as noStore } from "next/cache";
 
 import { apiVersion, dataset, isSanityConfigured, projectId } from "@/sanity/env";
 
@@ -33,8 +34,9 @@ export async function sanityFetch<QueryResponse>({
   }
 
   try {
-    // Public editorial pages must reflect publish/unpublish actions immediately.
-    // Disabling the Next.js data cache prevents stale prerendered article lists and routes.
+    // Mark the calling route as dynamic as well as bypassing the data cache.
+    // The Sanity SDK does not use the platform fetch path that Next.js can infer automatically.
+    noStore();
     return await client.fetch<QueryResponse>(query, params, { cache: "no-store" });
   } catch (error) {
     console.warn("Sanity fetch failed; falling back to local sample content.", error);
