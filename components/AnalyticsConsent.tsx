@@ -8,29 +8,13 @@ import { ANALYTICS_CONSENT_EVENT, ANALYTICS_CONSENT_KEY } from "@/lib/analytics"
 type StoredConsent = "accepted" | "rejected";
 type ConsentState = "loading" | StoredConsent | null;
 
-const CONSENT_MAX_AGE_SECONDS = 60 * 60 * 24 * 365;
-
-function readConsentCookie(): StoredConsent | null {
-  const prefix = `${ANALYTICS_CONSENT_KEY}=`;
-  const value = document.cookie
-    .split(";")
-    .map((part) => part.trim())
-    .find((part) => part.startsWith(prefix))
-    ?.slice(prefix.length);
-
-  return value === "accepted" || value === "rejected" ? value : null;
-}
-
-function writeConsentCookie(value: StoredConsent) {
-  document.cookie = `${ANALYTICS_CONSENT_KEY}=${value}; Path=/; Max-Age=${CONSENT_MAX_AGE_SECONDS}; SameSite=Lax; Secure`;
-}
-
 export default function AnalyticsConsent({
   initialConsent,
 }: {
   initialConsent: StoredConsent | null;
 }) {
   const [consent, setConsent] = useState<ConsentState>(initialConsent ?? "loading");
+  const [isSaving, setIsSaving] = useState(false);
   const measurementId = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
   const tagManagerId = process.env.NEXT_PUBLIC_GTM_ID;
 
@@ -40,43 +24,47 @@ export default function AnalyticsConsent({
       return;
     }
 
-    let stored: StoredConsent | null = null;
-
     try {
       const localValue = window.localStorage.getItem(ANALYTICS_CONSENT_KEY);
       if (localValue === "accepted" || localValue === "rejected") {
-        stored = localValue;
+        setConsent(localValue);
+        return;
       }
     } catch {
-      // Corporate or privacy-focused browsers may block persistent local storage.
-    }
-
-    stored ??= readConsentCookie();
-
-    if (stored) {
-      try {
-        window.localStorage.setItem(ANALYTICS_CONSENT_KEY, stored);
-      } catch {
-        // The first-party cookie remains the fallback.
-      }
-      writeConsentCookie(stored);
-      setConsent(stored);
-      return;
+      // The server-set cookie remains the authoritative persistence mechanism.
     }
 
     setConsent(null);
   }, [initialConsent]);
 
-  function saveConsent(next: StoredConsent) {
-    try {
-      window.localStorage.setItem(ANALYTICS_CONSENT_KEY, next);
-    } catch {
-      // The cookie below still persists the user's choice.
-    }
+  async function saveConsent(next: StoredConsent) {
+    setIsSaving(true);
 
-    writeConsentCookie(next);
-    setConsent(next);
-    window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, { detail: next }));
+    try {
+      const response = await fetch("/api/analytics-consent", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ consent: next }),
+        credentials: "same-origin",
+      });
+
+      if (!response.ok) {
+        throw new Error(`Consent API returned ${response.status}.`);
+      }
+
+      try {
+        window.localStorage.setItem(ANALYTICS_CONSENT_KEY, next);
+      } catch {
+        // The HttpOnly first-party cookie is sufficient for repeat visits.
+      }
+
+      setConsent(next);
+      window.dispatchEvent(new CustomEvent(ANALYTICS_CONSENT_EVENT, { detail: next }));
+    } catch (error) {
+      console.error("Unable to save analytics consent.", error);
+    } finally {
+      setIsSaving(false);
+    }
   }
 
   return (
@@ -120,15 +108,17 @@ window.gtag('config', '${measurementId}', { anonymize_ip: true, send_page_view: 
           <div className="mt-4 flex flex-wrap gap-3">
             <button
               type="button"
-              onClick={() => saveConsent("accepted")}
-              className="rounded-full bg-[#003D2B] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#005C2F]"
+              disabled={isSaving}
+              onClick={() => void saveConsent("accepted")}
+              className="rounded-full bg-[#003D2B] px-5 py-2.5 text-sm font-bold text-white transition hover:bg-[#005C2F] disabled:cursor-wait disabled:opacity-60"
             >
-              Accept analytics
+              {isSaving ? "Saving…" : "Accept analytics"}
             </button>
             <button
               type="button"
-              onClick={() => saveConsent("rejected")}
-              className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-500"
+              disabled={isSaving}
+              onClick={() => void saveConsent("rejected")}
+              className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-bold text-slate-700 transition hover:border-slate-500 disabled:cursor-wait disabled:opacity-60"
             >
               Essential only
             </button>
