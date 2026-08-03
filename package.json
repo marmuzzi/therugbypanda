@@ -20,8 +20,8 @@
     "brand-assets:import-candidates": "node scripts/import-brand-asset-candidates.mjs"
   },
   "dependencies": {
-    "@portabletext/react": "^3.2.1",
-    "@sanity/image-url": "^1.1.0",
+    "@portabletext/react": "^7.0.1",
+    "@sanity/image-url": "^2.1.1",
     "next": "^16.2.4",
     "next-sanity": "^13.1.1",
     "react": "^19.2.4",
