@@ -1,0 +1,127 @@
+{
+  "schemaVersion": "1.0",
+  "batchId": "auto004-2026-08-18",
+  "acquiredAt": "2026-08-17T23:13:56.875Z",
+  "acquisition": {
+    "provider": "Apify",
+    "actor": "apify/website-content-crawler",
+    "runId": "W313zG4oufbzkAEs5",
+    "datasetId": "AcL5Wv79YKYkF9YHR",
+    "requestCount": 5,
+    "successfulRequestCount": 5
+  },
+  "candidates": [
+    {
+      "id": "auto004-current-munster-larochelle-20260818",
+      "title": "Munster’s La Rochelle trip puts the first pre-season marker down",
+      "summary": "Munster begin their 2026/27 pre-season away to La Rochelle before a home warm-up against Leicester Tigers.",
+      "suggestedCategory": "Munster",
+      "sourceRecords": [
+        {
+          "id": "munster-preseason-2026",
+          "url": "https://www.munsterrugby.ie/2026/06/17/munster-to-face-la-rochelle-in-pre-season/",
+          "publisher": "Munster Rugby",
+          "title": "Munster To Face La Rochelle In Pre-Season",
+          "publishedAt": "2026-06-17T00:00:00Z",
+          "excerpt": "Munster confirmed La Rochelle away on 28 August and Leicester Tigers at home on 18 September as their two pre-season fixtures.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Munster will play La Rochelle at Stade Marcel Deflandre on Friday 28 August 2026 at 7.30pm.",
+        "The La Rochelle match is Munster’s first pre-season fixture ahead of the 2026/27 season.",
+        "Leicester Tigers will visit Virgin Media Park on Friday 18 September 2026 at 7.15pm for Munster’s second pre-season fixture.",
+        "Munster’s previous competitive meeting with La Rochelle was a 25-24 Champions Cup Round of 16 win in April 2025.",
+        "Jack Crowley kicked a late drop goal in that 25-24 Munster win."
+      ]
+    },
+    {
+      "id": "auto004-current-connacht-preseason-20260818",
+      "title": "Connacht’s August 28 trip starts a two-game pre-season build-up",
+      "summary": "Connacht have two August and September pre-season fixtures before opening their URC campaign at Dexcom Stadium on 25 September.",
+      "suggestedCategory": "Connacht",
+      "sourceRecords": [
+        {
+          "id": "connacht-matches-2026",
+          "url": "https://www.connachtrugby.ie/matches/3/",
+          "publisher": "Connacht Rugby",
+          "title": "Matches | Connacht Rugby",
+          "excerpt": "Connacht’s official match list shows pre-season fixtures on 28 August and 5 September, followed by the URC opener on 25 September.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Connacht’s official fixture list shows an away pre-season friendly at Stade de la Rabine on Friday 28 August 2026 at 7.00pm.",
+        "Connacht’s second listed pre-season friendly is at Dexcom Stadium on Saturday 5 September 2026 at 5.00pm.",
+        "Connacht’s first listed URC fixture is at Dexcom Stadium on Friday 25 September 2026 at 7.45pm."
+      ]
+    },
+    {
+      "id": "auto004-current-ulster-preseason-20260818",
+      "title": "Ulster’s September friendlies set the runway for the new URC season",
+      "summary": "Ulster face Edinburgh away and Ospreys at Affidea Stadium in September before opening their URC campaign at home to Edinburgh.",
+      "suggestedCategory": "Ulster",
+      "sourceRecords": [
+        {
+          "id": "ulster-preseason-2026",
+          "url": "https://ulster.rugby/news/ulster-rugby-confirm-2026-27-pre-season-fixtures",
+          "publisher": "Ulster Rugby",
+          "title": "Ulster Rugby Confirm 2026-27 Pre-Season Fixtures",
+          "publishedAt": "2026-06-30T00:00:00Z",
+          "excerpt": "Ulster confirmed pre-season fixtures away to Edinburgh and at home to Ospreys ahead of the 2026/27 campaign.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Ulster play Edinburgh at Hive Stadium on Friday 4 September 2026 at 7.45pm in a pre-season friendly.",
+        "Ulster host Ospreys at Affidea Stadium on Friday 11 September 2026 at 7.45pm in a pre-season friendly.",
+        "Ulster open their 2026/27 URC campaign at home to Edinburgh on Friday 25 September 2026 at 7.45pm."
+      ]
+    },
+    {
+      "id": "auto004-current-leinster-southafrica-20260818",
+      "title": "Leinster start the new URC season with back-to-back South African tests",
+      "summary": "Leinster’s first two listed URC fixtures are away to the Lions and Sharks before their first home match of the campaign.",
+      "suggestedCategory": "Leinster",
+      "sourceRecords": [
+        {
+          "id": "leinster-urc-fixtures-2026",
+          "url": "https://www.leinsterrugby.ie/2026/05/19/2026-27-bkt-urc-fixtures-announced/",
+          "publisher": "Leinster Rugby",
+          "title": "2026/27 BKT URC fixtures confirmed",
+          "publishedAt": "2026-05-19T00:00:00Z",
+          "excerpt": "Leinster confirmed that the 2026/27 URC campaign begins with two away fixtures in South Africa.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Leinster’s first listed 2026/27 URC match is away to the Lions at Ellis Park on Saturday 26 September 2026.",
+        "Leinster’s second listed URC fixture is away to the Sharks on Saturday 3 October 2026.",
+        "Leinster’s first two URC fixtures of the new season are both in South Africa."
+      ]
+    },
+    {
+      "id": "auto004-current-ireland-wxv-20260818",
+      "title": "Ireland Women’s WXV autumn begins with USA and Japan on home soil",
+      "summary": "Ireland Women host USA and Japan in September before another Japan Test and a two-match WXV series away to South Africa in October.",
+      "suggestedCategory": "Ireland",
+      "sourceRecords": [
+        {
+          "id": "irish-rugby-wxv-2026",
+          "url": "https://www.irishrugby.ie/news/ireland-kick-wxv-global-series-home-soil",
+          "publisher": "Irish Rugby",
+          "title": "Ireland Kick Off WXV Global Series On Home Soil",
+          "publishedAt": "2026-06-16T00:00:00Z",
+          "excerpt": "Irish Rugby confirmed home WXV fixtures against USA and Japan, a further Japan Test in Cork and two WXV Tests against South Africa in Cape Town.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Ireland Women host USA at Tallaght Stadium on Sunday 20 September 2026 in the WXV Global Series.",
+        "Ireland Women host Japan at Dexcom Stadium on Sunday 27 September 2026 in the WXV Global Series.",
+        "Ireland also play Japan at Virgin Media Park on Saturday 3 October 2026 outside the WXV Global Series window.",
+        "Ireland then face South Africa at Athlone Stadium in Cape Town on 24 October and 31 October 2026."
+      ]
+    }
+  ]
+}
