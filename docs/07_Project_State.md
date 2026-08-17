@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-17 August 2026, after `AUTO-001 – Morning Editorial Package` was production verified end to end and the separate controlled-QA eligibility/editorial-diversity defect was identified.
+17 August 2026, after AUTO-004 production eligibility protection and NOTIFY-003 technical-alert deduplication were production verified.
 
 ## Source of truth
 
@@ -24,7 +24,8 @@ Read first in future sessions:
 10. `docs/33_Version_1_Product_Roadmap.md`
 11. `docs/34_2026-07-29_Automation_Handoff.md`
 12. `docs/36_2026-08-17_AUTO-001_Production_Verification.md`
-13. all newer numbered handoff, automation, Sprint, launch and FinOps documents relevant to the task.
+13. `docs/37_2026-08-17_AUTO-004_NOTIF-003_Verification.md`
+14. all newer numbered handoff, automation, Sprint, launch and FinOps documents relevant to the task.
 
 Where an older historical document conflicts with this reconciled state or a later approved contract, the newer reconciled state wins. Do not rely on chat history for current status.
 
@@ -59,12 +60,13 @@ GitHub source of truth
 - The live homepage currently has no additional published newsroom articles beneath the introduction.
 - Direct Sanity production read access is available from the current chat environment.
 - GitHub and Vercel are directly connected. Apify is directly available. The current Make project connector supports health checking but not scenario editing. No direct Meta/Facebook/Instagram project connector is currently exposed in chat.
-- NOTIFY-001, NOTIFY-002 and the AUTO-001 delivery path are production verified.
+- NOTIFY-001, NOTIFY-002, NOTIFY-003 and the AUTO-001 delivery path are production verified.
+- AUTO-004 now blocks controlled-QA/test drafts from production morning packages; five-current-story diversity verification remains pending.
 - Make.com Core is active at the recorded confirmed cost of USD $10.59/month.
 
 ## Editorial production state
 
-Implemented, merged and deployed capabilities include Editorial Brain classification/scoring and source-linked fact ledger; OpenAI structured generation and protected Sanity draft creation; approved Editorial Image assignment; protected approve/reject/publish/discard transitions; authenticated Sanity Editorial Review; deterministic quality gates; on-demand AI review; real Sanity-backed website search; daily-package application foundation; and post-publication social event/Sanity-field foundation.
+Implemented, merged and deployed capabilities include Editorial Brain classification/scoring and source-linked fact ledger; OpenAI structured generation and protected Sanity draft creation; approved Editorial Image assignment; protected approve/reject/publish/discard transitions; authenticated Sanity Editorial Review; deterministic quality gates; on-demand AI review; real Sanity-backed website search; daily-package application foundation; explicit morning-package production eligibility; package-level source/topic/angle diversity filtering; and post-publication social event/Sanity-field foundation.
 
 The editorial experience is deliberately simple:
 
@@ -92,19 +94,17 @@ Editorial generation
 
 Verified behaviour includes successful controlled generation, correct email delivery, a working Sanity draft deep link, persistent `eventId` storage and duplicate replay protection with no second email.
 
-## NOTIFY-002 — complete
+## NOTIFY-002 / NOTIFY-003 — complete
 
-`NOTIFY-002 - Technical Alerts` is closed and production verified.
+`NOTIFY-002 - Technical Alerts` is the production-verified Make scenario for technical alerts. NOTIFY-003 fixed the application-side deduplication identity and status semantics.
 
-```text
-Custom webhook
-→ Data Store: Check the existence of a record
-→ filter: New event only / Exists = false
-→ Send an Email to admin@therugbypanda.ie
-→ Data Store: Add/replace a record
-```
+Different daily-package failure types now receive distinct stable daily event IDs, while exact retries of the same failure type reuse the same key. When Make returns 2xx, the application reports `technicalAlertStatus: accepted` rather than falsely claiming the email was definitely sent.
 
-It uses the persistent `Rugby Panda Event Deduplication` Data Store with incoming `eventId` as the key. Successful records use status `technical_alert_sent`; the record is written only after successful email delivery. A real production daily-package failure reached the scenario, returned `technicalAlertStatus: sent`, and delivered the alert email. Duplicate replay sent no second email.
+Production verification on 17 August 2026 proved:
+
+- the first `insufficient-production-eligible-diverse-content` failure delivered exactly one email to `admin@therugbypanda.ie`;
+- repeating the identical production call returned the same 409 failure but delivered no second email because Make deduplicated it;
+- the temporary Preview-only verifier was removed from its unmerged test branch.
 
 ## AUTO-001 — Morning Editorial Package delivery complete
 
@@ -132,33 +132,33 @@ Verification completed on 17 August 2026:
 - the real production endpoint returned HTTP 200 with `status: sent`, `eventId: editorial-daily-package:2026-08-17`, `articleCount: 5` and destination `editor@therugbypanda.ie`;
 - Vercel runtime logs confirmed `POST /api/editorial/daily-package 200` on production;
 - the five-article email arrived at `editor@therugbypanda.ie`;
-- a `Review in Sanity` link opened the exact corresponding draft in hosted Sanity Studio;
-- the temporary Preview-only verification mechanism was removed from its test branch and was never merged into production.
+- a `Review in Sanity` link opened the exact corresponding draft in hosted Sanity Studio.
 
 The package endpoint packages eligible Sanity drafts; it does not perform overnight acquisition or generation.
 
-## AUTO-004 — controlled-QA eligibility and editorial diversity defect
+## AUTO-004 — production eligibility guard verified; distinct production content still pending
 
-The production AUTO-001 test exposed a separate critical upstream problem. The five packaged drafts all had IDs beginning `article-controlled-qa-` and all covered essentially the same World Rugby Law 8 scoring angle.
+The original AUTO-001 production test exposed five historical `article-controlled-qa-*` drafts, all covering essentially the same World Rugby Law 8 scoring angle.
 
-This is not an AUTO-001 transport defect. Current package eligibility is too permissive because controlled-QA/test drafts can be selected as real morning content, while upstream acquisition/generation does not yet guarantee five genuinely distinct current rugby stories.
+PR #156 implemented the first production remediation:
 
-Required remediation:
+- generated drafts now carry explicit `automationContentClass` and `morningPackageEligible` metadata;
+- QA-mode drafts are classified as QA and marked ineligible;
+- normal production drafts are classified as production and eligible;
+- the daily-package query requires production classification and explicit eligibility;
+- the selector checks a larger candidate pool and rejects same-source or materially similar title/angle/source candidates.
 
-1. controlled-QA/test artifacts must never be eligible for a real Morning Editorial Package;
-2. production drafts need an explicit, maintainable eligibility signal rather than relying only on broad workflow status;
-3. morning generation must enforce topic/source/angle diversity across the five selected stories;
-4. the fix must be verified with five distinct current rugby stories, not synthetic QA articles.
+PR #156 merged as `d1f651726987fda2c2f36ac9d07b7d7d6fb93eea` and deployed successfully. A real protected production call then returned HTTP 409 with `articleCount: 0`, `eligibleCandidateCount: 0`, and reason `insufficient-production-eligible-diverse-content`, proving historical QA content is excluded.
 
-Track this as `AUTO-004` in `docs/08_Issue_Log.md`.
+AUTO-004 remains open because the second half still needs verification: acquisition/generation must produce at least five current, production-eligible, genuinely distinct rugby stories and successfully deliver them through AUTO-001.
 
 ## AUTO-003 — remaining morning scheduling/orchestration work
 
-The delivery receiver is verified, but the complete unattended morning operation is not yet complete. Remaining work:
+The delivery receiver and eligibility guard are verified, but the complete unattended morning operation is not yet complete. Remaining work:
 
-1. configure and verify the scheduled invocation around 07:50–07:55 Europe/Dublin;
-2. complete persistent overnight acquisition/generation so five eligible current drafts exist before package time;
-3. resolve AUTO-004 before relying on production package content;
+1. complete persistent overnight acquisition/generation so five eligible current drafts exist before package time;
+2. verify five genuinely distinct current stories under AUTO-004;
+3. configure and verify the scheduled invocation around 07:50–07:55 Europe/Dublin;
 4. verify retries/failure handling around the scheduled invocation;
 5. deliver five eligible, editorially distinct review-ready drafts before 08:00 for three consecutive days.
 
@@ -186,8 +186,8 @@ Make.com Core is active from 30 July 2026 at the recorded confirmed cost of USD 
 
 ## Immediate priority
 
-1. Fix `AUTO-004`: exclude controlled-QA/test drafts from production package eligibility and enforce editorial diversity.
-2. Complete overnight acquisition/generation so five genuinely distinct current rugby drafts exist before package time.
+1. Complete AUTO-004 by producing and delivering five genuinely distinct current production rugby stories.
+2. Complete overnight acquisition/generation so those five drafts exist before package time.
 3. Configure and verify the 07:50–07:55 Europe/Dublin daily trigger under AUTO-003.
 4. Complete three consecutive on-time morning deliveries before 08:00.
 5. Complete the remaining launch-content package and production verification.
