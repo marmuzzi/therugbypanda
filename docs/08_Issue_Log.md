@@ -24,7 +24,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | AUTO-001 | Closed | Critical | Editorial Automation / Delivery | Deliver one five-article Morning Editorial Package from the protected production endpoint through Make to `editor@therugbypanda.ie` with persistent deduplication and working Sanity review links. | The application package foundation existed, but Make delivery, persistent package deduplication, production webhook configuration and end-to-end verification were incomplete; the package review URL also used an obsolete Sanity intent format. | #131, #153 | Make scenario `AUTO-001 – Morning Editorial Package` active; rotated production webhook configured; PR #153 merged and production redeployed | Controlled five-article send passed; duplicate replay blocked with 0 second emails/writes; real production endpoint returned HTTP 200 with 5 articles; email received; direct Sanity link opened the exact draft | 2026-08-17 |
 | AUTO-002 | In Progress | Critical | Editorial Automation | Generate a genuinely new replacement article after rejection without reusing the rejected angle or source set. | Persistent orchestrator must supply and run the replacement candidate. | #50, #54 | Replacement endpoint foundation merged | Pending orchestrated rejection/replacement test | — |
 | AUTO-003 | In Progress | Critical | Scheduling / Orchestration | Prepare five eligible, editorially distinct review-ready articles and one consolidated editorial email by 08:00 Europe/Dublin daily. | AUTO-001 delivery is verified, but persistent overnight acquisition/generation, production eligibility controls, scheduled invocation and repeated on-time operation are not complete. | #47–#54, #131, #153 foundation | AUTO-001 receiver is production verified; scheduling/generation remain incomplete | Pending AUTO-004 completion, 07:50–07:55 trigger, retries and three consecutive on-time runs | — |
-| AUTO-004 | In Progress | Critical | Editorial Automation / Quality | Exclude controlled-QA/test drafts from production morning packages and enforce topic/source/angle diversity across the five daily stories. | The original daily-package query treated broad draft workflow status as sufficient eligibility, so historical `article-controlled-qa-*` drafts were packaged; upstream generation also produced five near-duplicate Law 8 scoring angles. | #156 | Eligibility classification and diversity selector merged and deployed in production | Production HTTP 409 verified 0 eligible candidates and blocked historical QA drafts; remaining verification requires five current, production-eligible, genuinely distinct rugby stories through AUTO-001 | — |
+| AUTO-004 | In Progress | Critical | Editorial Automation / Quality | Exclude controlled-QA/test drafts from production morning packages and enforce topic/source/angle diversity across the five daily stories. | The original daily-package query treated broad draft workflow status as sufficient eligibility, so historical `article-controlled-qa-*` drafts were packaged; upstream generation also produced five near-duplicate Law 8 scoring angles. | #156, #170 | Eligibility/diversity guard and Apify-backed acquisition batch importer are merged; PR #170 production deployment READY at `4eeecc2cb89c77b39f1661def33fb234b3996e4f` | Guard remains verified; Apify batch run `W313zG4oufbzkAEs5` fetched five official-source candidates successfully. Pending controlled import to create five production-eligible Sanity drafts and a real AUTO-001 package delivery. | — |
 | NOTIFY-001 | Closed | High | Editorial Notifications | Email `editor@therugbypanda.ie` when a new editorial draft is created. | The initial webhook foundation lacked production mapping, persistent deduplication and a valid Sanity intent link. A hidden 50-second OpenAI timeout clamp also blocked controlled QA generation. | #82, #85, #89, #142, #143, #144, #145 | Application fixes merged and deployed; Make scenario `NOTIFY-001 – New Draft Notification` configured | Correctly populated email delivered; Sanity link opened the intended draft; persistent `eventId` record written; duplicate replay blocked and sent no second email | 2026-07-30 |
 | NOTIFY-002 | Closed | High | Technical Alerts | Email `admin@therugbypanda.ie` for workflow failures and technical alerts. | The application technical-alert webhook existed, but no persistent Make failure route and production end-to-end verification had been completed. | Application technical-alert foundation; #150, #151, #152 | Make scenario `NOTIFY-002 - Technical Alerts` configured with persistent deduplication; production webhook environment variable deployed; temporary verifier removed in #152 | Make send and duplicate replay verified; real production daily-package failure returned `responseStatus: 410` and `technicalAlertStatus: sent`; alert email received at `admin@therugbypanda.ie` | 2026-08-17 |
 | NOTIFY-003 | Closed | High | Technical Alerts / Deduplication | Distinguish materially different technical failures on the same day while deduplicating exact retries, and avoid claiming an email was sent merely because Make accepted the webhook. | The application used one daily key `daily-package-failure:YYYY-MM-DD` for every failure type and interpreted any Make 2xx response as email delivery. | #159 | Merged as `f07383c5e15c74f5b537f73de787d75a25942b96`; Vercel production READY | First production `insufficient-production-eligible-diverse-content` failure delivered one email; exact replay returned 409/`technicalAlertStatus: accepted` and produced no second email; temporary verifier removed from unmerged test branch | 2026-08-17 |
@@ -49,21 +49,16 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | DOC-001 | Closed | High | Documentation | Establish project state, Issue Log and publishing workflow. | Documentation continuity requirement. | #22 | Merged | Repository verified | 2026-07-04 |
 | CMS-001 | Closed | High | CMS | Use hosted Sanity content on homepage and article pages. | Static/local content path needed replacement. | #14 | Deployed | Production verified | 2026-07-03 |
 
-## Reconciled production baseline — 17 August 2026
+## Reconciled production baseline — 18 August 2026
 
 - Production is healthy on Vercel and the reader site remains live.
-- Production homepage: introduction article is the lead; no additional published newsroom articles beneath it.
-- Reader navigation: News, Provinces, URC, International, About.
-- Sanity: direct production read access available.
-- Make.com Core is active; current ChatGPT Make connector supports health checking but not scenario editing.
-- Apify: directly available.
-- Meta: no direct project connector currently exposed.
-- NOTIFY-001, NOTIFY-002, NOTIFY-003 and AUTO-001 delivery are production verified.
-- AUTO-004 production eligibility guard is deployed and verified to exclude historical QA drafts; five-current-story diversity verification remains pending.
-- CMS-003 restored the canonical launch introduction after accidental deletion; article route, homepage lead and News archive are production verified.
-- WEB-009 ensures article detail never substitutes an unrelated fallback photo; the assigned featured image is now consistent across reader surfaces.
-- Dependabot #146: open, Preview READY, major dependency upgrades require deliberate testing.
-- Dependabot #147: open, Preview ERROR because TypeScript 7.0.2 is incompatible with the current Next.js compiler API expectation; do not merge as-is.
+- PR #170 is merged at `4eeecc2cb89c77b39f1661def33fb234b3996e4f`; the corresponding Vercel production deployment is READY.
+- AUTO-004 now has a reusable Apify-backed acquisition-batch contract and importer in `main`.
+- Apify Website Content Crawler run `W313zG4oufbzkAEs5` completed five requests successfully against official Munster Rugby, Connacht Rugby, Ulster Rugby, Leinster Rugby and Irish Rugby sources; the reviewed normalized batch is stored at `data/editorial-acquisition/auto004-2026-08-18.json`.
+- Live Sanity was checked before the acquisition run and contained zero article drafts, confirming the interrupted Preview-only controller did not leave temporary AUTO-004 drafts behind.
+- The controlled production import and resulting real AUTO-001 five-article package remain pending; AUTO-004 is therefore still In Progress.
+- Make.com Core is active; the current ChatGPT Make connector supports health checking but not scenario editing or invocation.
+- NOTIFY-001, NOTIFY-002, NOTIFY-003 and AUTO-001 delivery remain production verified.
 
 ## AUTO-001 verified baseline
 
@@ -87,7 +82,9 @@ The five real packaged records were historical controlled-QA drafts and all cove
 
 PR #156 added explicit `automationContentClass` and `morningPackageEligible` metadata to generated drafts. QA-mode drafts are ineligible; normal production drafts are eligible. The daily-package query now requires `automationContentClass == "production"` and `morningPackageEligible == true`, and applies source/topic/angle diversity filtering before selecting five stories.
 
-Production verification after deployment returned HTTP 409 with `articleCount: 0`, `eligibleCandidateCount: 0`, and reason `insufficient-production-eligible-diverse-content`, proving the historical controlled-QA Law 8 drafts no longer enter the morning package. AUTO-004 remains open until five genuinely distinct current rugby stories are generated and successfully delivered through AUTO-001.
+Production verification after deployment returned HTTP 409 with `articleCount: 0`, `eligibleCandidateCount: 0`, and reason `insufficient-production-eligible-diverse-content`, proving the historical controlled-QA Law 8 drafts no longer enter the morning package.
+
+PR #170 adds the next upstream layer: a reusable reviewed acquisition-batch format, a production importer that maps each candidate to the existing protected editorial draft contract with `qaMode: false`, and a manual GitHub Actions entry point. The first Apify batch contains five current, distinct, official-source candidates. AUTO-004 remains open until that batch creates five production-eligible drafts and a real AUTO-001 package is delivered and verified.
 
 ## NOTIFY-001 verified baseline
 
@@ -105,35 +102,4 @@ The event is `editorial.article.draft_created`. Duplicate replay was explicitly 
 
 ## NOTIFY-002 / NOTIFY-003 verified baseline
 
-`NOTIFY-002 - Technical Alerts` remains the Make delivery scenario for technical alerts. NOTIFY-003 corrected the application-side event identity semantics without replacing that scenario.
-
-Different daily-package failure types now use distinct stable daily deduplication IDs, while an exact retry of the same failure type reuses the same key. Application responses use `technicalAlertStatus: accepted` when Make returns 2xx, avoiding the false claim that an email definitely sent.
-
-Production verification delivered one alert for `insufficient-production-eligible-diverse-content`; replaying the identical failure produced no second email.
-
-## Taxonomy decision
-
-Top-level reader navigation is limited to News, Provinces, URC, International and About. Ireland remains article/editorial metadata. Opinion, analysis, column and notebook are formats rather than coverage sections. Europe is covered within International unless a later evidence-based decision changes this.
-
-## Launch and automation priority
-
-The introduction article is live. AUTO-001 delivery is complete. Immediate automation priority is completing AUTO-004 with five current distinct production stories, followed by AUTO-003 overnight generation, scheduling and repeated on-time operation. SOCIAL-001 follows only after editorial automation is stable.
-
-## Make.com integration status
-
-- Make.com Core is active from 30 July 2026 at USD $10.59/month.
-- `NOTIFY-001 – New Draft Notification` is active and production verified.
-- `NOTIFY-002 - Technical Alerts` is active and production verified, including NOTIFY-003 failure-specific deduplication semantics.
-- `AUTO-001 – Morning Editorial Package` is active and production verified as a delivery receiver.
-- `Rugby Panda Event Deduplication` replay protection is verified for all three scenarios.
-- The current ChatGPT Make connector does not permit direct scenario editing.
-
-## Mail routing requirements
-
-- `hello@therugbypanda.ie` — public website contact.
-- `editor@therugbypanda.ie` — editorial notifications and communication.
-- `admin@therugbypanda.ie` — workflow failures, technical alerts, infrastructure, security and billing.
-
-## Completion rule
-
-Every issue must retain a unique ID, status, priority, root cause, related PRs, deployment status, verification status and resolution date.
+`NOTIFY-002 - Technical Alerts` remains the Make delivery scenario for technical failures. NOTIFY-003 corrected the application-side failure key so materially different failures on the same day can be alerted separately while exact retries are deduplicated.
