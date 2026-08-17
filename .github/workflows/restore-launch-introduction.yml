@@ -48,3 +48,5 @@ jobs:
 
       - name: Restore launch introduction if missing
         run: node scripts/restore-launch-introduction.mjs
+
+      # Keep this workflow path-sensitive so an explicit recovery commit can safely retrigger it.
