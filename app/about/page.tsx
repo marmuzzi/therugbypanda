@@ -38,14 +38,14 @@ export default function AboutPage() {
             <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2E7D32]">Approach</p>
             <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-950">Context over noise</h2>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
-              Stories are reviewed before publication and written to help readers understand what matters and why.
+              We go beyond the scoreline to explain the decisions, performances and moments that shape the game.
             </p>
           </div>
           <div className="rounded-3xl border border-zinc-200 bg-white p-6">
             <p className="text-xs font-black uppercase tracking-[0.22em] text-[#2E7D32]">Standards</p>
             <h2 className="mt-3 text-xl font-black tracking-tight text-zinc-950">Independent and accountable</h2>
             <p className="mt-3 text-sm leading-6 text-zinc-600">
-              Sources, image rights and editorial decisions are managed through a human-controlled publishing workflow.
+              No agendas, no clickbait and no manufactured outrage. Just independent rugby coverage built on accuracy, fairness and respect for the game.
             </p>
           </div>
         </div>
