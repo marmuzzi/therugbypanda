@@ -40,10 +40,7 @@ function getClient() {
 
 function reviewUrl(articleId: string) {
   const id = articleId.replace(/^drafts\./, "");
-  const url = new URL(`${studioBaseUrl}/intent/edit`);
-  url.searchParams.set("id", id);
-  url.searchParams.set("type", "article");
-  return url.toString();
+  return `${studioBaseUrl}/intent/edit/id=${encodeURIComponent(id)};type=article`;
 }
 
 async function sendTechnicalAlert(message: string, details: Record<string, unknown>) {
