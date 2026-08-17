@@ -1,3 +1,5 @@
+import { createHash } from "node:crypto";
+
 import { createClient } from "next-sanity";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -130,6 +132,19 @@ function operationalDate() {
   }).format(new Date());
 }
 
+function packageFingerprint(articles: PackageArticle[]) {
+  const canonicalPackage = articles
+    .map((article) => `${article._id.replace(/^drafts\./, "")}|${article.updatedAt ?? ""}`)
+    .sort()
+    .join("\n");
+
+  return createHash("sha256").update(canonicalPackage).digest("hex").slice(0, 12);
+}
+
+function packageEventId(packageDate: string, articles: PackageArticle[]) {
+  return `editorial-daily-package:${packageDate}:${packageFingerprint(articles)}`;
+}
+
 async function sendTechnicalAlert(
   failureCode: string,
   message: string,
@@ -210,14 +225,14 @@ export async function POST(request: NextRequest) {
     const articles = selectDiversePackage(candidates);
 
     const packageDate = operationalDate();
-    const eventId = `editorial-daily-package:${packageDate}`;
+    const incompleteEventId = `editorial-daily-package:${packageDate}`;
 
     if (articles.length < PACKAGE_SIZE) {
       const technicalAlertStatus = await sendTechnicalAlert(
         "insufficient-production-eligible-diverse-content",
         `Only ${articles.length} of ${PACKAGE_SIZE} required production-eligible, editorially distinct articles are ready for the 08:00 package.`,
         {
-          eventId,
+          eventId: incompleteEventId,
           packageDate,
           eligibleCandidates: candidates.length,
           distinctArticles: articles.length,
@@ -229,7 +244,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         {
           status: "incomplete",
-          eventId,
+          eventId: incompleteEventId,
           articleCount: articles.length,
           eligibleCandidateCount: candidates.length,
           requiredArticleCount: PACKAGE_SIZE,
@@ -239,6 +254,8 @@ export async function POST(request: NextRequest) {
         { status: 409 },
       );
     }
+
+    const eventId = packageEventId(packageDate, articles);
 
     const response = await fetch(webhookUrl, {
       method: "POST",
