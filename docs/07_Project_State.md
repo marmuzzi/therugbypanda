@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-17 August 2026, against GitHub `main`, Vercel production, direct Sanity read access and the currently exposed Make.com project connector.
+17 August 2026, after PR #148 reconciled the documentation against GitHub, Vercel, Sanity and the currently exposed Make.com project connector.
 
 ## Source of truth
 
@@ -52,10 +52,11 @@ GitHub source of truth
 
 ## Reconciled live baseline — 17 August 2026
 
-- GitHub `main` remains at PR #145 merge commit `6c44c43a159e9e09c38772c4ba96c0abaad0c7b5`.
-- No feature work after PR #145 has been merged into `main`.
-- Vercel production is READY on the same PR #145 commit.
-- `https://therugbypanda.ie` responds successfully and renders the launch introduction as the lead article.
+- PR #148, `Reconcile project documentation with live production state`, is merged into `main` at `70462a9dafbd04fe80807bd5c7c1fab750ea5a05`.
+- PR #148 is documentation-only; the application runtime baseline remains the functionality previously deployed through PR #145 and earlier feature PRs.
+- The PR #148 Vercel Preview was READY before merge.
+- Production was healthy before the documentation merge and the post-merge production deployment must be checked before marking PR #148 deployed/verified.
+- `https://therugbypanda.ie` renders the launch introduction as the lead article.
 - The live top-level navigation is News, Provinces, URC, International and About.
 - The live homepage currently has no additional published newsroom articles beneath the introduction.
 - Direct Sanity production read access is available from the current chat environment.
@@ -65,18 +66,7 @@ GitHub source of truth
 
 ## Editorial production state
 
-Implemented, merged and deployed capabilities include:
-
-- Editorial Brain classification, scoring and source-linked fact ledger;
-- OpenAI structured generation and protected Sanity draft creation;
-- approved Editorial Image assignment;
-- protected approve, reject, publish and discard transitions;
-- authenticated Sanity Editorial Review workspace;
-- deterministic Editorial Review Intelligence and publication gates;
-- on-demand AI Editorial Review;
-- real Sanity-backed website search;
-- daily-package application endpoint/event foundation;
-- post-publication social event and Sanity-field foundation.
+Implemented, merged and deployed capabilities include Editorial Brain classification/scoring and source-linked fact ledger; OpenAI structured generation and protected Sanity draft creation; approved Editorial Image assignment; protected approve/reject/publish/discard transitions; authenticated Sanity Editorial Review; deterministic quality gates; on-demand AI review; real Sanity-backed website search; daily-package application foundation; and post-publication social event/Sanity-field foundation.
 
 The editorial experience is deliberately simple:
 
@@ -91,8 +81,6 @@ There is no separate `ready for review` approval gate.
 ## NOTIFY-001 — complete
 
 `NOTIFY-001 – New Draft Notification` is closed and production verified.
-
-Verified path:
 
 ```text
 Editorial generation
@@ -114,12 +102,7 @@ Failure and technical-alert routing to `admin@therugbypanda.ie` is application-s
 
 The application-side Morning Editorial Package foundation is merged and deployed.
 
-`POST /api/editorial/daily-package`:
-
-- selects five eligible Sanity drafts;
-- emits `editorial.daily_package.ready`;
-- returns HTTP 409 when fewer than five eligible drafts exist;
-- attempts `editorial.daily_package.delivery_failed` through the technical-alert webhook on failure.
+`POST /api/editorial/daily-package` selects five eligible Sanity drafts, emits `editorial.daily_package.ready`, returns HTTP 409 when fewer than five eligible drafts exist and attempts `editorial.daily_package.delivery_failed` through the technical-alert webhook on failure.
 
 Still required before completion:
 
@@ -136,31 +119,17 @@ The package endpoint packages eligible drafts; it does not generate them.
 
 ## SOCIAL-001 — foundation only
 
-The application-side social-distribution contract is merged and deployed, but Facebook/Instagram publishing is not Meta/Make production verified.
-
-Social distribution may run only after a deliberate controlled website publication. It must respect the Sanity opt-out, require a usable image, deduplicate on `eventId`, record platform IDs/status back to Sanity and never roll back a successful website publication.
-
-Do not prioritise SOCIAL-001 ahead of AUTO-001 and NOTIFY-002 unless a later approved project decision explicitly changes the order.
+The application-side social-distribution contract is merged and deployed, but Facebook/Instagram publishing is not Meta/Make production verified. Social distribution may run only after deliberate controlled website publication, must respect the Sanity opt-out, require a usable image, deduplicate on `eventId`, record platform results back to Sanity and never roll back successful website publication.
 
 ## Dependabot maintenance state
 
-As reconciled on 17 August 2026:
-
-- PR #146 is open and its Vercel Preview is READY. It contains major production-dependency upgrades and must be deliberately regression tested before merge.
-- PR #147 is open and its Vercel Preview is ERROR because TypeScript 7.0.2 is incompatible with the currently installed Next.js compiler-API expectations. Do not merge #147 in its current form.
+- PR #146 is open and its Vercel Preview is READY. It contains major production-dependency upgrades and requires deliberate regression testing before merge.
+- PR #147 is open and its Vercel Preview is ERROR because TypeScript 7.0.2 is incompatible with the current Next.js compiler-API expectations. Do not merge #147 as-is.
 - Neither Dependabot PR affects production.
 
 ## Reader taxonomy
 
-Current approved reader navigation:
-
-- News
-- Provinces
-- URC
-- International
-- About
-
-Ireland remains article/editorial metadata where useful. Opinion, analysis, column and notebook are formats rather than top-level coverage sections. Europe is covered within International unless a later evidence-based decision changes this.
+Current approved reader navigation is News, Provinces, URC, International and About. Ireland remains article/editorial metadata. Opinion, analysis, column and notebook are formats rather than top-level coverage sections. Europe is covered within International unless a later evidence-based decision changes this.
 
 ## Launch state
 
@@ -172,20 +141,17 @@ Make.com Core is active from 30 July 2026 at the recorded confirmed cost of USD 
 
 ## Immediate priority
 
-1. Keep the reconciled documentation and Issue Log current.
-2. Complete and production-verify NOTIFY-002 failure routing.
-3. Resume AUTO-001 Morning Editorial Package with a real five-article payload.
-4. Verify consolidated email and persistent duplicate protection.
-5. Configure and verify the 07:50–07:55 Europe/Dublin trigger.
-6. Complete three consecutive on-time morning deliveries.
-7. Complete the remaining launch-content package and production verification.
-8. Begin SOCIAL-001 only after the editorial automation and failure paths are stable.
+1. Complete and production-verify NOTIFY-002 failure routing.
+2. Resume AUTO-001 Morning Editorial Package with a real five-article payload.
+3. Verify consolidated email and persistent duplicate protection.
+4. Configure and verify the 07:50–07:55 Europe/Dublin trigger.
+5. Complete three consecutive on-time morning deliveries.
+6. Complete the remaining launch-content package and production verification.
+7. Begin SOCIAL-001 only after editorial automation and failure paths are stable.
 
 ## Completion rule
 
-Always distinguish implemented, committed, PR opened, merged, deployed, verified in production, verified in authenticated Sanity Studio, verified in Make.com, verified in Meta and documentation updated.
-
-A feature is not complete until its relevant verification has passed.
+Always distinguish implemented, committed, PR opened, merged, deployed, verified in production, verified in authenticated Sanity Studio, verified in Make.com, verified in Meta and documentation updated. A feature is not complete until its relevant verification has passed.
 
 ## Working principles
 
