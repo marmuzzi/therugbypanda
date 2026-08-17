@@ -2,3 +2,4 @@ AUTO-004 controlled production import trigger
 Batch: data/editorial-acquisition/auto004-2026-08-18.json
 Purpose: create five production-eligible Sanity drafts through the protected production editorial API.
 Date: 2026-08-18
+Trigger attempt: 2
