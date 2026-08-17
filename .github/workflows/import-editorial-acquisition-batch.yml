@@ -7,6 +7,11 @@ on:
         description: Repository path to the reviewed acquisition batch JSON
         required: true
         default: data/editorial-acquisition/auto004-2026-08-18.json
+  push:
+    branches:
+      - main
+    paths:
+      - .github/auto004-import-trigger.txt
 
 permissions:
   contents: read
@@ -14,6 +19,7 @@ permissions:
 jobs:
   import:
     runs-on: ubuntu-latest
+    environment: production
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -23,8 +29,18 @@ jobs:
         with:
           node-version: 22
 
+      - name: Verify editorial automation secret
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          if [ -z "$EDITORIAL_AUTOMATION_SECRET" ]; then
+            echo "EDITORIAL_AUTOMATION_SECRET is not available to this workflow."
+            exit 1
+          fi
+
       - name: Import production-eligible drafts
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
-        run: node scripts/import-editorial-acquisition-batch.mjs "${{ inputs.batch_path }}"
+          BATCH_PATH: ${{ inputs.batch_path }}
+        run: node scripts/import-editorial-acquisition-batch.mjs "${BATCH_PATH:-data/editorial-acquisition/auto004-2026-08-18.json}"
