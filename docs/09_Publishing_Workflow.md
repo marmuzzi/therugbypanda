@@ -42,9 +42,20 @@ There is no separate `ready for review` approval gate. Draft creation places the
 - `POST /api/editorial/workflow` — approve, reject, publish or discard with server-side transition validation and audit history.
 - `POST /api/editorial/review` — run on-demand, non-destructive AI Editorial Review.
 - `POST /api/editorial/replacement` — validate and create a linked replacement draft from a genuinely different angle and source set.
-- `POST /api/editorial/daily-package` — select five eligible drafts and emit the consolidated morning-package event.
+- `POST /api/editorial/daily-package` — select five eligible, editorially distinct production drafts and emit the consolidated morning-package event.
 
 Protected endpoints use bearer authentication with `EDITORIAL_AUTOMATION_SECRET`.
+
+## Morning package eligibility
+
+Production morning packages must use explicit eligibility metadata rather than broad workflow status alone.
+
+Generated drafts are classified with:
+
+- `automationContentClass = production | qa`
+- `morningPackageEligible = true | false`
+
+QA-mode drafts must never be eligible for production packages. The package selector requires production classification and explicit eligibility, then applies source/topic/angle diversity checks before selecting five stories. If five distinct production-eligible drafts are unavailable, the endpoint returns HTTP 409 and raises a technical alert rather than falling back to QA/test content.
 
 ## Editorial Brain and image rules
 
@@ -78,62 +89,6 @@ Custom webhook
 
 The persistent store is `Rugby Panda Event Deduplication`, keyed by `eventId`. Duplicate replay has been explicitly verified to send no second email. The email deep link uses the valid Sanity intent-route form and opens the intended draft.
 
-`NOTIFY-002` remains open until a real failure event is routed to `admin@therugbypanda.ie` and verified.
+`NOTIFY-002 - Technical Alerts` is also complete and production verified. Different failure types must use distinct stable event IDs for the Europe/Dublin operational day, while an exact retry of the same failure type must reuse the same ID so Make can deduplicate it. A Make 2xx response means the webhook was accepted; application status must not claim that an email was definitely sent. The verified application status is `technicalAlertStatus: accepted`.
 
-## Morning Editorial Package
-
-The approved operating target is **five** review-ready drafts and **one consolidated email** to `editor@therugbypanda.ie` by **08:00 Europe/Dublin** every day.
-
-The application-side `POST /api/editorial/daily-package` foundation is merged and deployed. It selects five eligible drafts, emits `editorial.daily_package.ready`, returns HTTP 409 when fewer than five are available and attempts a technical-alert event on failure.
-
-AUTO-001/AUTO-003 are not complete until Make.com has been verified with:
-
-1. a real five-article package payload;
-2. one correctly populated consolidated email;
-3. persistent `eventId` deduplication;
-4. duplicate replay with no second email;
-5. failure routing to `admin@therugbypanda.ie`;
-6. a daily trigger around 07:50–07:55 Europe/Dublin;
-7. five review-ready drafts delivered by 08:00 on three consecutive days.
-
-The package endpoint packages eligible drafts; it does not itself perform overnight acquisition or generation.
-
-## Social distribution
-
-SOCIAL-001 is downstream of controlled website publication and must not be activated before the editorial automation and failure paths are stable.
-
-A successful controlled publish may emit `editorial.article.published`. Social delivery must respect the article opt-out, require an approved image, deduplicate on `eventId`, write platform results back to Sanity and never roll back successful website publication. Meta delivery remains pending controlled production verification.
-
-## Content publishing checklist
-
-1. Confirm the candidate passed the Editorial Brain.
-2. Confirm source-linked facts and uncertainty wording.
-3. Confirm headline, slug, taxonomy, standfirst, body, SEO and intended date.
-4. Confirm a reviewed image and complete rights metadata.
-5. Review and edit the draft in authenticated Sanity Studio.
-6. Approve only after factual, editorial and rights checks.
-7. Publish through the controlled workflow.
-8. Verify homepage, news/category and article routes in production.
-9. Record issues and completion status in `docs/08_Issue_Log.md`.
-
-## Reader taxonomy
-
-The current approved top-level reader navigation is:
-
-- News
-- Provinces
-- URC
-- International
-- About
-
-Ireland remains useful article/editorial metadata but is not a separate top-level section. Opinion, analysis, column and notebook are article formats rather than coverage sections. Europe is covered within International unless a later evidence-based product decision changes this.
-
-## Analytics and accreditation
-
-Publishing must create durable evidence of publication cadence, editorial history, GA4 users/sessions/views/engagement, returning readership, article performance, traffic sources and Search Console clicks/impressions/rankings. Monthly evidence packs must be reproducible. This is tracked under `ACCRED-001`.
-
-## Media and brand assets
-
-Original Rugby Panda photography is preferred and publicly credited as `Photo: The Rugby Panda` and `© The Rugby Panda`. Third-party images require stored source, creator, licence and attribution metadata.
-
-Brand Assets remain separate from Editorial Images. Candidate logos are never automatically approved and must not be publicly hotlinked.
+NOTIFY-003 production verification proved that the first `insufficient-production-eligible-diverse-content` failure delivered one email and an exact replay delivered no second email.
