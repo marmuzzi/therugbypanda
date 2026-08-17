@@ -1,0 +1,50 @@
+name: Restore launch introduction
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - scripts/restore-launch-introduction.mjs
+      - .github/workflows/restore-launch-introduction.yml
+
+permissions:
+  contents: read
+
+concurrency:
+  group: restore-launch-introduction
+  cancel-in-progress: false
+
+jobs:
+  restore:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment: production
+    env:
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Verify Sanity token is available
+        run: |
+          if [ -z "$SANITY_API_TOKEN" ]; then
+            echo "SANITY_API_TOKEN is not available to this workflow."
+            exit 1
+          fi
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Restore launch introduction if missing
+        run: node scripts/restore-launch-introduction.mjs
