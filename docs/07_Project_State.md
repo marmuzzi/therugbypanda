@@ -4,13 +4,13 @@
 
 v1.0 — Launch Experience and Digital Newsroom Foundation
 
-## Last updated
+## Last reconciled
 
-30 July 2026, after NOTIFY-001 was completed and production verified, including persistent Make.com deduplication and replay protection.
+17 August 2026, against GitHub `main`, Vercel production, direct Sanity read access and the currently exposed Make.com project connector.
 
 ## Source of truth
 
-Read these files first in future sessions:
+Read first in future sessions:
 
 1. `docs/07_Project_State.md`
 2. `docs/08_Issue_Log.md`
@@ -18,20 +18,25 @@ Read these files first in future sessions:
 4. `docs/10_New_Chat_Handoff.md`
 5. `docs/11_Editorial_Image_Archive.md`
 6. `docs/12_Brand_Assets_Library.md`
-7. `docs/33_Version_1_Product_Roadmap.md`
-8. All later numbered documents relevant to the task, especially `docs/23_Make_Orchestration_Architecture.md`, `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`, `docs/27_Sprint_5_Production_State.md`, `docs/31_NOTIFY_001_Desktop_Completion_Handoff.md`, `docs/32_Sprint_5_State_After_PR_91.md` and `docs/34_2026-07-29_Automation_Handoff.md`.
+7. `docs/23_Make_Orchestration_Architecture.md`
+8. `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`
+9. `docs/27_Sprint_5_Production_State.md`
+10. `docs/33_Version_1_Product_Roadmap.md`
+11. `docs/34_2026-07-29_Automation_Handoff.md`
+12. all newer numbered handoff, automation, Sprint, launch and FinOps documents relevant to the task.
 
-Do not rely on chat history for current status.
+Where an older historical document conflicts with this reconciled state or a later approved contract, the newer reconciled state wins. Do not rely on chat history for current status.
 
 ## Operating context
 
 - Timezone: `Europe/Dublin`.
 - Daily editorial deadline: 08:00 Europe/Dublin.
-- GitHub is the source of truth.
+- Daily target: five review-ready drafts and one consolidated editorial email.
+- GitHub is the source of truth for versioned project state.
 - Sanity is the canonical CMS and mandatory human approval boundary.
 - No acquired or AI-generated content is automatically approved or published.
 - Original Rugby Panda photography is the preferred image source.
-- Third-party photographs must have documented free-use rights or explicit permission.
+- Third-party photographs require documented rights or explicit permission.
 
 ## Architecture
 
@@ -40,143 +45,147 @@ GitHub source of truth
 → Make.com orchestration
 → Apify acquisition
 → Editorial Brain and OpenAI generation
-→ Sanity canonical CMS and editorial review
+→ Sanity canonical CMS and human editorial review
 → Vercel public website
-→ Meta social distribution after controlled publication
+→ Meta social distribution only after controlled publication
 ```
 
-## Current production state
+## Reconciled live baseline — 17 August 2026
 
-- Sprint 4 is complete.
-- Sprint 5 Editorial & Publishing Automation is in progress.
-- Editorial Brain, structured generation, approved-image assignment and controlled workflow endpoints are merged.
-- The authenticated Sanity Editorial Review workspace is implemented.
-- Deterministic Editorial Review Intelligence and on-demand AI Editorial Review are merged.
-- Real Sanity-backed website search is merged and production verified.
-- OpenAI generation timeout handling is corrected: the route now permits longer execution and the generator no longer clamps requests to 50 seconds.
-- The Sanity email review link now uses the correct intent route format and opens the intended draft.
-- `NOTIFY-001 – New Draft Notification` is implemented and production verified in Make.com.
-- The Make.com MCP toolbox is connected, but the currently exposed toolset does not permit scenario editing.
-- Automatic Sanity Studio deployment after merge is working.
+- GitHub `main` remains at PR #145 merge commit `6c44c43a159e9e09c38772c4ba96c0abaad0c7b5`.
+- No feature work after PR #145 has been merged into `main`.
+- Vercel production is READY on the same PR #145 commit.
+- `https://therugbypanda.ie` responds successfully and renders the launch introduction as the lead article.
+- The live top-level navigation is News, Provinces, URC, International and About.
+- The live homepage currently has no additional published newsroom articles beneath the introduction.
+- Direct Sanity production read access is available from the current chat environment.
+- The Rugby Panda Make connector is connected and its health check executes, but the currently exposed toolset does not permit scenario editing.
+- Apify is directly available.
+- No direct Meta/Facebook/Instagram project connector is currently exposed in chat.
 
-## Version 1.0 product direction
+## Editorial production state
 
-The approved immediate frontend work is:
+Implemented, merged and deployed capabilities include:
 
-1. Increase the Panda icon while reducing the Rugby Panda wordmark.
-2. Add a dedicated `/news` page containing all published articles in reverse chronological order.
-3. Make the News navigation item point to `/news` instead of the homepage.
-4. Keep About in both the top navigation and footer.
-5. Replace overflowing mobile category links with a proper hamburger menu.
-6. Add Europe and Opinion as top-level navigation sections without changing the existing International taxonomy contract until an explicit taxonomy migration is approved.
-7. Keep article photography consistent between cards and article pages.
-8. Use branded Panda imagery only for articles explicitly marked for editorial branding.
+- Editorial Brain classification, scoring and source-linked fact ledger;
+- OpenAI structured generation and protected Sanity draft creation;
+- approved Editorial Image assignment;
+- protected approve, reject, publish and discard transitions;
+- authenticated Sanity Editorial Review workspace;
+- deterministic Editorial Review Intelligence and publication gates;
+- on-demand AI Editorial Review;
+- real Sanity-backed website search;
+- daily-package application endpoint/event foundation;
+- post-publication social event and Sanity-field foundation.
 
-## Digital newsroom roadmap
+The editorial experience is deliberately simple:
 
-The approved next product phases are documented in `docs/33_Version_1_Product_Roadmap.md` and include:
+```text
+Draft
+→ human review / edit
+→ Publish
+```
 
-- automatic Facebook and Instagram snippets after controlled publication;
-- a social publishing opt-out field in Sanity;
-- secure phone-first photo uploads;
-- AI-assisted image metadata, quality scoring and duplicate detection;
-- a searchable Media Desk;
-- rights and attribution controls;
-- approved Sanity-hosted team and competition logos;
-- future fixtures, results, standings and editorial intelligence.
+There is no separate `ready for review` approval gate.
 
-## Editorial Review production state
+## NOTIFY-001 — complete
 
-Implemented, merged, deployed and authenticated-Studio verified through the PR #91 baseline:
-
-- Studio-session authentication; no browser-entered workflow secret.
-- Restored submission and rejection note field.
-- Draft queue includes manually created unpublished documents before workflow metadata exists.
-- Raw draft-aware Sanity queries with supported `_id in path("drafts.**")` filtering.
-- Mobile-first single-column layout.
-- Article Quality first and AI Editorial Review immediately below it.
-- Improved contrast and typography across quality findings, metadata, Sources, Fact Ledger and Workflow cards.
-- Automatic hosted Studio deployment after relevant merges.
-
-## Notification state
-
-`NOTIFY-001 – New Draft Notification` is complete and production verified.
+`NOTIFY-001 – New Draft Notification` is closed and production verified.
 
 Verified path:
 
 ```text
-Editorial QA
-→ Editorial API
-→ OpenAI article generation
-→ Sanity draft creation
-→ Make.com webhook
-→ eventId duplicate check
-→ editorial email
-→ persistent workflow record
+Editorial generation
+→ Sanity draft
+→ editorial.article.draft_created
+→ Make webhook
+→ persistent eventId duplicate check
+→ email to editor@therugbypanda.ie
+→ successful event record
 ```
 
-Verified behaviour:
+Verified behaviour includes successful controlled generation, correct email delivery, a working Sanity draft deep link, persistent `eventId` storage and duplicate replay protection with no second email.
 
-- controlled draft generation succeeds;
-- Make receives `editorial.article.draft_created`;
-- the payload includes `eventId`, article ID, title, destination, timestamp, optional submission note and review URL;
-- the email reaches `editor@therugbypanda.ie`;
-- the corrected Sanity deep link opens the intended draft;
-- Make checks the `Rugby Panda Event Deduplication` data store using `eventId` as the key;
-- new events pass through the `New event only` filter;
-- successful email delivery is followed by an add/replace data-store write;
-- duplicate replay returns `Exists = true`, is blocked by the filter and sends no second email;
-- persisted records include event type, processed timestamp, article ID, workflow status and initial social-delivery states.
+## NOTIFY-002 — open
 
-Application changes supporting this verification:
+Failure and technical-alert routing to `admin@therugbypanda.ie` is application-side partially implemented but has not been production verified end-to-end. A simulated or genuine controlled failure must produce and deliver the alert before NOTIFY-002 can close.
 
-- PR #142 increased the editorial route and requested OpenAI timeout.
-- PR #143 removed the hidden 50-second generator clamp.
-- PR #144 corrected the Sanity Studio intent URL.
+## AUTO-001 / AUTO-003 — next critical work
 
-Failure routing to `admin@therugbypanda.ie` remains the next notification task under `NOTIFY-002`.
+The application-side Morning Editorial Package foundation is merged and deployed.
 
-## Production mailboxes
+`POST /api/editorial/daily-package`:
 
-- `admin@therugbypanda.ie` — infrastructure, billing, security, workflow failures and technical alerts.
-- `hello@therugbypanda.ie` — public contact mailbox.
-- `editor@therugbypanda.ie` — article-ready-for-review, approval, accreditation and media communication.
+- selects five eligible Sanity drafts;
+- emits `editorial.daily_package.ready`;
+- returns HTTP 409 when fewer than five eligible drafts exist;
+- attempts `editorial.daily_package.delivery_failed` through the technical-alert webhook on failure.
+
+Still required before completion:
+
+1. capture a real five-article payload in Make;
+2. deliver one correctly populated consolidated email to `editor@therugbypanda.ie`;
+3. persist and deduplicate the package `eventId`;
+4. replay the same package and prove no second email is sent;
+5. verify failure routing to `admin@therugbypanda.ie`;
+6. activate the daily trigger around 07:50–07:55 Europe/Dublin;
+7. complete overnight acquisition/generation so five eligible drafts exist;
+8. deliver five review-ready drafts before 08:00 for three consecutive days.
+
+The package endpoint packages eligible drafts; it does not generate them.
+
+## SOCIAL-001 — foundation only
+
+The application-side social-distribution contract is merged and deployed, but Facebook/Instagram publishing is not Meta/Make production verified.
+
+Social distribution may run only after a deliberate controlled website publication. It must respect the Sanity opt-out, require a usable image, deduplicate on `eventId`, record platform IDs/status back to Sanity and never roll back a successful website publication.
+
+Do not prioritise SOCIAL-001 ahead of AUTO-001 and NOTIFY-002 unless a later approved project decision explicitly changes the order.
+
+## Dependabot maintenance state
+
+As reconciled on 17 August 2026:
+
+- PR #146 is open and its Vercel Preview is READY. It contains major production-dependency upgrades and must be deliberately regression tested before merge.
+- PR #147 is open and its Vercel Preview is ERROR because TypeScript 7.0.2 is incompatible with the currently installed Next.js compiler-API expectations. Do not merge #147 in its current form.
+- Neither Dependabot PR affects production.
+
+## Reader taxonomy
+
+Current approved reader navigation:
+
+- News
+- Provinces
+- URC
+- International
+- About
+
+Ireland remains article/editorial metadata where useful. Opinion, analysis, column and notebook are formats rather than top-level coverage sections. Europe is covered within International unless a later evidence-based decision changes this.
+
+## Launch state
+
+The introduction article is live and is the homepage lead. The minimum launch package still requires at least eight additional reviewed, image-backed articles covering recent internationals and all four Irish provinces, followed by production verification of homepage, news/category and article routes.
+
+## FinOps
+
+Make.com Core is active from 30 July 2026 at the recorded confirmed cost of USD $10.59/month. The old Free-plan two-active-scenario limitation is obsolete. See `docs/35_FinOps_Budget_and_Cost_Register.md`.
 
 ## Immediate priority
 
-1. Add workflow failure and technical alerts to `admin@therugbypanda.ie` (`NOTIFY-002`).
-2. Continue `AUTO-001 – Morning Editorial Package` in Make.com.
-3. Capture and map a real `editorial.daily_package.ready` payload.
-4. Add persistent `eventId` deduplication and one consolidated five-article editorial email.
-5. Verify a duplicate package replay sends no second email.
-6. Configure and verify the 07:50 Europe/Dublin daily trigger.
-7. Execute a complete controlled editorial lifecycle test through production rendering.
-8. Complete the nine-article launch package and verify it in production.
-9. Begin Social Distribution only after AUTO-001 and its failure paths pass.
-
-## Launch minimum
-
-- One introduction article about The Rugby Panda.
-- At least eight additional reviewed, image-backed articles.
-- Coverage of recent internationals and Leinster, Munster, Ulster and Connacht.
-- Correct publication dates.
-- Production verification of homepage, news, category and article pages.
-- Mobile navigation verified on a phone-sized viewport.
+1. Keep the reconciled documentation and Issue Log current.
+2. Complete and production-verify NOTIFY-002 failure routing.
+3. Resume AUTO-001 Morning Editorial Package with a real five-article payload.
+4. Verify consolidated email and persistent duplicate protection.
+5. Configure and verify the 07:50–07:55 Europe/Dublin trigger.
+6. Complete three consecutive on-time morning deliveries.
+7. Complete the remaining launch-content package and production verification.
+8. Begin SOCIAL-001 only after the editorial automation and failure paths are stable.
 
 ## Completion rule
 
-Always distinguish:
+Always distinguish implemented, committed, PR opened, merged, deployed, verified in production, verified in authenticated Sanity Studio, verified in Make.com, verified in Meta and documentation updated.
 
-- implemented;
-- committed;
-- merged;
-- deployed;
-- verified in production;
-- verified in authenticated Sanity Studio;
-- verified in Make.com;
-- documentation updated.
-
-A feature is not complete until the relevant verification has passed.
+A feature is not complete until its relevant verification has passed.
 
 ## Working principles
 
