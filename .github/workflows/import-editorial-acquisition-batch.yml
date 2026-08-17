@@ -1,0 +1,30 @@
+name: Import editorial acquisition batch
+
+on:
+  workflow_dispatch:
+    inputs:
+      batch_path:
+        description: Repository path to the reviewed acquisition batch JSON
+        required: true
+        default: data/editorial-acquisition/auto004-2026-08-18.json
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Import production-eligible drafts
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+          EDITORIAL_API_BASE_URL: https://therugbypanda.ie
+        run: node scripts/import-editorial-acquisition-batch.mjs "${{ inputs.batch_path }}"
