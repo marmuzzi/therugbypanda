@@ -109,7 +109,7 @@ export async function POST(request: NextRequest) {
     console.info("Editorial OpenAI stage starting", { requestId, inputId: body.story.id });
     const article = await generateArticleDraft(body.story, editorial, {
       targetLengthWords: body.qaMode === true ? "250-400" : "700-1100",
-      timeoutMs: body.qaMode === true ? 90_000 : 90_000,
+      timeoutMs: 90_000,
     });
     const pkg = { editorial, article };
 
@@ -121,6 +121,8 @@ export async function POST(request: NextRequest) {
     const sanityDraft = await createSanityArticleDraft(pkg, {
       editorialImageId: body.editorialImageId,
       story: body.story,
+      automationContentClass: body.qaMode === true ? "qa" : "production",
+      morningPackageEligible: body.qaMode !== true,
     });
 
     const draftOccurredAt = new Date().toISOString();
@@ -138,6 +140,7 @@ export async function POST(request: NextRequest) {
       sanityDraftId: sanityDraft.id,
       notificationStatus: notification.status,
       notificationEventId: notification.eventId,
+      morningPackageEligible: sanityDraft.morningPackageEligible,
       durationMs: Date.now() - startedAt,
     });
     return jsonResponse({ status: "draft-created", editorial, article, sanityDraft, notification, requestId });
