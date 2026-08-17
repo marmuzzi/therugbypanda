@@ -121,7 +121,20 @@ function selectDiversePackage(candidates: PackageArticle[]): PackageArticle[] {
   return selected;
 }
 
-async function sendTechnicalAlert(message: string, details: Record<string, unknown>) {
+function operationalDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Dublin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
+async function sendTechnicalAlert(
+  failureCode: string,
+  message: string,
+  details: Record<string, unknown>,
+) {
   const webhookUrl = process.env.EDITORIAL_TECHNICAL_ALERT_WEBHOOK_URL?.trim();
   if (!webhookUrl) return "skipped" as const;
 
@@ -136,15 +149,15 @@ async function sendTechnicalAlert(message: string, details: Record<string, unkno
       },
       body: JSON.stringify({
         event: "editorial.daily_package.delivery_failed",
-        eventId: `daily-package-failure:${new Date().toISOString().slice(0, 10)}`,
+        eventId: `daily-package-failure:${operationalDate()}:${failureCode}`,
         destination: "admin@therugbypanda.ie",
         occurredAt: new Date().toISOString(),
         message,
-        details,
+        details: { failureCode, ...details },
       }),
       cache: "no-store",
     });
-    return response.ok ? ("sent" as const) : ("failed" as const);
+    return response.ok ? ("accepted" as const) : ("failed" as const);
   } catch {
     return "failed" as const;
   }
@@ -157,7 +170,11 @@ export async function POST(request: NextRequest) {
 
   const webhookUrl = process.env.EDITORIAL_DAILY_PACKAGE_WEBHOOK_URL?.trim();
   if (!webhookUrl) {
-    await sendTechnicalAlert("Daily editorial package webhook is not configured.", {});
+    await sendTechnicalAlert(
+      "daily-package-webhook-unconfigured",
+      "Daily editorial package webhook is not configured.",
+      {},
+    );
     return NextResponse.json(
       { error: "EDITORIAL_DAILY_PACKAGE_WEBHOOK_URL is not configured." },
       { status: 503 },
@@ -192,16 +209,12 @@ export async function POST(request: NextRequest) {
     );
     const articles = selectDiversePackage(candidates);
 
-    const packageDate = new Intl.DateTimeFormat("en-CA", {
-      timeZone: "Europe/Dublin",
-      year: "numeric",
-      month: "2-digit",
-      day: "2-digit",
-    }).format(new Date());
+    const packageDate = operationalDate();
     const eventId = `editorial-daily-package:${packageDate}`;
 
     if (articles.length < PACKAGE_SIZE) {
       const technicalAlertStatus = await sendTechnicalAlert(
+        "insufficient-production-eligible-diverse-content",
         `Only ${articles.length} of ${PACKAGE_SIZE} required production-eligible, editorially distinct articles are ready for the 08:00 package.`,
         {
           eventId,
@@ -264,6 +277,7 @@ export async function POST(request: NextRequest) {
 
     if (!response.ok) {
       const technicalAlertStatus = await sendTechnicalAlert(
+        `daily-package-webhook-http-${response.status}`,
         `Daily editorial package webhook returned ${response.status}.`,
         { eventId, responseStatus: response.status },
       );
@@ -282,7 +296,11 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Daily editorial package failed.";
-    const technicalAlertStatus = await sendTechnicalAlert(message, {});
+    const technicalAlertStatus = await sendTechnicalAlert(
+      "daily-package-exception",
+      message,
+      {},
+    );
     return NextResponse.json(
       { error: message, technicalAlertStatus },
       { status: 500 },
