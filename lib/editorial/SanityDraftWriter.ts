@@ -28,10 +28,14 @@ type ApprovedEditorialImage = {
   };
 };
 
+export type AutomationContentClass = "production" | "qa" | "test";
+
 type DraftWriterOptions = {
   editorialImageId?: string;
   story?: RawStoryInput;
   replacementOf?: string;
+  automationContentClass?: AutomationContentClass;
+  morningPackageEligible?: boolean;
 };
 
 function slugify(value: string): string {
@@ -179,6 +183,8 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage, optio
   const now = new Date().toISOString();
   const slug = slugify(pkg.article.title);
   const documentId = `drafts.article-${pkg.editorial.inputId.replace(/[^a-zA-Z0-9_-]/g, "-")}`;
+  const automationContentClass = options.automationContentClass ?? "production";
+  const morningPackageEligible = options.morningPackageEligible ?? automationContentClass === "production";
   const document = {
     _id: documentId,
     _type: "article",
@@ -210,6 +216,8 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage, optio
     generationDisclosure: pkg.article.disclosure,
     generationSchemaVersion: pkg.editorial.schemaVersion,
     editorialGeneratedAt: pkg.editorial.generatedAt,
+    automationContentClass,
+    morningPackageEligible,
     ...(options.story ? {
       sourceStoryTitle: options.story.title,
       sourceStorySummary: options.story.summary,
@@ -235,5 +243,13 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage, optio
   };
 
   const result = await writeClient.createOrReplace(document);
-  return { id: result._id, slug, workflowStatus: "draft", editorialImageId: editorialImage?._id, studioIntent: `/intent/edit/id=${result._id};type=article/` };
+  return {
+    id: result._id,
+    slug,
+    workflowStatus: "draft",
+    editorialImageId: editorialImage?._id,
+    automationContentClass,
+    morningPackageEligible,
+    studioIntent: `/intent/edit/id=${result._id};type=article/`,
+  };
 }
