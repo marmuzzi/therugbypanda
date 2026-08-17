@@ -17,64 +17,11 @@ import {
   getContinueReading,
   getFeaturedImage,
   siteUrl,
-  type CmsArticle,
-  type FeaturedImage,
 } from "@/lib/cms";
-import { sanityFetch, urlForImage } from "@/lib/sanity";
 
 type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
-
-type ApprovedEditorialImage = {
-  title?: string;
-  altText?: string;
-  image?: {
-    asset?: { _ref?: string; _type?: "reference" };
-    alt?: string;
-  };
-};
-
-const approvedEditorialImagesQuery = `*[
-  _type == "editorialImage" &&
-  lifecycleStatus == "approved" &&
-  usageApproved == true &&
-  sourceClassification == "the-rugby-panda-original" &&
-  defined(image.asset)
-] | order(editorialRating desc, title asc)[0...24]{
-  title,
-  altText,
-  image
-}`;
-
-function stableIndex(value: string, size: number) {
-  let hash = 0;
-  for (let index = 0; index < value.length; index += 1) {
-    hash = (hash * 31 + value.charCodeAt(index)) >>> 0;
-  }
-  return size ? hash % size : 0;
-}
-
-async function resolveFeaturedImage(article: CmsArticle): Promise<FeaturedImage | undefined> {
-  const assigned = getFeaturedImage(article);
-  if (assigned) return assigned;
-
-  const approvedImages =
-    (await sanityFetch<ApprovedEditorialImage[]>({ query: approvedEditorialImagesQuery })) ?? [];
-  if (!approvedImages.length) return undefined;
-
-  const selected = approvedImages[stableIndex(`${article.title}-${article.standfirst ?? ""}`, approvedImages.length)];
-  const src = selected.image?.asset?._ref
-    ? urlForImage(selected.image).width(1400).height(800).fit("crop").url()
-    : undefined;
-
-  if (!src) return undefined;
-
-  return {
-    src,
-    alt: selected.image?.alt ?? selected.altText ?? selected.title ?? article.title,
-  };
-}
 
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
@@ -82,7 +29,7 @@ export async function generateMetadata({ params }: ArticlePageProps): Promise<Me
 
   if (!article) return { title: "Article not found | The Rugby Panda" };
 
-  const featuredImage = await resolveFeaturedImage(article);
+  const featuredImage = getFeaturedImage(article);
   const title = `${article.title} | The Rugby Panda`;
   const description = article.standfirst ?? "Independent Irish and European rugby coverage from The Rugby Panda.";
   const url = article.slug ? articleUrl(article.slug) : siteUrl("/");
@@ -123,7 +70,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const category = [cmsArticle.category, cmsArticle.province ?? cmsArticle.competition]
     .filter(Boolean)
     .join(" • ");
-  const featuredImage = await resolveFeaturedImage(cmsArticle);
+  const featuredImage = getFeaturedImage(cmsArticle);
   const editorialImage = cmsArticle.useBrandImage ? undefined : featuredImage;
   const canonicalUrl = cmsArticle.slug ? articleUrl(cmsArticle.slug) : siteUrl("/");
   const jsonLd = {
