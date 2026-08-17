@@ -24,7 +24,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 | AUTO-002 | In Progress | Critical | Editorial Automation | Generate a genuinely new replacement article after rejection without reusing the rejected angle or source set. | Persistent orchestrator must supply and run the replacement candidate. | #50, #54 | Replacement endpoint foundation merged | Pending orchestrated rejection/replacement test | — |
 | AUTO-003 | In Progress | Critical | Scheduling / Orchestration | Prepare five review-ready articles and one consolidated editorial email by 08:00 Europe/Dublin daily. | Persistent overnight acquisition, generation and Make.com scheduling are not fully configured. | #47–#54, #131 foundation | Daily-package application endpoint deployed; production Make package scenario and trigger remain incomplete | Pending real package payload, exactly five eligible drafts, 07:50–07:55 trigger, retries and three consecutive on-time runs | — |
 | NOTIFY-001 | Closed | High | Editorial Notifications | Email `editor@therugbypanda.ie` when a new editorial draft is created. | The initial webhook foundation lacked production mapping, persistent deduplication and a valid Sanity intent link. A hidden 50-second OpenAI timeout clamp also blocked controlled QA generation. | #82, #85, #89, #142, #143, #144, #145 | Application fixes merged and deployed; Make scenario `NOTIFY-001 – New Draft Notification` configured | Correctly populated email delivered; Sanity link opened the intended draft; persistent `eventId` record written; duplicate replay blocked and sent no second email | 2026-07-30 |
-| NOTIFY-002 | Open | High | Technical Alerts | Email `admin@therugbypanda.ie` for workflow failures and technical alerts. | No central Make failure route has been production verified. | Application technical-alert webhook foundation exists | Partially implemented application-side | Pending simulated workflow failure and alert delivery test | — |
+| NOTIFY-002 | Closed | High | Technical Alerts | Email `admin@therugbypanda.ie` for workflow failures and technical alerts. | The application technical-alert webhook existed, but no persistent Make failure route and production end-to-end verification had been completed. | Application technical-alert foundation; #150, #151, #152 | Make scenario `NOTIFY-002 - Technical Alerts` configured with persistent deduplication; production webhook environment variable deployed; temporary verifier removed in #152 | Make send and duplicate replay verified; real production daily-package failure returned `responseStatus: 410` and `technicalAlertStatus: sent`; alert email received at `admin@therugbypanda.ie` | 2026-08-17 |
 | WEB-006 | Pending Verification | High | Frontend / Contact | Add public contact using `mailto:hello@therugbypanda.ie`. | Public mailbox existed but was not linked from the website. | Pending provenance reconciliation | Contact link is visible in current production; historical feature branch remains | Production link observed; explicit desktop/mobile interaction and branch provenance cleanup pending | — |
 | ACCRED-001 | Implemented | Critical | Analytics / Accreditation | Build durable evidence of publishing cadence, traffic, engagement and search visibility. | Analytics and evidence-pack architecture was not implemented. | #76, pending dashboard provenance reconciliation | Consent-aware GA4/GTM loader merged; Sanity Newsroom Dashboard implementation exists | Pending production/Studio/provider-ID event verification | — |
 | SEC-001 | Open | Critical | Security / Resilience | Establish and verify security, backup and recovery across GitHub, Sanity, Vercel, Cloudflare, Make.com and Apify. | Security baseline and tested restore procedures are incomplete. | — | Not implemented | Pending access review, backups, restore test and credential rotation | — |
@@ -47,12 +47,11 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 ## Reconciled production baseline — 17 August 2026
 
-- GitHub `main`: PR #148 merge commit `70462a9dafbd04fe80807bd5c7c1fab750ea5a05`.
-- Vercel production: READY on the same commit; production returned HTTP 200 after deployment.
+- Production is healthy on Vercel and the reader site remains live.
 - Production homepage: introduction article is the lead; no additional published newsroom articles beneath it.
 - Reader navigation: News, Provinces, URC, International, About.
 - Sanity: direct production read access available.
-- Make.com: project health check available; scenario editing is not exposed through the current connector.
+- Make.com: project health check available; scenario editing is not exposed through the current ChatGPT connector.
 - Apify: directly available.
 - Meta: no direct project connector currently exposed.
 - Dependabot #146: open, Preview READY, major dependency upgrades require deliberate testing.
@@ -78,21 +77,38 @@ Custom webhook
 
 The event is `editorial.article.draft_created`. Duplicate replay was explicitly verified and sends no second email.
 
+## NOTIFY-002 verified baseline
+
+`NOTIFY-002 - Technical Alerts` is closed after end-to-end production verification on 17 August 2026.
+
+```text
+Production workflow failure
+→ EDITORIAL_TECHNICAL_ALERT_WEBHOOK_URL
+→ Make custom webhook
+→ Check existence of eventId in Rugby Panda Event Deduplication
+→ Filter: New event only / Exists = false
+→ Send email to admin@therugbypanda.ie
+→ Add/replace successful event record with status technical_alert_sent
+```
+
+A Make-only controlled send succeeded, duplicate replay was blocked with no second email, and a real production daily-package delivery failure produced `responseStatus: 410`, `technicalAlertStatus: sent`, and a received technical-alert email at `admin@therugbypanda.ie`.
+
 ## Taxonomy decision
 
 Top-level reader navigation is limited to News, Provinces, URC, International and About. Ireland remains article/editorial metadata. Opinion, analysis, column and notebook are formats rather than coverage sections. Europe is covered within International unless a later evidence-based product decision changes this.
 
 ## Launch and automation priority
 
-The introduction article is live. Complete NOTIFY-002 and the five-article Morning Editorial Package, while continuing controlled publication of the remaining launch package. SOCIAL-001 follows only after editorial automation and failure paths are stable.
+The introduction article is live. NOTIFY-002 is complete. The immediate automation priority is `AUTO-001 – Morning Editorial Package`, while controlled publication of the remaining launch package continues. SOCIAL-001 follows only after editorial automation is stable.
 
 ## Make.com integration status
 
 - Make.com Core is active from 30 July 2026 at USD $10.59/month.
 - `NOTIFY-001 – New Draft Notification` is active and production verified.
-- `Rugby Panda Event Deduplication` replay protection is verified.
+- `NOTIFY-002 - Technical Alerts` is production verified.
+- `Rugby Panda Event Deduplication` replay protection is verified for both notification scenarios.
 - The current ChatGPT Make connector does not permit direct scenario editing.
-- Next Make priorities are NOTIFY-002 and `AUTO-001 – Morning Editorial Package`.
+- Next Make priority is `AUTO-001 – Morning Editorial Package`.
 
 ## Mail routing requirements
 

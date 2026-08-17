@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-17 August 2026, after PR #148 reconciled the documentation against GitHub, Vercel, Sanity and the currently exposed Make.com project connector.
+17 August 2026, after NOTIFY-002 technical-alert routing was production verified and the temporary verification mechanism was scheduled for removal in PR #152.
 
 ## Source of truth
 
@@ -52,10 +52,7 @@ GitHub source of truth
 
 ## Reconciled live baseline — 17 August 2026
 
-- PR #148, `Reconcile project documentation with live production state`, is merged into `main` at `70462a9dafbd04fe80807bd5c7c1fab750ea5a05`.
-- PR #148 is documentation-only; the application runtime baseline remains the functionality previously deployed through PR #145 and earlier feature PRs.
-- The PR #148 Vercel Preview was READY before merge.
-- Production was healthy before the documentation merge and the post-merge production deployment must be checked before marking PR #148 deployed/verified.
+- Production is healthy on Vercel.
 - `https://therugbypanda.ie` renders the launch introduction as the lead article.
 - The live top-level navigation is News, Provinces, URC, International and About.
 - The live homepage currently has no additional published newsroom articles beneath the introduction.
@@ -63,6 +60,7 @@ GitHub source of truth
 - The Rugby Panda Make connector is connected and its health check executes, but the currently exposed toolset does not permit scenario editing.
 - Apify is directly available.
 - No direct Meta/Facebook/Instagram project connector is currently exposed in chat.
+- NOTIFY-001 and NOTIFY-002 are both production verified.
 
 ## Editorial production state
 
@@ -94,15 +92,37 @@ Editorial generation
 
 Verified behaviour includes successful controlled generation, correct email delivery, a working Sanity draft deep link, persistent `eventId` storage and duplicate replay protection with no second email.
 
-## NOTIFY-002 — open
+## NOTIFY-002 — complete
 
-Failure and technical-alert routing to `admin@therugbypanda.ie` is application-side partially implemented but has not been production verified end-to-end. A simulated or genuine controlled failure must produce and deliver the alert before NOTIFY-002 can close.
+`NOTIFY-002 - Technical Alerts` is closed and production verified.
+
+Final verified Make topology:
+
+```text
+Custom webhook
+→ Data Store: Check the existence of a record
+→ filter: New event only / Exists = false
+→ Send an Email to admin@therugbypanda.ie
+→ Data Store: Add/replace a record
+```
+
+It uses the existing persistent `Rugby Panda Event Deduplication` Data Store with incoming `eventId` as the key. Successful records use status `technical_alert_sent`. The record is written only after successful email delivery.
+
+Verification completed on 17 August 2026:
+
+- controlled Make send succeeded;
+- duplicate replay was blocked and sent no second email;
+- `EDITORIAL_TECHNICAL_ALERT_WEBHOOK_URL` was configured in Vercel with a rotated webhook URL;
+- the production application failure path was invoked through the protected daily-package endpoint;
+- the real production package delivery failed with `responseStatus: 410` and returned `technicalAlertStatus: sent`;
+- the technical-alert email was received at `admin@therugbypanda.ie`;
+- temporary browser/Preview verification code is removed by PR #152 after verification.
 
 ## AUTO-001 / AUTO-003 — next critical work
 
 The application-side Morning Editorial Package foundation is merged and deployed.
 
-`POST /api/editorial/daily-package` selects five eligible Sanity drafts, emits `editorial.daily_package.ready`, returns HTTP 409 when fewer than five eligible drafts exist and attempts `editorial.daily_package.delivery_failed` through the technical-alert webhook on failure.
+`POST /api/editorial/daily-package` selects five eligible Sanity drafts, emits `editorial.daily_package.ready`, and routes failures through the now-production-verified NOTIFY-002 technical-alert path.
 
 Still required before completion:
 
@@ -110,10 +130,9 @@ Still required before completion:
 2. deliver one correctly populated consolidated email to `editor@therugbypanda.ie`;
 3. persist and deduplicate the package `eventId`;
 4. replay the same package and prove no second email is sent;
-5. verify failure routing to `admin@therugbypanda.ie`;
-6. activate the daily trigger around 07:50–07:55 Europe/Dublin;
-7. complete overnight acquisition/generation so five eligible drafts exist;
-8. deliver five review-ready drafts before 08:00 for three consecutive days.
+5. activate the daily trigger around 07:50–07:55 Europe/Dublin;
+6. complete overnight acquisition/generation so five eligible drafts exist;
+7. deliver five review-ready drafts before 08:00 for three consecutive days.
 
 The package endpoint packages eligible drafts; it does not generate them.
 
@@ -141,13 +160,13 @@ Make.com Core is active from 30 July 2026 at the recorded confirmed cost of USD 
 
 ## Immediate priority
 
-1. Complete and production-verify NOTIFY-002 failure routing.
-2. Resume AUTO-001 Morning Editorial Package with a real five-article payload.
-3. Verify consolidated email and persistent duplicate protection.
-4. Configure and verify the 07:50–07:55 Europe/Dublin trigger.
+1. Build and production-verify `AUTO-001 – Morning Editorial Package` in Make using a real five-article package payload.
+2. Verify one consolidated email to `editor@therugbypanda.ie` and persistent `eventId` duplicate protection.
+3. Configure and verify the 07:50–07:55 Europe/Dublin daily trigger.
+4. Complete overnight acquisition/generation so five eligible drafts exist before package time.
 5. Complete three consecutive on-time morning deliveries.
 6. Complete the remaining launch-content package and production verification.
-7. Begin SOCIAL-001 only after editorial automation and failure paths are stable.
+7. Begin SOCIAL-001 only after editorial automation is stable.
 
 ## Completion rule
 
