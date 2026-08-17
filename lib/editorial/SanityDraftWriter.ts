@@ -2,7 +2,7 @@ import { createClient } from "next-sanity";
 
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 import type { EditorialDraftPackage } from "./ArticleDraftTypes";
-import type { RawStoryInput } from "./EditorialTypes";
+import type { EditorialCategory, RawStoryInput } from "./EditorialTypes";
 
 type ApprovedEditorialImage = {
   _id: string;
@@ -38,6 +38,36 @@ type DraftWriterOptions = {
   morningPackageEligible?: boolean;
 };
 
+type SanityTaxonomyTarget = {
+  categoryTitle: "News" | "Provinces" | "Ireland" | "URC" | "International";
+  provinceTitle?: "Leinster" | "Munster" | "Ulster" | "Connacht";
+  competitionTitle?: "URC" | "International";
+};
+
+const PROVINCE_CATEGORIES = new Set<EditorialCategory>(["Leinster", "Munster", "Ulster", "Connacht"]);
+
+function taxonomyForEditorialCategory(category: EditorialCategory): SanityTaxonomyTarget {
+  if (PROVINCE_CATEGORIES.has(category)) {
+    return {
+      categoryTitle: "Provinces",
+      provinceTitle: category as SanityTaxonomyTarget["provinceTitle"],
+    };
+  }
+
+  switch (category) {
+    case "Ireland":
+      return { categoryTitle: "Ireland" };
+    case "URC":
+      return { categoryTitle: "URC", competitionTitle: "URC" };
+    case "Europe":
+      return { categoryTitle: "International", competitionTitle: "International" };
+    case "Opinion":
+      return { categoryTitle: "News" };
+    default:
+      return { categoryTitle: "News" };
+  }
+}
+
 function slugify(value: string): string {
   return value.toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 90);
 }
@@ -65,13 +95,14 @@ function createWriteClient() {
   return createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
 }
 
-export async function validateSanityConnectivity(categoryTitle: string) {
+export async function validateSanityConnectivity(editorialCategory: EditorialCategory) {
   const client = createWriteClient();
+  const taxonomy = taxonomyForEditorialCategory(editorialCategory);
   const category = await client.fetch<{ _id: string } | null>(
     `*[_type == "category" && (title == $title || slug.current == $slug)][0]{_id}`,
-    { title: categoryTitle, slug: slugify(categoryTitle) },
+    { title: taxonomy.categoryTitle, slug: slugify(taxonomy.categoryTitle) },
   );
-  if (!category?._id) throw new Error(`No Sanity category found for ${categoryTitle}.`);
+  if (!category?._id) throw new Error(`No Sanity category found for ${taxonomy.categoryTitle}.`);
   return { connected: true, projectId, dataset, categoryId: category._id };
 }
 
@@ -170,15 +201,30 @@ function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
 
 export async function createSanityArticleDraft(pkg: EditorialDraftPackage, options: DraftWriterOptions = {}) {
   const writeClient = createWriteClient();
-  const [category, editorialImage] = await Promise.all([
+  const taxonomy = taxonomyForEditorialCategory(pkg.editorial.category);
+  const [category, province, competition, editorialImage] = await Promise.all([
     writeClient.fetch<{ _id: string } | null>(
       `*[_type == "category" && (title == $title || slug.current == $slug)][0]{_id}`,
-      { title: pkg.editorial.category, slug: slugify(pkg.editorial.category) },
+      { title: taxonomy.categoryTitle, slug: slugify(taxonomy.categoryTitle) },
     ),
+    taxonomy.provinceTitle
+      ? writeClient.fetch<{ _id: string } | null>(
+          `*[_type == "province" && (title == $title || slug.current == $slug)][0]{_id}`,
+          { title: taxonomy.provinceTitle, slug: slugify(taxonomy.provinceTitle) },
+        )
+      : Promise.resolve(null),
+    taxonomy.competitionTitle
+      ? writeClient.fetch<{ _id: string } | null>(
+          `*[_type == "competition" && (title == $title || slug.current == $slug)][0]{_id}`,
+          { title: taxonomy.competitionTitle, slug: slugify(taxonomy.competitionTitle) },
+        )
+      : Promise.resolve(null),
     fetchApprovedEditorialImage(writeClient, pkg, options.editorialImageId),
   ]);
 
-  if (!category?._id) throw new Error(`No Sanity category found for ${pkg.editorial.category}.`);
+  if (!category?._id) throw new Error(`No Sanity category found for ${taxonomy.categoryTitle}.`);
+  if (taxonomy.provinceTitle && !province?._id) throw new Error(`No Sanity province found for ${taxonomy.provinceTitle}.`);
+  if (taxonomy.competitionTitle && !competition?._id) throw new Error(`No Sanity competition found for ${taxonomy.competitionTitle}.`);
 
   const now = new Date().toISOString();
   const slug = slugify(pkg.article.title);
@@ -195,6 +241,8 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage, optio
     readingTime: `${Math.max(3, Math.ceil(JSON.stringify(pkg.article.body).split(/\s+/).length / 220))} min read`,
     isLead: false,
     category: { _type: "reference", _ref: category._id },
+    ...(province ? { province: { _type: "reference", _ref: province._id } } : {}),
+    ...(competition ? { competition: { _type: "reference", _ref: competition._id } } : {}),
     ...(editorialImage ? { featuredImage: toFeaturedImage(editorialImage) } : {}),
     keyPoints: pkg.article.keyPoints,
     body: portableTextBody(pkg.article),
