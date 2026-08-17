@@ -2,35 +2,51 @@
 
 ## Purpose
 
-This document records the approved product direction for turning The Rugby Panda from a functioning website into a scalable digital rugby newsroom.
+Approved product direction for turning The Rugby Panda from a functioning website into a scalable digital rugby newsroom. Reconciled with production on 17 August 2026.
 
 ## Phase 1 — Launch experience
 
 ### Branding
 
-- Increase the Panda icon.
-- Reduce the Rugby Panda wordmark.
-- Tighten spacing between the icon and wordmark.
-- Verify proportional behaviour on desktop, tablet and mobile.
+- Maintain a strong Panda icon with a balanced wordmark lockup.
+- Keep proportional behaviour usable on desktop, tablet and mobile.
+- Treat production verification, not implementation alone, as completion.
 
-### Navigation
+### Navigation — current approved contract
 
-- Create `/news` as the canonical archive of all published articles in reverse chronological order.
-- Make the News navigation item point to `/news`, not `/`.
-- Keep About in both the header and footer.
-- Add Europe and Opinion as visible top-level navigation destinations.
-- Preserve the existing International taxonomy contract until an explicit content migration is approved.
-- Replace horizontal mobile overflow with an accessible hamburger menu.
-- Keep Search available in the mobile menu and desktop navigation.
+The top-level reader navigation is:
+
+- News
+- Provinces
+- URC
+- International
+- About
+
+`/news` is the canonical reverse-chronological archive. News points to `/news`, not `/`. About remains available in the primary reader navigation and footer/contact experience. Mobile uses an accessible hamburger menu and Search remains available.
+
+Earlier roadmap language proposing Europe and Opinion as top-level sections is superseded. Ireland remains article/editorial metadata rather than a separate reader section. Opinion, analysis, column and notebook are formats. Europe is covered within International unless later product evidence justifies a dedicated destination.
 
 ### Article experience
 
 - Preserve featured-image consistency between homepage, cards and article pages.
-- Display featured imagery directly beneath the article heading area.
-- Use Panda branding only when the article explicitly opts into editorial branding.
+- Display featured imagery directly beneath the article heading area where appropriate.
+- Use Panda branding only when an article explicitly opts into editorial branding.
 - Avoid repetitive promotional branding beneath every article.
 
-## Phase 2 — Social distribution
+## Phase 2 — Editorial automation completion
+
+Before scaling social distribution, complete the five-article morning package:
+
+- five review-ready drafts;
+- one consolidated email to `editor@therugbypanda.ie` by 08:00 Europe/Dublin;
+- persistent package `eventId` deduplication;
+- technical failure routing to `admin@therugbypanda.ie`;
+- daily scheduling around 07:50–07:55;
+- three consecutive successful on-time deliveries.
+
+Sanity remains the mandatory human approval boundary.
+
+## Phase 3 — Social distribution
 
 After a controlled article publication, generate platform-specific social snippets.
 
@@ -52,89 +68,49 @@ After a controlled article publication, generate platform-specific social snippe
 ### Controls
 
 - Use official Meta publishing APIs.
-- Add `Do not publish to social` as an article-level Sanity control.
-- Social publishing must happen only after the article is approved and published through the controlled workflow.
-- Social failure must not roll back or alter the successful website publication.
-- Store post IDs, timestamps, status and failure information for audit and retry.
+- Respect the article-level `Do not publish to social` control.
+- Publish socially only after controlled website publication.
+- Social failure must not roll back successful website publication.
+- Store post IDs, timestamps, status and failure information for audit/retry.
+- Require an approved image; never fall back to text-only article distribution.
 
-## Phase 3 — Rugby Panda Media Desk
+## Phase 4 — Rugby Panda Media Desk
 
-### Phone-first upload
+Create a secure phone-first upload flow supporting taking/selecting multiple photos, event/team/competition selection, optional notes and direct controlled-media ingestion.
 
-Create a secure, mobile-friendly upload flow that supports:
+Use Sanity Assets for article-ready media. If archive scale requires it, use a dedicated object store for high-resolution originals rather than GitHub.
 
-- taking photos or selecting multiple photos;
-- choosing an event, team or competition;
-- adding optional notes;
-- uploading directly into the controlled media workflow.
+Every uploaded image should be eligible for web optimisation, orientation detection, quality/blur scoring, duplicate detection, suggested caption/alt text, team/competition/venue/event tagging, hero-image scoring and suggested crops. AI output is advisory; rights and publication approval remain human decisions.
 
-Original files should not be stored in the Git repository. Use Sanity Assets for article-ready media and, if archive scale requires it, a dedicated object store for high-resolution originals.
+## Phase 5 — Rights dashboard
 
-### Processing
-
-Every uploaded image should be eligible for:
-
-- web-optimised derivatives;
-- orientation detection;
-- quality scoring;
-- blur detection;
-- duplicate and near-duplicate detection;
-- suggested caption;
-- SEO alt text;
-- team, competition, venue and event tagging;
-- hero-image scoring;
-- suggested crops for article, homepage, mobile and social use.
-
-AI output is advisory. Rights and publication approval remain human decisions.
-
-## Phase 4 — Rights dashboard
-
-Every reusable image should record:
-
-- source classification;
-- creator or photographer;
-- source and landing-page URLs;
-- licence and licence URL;
-- required attribution;
-- permitted uses;
-- proof or notes supporting permission;
-- expiry date when relevant;
-- download or upload date;
-- lifecycle and rights-review status.
+Every reusable image should record source classification, creator, source/landing URLs, licence, attribution, permitted uses, permission proof/notes, expiry where relevant, acquisition date and lifecycle/rights-review status.
 
 Publication must be blocked for third-party images whose rights status is unknown, restricted or pending.
 
-Original Rugby Panda photos should use public attribution:
+Original Rugby Panda photos use:
 
 - `Photo: The Rugby Panda`
 - `© The Rugby Panda`
 
-## Phase 5 — Brand assets
+## Phase 6 — Brand assets
 
-The Brand Assets Library remains separate from Editorial Images.
+Brand Assets remain separate from Editorial Images.
 
-- Continue collecting rugby-union team, union and competition logos as candidates.
+- Continue approved-scope candidate collection where needed.
 - Candidate URLs are review references only.
-- Public frontend use is limited to manually approved assets uploaded into Sanity.
+- Public frontend use is limited to manually approved Sanity-hosted assets.
 - Record rights holder, source, usage notes and editorial/trademark status.
 - Do not imply endorsement, partnership or sponsorship.
-- Provide a rapid removal path for any disputed asset.
+- Provide a rapid removal path for disputed assets.
 
-## Phase 6 — Editorial intelligence
+## Phase 7 — Editorial intelligence
 
-When editing an article, surface:
+When editing an article, surface best matching approved photos, related articles, relevant teams/competitions, fixtures/results/standings when available, internal-link opportunities, missing metadata and SEO/structured-data suggestions.
 
-- best matching approved photos;
-- related articles;
-- relevant teams and competitions;
-- fixtures, results and standings when available;
-- internal-link opportunities;
-- missing metadata;
-- SEO and structured-data suggestions.
+## Phase 8 — Rugby data platform
 
-## Phase 7 — Rugby data platform
-
-Use the decoupled data path:
+Use a decoupled data path:
 
 ```text
 Sports data provider
@@ -143,68 +119,32 @@ Sports data provider
 → Next.js website
 ```
 
-Planned entities:
+Planned entities include fixtures, results, standings, team pages and competition pages. Core rendering must not depend on fragile live third-party calls.
 
-- fixtures;
-- results;
-- standings;
-- team pages;
-- competition pages.
-
-The website must not depend on fragile live third-party calls for core rendering.
-
-## Phase 8 — Accreditation mode
+## Phase 9 — Accreditation mode
 
 Long-term match-day workflow:
 
-1. Attend a match.
-2. Upload photos from the phone.
-3. Automatically organise and prepare media candidates.
-4. Draft or update the match report.
-5. Suggest the best approved image.
-6. Prepare social snippets.
-7. Leave everything waiting for human editorial approval.
-
-## Rights policy summary
-
-### Photography
-
-Use only:
-
-- Rugby Panda originals;
-- contributor photos with documented permission;
-- official media images whose terms permit the intended editorial use;
-- public-domain material;
-- open-licence images whose exact terms permit the intended use;
-- genuinely free stock or archive images with recorded terms.
-
-Do not use Getty, paid agency imagery or unlicensed photography. Credit is not a substitute for permission.
-
-### Logos
-
-Collect broadly within the approved rugby-union scope, but public use requires manual review, recorded source and rights information, approval for editorial use and a Sanity-hosted asset. Candidate-logo URLs must never be hotlinked in public templates.
+1. attend a match;
+2. upload photos from the phone;
+3. automatically organise media candidates;
+4. draft/update the match report;
+5. suggest the best approved image;
+6. prepare social snippets;
+7. leave editorial publication decisions with the human editor.
 
 ## Delivery order
 
-1. Version 1 branding and navigation.
-2. Dedicated News archive.
-3. Mobile menu and production verification.
-4. Social publishing schema and event contract.
-5. Meta integration and controlled test posts.
-6. Mobile Media Desk upload.
-7. Rights dashboard and publication gates.
-8. AI media processing and article-image suggestions.
-9. Approved brand-asset frontend integration.
-10. Rugby data and editorial intelligence.
+1. Finish current launch-content package and production verification.
+2. Complete NOTIFY-002 and the five-article morning automation.
+3. Complete three-day morning-package verification.
+4. Complete Meta integration and controlled social test posts.
+5. Build mobile Media Desk upload.
+6. Build rights dashboard/publication gates.
+7. Add AI media processing and image suggestions.
+8. Integrate approved brand assets into the frontend.
+9. Add rugby data and broader editorial intelligence.
 
 ## Completion rule
 
-Always report separately:
-
-- implemented;
-- committed;
-- merged;
-- deployed;
-- verified in production;
-- verified in authenticated Sanity Studio;
-- documentation updated.
+Always report separately: implemented, committed, PR opened, merged, deployed, verified in production, verified in authenticated Sanity Studio, verified in Make.com, verified in Meta and documentation updated.
