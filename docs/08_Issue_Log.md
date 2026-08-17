@@ -10,7 +10,7 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 | ID | Status | Priority | Area | Summary | Root cause | Related PRs | Deployment status | Verification status | Resolution date |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| DOC-002 | Implemented | High | Documentation / Project State | Reconcile authoritative project documentation with live GitHub, Vercel, Sanity and Make state on 17 August 2026. | Several older documents retained superseded eight-draft, ready-for-review, Free-plan and navigation assumptions after later production changes. | #148 | Documentation branch committed; PR opened | Pending PR checks, merge and repository verification | — |
+| DOC-002 | Closed | High | Documentation / Project State | Reconcile authoritative project documentation with live GitHub, Vercel, Sanity and Make state on 17 August 2026. | Several older documents retained superseded eight-draft, ready-for-review, Free-plan and navigation assumptions after later production changes. | #148 | Merged and production deployment READY at `70462a9dafbd04fe80807bd5c7c1fab750ea5a05` | Production returned HTTP 200 after deployment; reconciled docs are authoritative | 2026-08-17 |
 | WEB-007 | Implemented | High | Frontend / Taxonomy | Simplify top-level navigation to News, Provinces, URC, International and About; treat opinion as an article type and keep Ireland as content metadata rather than a separate section. | The navigation exposed overlapping sections and mixed article types with coverage areas. | Pending reconciliation | Behaviour is visible in current production, while the historical feature branch remains | Production behaviour observed; branch/PR provenance still requires cleanup | — |
 | WEB-008 | Implemented | Medium | Frontend / Category UI | Match the Provinces category banner height and typography to the other category pages. | Provinces used a separate legacy hero layout with substantially larger vertical spacing. | Pending reconciliation | Historical implementation branch remains | Pending explicit visual/provenance reconciliation | — |
 | V1-UI-001 | In Progress | High | Frontend / Brand | Increase the Panda icon, reduce the wordmark and tighten the brand lockup. | Current header gives too much visual weight to the wordmark. | #99 | Merged and deployed | Pending final desktop and mobile production verification | — |
@@ -47,9 +47,9 @@ Open → In Progress → Implemented → Merged → Pending Deployment → Pendi
 
 ## Reconciled production baseline — 17 August 2026
 
-- GitHub `main`: PR #145 merge commit `6c44c43a159e9e09c38772c4ba96c0abaad0c7b5`.
-- Vercel production: READY on the same commit.
-- Production homepage: HTTP success; introduction article is the lead; no additional published newsroom articles beneath it.
+- GitHub `main`: PR #148 merge commit `70462a9dafbd04fe80807bd5c7c1fab750ea5a05`.
+- Vercel production: READY on the same commit; production returned HTTP 200 after deployment.
+- Production homepage: introduction article is the lead; no additional published newsroom articles beneath it.
 - Reader navigation: News, Provinces, URC, International, About.
 - Sanity: direct production read access available.
 - Make.com: project health check available; scenario editing is not exposed through the current connector.
