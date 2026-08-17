@@ -38,14 +38,13 @@ When the project owner says **Proceed**, continue the agreed implementation imme
 
 ## Reconciled baseline — 17 August 2026
 
-- GitHub `main` is at PR #145 merge commit `6c44c43a159e9e09c38772c4ba96c0abaad0c7b5`.
-- Vercel production is READY on that same commit.
+- Production is healthy on Vercel.
 - Production responds successfully and shows the introduction article as the lead.
 - Current reader navigation is News, Provinces, URC, International and About.
 - No additional newsroom articles are currently published beneath the introduction.
 - NOTIFY-001 is complete and production verified.
-- AUTO-001 application-side morning-package foundation is merged/deployed but not end-to-end Make verified.
-- NOTIFY-002 failure routing is not production verified.
+- NOTIFY-002 is complete and production verified.
+- AUTO-001 application-side Morning Editorial Package foundation is merged/deployed but the five-article consolidated Make package is not yet end-to-end verified.
 - SOCIAL-001 application-side foundation is merged/deployed but Meta delivery is not verified.
 - Make.com Core is active at USD $10.59/month; do not apply the obsolete Free-plan two-scenario limit.
 - Direct Sanity read access, GitHub, Vercel and Apify are available in the current project environment. The exposed Make project connector supports health checking but not scenario editing. No direct Meta connector is currently exposed.
@@ -70,6 +69,35 @@ The event is `editorial.article.draft_created`. The email reaches `editor@therug
 
 Do not rebuild NOTIFY-001.
 
+## NOTIFY-002 completed state
+
+Verified Make scenario:
+
+```text
+NOTIFY-002 - Technical Alerts
+
+Custom webhook
+→ Data Store: Check the existence of a record
+→ Filter: New event only / Exists = false
+→ Send an Email to admin@therugbypanda.ie
+→ Data Store: Add/replace a record
+```
+
+Persistent store: `Rugby Panda Event Deduplication`.
+
+Incoming `eventId` is the key. Successful processing stores status `technical_alert_sent`. The record is written only after successful email delivery.
+
+Verification completed on 17 August 2026:
+
+- Make-only controlled send succeeded;
+- duplicate replay was blocked and no second email was sent;
+- the rotated webhook was stored in Vercel as `EDITORIAL_TECHNICAL_ALERT_WEBHOOK_URL`;
+- a real production daily-package failure returned `responseStatus: 410` and `technicalAlertStatus: sent`;
+- the technical-alert email arrived at `admin@therugbypanda.ie`;
+- temporary Preview/browser verification code was removed after testing.
+
+Do not rebuild NOTIFY-002.
+
 ## AUTO-001 application contract
 
 `POST /api/editorial/daily-package` is deployed and protected by `EDITORIAL_AUTOMATION_SECRET`.
@@ -80,28 +108,21 @@ It selects five eligible Sanity drafts and emits:
 editorial.daily_package.ready
 ```
 
-When fewer than five eligible drafts exist it returns HTTP 409 and attempts:
-
-```text
-editorial.daily_package.delivery_failed
-```
-
-through the technical-alert webhook.
+Delivery/failure conditions route through the now-verified NOTIFY-002 technical-alert path.
 
 The package endpoint does not generate the five articles. Overnight acquisition and generation remain separate orchestration work.
 
 ## Exact resume point
 
-1. Complete/verify NOTIFY-002 technical-alert routing to `admin@therugbypanda.ie`.
-2. Create or reopen `AUTO-001 – Morning Editorial Package` in Make.
-3. Capture a real `editorial.daily_package.ready` payload containing five eligible drafts.
-4. Reuse the persistent `eventId` deduplication pattern proven by NOTIFY-001.
-5. Send one consolidated HTML email to `editor@therugbypanda.ie` containing the five ordered articles and direct review links.
-6. Replay the same event and prove no second email is sent.
-7. Verify the fewer-than-five/failure path reaches `admin@therugbypanda.ie`.
-8. Configure the daily trigger around 07:50–07:55 Europe/Dublin.
-9. Verify five drafts arrive before 08:00 for three consecutive days.
-10. Only then proceed to SOCIAL-001 / Meta delivery.
+1. Create or reopen `AUTO-001 – Morning Editorial Package` in Make.
+2. Capture a real `editorial.daily_package.ready` payload containing five eligible drafts.
+3. Reuse the persistent `eventId` deduplication pattern proven by NOTIFY-001 and NOTIFY-002.
+4. Send one consolidated HTML email to `editor@therugbypanda.ie` containing the five ordered articles and direct review links.
+5. Replay the same event and prove no second email is sent.
+6. Configure the daily trigger around 07:50–07:55 Europe/Dublin.
+7. Complete overnight acquisition/generation so five eligible drafts exist before the package run.
+8. Verify five drafts arrive before 08:00 for three consecutive days.
+9. Only then proceed to SOCIAL-001 / Meta delivery.
 
 ## Dependabot
 
