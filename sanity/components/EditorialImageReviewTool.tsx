@@ -12,6 +12,14 @@ type EditorialImage = {
   imageUrl?: string;
   url?: string;
   assetUrl?: string;
+  team?: string;
+  people?: string[];
+  competitionEvent?: string;
+  eventDate?: string;
+  acquisitionScope?: string;
+  photographer?: string;
+  licence?: string;
+  sourceName?: string;
 };
 
 const NEEDS_REVIEW_QUERY = `*[
@@ -27,6 +35,14 @@ const NEEDS_REVIEW_QUERY = `*[
   thumbnail,
   imageUrl,
   url,
+  team,
+  people,
+  competitionEvent,
+  eventDate,
+  acquisitionScope,
+  photographer,
+  licence,
+  sourceName,
   "assetUrl": image.asset->url
 }`;
 
@@ -37,6 +53,10 @@ function imageSource(image: EditorialImage) {
 function normalisePhotoType(value: EditorialImage["photoType"]) {
   if (Array.isArray(value)) return value.join(", ");
   return value ?? "No photo type";
+}
+
+function contextSummary(image: EditorialImage) {
+  return [image.team, image.people?.join(", "), image.competitionEvent, image.eventDate].filter(Boolean).join(" · ");
 }
 
 export function EditorialImageReviewTool() {
@@ -116,8 +136,8 @@ export function EditorialImageReviewTool() {
     <main style={{ padding: "2rem", display: "grid", gap: "1.5rem" }}>
       <header style={{ display: "grid", gap: "0.5rem" }}>
         <h1 style={{ margin: 0 }}>Editorial Image Review</h1>
-        <p style={{ margin: 0, maxWidth: "760px", color: "#666" }}>
-          Review candidate images in bulk. Approved images become available for editorial use; rejected and archived images leave this review queue.
+        <p style={{ margin: 0, maxWidth: "800px", color: "#666" }}>
+          Review candidate images in bulk. Source, team, people and competition context are shown where acquisition metadata supports them. Approval remains a human editorial and rights decision.
         </p>
       </header>
 
@@ -144,21 +164,21 @@ export function EditorialImageReviewTool() {
       </section>
 
       {message ? <p style={{ margin: 0, color: "#444" }}>{message}</p> : null}
-
       {isLoading ? <p>Loading images…</p> : null}
-
       {!isLoading && images.length === 0 ? <p>No images currently need review.</p> : null}
 
       <section
         style={{
           display: "grid",
-          gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))",
+          gridTemplateColumns: "repeat(auto-fill, minmax(240px, 1fr))",
           gap: "1rem",
         }}
       >
         {images.map((image) => {
           const src = imageSource(image);
           const selected = selectedSet.has(image._id);
+          const context = contextSummary(image);
+          const rights = [image.sourceName, image.photographer, image.licence].filter(Boolean).join(" · ");
 
           return (
             <article
@@ -189,13 +209,15 @@ export function EditorialImageReviewTool() {
               </button>
 
               <div style={{ padding: "0.75rem", display: "grid", gap: "0.35rem" }}>
-                <label style={{ display: "flex", alignItems: "center", gap: "0.5rem", fontWeight: 700 }}>
+                <label style={{ display: "flex", alignItems: "flex-start", gap: "0.5rem", fontWeight: 700 }}>
                   <input type="checkbox" checked={selected} onChange={() => toggleSelected(image._id)} />
                   {image.title ?? "Untitled image"}
                 </label>
                 <small>Status: {image.lifecycleStatus ?? "Candidate"}</small>
-                <small>Category: {image.editorialCategory ?? "No category"}</small>
-                <small>Type: {normalisePhotoType(image.photoType)}</small>
+                <small>Category: {image.editorialCategory ?? "No category"} · Type: {normalisePhotoType(image.photoType)}</small>
+                {image.acquisitionScope ? <small>Acquisition scope: {image.acquisitionScope}</small> : null}
+                {context ? <small>Context: {context}</small> : null}
+                {rights ? <small>Source / rights: {rights}</small> : null}
               </div>
             </article>
           );
