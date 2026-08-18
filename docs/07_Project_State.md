@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-18 August 2026, after PR #177's Editorial Image expansion import workflow completed GREEN and the low useful-image yield was traced to over-broad acquisition plus a relevance-filter bug.
+18 August 2026, after PR #179 merged the precision Editorial Image acquisition fix and its code was verified on READY Vercel preview deployments; production deployment of the merge commit is currently blocked by the Vercel build-rate limit.
 
 ## Source of truth
 
@@ -67,10 +67,11 @@ GitHub source of truth
 - PR #174 merged morning notification suppression, concrete reader-facing generation requirements and direct body editing in Editorial Review.
 - PR #175 merged richer five-story verification packets.
 - PR #176 merged all-source synthesis and fail-closed image relevance; its production deployment is READY, but representative regenerated-story verification remains pending.
-- PR #177 merged the 18 August Apify Editorial Image candidate expansion, source/rights metadata enrichment and the candidate-only import path.
+- PR #177 merged the 18 August Apify Editorial Image candidate expansion, source/rights metadata enrichment and candidate-only import path.
 - After `APIFY_TOKEN` and a rotated replacement `SANITY_API_TOKEN` were configured in GitHub Actions, the `Import Apify Editorial Image Candidates` workflow completed GREEN.
 - The importer used by that run had a hard minimum of 200 genuinely new records after filtering and Sanity deduplication and forced every imported record to `lifecycleStatus=candidate` and `usageApproved=false`.
-- A quick visual review showed that only a minority of the imported results appeared useful enough. The current problem is therefore acquisition precision and review efficiency, not raw candidate volume.
+- A quick visual review showed that only a minority of the imported results appeared useful enough. The current problem is acquisition precision and review efficiency, not raw candidate volume.
+- PR #179 merged as `1e27411884c108448f8398b71af9c6f92af09b09` with the precision acquisition fix. The individual code commits built READY on Vercel preview deployments, but the merge-to-production deployment was refused because the Vercel account hit its build-rate limit. Therefore #179 is merged and preview-build verified, but not production deployed or production verified.
 
 ## Editorial content contract
 
@@ -98,19 +99,25 @@ The first 18 August collection generated 912 raw Openverse records and the subse
 
 The original importer built its relevance text from both source image metadata and `run.query` / `run.scope`. This allowed the search request itself to satisfy its own relevance test. For example, an image returned by a Leinster search could pass a Leinster check because `Leinster` existed in the run metadata even when the image's title/tags/source metadata did not prove a Leinster connection.
 
-### Precision fix implemented on branch
+### Precision fix merged in PR #179
 
-Branch: `media/precision-apify-acquisition-v3`
+PR #179 is merged on `main` as `1e27411884c108448f8398b71af9c6f92af09b09`.
 
-Implemented but not yet merged/deployed:
+Merged implementation:
 
-- relevance proof now uses **source image metadata only**;
+- relevance proof uses **source image metadata only**;
 - acquisition query/scope remain provenance/context only and cannot prove relevance;
 - future run records can carry exact `requiredSignals` which must appear in source metadata;
 - generic high-noise queries are forbidden by policy;
 - `data/editorial-images/acquisition-targets-2026-27.json` provides maintained target entities;
 - `scripts/generate-precision-apify-image-plan.mjs` generates narrow, capped search plans;
 - package command `media:plan-precision-acquisition` generates the plan without spending on Apify.
+
+Deployment state:
+
+- the underlying code commits each produced READY Vercel preview deployments;
+- the merge commit's production deployment is currently blocked by Vercel build-rate limiting;
+- do not call #179 deployed or production verified until a production deployment reaches READY.
 
 ### Coverage policy
 
@@ -125,7 +132,7 @@ Precision acquisition remains broad enough for Rugby Panda coverage:
 - new signings as editorial subjects are identified;
 - professional match/training action and relevant venues only when tied to an exact subject.
 
-The maintained 2026/27 target list reflects the current 16-club URC structure and the 2026 Nations Championship northern/southern participant groups. Current entities should be refreshed from official competition/team sources before future season-wide runs.
+The maintained 2026/27 target list should be refreshed from official competition/team sources before future season-wide runs.
 
 ### Cost-control policy
 
@@ -134,7 +141,8 @@ The maintained 2026/27 target list reflects the current 16-club URC structure an
 - Player/coach searches: normally 4 results.
 - Do not execute every generated query automatically.
 - Run Tier 1 first, measure useful-image yield, then expand only where justified.
-- No further paid Apify image crawl should start until the precision PR is merged and the next small batch is explicitly selected.
+- No further broad paid Apify image crawl should run.
+- The next paid run should be a deliberately small Tier-1 precision sample after #179 is production deployed or after deployment is otherwise confirmed not to affect the acquisition code path.
 
 ### Review model
 
@@ -170,7 +178,7 @@ Merged/deployed but still requiring representative verification:
 
 Still pending:
 
-- precision Editorial Image acquisition merge/build verification;
+- production deployment/verification of #179 after the Vercel build-rate limit clears;
 - small-batch precision-yield verification;
 - AI-led review of the current imported image pool;
 - representative production verification of #176 fail-closed selection;
@@ -193,9 +201,9 @@ The introduction article is live. The minimum launch package still requires at l
 
 ## Immediate priority
 
-1. Merge and verify the precision Editorial Image acquisition fix.
+1. Wait for or retry the Vercel production deployment for PR #179 after the build-rate limit clears, then verify READY.
 2. Do not spend on another broad Apify crawl.
-3. Review the current candidate pool with AI handling clear approve/reject decisions and owner escalation only for uncertainty.
+3. Review the current candidate pool with AI handling clear approve/reject decisions and owner escalation only for uncertainty when the Sanity review connector is available.
 4. Run a deliberately small Tier-1 precision acquisition sample and measure useful-image yield before expansion.
 5. Return to AUTO-004 multi-source regeneration and verify #176 fail-closed image behaviour.
 6. Verify direct body editing, morning notification suppression and exactly one consolidated AUTO-001 package email.
