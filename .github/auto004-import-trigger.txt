@@ -1,5 +1,5 @@
 AUTO-004 controlled production import trigger
-Batch: data/editorial-acquisition/auto004-2026-08-18.json
-Purpose: create five production-eligible Sanity drafts through the protected production editorial API.
+Batch: data/editorial-acquisition/auto004-2026-08-18-enriched.json
+Purpose: regenerate five production-eligible Sanity drafts through the protected production editorial API after Sanity token rotation recovery.
 Date: 2026-08-18
-Trigger attempt: 2
+Trigger attempt: 3
