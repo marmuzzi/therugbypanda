@@ -8,16 +8,12 @@ Original Rugby Panda photography should become the dominant source of imagery ov
 
 ## Public identity and attribution
 
-The user does not want their personal identity exposed publicly.
-
-For original photos uploaded by the user, public attribution must be:
+For original Rugby Panda photos, public attribution must be:
 
 - `Photo: The Rugby Panda`
 - `© The Rugby Panda`
 
-Do not publish the user's personal name as photographer, founder or owner unless the user explicitly changes this decision later.
-
-Internal CMS records may include private operational notes, but public templates must only show The Rugby Panda brand identity.
+Internal CMS records may include private operational notes, but public templates must use The Rugby Panda brand identity.
 
 ## Source classification
 
@@ -25,7 +21,7 @@ Every image must have one source classification:
 
 - `The Rugby Panda Original` — photos taken by The Rugby Panda.
 - `Editorial Partner` — images supplied with explicit permission by clubs, competitions or partners.
-- `Open Licence` — third-party image with licence suitable for the site's intended use.
+- `Open Licence` — third-party image with licence suitable for the site's intended use after review.
 - `Historic Archive` — historical material where rights status has been reviewed and recorded.
 
 Original images always take priority when multiple images fit an article.
@@ -36,40 +32,37 @@ Use this workflow:
 
 1. `Candidate` — image identified but not reviewed.
 2. `Pending Validation` — image selected for review, licence/rights or metadata still being checked.
-3. `Approved` — safe and ready for CMS use.
+3. `Approved` — rights/editorial review completed and safe for CMS use.
 4. `Published` — used on the website.
 5. `Archived` — retained but not recommended for new use.
+6. `Rejected` — unsuitable, irrelevant or rights-ineligible; retained for audit/deduplication but removed from normal review.
+
+Acquisition never implies approval. Automatic article assignment may only use records that have passed the existing approval gate and have an eligible Sanity asset.
 
 ## Required metadata
 
-Every approved image should have:
+Capture as much of the following as the source exposes for every candidate, and complete the required publication metadata during review:
 
-- title
-- alt text
-- caption
-- public credit
-- copyright line
-- source classification
-- source URL, when applicable
-- original landing page URL, when applicable
-- creator, when applicable
-- creator URL, when applicable
-- licence, when applicable
-- licence URL, when applicable
-- attribution text, when applicable
-- editorial category
-- photo type
-- tags
-- search keywords
-- orientation
-- editorial rating
-- editorial value
-- suggested use
+- title / source page title
+- direct image URL
+- source / landing-page URL
+- source organisation/provider
+- alt text or source caption where available
+- photographer / creator and creator URL
+- licence, licence URL, attribution and rights/copyright wording
+- team / squad
+- named players or coaches pictured when identifiable from metadata
+- competition / event
+- event date when reliably available
+- editorial category and photo type
+- suggested editorial use
+- source record ID, Apify run ID and dataset ID
 - lifecycle status
+- usage-approved flag
+
+Approved images should additionally have publication-ready alt text, caption, public credit and copyright line.
 
 ## Editorial categories
-
-Use these categories for media organisation:
 
 - International
 - Club Rugby
@@ -83,37 +76,11 @@ Use these categories for media organisation:
 - Training
 - Equipment
 
-Public website category naming decision:
-
-- Use `International`, not `Europe`.
+Public website category naming decision: use `International`, not `Europe`.
 
 ## Photo types
 
-Useful photo type tags include:
-
-- action
-- stadium
-- crowd
-- supporter culture
-- rugby ball
-- goalposts
-- corner flag
-- boots
-- lineout
-- scrum
-- tackle
-- ruck
-- maul
-- kick
-- try
-- celebration
-- national anthem
-- team photo
-- portrait
-- training
-- referee
-- behind the scenes
-- historical
+Useful photo types include action, stadium, crowd, supporter culture, rugby ball, goalposts, corner flag, boots, lineout, scrum, tackle, ruck, maul, kick, try, celebration, national anthem, team photo, portrait, training, referee, behind the scenes and historical.
 
 ## Editorial rating
 
@@ -129,64 +96,81 @@ Use a 1 to 5 rating:
 
 Use one of:
 
-- `Evergreen` — reusable for years.
-- `Seasonal` — useful for a season, competition or campaign.
-- `Historical` — useful because of archive or historical context.
-- `Exclusive` — original Rugby Panda asset with unique brand value.
+- `Evergreen`
+- `Seasonal`
+- `Historical`
+- `Exclusive`
 
 ## Suggested use
 
-An image can have multiple suggested uses:
-
-- hero image
-- article header
-- homepage card
-- category banner
-- gallery
-- social media
-- evergreen fallback
-- archive only
+An image can have multiple suggested uses: hero image, article header, homepage card, category banner, gallery, social media, evergreen fallback or archive only.
 
 ## Current original Rugby Panda image review
 
-The user uploaded two batches of original rugby photos in chat. All uploaded photos were taken by The Rugby Panda.
+The strongest original categories already include international rugby, Aviva Stadium, Ireland match atmosphere, stadium panorama, national anthems, historical Irish rugby context, veterans rugby, grassroots/amateur rugby, rugby culture, ball/corner-flag imagery, night matches, sideline details and team photos.
 
-Observed categories in the uploaded batches:
+Original Rugby Panda assets remain preferred wherever they are genuinely relevant to the article subject.
 
+## External candidate acquisition — 18 August 2026
+
+A new Apify/Openverse collection was executed on 18 August 2026 using `shahidirfan/OpenVerse-Image-Scraper`.
+
+Collection goals:
+
+- Leinster Rugby
+- Munster Rugby
+- Ulster Rugby
+- Connacht Rugby
+- Ireland Men
+- Ireland Women
+- named players and coaches
+- URC
+- Champions Cup / Challenge Cup
 - international rugby
-- Aviva Stadium
-- Ireland match atmosphere
-- Ireland vs Italy lineout
-- stadium panorama
-- national anthems
-- Brian O'Driscoll tribute / historical Irish rugby context
-- veterans rugby
-- Sevilla veterans rugby ball
-- grassroots or amateur rugby
-- rugby culture and pub/supporter atmosphere
-- corner flag and ball
-- night match
-- sideline and behind-the-scenes details
-- team photos
+- professional match action
+- training
+- stadiums and relevant venues
 
-Current review summary:
+The acquisition manifest is stored at:
 
-- 20+ original images reviewed visually.
-- 8 hero-quality images identified.
-- 5 evergreen images identified.
-- The strongest generic/evergreen images include rugby ball, corner flag, stadium panorama, team atmosphere and behind-the-scenes equipment shots.
+`data/editorial-images/apify-collection-2026-08-18.json`
 
-## Starter external image library
+Raw collection result:
 
-Target: 100 approved starter images.
+- 32 recorded Apify runs
+- 912 raw records before relevance, file-type and duplicate filtering
+- deliberately over-collected so the project does not satisfy the 200-candidate target with irrelevant imagery
 
-Current tracker from chat-based discovery:
+Strongest observed source sets include:
 
-- Candidates found: 27
-- Pending licence validation: 26
-- Verified and ready: 1 / 100
+- 2025 Ireland Women Rugby World Cup match photographs with named players and fixture/date context
+- Irish province match/action/player material
+- Ireland player and Rugby World Cup archive photographs
+- Aviva Stadium and other relevant venue imagery
+- European competition and international rugby photographs
 
-Important: all external candidates must be revalidated before import into Sanity. Do not rely on chat memory alone.
+Raw results are **not** the candidate count and are **not** approved. The maintained importer must filter and deduplicate them and must create at least 200 genuinely new `editorialImage` records with `lifecycleStatus = candidate` and `usageApproved = false` before this acquisition milestone is considered complete.
+
+## Apify import safety contract
+
+The maintained importer is `scripts/import-apify-editorial-image-candidates.mjs`.
+
+It must:
+
+1. fetch the recorded Apify datasets;
+2. accept only preferred open-licence identifiers (`cc0`, `pdm`, `by`, `by-sa`);
+3. reject obvious non-photo/noise results such as SVGs, kits, flags, livery, school/youth noise and irrelevant records;
+4. reject tiny assets where dimensions are available;
+5. deduplicate by source record ID, direct image URL and landing-page URL;
+6. deduplicate against existing Sanity Editorial Images;
+7. preserve source, creator, licence, attribution, run/dataset IDs and editorial subject context;
+8. create candidate-only records in the existing `editorialImage` collection;
+9. never set `usageApproved` to true;
+10. never download or hotlink an unreviewed third-party image into public templates.
+
+The importer is designed to fail rather than report success if fewer than 200 genuinely new candidates remain after filtering/Sanity deduplication.
+
+## Rights policy
 
 Preferred approval licences:
 
@@ -195,12 +179,14 @@ Preferred approval licences:
 - `by`
 - `by-sa`
 
-Avoid:
+Avoid or reject:
 
 - non-commercial licences
 - no-derivatives images for hero/article use
 - agency photos without a commercial licence
 - unknown or unclear rights status
+
+Openverse licence metadata is evidence for review, not an automatic approval decision. Third-party photographs still require human rights/editorial validation before publication.
 
 ## Acquisition sources
 
@@ -210,92 +196,38 @@ Preferred sources for external candidates:
 2. Wikimedia Commons.
 3. Other reputable archives with clear rights metadata.
 
-Google Images may be used only for discovery. It must never be treated as automatic approval.
+Google Images may be used only for discovery and must never be treated as automatic approval.
 
-## Apify strategy
+## Editorial relevance policy
 
-When Apify is available, use it to collect structured image candidates, then validate and enrich them before CMS import.
+Article imagery is relevance-first and fail-closed.
 
-Recommended actors discussed:
+- Province mismatches are invalid.
+- An unrelated approved image must not be used merely because it exists.
+- Team/player/fixture/competition/venue matches are preferred.
+- Amateur/veterans images such as Ageing Pandas are not valid fallbacks for professional province or national-team stories.
+- If no relevant approved asset exists, the article should have no automatically assigned image.
 
-1. `shahidirfan/OpenVerse-Image-Scraper`
-2. `parseforge/openverse-media-scraper`
-3. `parseforge/wikimedia-commons-media-scraper`
-4. `solidcode/google-images-scraper` only for discovery, never automatic approval
+The expanded candidate pool improves the probability of a relevant match; it does not weaken this rule.
 
-Recommended initial search themes:
+## Review workflow
 
-- rugby
-- rugby union
-- rugby stadium
-- rugby ball
-- rugby posts
-- grassroots rugby
-- women's rugby
-- rugby training
-- rugby referee
-- rugby supporters
+New Apify records feed the existing Sanity `Editorial Images` / `Image Review` workflow. Candidate cards expose team/people/competition/source/licence context where available so rights and editorial relevance can be reviewed together.
 
-Minimum fields required before approval:
-
-- title
-- image URL
-- source URL
-- original landing page URL
-- creator
-- creator URL
-- licence
-- licence URL
-- attribution
-- dimensions when available
-- usage approved flag
-
-## Future CMS feature: Media Acquisition page
-
-Planned future workflow:
-
-1. Search candidate images.
-2. Review licence and attribution.
-3. Generate metadata.
-4. Score editorial quality.
-5. Detect duplicates or near-duplicates.
-6. Suggest crops for homepage, article hero, mobile and social.
-7. Approve into Sanity.
-8. Make images searchable and reusable across articles.
-
-The CMS should eventually suggest images automatically based on article metadata. For example, an article tagged `Ireland` and `International` should surface Aviva Stadium, Ireland atmosphere or relevant original Rugby Panda images first.
+Bulk approval remains a human action. The import pipeline never approves records itself.
 
 ## Wanted image list
 
-Use this list to guide both external sourcing and future match photography.
+High priority after this collection:
 
-High priority:
+- current Leinster/Munster/Ulster/Connacht players and coaches
+- current Ireland Men players and coaches
+- new 2026/27 signings
+- current URC and European competition action
+- training sessions
+- trophy presentations
 
-- women's rugby action
-- referee / match official close-up
-- trophy presentation
-- training session
-- youth/schools rugby
-- grassroots coaching
-
-Medium priority:
-
-- floodlit stadium
-- empty pitch
-- rugby boots
-- goalposts
-- crowd/supporters
-- clubhouse/pub culture
-
-Already started through original images:
-
-- rugby ball
-- corner flag
-- Aviva Stadium
-- international match atmosphere
-- veterans rugby
-- grassroots atmosphere
-- behind-the-scenes details
+The 2025 Ireland Women Rugby World Cup set substantially improves women's-rugby coverage but still requires rights/editorial review.
 
 ## Long-term milestones
 

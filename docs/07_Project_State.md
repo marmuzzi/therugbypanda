@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-17 August 2026, after AUTO-004 production eligibility protection and NOTIFY-003 technical-alert deduplication were production verified.
+18 August 2026, after PR #176 reached a READY production deployment and the 200+ Editorial Image candidate expansion was implemented from a 912-record Apify/Openverse collection.
 
 ## Source of truth
 
@@ -25,9 +25,11 @@ Read first in future sessions:
 11. `docs/34_2026-07-29_Automation_Handoff.md`
 12. `docs/36_2026-08-17_AUTO-001_Production_Verification.md`
 13. `docs/37_2026-08-17_AUTO-004_NOTIF-003_Verification.md`
-14. all newer numbered handoff, automation, Sprint, launch and FinOps documents relevant to the task.
+14. `docs/38_2026-08-17_End_of_Session_Handoff.md`
+15. `docs/39_2026-08-18_AUTO-004_Multisource_Image_Handoff.md`
+16. all newer numbered handoff, automation, media, Sprint, launch and FinOps documents relevant to the task.
 
-Where an older historical document conflicts with this reconciled state or a later approved contract, the newer reconciled state wins. Do not rely on chat history for current status.
+Where older documentation conflicts with a later reconciled state or handoff, the newer document wins. Do not use chat history as the current source of truth.
 
 ## Operating context
 
@@ -36,162 +38,122 @@ Where an older historical document conflicts with this reconciled state or a lat
 - Daily target: five review-ready drafts and one consolidated editorial email.
 - GitHub is the source of truth for versioned project state.
 - Sanity is the canonical CMS and mandatory human approval boundary.
-- No acquired or AI-generated content is automatically approved or published.
-- Original Rugby Panda photography is the preferred image source.
-- Third-party photographs require documented rights or explicit permission.
+- No acquired or generated article/image is automatically approved or published.
+- Original Rugby Panda photography is preferred.
+- Third-party photographs require documented rights or explicit permission before public use.
 
 ## Architecture
 
 ```text
 GitHub source of truth
 → Make.com orchestration
-→ Apify acquisition
-→ Editorial Brain and OpenAI generation
+→ Apify multi-source acquisition
+→ Editorial Brain and structured generation
+→ relevant rights-approved Editorial Image assignment
 → Sanity canonical CMS and human editorial review
 → Vercel public website
 → Meta social distribution only after controlled publication
 ```
 
-## Reconciled live baseline — 17 August 2026
+## Reconciled live baseline — 18 August 2026
 
-- Production is healthy on Vercel.
-- `https://therugbypanda.ie` renders the launch introduction as the lead article.
-- The live top-level navigation is News, Provinces, URC, International and About.
-- The live homepage currently has no additional published newsroom articles beneath the introduction.
-- Direct Sanity production read access is available from the current chat environment.
-- GitHub and Vercel are directly connected. Apify is directly available. The current Make project connector supports health checking but not scenario editing. No direct Meta/Facebook/Instagram project connector is currently exposed in chat.
-- NOTIFY-001, NOTIFY-002, NOTIFY-003 and the AUTO-001 delivery path are production verified.
-- AUTO-004 now blocks controlled-QA/test drafts from production morning packages; five-current-story diversity verification remains pending.
-- Make.com Core is active at the recorded confirmed cost of USD $10.59/month.
+- Production reader site is healthy on Vercel.
+- `https://therugbypanda.ie` remains live with the launch introduction as lead article.
+- AUTO-001 consolidated five-article delivery, NOTIFY-001, NOTIFY-002 and NOTIFY-003 are production verified.
+- AUTO-004 production eligibility/diversity guard is production verified and excludes QA/test drafts.
+- A controlled AUTO-004 import successfully created five current production drafts after GitHub/Vercel secret alignment and the Sanity province-taxonomy fix in PR #173.
+- PR #174 merged as `acac0fab15fd208a3609ca8eeac6ea70509c9e7d` and fixes morning notification suppression, concrete reader-facing generation requirements and direct body editing in Editorial Review.
+- PR #175 merged as `11a0adac765b6d4050dc67cd772d23b420d4e396` with richer controlled five-story source packets for verification.
+- PR #176 merged as `1470df4d9cf5ca0111a0fe1402742ac400b42440`. Its Vercel production deployment is now READY. Representative regenerated-story verification is still required before calling the new synthesis/image-selection behaviour production verified.
+- The existing five AUTO-004 drafts pre-date #176 and still contain some historical image assignments, so they are not valid evidence for or against the new fail-closed selector.
+- Apify is available and was used on 18 August for the explicit image-candidate expansion task.
 
-## Editorial production state
+## Editorial content contract
 
-Implemented, merged and deployed capabilities include Editorial Brain classification/scoring and source-linked fact ledger; OpenAI structured generation and protected Sanity draft creation; approved Editorial Image assignment; protected approve/reject/publish/discard transitions; authenticated Sanity Editorial Review; deterministic quality gates; on-demand AI review; real Sanity-backed website search; daily-package application foundation; explicit morning-package production eligibility; package-level source/topic/angle diversity filtering; and post-publication social event/Sanity-field foundation.
+A Rugby Panda article must be an original synthesis, not a rewrite of one source.
 
-The editorial experience is deliberately simple:
+For each story, acquisition should deliberately build a multi-source evidence pack. Use official/primary sources for hard facts and reputable secondary reporting for additional context, interviews, analysis and useful colour. Reconcile conflicts conservatively and preserve source traceability. Generated copy should add Rugby Panda editorial value and avoid close paraphrasing.
 
-```text
-Draft
-→ human review / edit
-→ Publish
-```
+Where evidence supports it, articles should name relevant players, coaches, new signings and selection battles, and explain what supporters should watch for. Reader-facing copy must not explain internal sourcing rules, confidence ledgers, AI/process mechanics or why speculation is being handled in a particular way.
 
-There is no separate `ready for review` approval gate.
+## Editorial image contract
 
-## NOTIFY-001 — complete
+Automatic image assignment is relevance-first and fail-closed.
 
-`NOTIFY-001 – New Draft Notification` is closed and production verified.
+- A province mismatch is not an acceptable fallback.
+- Generic or unrelated approved imagery must not be assigned merely because no better image exists.
+- The image should match the article subject through team, named person, fixture/event, competition or venue where possible.
+- If no sufficiently relevant approved image exists, leave the article without an automatically assigned image.
+- Ageing Pandas/amateur-veterans imagery must never illustrate a professional province/national-team story unless the story is actually about that team/event.
 
-```text
-Editorial generation
-→ Sanity draft
-→ editorial.article.draft_created
-→ Make webhook
-→ persistent eventId duplicate check
-→ email to editor@therugbypanda.ie
-→ successful event record
-```
+## Editorial Image candidate expansion — current state
 
-Verified behaviour includes successful controlled generation, correct email delivery, a working Sanity draft deep link, persistent `eventId` storage and duplicate replay protection with no second email.
+Apify/Openverse acquisition on 18 August produced 912 raw records across 32 recorded runs covering the requested province, national-team, European competition, international, match-action, training and venue scopes.
 
-## NOTIFY-002 / NOTIFY-003 — complete
+The raw result count is deliberately not treated as the candidate count. On branch `media/2026-08-18-apify-image-candidates` the project now has:
 
-`NOTIFY-002 - Technical Alerts` is the production-verified Make scenario for technical alerts. NOTIFY-003 fixed the application-side deduplication identity and status semantics.
+- a versioned Apify run/dataset manifest at `data/editorial-images/apify-collection-2026-08-18.json`;
+- `scripts/import-apify-editorial-image-candidates.mjs`, which filters licence/file/noise/relevance problems and deduplicates source records plus existing Sanity entries;
+- a hard minimum of 200 genuinely new candidates before the importer can report success;
+- candidate-only import semantics: `lifecycleStatus = candidate`, `usageApproved = false`;
+- enriched Editorial Image fields for source page, creator, team, named people, competition/event, event date and acquisition provenance;
+- Image Review cards that surface subject and rights context during human review.
 
-Different daily-package failure types now receive distinct stable daily event IDs, while exact retries of the same failure type reuse the same key. When Make returns 2xx, the application reports `technicalAlertStatus: accepted` rather than falsely claiming the email was definitely sent.
+The collection milestone is **implemented but not yet complete** until the branch is merged, its import workflow succeeds, and a Sanity query verifies at least 200 genuinely new candidate-only records. No acquired image becomes approved automatically.
 
-Production verification on 17 August 2026 proved:
+## AUTO-004 — current state
 
-- the first `insufficient-production-eligible-diverse-content` failure delivered exactly one email to `admin@therugbypanda.ie`;
-- repeating the identical production call returned the same 409 failure but delivered no second email because Make deduplicated it;
-- the temporary Preview-only verifier was removed from its unmerged test branch.
+AUTO-004 remains In Progress.
 
-## AUTO-001 — Morning Editorial Package delivery complete
+Verified:
 
-`AUTO-001 – Morning Editorial Package` is production verified as a delivery receiver.
+- QA/test exclusion from production packages;
+- explicit production eligibility metadata;
+- source/topic/angle package diversity guard;
+- reusable controlled acquisition-batch import path;
+- GitHub/Vercel production authentication path after secret rotation;
+- correct Sanity province taxonomy mapping;
+- first controlled five-current-story draft import.
 
-Final topology:
+Merged/deployed but still requiring representative verification:
 
-```text
-Production POST /api/editorial/daily-package
-→ editorial.daily_package.ready
-→ Make custom webhook
-→ Rugby Panda Event Deduplication: check eventId
-→ filter: New package only / Exists = false
-→ one consolidated HTML email to editor@therugbypanda.ie
-→ Rugby Panda Event Deduplication: persist successful package
-```
+- one consolidated morning notification instead of five per-draft emails (#174);
+- concrete, player-aware, supporter-focused copy with no internal process language (#174);
+- direct article-body editing in Editorial Review (#174);
+- deliberate multi-source synthesis across all source records (#176);
+- fail-closed relevant image selection (#176).
 
-Verification completed on 17 August 2026:
+Still pending:
 
-- a controlled five-article Make payload delivered one correctly formatted consolidated email;
-- duplicate replay of the same `eventId` was blocked with zero second-email operations and zero second success-record writes;
-- the AUTO-001 webhook was rotated before production use and stored in Vercel as `EDITORIAL_DAILY_PACKAGE_WEBHOOK_URL`;
-- PR #153 corrected package review links to the verified Sanity intent-route format and merged as `4f6d0bd721ce1ddeaedaa48857dfdf9ed652f252`;
-- production was explicitly redeployed after the environment-variable update;
-- the real production endpoint returned HTTP 200 with `status: sent`, `eventId: editorial-daily-package:2026-08-17`, `articleCount: 5` and destination `editor@therugbypanda.ie`;
-- Vercel runtime logs confirmed `POST /api/editorial/daily-package 200` on production;
-- the five-article email arrived at `editor@therugbypanda.ie`;
-- a `Review in Sanity` link opened the exact corresponding draft in hosted Sanity Studio.
+- merge/deploy/import verification for the 200+ Editorial Image candidate expansion;
+- representative production verification of #176 fail-closed selection;
+- multi-source acquisition packs for the five representative stories;
+- regeneration and editorial inspection of those five stories;
+- authenticated Sanity Studio verification of body editing and expanded Image Review;
+- exactly one consolidated AUTO-001 email for the regenerated five-story package.
 
-The package endpoint packages eligible Sanity drafts; it does not perform overnight acquisition or generation.
+## AUTO-003 — remaining morning orchestration
 
-## AUTO-004 — production eligibility guard verified; distinct production content still pending
+After AUTO-004 quality is verified:
 
-The original AUTO-001 production test exposed five historical `article-controlled-qa-*` drafts, all covering essentially the same World Rugby Law 8 scoring angle.
-
-PR #156 implemented the first production remediation:
-
-- generated drafts now carry explicit `automationContentClass` and `morningPackageEligible` metadata;
-- QA-mode drafts are classified as QA and marked ineligible;
-- normal production drafts are classified as production and eligible;
-- the daily-package query requires production classification and explicit eligibility;
-- the selector checks a larger candidate pool and rejects same-source or materially similar title/angle/source candidates.
-
-PR #156 merged as `d1f651726987fda2c2f36ac9d07b7d7d6fb93eea` and deployed successfully. A real protected production call then returned HTTP 409 with `articleCount: 0`, `eligibleCandidateCount: 0`, and reason `insufficient-production-eligible-diverse-content`, proving historical QA content is excluded.
-
-AUTO-004 remains open because the second half still needs verification: acquisition/generation must produce at least five current, production-eligible, genuinely distinct rugby stories and successfully deliver them through AUTO-001.
-
-## AUTO-003 — remaining morning scheduling/orchestration work
-
-The delivery receiver and eligibility guard are verified, but the complete unattended morning operation is not yet complete. Remaining work:
-
-1. complete persistent overnight acquisition/generation so five eligible current drafts exist before package time;
-2. verify five genuinely distinct current stories under AUTO-004;
-3. configure and verify the scheduled invocation around 07:50–07:55 Europe/Dublin;
-4. verify retries/failure handling around the scheduled invocation;
-5. deliver five eligible, editorially distinct review-ready drafts before 08:00 for three consecutive days.
-
-## SOCIAL-001 — foundation only
-
-The application-side social-distribution contract is merged and deployed, but Facebook/Instagram publishing is not Meta/Make production verified. Social distribution may run only after deliberate controlled website publication, must respect the Sanity opt-out, require a usable image, deduplicate on `eventId`, record platform results back to Sanity and never roll back successful website publication.
-
-## Dependabot maintenance state
-
-- PR #146 is open and its Vercel Preview is READY. It contains major production-dependency upgrades and requires deliberate regression testing before merge.
-- PR #147 is open and its Vercel Preview is ERROR because TypeScript 7.0.2 is incompatible with the current Next.js compiler-API expectations. Do not merge #147 as-is.
-- Neither Dependabot PR affects production.
-
-## Reader taxonomy
-
-Current approved reader navigation is News, Provinces, URC, International and About. Ireland remains article/editorial metadata. Opinion, analysis, column and notebook are formats rather than top-level coverage sections. Europe is covered within International unless a later evidence-based decision changes this.
+1. complete persistent overnight multi-source acquisition/generation;
+2. configure and verify scheduled invocation around 07:50–07:55 Europe/Dublin;
+3. verify retry/failure handling through the technical-alert path;
+4. deliver five eligible, distinct, review-ready drafts before 08:00 for three consecutive days.
 
 ## Launch state
 
-The introduction article is live and is the homepage lead. The minimum launch package still requires at least eight additional reviewed, image-backed articles covering recent internationals and all four Irish provinces, followed by production verification of homepage, news/category and article routes.
-
-## FinOps
-
-Make.com Core is active from 30 July 2026 at the recorded confirmed cost of USD $10.59/month. The old Free-plan two-active-scenario limitation is obsolete. See `docs/35_FinOps_Budget_and_Cost_Register.md`.
+The introduction article is live. The minimum launch package still requires at least eight additional reviewed, image-backed articles covering recent internationals and all four Irish provinces, followed by production verification of homepage, News/category and article routes.
 
 ## Immediate priority
 
-1. Complete AUTO-004 by producing and delivering five genuinely distinct current production rugby stories.
-2. Complete overnight acquisition/generation so those five drafts exist before package time.
-3. Configure and verify the 07:50–07:55 Europe/Dublin daily trigger under AUTO-003.
-4. Complete three consecutive on-time morning deliveries before 08:00.
-5. Complete the remaining launch-content package and production verification.
-6. Begin SOCIAL-001 only after editorial automation is stable.
+1. Merge/deploy the Editorial Image expansion and verify at least 200 genuinely new candidate-only records in Sanity.
+2. Verify the expanded authenticated Image Review queue and preserve the human rights/editorial approval boundary.
+3. Build multi-source evidence packs and regenerate the five AUTO-004 stories.
+4. Verify #176 fail-closed image behaviour with representative province/national stories.
+5. Verify editorial quality, direct body editing and suppression of five individual morning draft emails.
+6. Run AUTO-001 and verify exactly one consolidated five-article email.
+7. Complete AUTO-004, then finish AUTO-003 scheduling and three-day verification.
 
 ## Completion rule
 
@@ -202,8 +164,8 @@ Always distinguish implemented, committed, PR opened, merged, deployed, verified
 - Prefer maintainable reusable components.
 - Keep `main` deployable.
 - Keep `docs/08_Issue_Log.md` current.
-- Batch related work where practical to conserve deployments.
+- Batch related changes where practical to conserve deployments.
 - Keep separate Make scenarios focused on one responsibility.
-- Do not expose AI implementation references on reader-facing pages.
+- Do not expose internal AI/process references on reader-facing pages.
 - Do not publish third-party photographs without documented rights.
-- Do not use external candidate-logo URLs in public templates.
+- Do not hotlink unreviewed external image candidates into public templates.
