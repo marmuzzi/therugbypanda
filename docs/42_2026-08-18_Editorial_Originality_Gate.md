@@ -18,14 +18,19 @@ For every generated article:
 
 ## Fail-closed implementation
 
-`lib/editorial/OriginalityGuard.ts` now performs a deterministic overlap check before a generated article can be returned to the draft writer.
+`lib/editorial/OriginalityGuard.ts` performs a deterministic overlap check before a generated article can be returned to the draft writer.
 
-The guard compares the generated headline, standfirst, key points and article body against each source record's title, excerpt and, when available, full `bodyText`.
+The guard compares the generated headline, standfirst, key points and article body against:
+
+- each structured source record's title, excerpt and, when available, full `bodyText`; and
+- the raw acquired story material supplied to generation (`story.title`, `story.summary` and `story.bodyText`).
+
+The second comparison is important because raw acquisition text may contain prose that is sent to the generator but is not duplicated inside a structured source record. No source prose supplied to generation should bypass the originality check merely because it arrived through a different field.
 
 A draft is rejected when either of these safety thresholds is breached:
 
-1. more than 11 consecutive normalized words are shared with one source; or
-2. for a source with enough text, more than 28% of its six-word sequences appear in the generated article with at least three matching six-word sequences.
+1. more than 11 consecutive normalized words are shared with one protected source text; or
+2. for a protected source with enough text, more than 28% of its six-word sequences appear in the generated article with at least three matching six-word sequences.
 
 These are protective engineering thresholds, not a legal definition of plagiarism. They deliberately fail closed and should be tightened if production review shows that they allow source-shaped writing.
 
@@ -33,7 +38,7 @@ If the originality guard rejects a draft, the pipeline throws before the Sanity 
 
 ## Generator instructions
 
-`OpenAIArticleGenerator.ts` now explicitly requires independent composition and prohibits:
+`OpenAIArticleGenerator.ts` explicitly requires independent composition and prohibits:
 
 - rewriting or lightly paraphrasing a source article;
 - copying source sentences;
@@ -44,7 +49,7 @@ The deterministic gate is separate from these prompt instructions so the safety 
 
 ## Acquisition requirement
 
-`SourceRecord` now supports optional `bodyText`. Future acquisition should capture the useful article text for every source where technically and legally appropriate, so originality comparison is not limited to headlines/excerpts.
+`SourceRecord` supports optional `bodyText`. Future acquisition should capture the useful article text for every source where technically and legally appropriate, so originality comparison is not limited to headlines/excerpts.
 
 The preferred evidence pack for a story is:
 
@@ -59,11 +64,13 @@ Multiple URLs from the same club or union do not by themselves satisfy the proje
 
 The successful enriched five-story run after the Sanity token recovery proved that all five drafts could be generated and written with package-mode notification suppression. Review of the evidence pack then showed a remaining gap: each story still relied predominantly on multiple records from the same official publisher.
 
-A new controlled verification batch, `data/editorial-acquisition/auto004-2026-08-18-independent.json`, adds genuinely independent publishers to each of the five representative stories while keeping the same stable candidate IDs so the regenerated Sanity drafts replace the previous versions.
+PR #183 introduced the independent-source verification batch and first fail-closed originality guard. Post-merge Codex review identified a P1 gap: raw `story.bodyText` could be supplied to generation without being included in the deterministic comparison. The follow-up fix now protects all raw story material (`title`, `summary`, `bodyText`) as an additional originality source.
+
+A new controlled verification batch, `data/editorial-acquisition/auto004-2026-08-18-independent.json`, adds genuinely independent publishers to each of the five representative stories while keeping the same stable candidate IDs so regenerated Sanity drafts replace the previous versions.
 
 Do not treat EDIT-002/AUTO-004 as production-verified until:
 
-1. the originality gate is merged and deployed;
+1. the originality gate including raw story material is merged and deployed;
 2. the independent-source batch regenerates successfully;
 3. the generated text passes the deterministic originality gate;
 4. editorial inspection confirms the articles are materially independent compositions rather than source-shaped paraphrases;
