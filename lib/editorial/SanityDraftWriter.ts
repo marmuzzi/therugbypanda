@@ -45,6 +45,9 @@ type SanityTaxonomyTarget = {
 };
 
 const PROVINCE_CATEGORIES = new Set<EditorialCategory>(["Leinster", "Munster", "Ulster", "Connacht"]);
+const PROVINCE_TERMS = ["leinster", "munster", "ulster", "connacht"] as const;
+const GENERIC_IMAGE_TERMS = ["rugby panda", "panda logo", "brand logo", "newsroom logo", "the rugby panda"];
+const MIN_AUTOMATIC_IMAGE_RELEVANCE_SCORE = 8;
 
 function taxonomyForEditorialCategory(category: EditorialCategory): SanityTaxonomyTarget {
   if (PROVINCE_CATEGORIES.has(category)) {
@@ -107,7 +110,6 @@ export async function validateSanityConnectivity(editorialCategory: EditorialCat
 }
 
 const APPROVED_IMAGE_PROJECTION = `_id,title,altText,caption,editorialCategory,photoType,suggestedUse,publicCredit,creditLine,photographer,copyrightLine,copyright,source,sourceName,rightsNotes,image`;
-const GENERIC_IMAGE_TERMS = ["rugby panda", "panda logo", "brand logo", "newsroom logo", "the rugby panda"];
 
 function imageSearchText(image: ApprovedEditorialImage): string {
   return [
@@ -131,18 +133,30 @@ function stableHash(value: string): number {
   return hash;
 }
 
+function imageHasConflictingProvince(image: ApprovedEditorialImage, storyText: string): boolean {
+  const haystack = imageSearchText(image);
+  const storyProvince = PROVINCE_TERMS.find((province) => storyText.includes(province));
+  if (!storyProvince) return false;
+  const imageProvinces = PROVINCE_TERMS.filter((province) => haystack.includes(province));
+  return imageProvinces.length > 0 && !imageProvinces.includes(storyProvince);
+}
+
 function imageRelevanceScore(image: ApprovedEditorialImage, searchTerms: string[], storyText: string): number {
   const haystack = imageSearchText(image);
+  if (imageHasConflictingProvince(image, storyText)) return Number.NEGATIVE_INFINITY;
+
   const uniqueTerms = [...new Set(searchTerms)];
   const termScore = uniqueTerms.reduce((score, term) => {
     if (term.length < 3 || !haystack.includes(term)) return score;
     return score + (term.length >= 7 ? 5 : term.length >= 5 ? 3 : 2);
   }, 0);
   const useScore = image.suggestedUse?.some((use) => use === "hero-image" || use === "article-header") ? 4 : 0;
+  const provinceBonus = PROVINCE_TERMS.some((province) => storyText.includes(province) && haystack.includes(province)) ? 18 : 0;
+  const irelandBonus = storyText.includes("ireland") && haystack.includes("ireland") ? 12 : 0;
   const genericImage = GENERIC_IMAGE_TERMS.some((term) => haystack.includes(term));
   const storyIsAboutBrand = GENERIC_IMAGE_TERMS.some((term) => storyText.includes(term));
-  const genericPenalty = genericImage && !storyIsAboutBrand ? 12 : 0;
-  return termScore + useScore - genericPenalty;
+  const genericPenalty = genericImage && !storyIsAboutBrand ? 30 : 0;
+  return termScore + useScore + provinceBonus + irelandBonus - genericPenalty;
 }
 
 async function fetchApprovedEditorialImage(
@@ -161,7 +175,7 @@ async function fetchApprovedEditorialImage(
   }
 
   const images = await writeClient.fetch<ApprovedEditorialImage[]>(
-    `*[_type == "editorialImage" && !(_id in path("drafts.**")) && usageApproved == true && lifecycleStatus in ["approved", "published"] && defined(image.asset._ref)] | order(_updatedAt desc)[0...100]{${APPROVED_IMAGE_PROJECTION}}`,
+    `*[_type == "editorialImage" && !(_id in path("drafts.**")) && usageApproved == true && lifecycleStatus in ["approved", "published"] && defined(image.asset._ref)] | order(_updatedAt desc)[0...200]{${APPROVED_IMAGE_PROJECTION}}`,
   );
   if (images.length === 0) return undefined;
 
@@ -171,6 +185,7 @@ async function fetchApprovedEditorialImage(
     pkg.editorial.category,
     pkg.editorial.storyType,
     pkg.editorial.brief.angle,
+    pkg.editorial.sourceRecords.map((source) => `${source.publisher} ${source.title ?? ""}`).join(" "),
   ]
     .join(" ")
     .toLowerCase();
@@ -180,11 +195,23 @@ async function fetchApprovedEditorialImage(
 
   const ranked = images
     .map((image) => ({ image, score: imageRelevanceScore(image, searchTerms, storyText) }))
+    .filter((candidate) => Number.isFinite(candidate.score))
     .sort((left, right) => right.score - left.score);
-  const bestScore = ranked[0]?.score ?? 0;
-  const relevantPool = ranked.filter((candidate) => candidate.score >= bestScore - 2).slice(0, 8);
-  const pool = relevantPool.length ? relevantPool : ranked.slice(0, 8);
-  return pool[stableHash(`${pkg.article.title}|${pkg.editorial.inputId}`) % pool.length]?.image;
+
+  const bestScore = ranked[0]?.score ?? Number.NEGATIVE_INFINITY;
+  if (bestScore < MIN_AUTOMATIC_IMAGE_RELEVANCE_SCORE) {
+    console.info("No sufficiently relevant approved Editorial Image found", {
+      inputId: pkg.editorial.inputId,
+      category: pkg.editorial.category,
+      bestScore: Number.isFinite(bestScore) ? bestScore : null,
+    });
+    return undefined;
+  }
+
+  const relevantPool = ranked
+    .filter((candidate) => candidate.score >= MIN_AUTOMATIC_IMAGE_RELEVANCE_SCORE && candidate.score >= bestScore - 2)
+    .slice(0, 8);
+  return relevantPool[stableHash(`${pkg.article.title}|${pkg.editorial.inputId}`) % relevantPool.length]?.image;
 }
 
 function toFeaturedImage(editorialImage: ApprovedEditorialImage) {
