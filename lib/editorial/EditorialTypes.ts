@@ -36,6 +36,7 @@ export interface SourceRecord {
   publishedAt?: string;
   retrievedAt: string;
   excerpt?: string;
+  bodyText?: string;
   author?: string;
   isPrimarySource?: boolean;
 }

@@ -6,7 +6,7 @@ on:
       batch_path:
         description: Repository path to the reviewed acquisition batch JSON
         required: true
-        default: data/editorial-acquisition/auto004-2026-08-18-enriched.json
+        default: data/editorial-acquisition/auto004-2026-08-18-independent.json
   push:
     branches:
       - main
@@ -43,4 +43,4 @@ jobs:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
           BATCH_PATH: ${{ inputs.batch_path }}
-        run: node scripts/import-editorial-acquisition-batch.mjs "${BATCH_PATH:-data/editorial-acquisition/auto004-2026-08-18-enriched.json}"
+        run: node scripts/import-editorial-acquisition-batch.mjs "${BATCH_PATH:-data/editorial-acquisition/auto004-2026-08-18-independent.json}"
