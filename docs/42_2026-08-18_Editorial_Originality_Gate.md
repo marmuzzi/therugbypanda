@@ -64,7 +64,9 @@ Multiple URLs from the same club or union do not by themselves satisfy the proje
 
 The successful enriched five-story run after the Sanity token recovery proved that all five drafts could be generated and written with package-mode notification suppression. Review of the evidence pack then showed a remaining gap: each story still relied predominantly on multiple records from the same official publisher.
 
-PR #183 introduced the independent-source verification batch and first fail-closed originality guard. Post-merge Codex review identified a P1 gap: raw `story.bodyText` could be supplied to generation without being included in the deterministic comparison. The follow-up fix now protects all raw story material (`title`, `summary`, `bodyText`) as an additional originality source.
+PR #183 introduced the independent-source verification batch and first fail-closed originality guard. Post-merge Codex review identified a P1 gap: raw `story.bodyText` could be supplied to generation without being included in the deterministic comparison. PR #184 closes that gap and protects all raw story material (`title`, `summary`, `bodyText`) as an additional originality source.
+
+An intermediate Vercel branch deployment failed TypeScript because `OriginalityGuard.ts` referenced `SourceRecord.bodyText` before the corresponding type change had landed in that branch snapshot. Current `main` now includes `bodyText?: string` on `SourceRecord`; a later #184 branch commit built READY. This documentation commit intentionally triggers one fresh deployment from current `main` so production verification uses the complete merged state rather than that intermediate snapshot.
 
 A new controlled verification batch, `data/editorial-acquisition/auto004-2026-08-18-independent.json`, adds genuinely independent publishers to each of the five representative stories while keeping the same stable candidate IDs so regenerated Sanity drafts replace the previous versions.
 
