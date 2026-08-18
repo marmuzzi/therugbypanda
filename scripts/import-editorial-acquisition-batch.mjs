@@ -49,6 +49,7 @@ function buildRequest(candidate) {
     },
     createSanityDraft: true,
     qaMode: false,
+    notificationMode: "package",
   };
 }
 
