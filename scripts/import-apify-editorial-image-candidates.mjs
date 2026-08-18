@@ -25,7 +25,7 @@ const blockedTitlePatterns = [
   /\b(logo|crest|jersey template|shirt template)\b/i,
 ];
 const blockedExtensions = new Set(["svg", "gif"]);
-const rugbySignals = /\b(rugby|leinster|munster|ulster|connacht|ireland|world cup|heineken|champions cup|challenge cup|pro12|urc|sportsground|aviva|murrayfield)\b/i;
+const rugbySignals = /\b(rugby|leinster|munster|ulster|connacht|ireland|world cup|heineken|champions cup|challenge cup|pro12|pro14|urc|sportsground|aviva|murrayfield|six nations|nations championship)\b/i;
 
 const scopeRules = {
   Leinster: /\bleinster\b/i,
@@ -39,6 +39,8 @@ const scopeRules = {
   "Ireland international": /\b(ireland|irish|aviva|international|world cup)\b/i,
   "Ireland / Rugby World Cup": /\b(ireland|irish|world cup|rwc)\b/i,
   URC: /\b(urc|united rugby championship|pro12|pro14|leinster|munster|ulster|connacht|glasgow|edinburgh|scarlets|ospreys|cardiff|dragons|zebre|benetton|bulls|sharks|stormers|lions)\b/i,
+  "Six Nations": /\b(six nations|england|france|ireland|italy|scotland|wales)\b/i,
+  "Nations Championship": /\b(nations championship|argentina|australia|england|fiji|france|ireland|italy|japan|new zealand|scotland|south africa|wales)\b/i,
   "Champions Cup": /\b(champions cup|heineken|european cup|epcr|leinster|munster|ulster|connacht|toulouse|la rochelle|leicester|saracens|harlequins|bath|northampton|exeter|glasgow|edinburgh|bordeaux|clermont|racing)\b/i,
   "Challenge Cup": /\b(challenge cup|epcr|connacht|ulster|edinburgh|cardiff|scarlets|ospreys|gloucester|bath|bristol|newcastle|perpignan|montpellier|lyon|pau|benetton|zebre)\b/i,
 };
@@ -63,10 +65,41 @@ function extensionFor(url) {
   return match?.[1]?.toLowerCase();
 }
 
-function searchable(item, run) {
-  return [item.title, ...(Array.isArray(item.tags) ? item.tags : []), run.query, run.scope]
+function sourceMetadataText(item) {
+  return [
+    item.title,
+    ...(Array.isArray(item.tags) ? item.tags : []),
+    item.creator,
+    item.attribution,
+    item.provider,
+    item.source,
+  ]
     .filter(Boolean)
     .join(" ");
+}
+
+function contextualText(item, run) {
+  return [sourceMetadataText(item), run.query, run.scope].filter(Boolean).join(" ");
+}
+
+function normaliseSignal(value) {
+  return String(value ?? "")
+    .toLowerCase()
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^a-z0-9]+/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function hasRequiredSignal(item, run) {
+  const requiredSignals = Array.isArray(run.requiredSignals) ? run.requiredSignals.filter(Boolean) : [];
+  if (requiredSignals.length === 0) return true;
+  const haystack = normaliseSignal(sourceMetadataText(item));
+  return requiredSignals.some((signal) => {
+    const needle = normaliseSignal(signal);
+    return needle.length >= 3 && haystack.includes(needle);
+  });
 }
 
 function normalizedScope(scope) {
@@ -80,7 +113,7 @@ function normalizedScope(scope) {
 function scopeMatches(item, run) {
   const rule = scopeRules[run.scope];
   if (!rule) return true;
-  return rule.test(searchable(item, run));
+  return rule.test(sourceMetadataText(item));
 }
 
 function candidateAllowed(item, run) {
@@ -95,8 +128,12 @@ function candidateAllowed(item, run) {
   const width = Number(item.width);
   const height = Number(item.height);
   if (Number.isFinite(width) && Number.isFinite(height) && (width < 600 || height < 400)) return false;
-  if (!rugbySignals.test(searchable(item, run))) return false;
-  return scopeMatches(item, run);
+
+  const metadataText = sourceMetadataText(item);
+  if (!rugbySignals.test(metadataText)) return false;
+  if (!scopeMatches(item, run)) return false;
+  if (!hasRequiredSignal(item, run)) return false;
+  return true;
 }
 
 function extractEventDate(title) {
@@ -112,6 +149,8 @@ function inferCompetition(text) {
   if (/champions cup|heineken cup|european cup/i.test(text)) return "European Rugby Champions Cup";
   if (/challenge cup/i.test(text)) return "EPCR Challenge Cup";
   if (/\bURC\b|united rugby championship|pro12|pro14/i.test(text)) return "United Rugby Championship";
+  if (/six nations/i.test(text)) return "Six Nations";
+  if (/nations championship/i.test(text)) return "Nations Championship";
   return undefined;
 }
 
@@ -143,7 +182,7 @@ function inferPhotoType(title, scope) {
 
 function editorialCategory(scope) {
   if (scope.startsWith("Ireland Women")) return "womens-rugby";
-  if (scope.startsWith("Ireland") || scope === "international rugby") return "international";
+  if (scope.startsWith("Ireland") || scope === "international rugby" || scope === "Six Nations" || scope === "Nations Championship") return "international";
   if (scope === "training") return "training";
   return "club-rugby";
 }
@@ -159,7 +198,7 @@ async function fetchDataset(run) {
   const endpoint = new URL(`https://api.apify.com/v2/datasets/${run.datasetId}/items`);
   endpoint.searchParams.set("clean", "true");
   endpoint.searchParams.set("format", "json");
-  endpoint.searchParams.set("limit", String(Math.max(run.returned ?? 100, 100)));
+  endpoint.searchParams.set("limit", String(Math.max(run.returned ?? run.resultsWanted ?? 20, 20)));
   if (apifyToken) endpoint.searchParams.set("token", apifyToken);
   const response = await fetch(endpoint, { headers: { Accept: "application/json" } });
   if (!response.ok) throw new Error(`Apify dataset ${run.datasetId} returned ${response.status}. ${apifyToken ? "" : "APIFY_TOKEN may be required."}`);
@@ -186,8 +225,12 @@ for (const entry of rawCandidates) {
   deduped.push(entry);
 }
 
-const priority = ["Ireland Women", "Leinster", "Munster", "Ulster", "Connacht", "Ireland Men", "Champions Cup", "Challenge Cup", "URC", "international rugby", "professional players", "match action", "training", "stadiums", "coaches"];
-deduped.sort((a, b) => priority.indexOf(normalizedScope(a.run.scope)) - priority.indexOf(normalizedScope(b.run.scope)));
+const priority = ["Ireland Women", "Leinster", "Munster", "Ulster", "Connacht", "Ireland Men", "Champions Cup", "Challenge Cup", "URC", "Six Nations", "Nations Championship", "international rugby", "professional players", "match action", "training", "stadiums", "coaches"];
+deduped.sort((a, b) => {
+  const aIndex = priority.indexOf(normalizedScope(a.run.scope));
+  const bIndex = priority.indexOf(normalizedScope(b.run.scope));
+  return (aIndex === -1 ? 999 : aIndex) - (bIndex === -1 ? 999 : bIndex);
+});
 
 const selected = deduped.slice(0, importLimit);
 if (selected.length < minimumImport) {
@@ -215,7 +258,7 @@ const scopeCounts = new Map();
 
 for (const { item, run } of newSelected) {
   const title = cleanText(item.title);
-  const text = searchable(item, run);
+  const text = contextualText(item, run);
   const scope = normalizedScope(run.scope);
   const photoType = inferPhotoType(title, scope);
   const people = inferPeople(title, scope);
@@ -255,7 +298,7 @@ for (const { item, run } of newSelected) {
     competitionEvent,
     eventDate: extractEventDate(title),
     acquisitionScope: scope,
-    acquisitionQuery: run.query,
+    acquisitionQuery: run.query ?? run.keyword,
     sourceIndexedAt: cleanText(item.indexed_on),
     sourceProvider: sourceName,
     sourceRecordId: String(item.id),
