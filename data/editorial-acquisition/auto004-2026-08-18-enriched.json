@@ -1,0 +1,252 @@
+{
+  "schemaVersion": "1.0",
+  "batchId": "auto004-2026-08-18-enriched",
+  "acquiredAt": "2026-08-18T08:30:00.000Z",
+  "acquisition": {
+    "provider": "Official rugby sources",
+    "actor": "editorial-enrichment",
+    "requestCount": 14,
+    "successfulRequestCount": 14,
+    "notes": "Enriched after first production generation exposed insufficient player, squad and what-to-watch context. Existing candidate IDs are retained intentionally so controlled regeneration replaces the same five Sanity drafts."
+  },
+  "candidates": [
+    {
+      "id": "auto004-current-munster-larochelle-20260818",
+      "title": "Munster’s La Rochelle trip offers a first look at a reshaped 2026/27 squad",
+      "summary": "Munster open pre-season away to La Rochelle with Jack Aungier, Kieran Brookes, Will Harrison and Marnus van der Merwe among the new signings already integrated at the HPC, while five academy graduates begin their first senior pre-season.",
+      "suggestedCategory": "Munster",
+      "sourceRecords": [
+        {
+          "id": "munster-preseason-fixtures-2026",
+          "url": "https://www.munsterrugby.ie/2026/06/17/munster-to-face-la-rochelle-in-pre-season/",
+          "publisher": "Munster Rugby",
+          "title": "Munster To Face La Rochelle In Pre-Season",
+          "publishedAt": "2026-06-17T00:00:00Z",
+          "excerpt": "Munster confirmed La Rochelle away on 28 August and Leicester Tigers at home on 18 September as their two pre-season fixtures.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "munster-preseason-squad-2026",
+          "url": "https://www.munsterrugby.ie/2026/07/27/squad-update-pre-season-begins-at-hpc/",
+          "publisher": "Munster Rugby",
+          "title": "Squad Update | Pre-Season Begins At HPC",
+          "publishedAt": "2026-07-27T00:00:00Z",
+          "excerpt": "Munster confirmed new signings Jack Aungier, Kieran Brookes, Will Harrison and Marnus van der Merwe had joined pre-season, alongside five academy graduates moving into the senior squad.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "munster-brookes-signing-2026",
+          "url": "https://www.munsterrugby.ie/2026/07/09/kieran-brookes-joins-munster-and-michael-alaalatoa-extends-contract/",
+          "publisher": "Munster Rugby",
+          "title": "Kieran Brookes Joins Munster And Michael Ala’alatoa Extends Contract",
+          "publishedAt": "2026-07-09T00:00:00Z",
+          "excerpt": "Munster signed former England international tighthead Kieran Brookes from Perpignan on a two-year deal and extended Michael Ala’alatoa for one year.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "munster-odonovan-senior-2026",
+          "url": "https://www.munsterrugby.ie/2026/07/06/ben-odonovan-signs-first-senior-contract/",
+          "publisher": "Munster Rugby",
+          "title": "Ben O’Donovan Signs First Senior Contract",
+          "publishedAt": "2026-07-06T00:00:00Z",
+          "excerpt": "Scrum-half Ben O’Donovan was promoted to the senior squad after five Munster appearances and joins Max Clein, Seán Edogbo, Ronan Foxe and Ben O’Connor in moving up from the Academy.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Munster will play La Rochelle at Stade Marcel Deflandre on Friday 28 August 2026 at 7.30pm in their first pre-season fixture.",
+        "Leicester Tigers will visit Virgin Media Park on Friday 18 September 2026 at 7.15pm for Munster’s second pre-season fixture.",
+        "New signings Jack Aungier, Kieran Brookes, Will Harrison and Marnus van der Merwe had all joined Munster’s pre-season programme at the HPC by 27 July.",
+        "Forwards coach Jimmy Duffy and assistant coach Jared Payne completed Munster’s coaching team for the new season.",
+        "Max Clein, Seán Edogbo, Ronan Foxe, Ben O’Connor and Ben O’Donovan began their first pre-season as members of the Munster senior squad.",
+        "Kieran Brookes is a 16-cap former England international tighthead prop who joined Munster from Perpignan on a two-year deal.",
+        "Ben O’Donovan is a 21-year-old Irish-qualified scrum-half who had made five Munster appearances before promotion to the senior squad.",
+        "Captain Tadhg Beirne, Craig Casey and Jeremy Loughman were on post-Ireland off-season at the start of Munster’s pre-season programme and were due to join later in the summer.",
+        "Munster’s previous competitive meeting with La Rochelle was a 25-24 Champions Cup Round of 16 win in April 2025, settled by a late Jack Crowley drop goal."
+      ]
+    },
+    {
+      "id": "auto004-current-connacht-preseason-20260818",
+      "title": "Connacht’s pre-season can show how Will Connors fits Stuart Lancaster’s next step",
+      "summary": "Connacht’s two-game pre-season build-up leads into a home URC opener, with Ireland flanker Will Connors and returning local tighthead Thomas Connolly among the additions giving Stuart Lancaster new options.",
+      "suggestedCategory": "Connacht",
+      "sourceRecords": [
+        {
+          "id": "connacht-matches-2026",
+          "url": "https://www.connachtrugby.ie/matches/3/",
+          "publisher": "Connacht Rugby",
+          "title": "Matches | Connacht Rugby",
+          "excerpt": "Connacht’s official match list shows pre-season fixtures on 28 August and 5 September, followed by the URC opener on 25 September.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "connacht-will-connors-2026",
+          "url": "https://www.connachtrugby.ie/news/will-connors-signs-for-connacht-rugby/bp3619/",
+          "publisher": "Connacht Rugby",
+          "title": "Will Connors signs for Connacht Rugby",
+          "publishedAt": "2026-01-27T00:00:00Z",
+          "excerpt": "Ireland flanker Will Connors signed a two-year deal from Leinster, with Stuart Lancaster highlighting his tackling, defensive work rate, attacking strengths and leadership potential.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "connacht-thomas-connolly-2026",
+          "url": "https://www.connachtrugby.ie/news/thomas-connolly-joins-connacht-rugby/bp3720/",
+          "publisher": "Connacht Rugby",
+          "title": "Thomas Connolly joins Connacht Rugby",
+          "publishedAt": "2026-05-06T00:00:00Z",
+          "excerpt": "Kinvara tighthead Thomas Connolly returned to his home province after experience with Leinster A, Old Belvedere, Connacht Eagles and Cornish Pirates.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "connacht-extensions-2026",
+          "url": "https://www.connachtrugby.ie/news/three-players-sign-contract-extensions/bp3620/",
+          "publisher": "Connacht Rugby",
+          "title": "Three players sign contract extensions",
+          "publishedAt": "2026-01-28T00:00:00Z",
+          "excerpt": "Home-grown players Darragh Murray, Cathal Forde and John Devine extended their Connacht contracts for the 2026/27 cycle.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Connacht’s official fixture list shows an away pre-season friendly at Stade de la Rabine on Friday 28 August 2026 at 7.00pm.",
+        "Connacht’s second listed pre-season friendly is at Dexcom Stadium on Saturday 5 September 2026 at 5.00pm.",
+        "Connacht’s first listed URC fixture is at Dexcom Stadium on Friday 25 September 2026 at 7.45pm.",
+        "Ireland international flanker Will Connors joined Connacht from Leinster on a two-year deal for the 2026/27 season.",
+        "Connors arrived with nine Ireland caps and 62 Leinster senior appearances at the time his move was announced.",
+        "Head coach Stuart Lancaster specifically highlighted Connors’ tackling ability, defensive work rate, attacking strengths, energy and leadership potential.",
+        "Tighthead prop Thomas Connolly joined Connacht for 2026/27, returning to his home province after coming through the Connacht pathway and later playing Leinster A, Old Belvedere, Connacht Eagles and Cornish Pirates rugby.",
+        "Darragh Murray and Cathal Forde signed two-year extensions, while John Devine renewed for the 2026/27 season."
+      ]
+    },
+    {
+      "id": "auto004-current-ulster-preseason-20260818",
+      "title": "Ulster’s September friendlies put Jamie Benson and Matthew Devine in the spotlight",
+      "summary": "Ulster’s friendlies against Edinburgh and Ospreys are the first runway into the URC season, with new half-back arrivals Jamie Benson and Matthew Devine adding fresh competition and playmaking options.",
+      "suggestedCategory": "Ulster",
+      "sourceRecords": [
+        {
+          "id": "ulster-preseason-2026",
+          "url": "https://ulster.rugby/news/ulster-rugby-confirm-2026-27-pre-season-fixtures",
+          "publisher": "Ulster Rugby",
+          "title": "Ulster Rugby Confirm 2026-27 Pre-Season Fixtures",
+          "publishedAt": "2026-06-30T00:00:00Z",
+          "excerpt": "Ulster confirmed pre-season fixtures away to Edinburgh and at home to Ospreys ahead of the 2026/27 campaign.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "ulster-jamie-benson-2026",
+          "url": "https://ulster.rugby/content/ulster-rugby-sign-jamie-benson-on-two-year-deal",
+          "publisher": "Ulster Rugby",
+          "title": "Ulster Rugby sign Jamie Benson on two-year deal",
+          "excerpt": "Irish-qualified 23-year-old Jamie Benson joined from Harlequins on a two-year deal; Ulster highlighted his versatility, playmaking, work rate and goal-kicking.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "ulster-matthew-devine-2026",
+          "url": "https://ulster.rugby/content/matthew-devine-to-join-ulster-rugby",
+          "publisher": "Ulster Rugby",
+          "title": "Matthew Devine to join Ulster Rugby",
+          "excerpt": "Connacht scrum-half Matthew Devine joined Ulster on a one-year deal, with the club highlighting his energy and the competition he will add at scrum-half.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Ulster play Edinburgh at Hive Stadium on Friday 4 September 2026 at 7.45pm in a pre-season friendly.",
+        "Ulster host Ospreys at Affidea Stadium on Friday 11 September 2026 at 7.45pm in a pre-season friendly.",
+        "Ulster open their 2026/27 URC campaign at home to Edinburgh on Friday 25 September 2026 at 7.45pm.",
+        "Irish-qualified 23-year-old Jamie Benson joined Ulster from Harlequins on a two-year deal ahead of 2026/27.",
+        "Benson can play fly-half, centre and full-back, and Ulster highlighted his playmaking ability, work rate and goal-kicking accuracy.",
+        "Scrum-half Matthew Devine joined Ulster from Connacht on a one-year deal through the summer of 2027.",
+        "Ulster described Devine as an energetic young half-back and said his arrival would add strong competition at scrum-half.",
+        "Devine previously worked with members of Ulster’s senior coaching staff in the Ireland U20 setup."
+      ]
+    },
+    {
+      "id": "auto004-current-leinster-southafrica-20260818",
+      "title": "Leinster’s South African start is an immediate stress test for the URC champions",
+      "summary": "Leinster open their 2026/27 URC campaign away to the Lions and Sharks, a demanding start for the reigning champions and an early test of how the squad carries last season’s title-winning standards into a new campaign.",
+      "suggestedCategory": "Leinster",
+      "sourceRecords": [
+        {
+          "id": "leinster-urc-fixtures-2026",
+          "url": "https://www.leinsterrugby.ie/2026/05/19/2026-27-bkt-urc-fixtures-announced/",
+          "publisher": "Leinster Rugby",
+          "title": "2026/27 BKT URC fixtures confirmed",
+          "publishedAt": "2026-05-19T00:00:00Z",
+          "excerpt": "Leinster confirmed that the 2026/27 URC campaign begins with two away fixtures in South Africa.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "leinster-urc-final-team-2026",
+          "url": "https://www.leinsterrugby.ie/preview/leinster-v-bulls-urc-grand-final-team-news/",
+          "publisher": "Leinster Rugby",
+          "title": "Van der Flier and Ringrose return as Cullen names team to face Vodacom Bulls in URC Grand Final",
+          "excerpt": "Leinster’s official Grand Final team announcement highlighted the return of Josh van der Flier and Garry Ringrose for the title decider against the Bulls.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "leinster-homepage-july-2026",
+          "url": "https://www.leinsterrugby.ie/",
+          "publisher": "Leinster Rugby",
+          "title": "Leinster Rugby homepage",
+          "excerpt": "Leinster’s July team content highlighted Peter Dooley being back in blue after his return to the province.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Leinster’s first listed 2026/27 URC match is away to the Lions at Ellis Park on Saturday 26 September 2026.",
+        "Leinster’s second listed URC fixture is away to the Sharks on Saturday 3 October 2026.",
+        "Leinster’s first two URC fixtures of the new season are both in South Africa.",
+        "Leinster entered the new campaign as reigning URC champions after contesting the 2026 Grand Final against the Vodacom Bulls.",
+        "Josh van der Flier and Garry Ringrose were named to return to Leinster’s starting side for the 2026 URC Grand Final.",
+        "Leinster’s official site highlighted Peter Dooley’s return to the province in team content published in July 2026."
+      ]
+    },
+    {
+      "id": "auto004-current-ireland-wxv-20260818",
+      "title": "Ireland Women’s WXV autumn gives Erin King’s rising side a new platform",
+      "summary": "Ireland Women host USA and Japan before travelling to South Africa, carrying momentum from a three-win Six Nations in which captain Erin King, Aoife Wafer and Brittany Hogan were central figures.",
+      "suggestedCategory": "Ireland",
+      "sourceRecords": [
+        {
+          "id": "irish-rugby-wxv-2026",
+          "url": "https://www.irishrugby.ie/news/ireland-kick-wxv-global-series-home-soil",
+          "publisher": "Irish Rugby",
+          "title": "Ireland Kick Off WXV Global Series On Home Soil",
+          "publishedAt": "2026-06-16T00:00:00Z",
+          "excerpt": "Irish Rugby confirmed home WXV fixtures against USA and Japan, a further Japan Test in Cork and two WXV Tests against South Africa in Cape Town.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "irish-rugby-womens-six-nations-squad-2026",
+          "url": "https://www.irishrugby.ie/2026/03/18/bemand-names-ireland-squad-for-2026-guinness-womens-six-nations/",
+          "publisher": "Irish Rugby",
+          "title": "Bemand Names Ireland Squad For 2026 Guinness Women's Six Nations",
+          "publishedAt": "2026-03-18T00:00:00Z",
+          "excerpt": "Scott Bemand named Erin King as captain of a 36-player Six Nations squad containing nine uncapped players and established names including Aoife Wafer, Béibhinn Parsons, Dannah O’Brien and Eve Higgins.",
+          "isPrimarySource": true
+        },
+        {
+          "id": "irish-rugby-womens-scotland-2026",
+          "url": "https://www.irishrugby.ie/2026/05/18/king-the-1993-team-theyre-the-reason-that-were-here/",
+          "publisher": "Irish Rugby",
+          "title": "King: The 1993 Team, They're The Reason That We're Here",
+          "publishedAt": "2026-05-18T00:00:00Z",
+          "excerpt": "Ireland finished the 2026 Six Nations with three wins for the first time since 2020; Aoife Wafer and Brittany Hogan finished as Ireland’s top try scorers with five each.",
+          "isPrimarySource": true
+        }
+      ],
+      "facts": [
+        "Ireland Women host USA at Tallaght Stadium on Sunday 20 September 2026 in the WXV Global Series.",
+        "Ireland Women host Japan at Dexcom Stadium on Sunday 27 September 2026 in the WXV Global Series.",
+        "Ireland also play Japan at Virgin Media Park on Saturday 3 October 2026 outside the WXV Global Series window.",
+        "Ireland then face South Africa at Athlone Stadium in Cape Town on 24 October and 31 October 2026.",
+        "Erin King captained Ireland during the 2026 Women’s Six Nations.",
+        "Ireland finished the 2026 Women’s Six Nations with three wins, their first three-win Championship since 2020.",
+        "Aoife Wafer and Brittany Hogan finished Ireland’s 2026 Six Nations campaign as the team’s top try scorers with five tries each.",
+        "The 2026 Six Nations squad also featured established backs Béibhinn Parsons, Dannah O’Brien, Eve Higgins and Stacey Flood, while nine uncapped players were selected in the wider 36-player group.",
+        "The WXV autumn squad had not yet been confirmed in the source material, so previous Six Nations personnel should be discussed as players to watch only if selected rather than presumed WXV starters."
+      ]
+    }
+  ]
+}
