@@ -1,0 +1,48 @@
+name: Import Apify Editorial Image Candidates
+
+on:
+  workflow_dispatch:
+    inputs:
+      collection_file:
+        description: Apify collection manifest to import
+        required: true
+        default: data/editorial-images/apify-collection-2026-08-18.json
+      minimum_import:
+        description: Minimum genuinely new candidates required
+        required: true
+        default: "200"
+      import_limit:
+        description: Maximum candidates to import after filtering
+        required: true
+        default: "240"
+
+jobs:
+  import-editorial-image-candidates:
+    name: Import candidate-only editorial images
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      APIFY_TOKEN: ${{ secrets.APIFY_TOKEN }}
+      EDITORIAL_IMAGE_COLLECTION_FILE: ${{ inputs.collection_file }}
+      EDITORIAL_IMAGE_MINIMUM_IMPORT: ${{ inputs.minimum_import }}
+      EDITORIAL_IMAGE_IMPORT_LIMIT: ${{ inputs.import_limit }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Import Apify candidate records
+        run: npm run media:import-apify-candidates
