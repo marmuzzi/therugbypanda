@@ -1,6 +1,12 @@
 import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
 import type { SourceRecord } from "./EditorialTypes";
 
+export type SupplementalOriginalitySource = {
+  id: string;
+  publisher: string;
+  text: string;
+};
+
 export type OriginalityFinding = {
   sourceId: string;
   publisher: string;
@@ -71,13 +77,21 @@ function ngrams(words: string[], size: number): string[] {
   return Array.from({ length: words.length - size + 1 }, (_, index) => words.slice(index, index + size).join(" "));
 }
 
-export function assessArticleOriginality(article: GeneratedArticleDraft, sources: SourceRecord[]): OriginalityReport {
+export function assessArticleOriginality(
+  article: GeneratedArticleDraft,
+  sources: SourceRecord[],
+  supplementalSources: SupplementalOriginalitySource[] = [],
+): OriginalityReport {
   const articleWords = normalizeWords(articleText(article));
   const articleSixGrams = new Set(ngrams(articleWords, 6));
   const reasons: string[] = [];
+  const protectedSources = [
+    ...sources.map((source) => ({ id: source.id, publisher: source.publisher, text: sourceText(source) })),
+    ...supplementalSources,
+  ].filter((source) => source.text.trim().length > 0);
 
-  const findings = sources.map((source) => {
-    const sourceWords = normalizeWords(sourceText(source));
+  const findings = protectedSources.map((source) => {
+    const sourceWords = normalizeWords(source.text);
     const sourceSixGrams = ngrams(sourceWords, 6);
     const matchedSixGrams = sourceSixGrams.filter((gram) => articleSixGrams.has(gram)).length;
     const sixGramCoverage = sourceSixGrams.length > 0 ? matchedSixGrams / sourceSixGrams.length : 0;
