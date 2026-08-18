@@ -25,6 +25,7 @@ type DraftRequest = {
   editorialImageId?: string;
   dryRun?: boolean;
   qaMode?: boolean;
+  notificationMode?: "draft" | "package";
 };
 
 function jsonResponse(body: unknown, init?: ResponseInit) {
@@ -66,6 +67,7 @@ export async function POST(request: NextRequest) {
       inputId: body.story.id,
       dryRun: body.dryRun === true,
       qaMode: body.qaMode === true,
+      notificationMode: body.notificationMode ?? "draft",
     });
 
     const editorial = new EditorialBrain().evaluate(body.story, { factLedger: body.factLedger });
@@ -125,14 +127,19 @@ export async function POST(request: NextRequest) {
       morningPackageEligible: body.qaMode !== true,
     });
 
-    const draftOccurredAt = new Date().toISOString();
-    const notification = await notifyDraftCreated({
-      articleId: sanityDraft.id,
-      articleTitle: article.title,
-      actor: "editorial-automation",
-      occurredAt: draftOccurredAt,
-      submissionNote: "A new draft is ready for editorial review and one-click publication.",
-    });
+    const notification = body.notificationMode === "package"
+      ? {
+          status: "suppressed" as const,
+          eventId: null,
+          reason: "consolidated-morning-package",
+        }
+      : await notifyDraftCreated({
+          articleId: sanityDraft.id,
+          articleTitle: article.title,
+          actor: "editorial-automation",
+          occurredAt: new Date().toISOString(),
+          submissionNote: "A new draft is ready for editorial review and one-click publication.",
+        });
 
     console.info("Editorial pipeline completed", {
       requestId,

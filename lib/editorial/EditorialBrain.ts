@@ -46,6 +46,7 @@ export class EditorialBrain {
     const priority = priorityFromScore(score.total);
     const decision = decisionFromScore(score.total, confidence);
     const speculative = storyType === "speculation" || storyType === "transfer-watch" || storyType === "rumour-roundup";
+    const previewLike = /preview|pre-season|preseason|fixture|opening|opener|build-up|season/i.test(`${story.title} ${story.summary ?? ""}`);
     const suggestedHeadline = speculative && !/\?$/.test(story.title)
       ? `${story.title.replace(/[.!]+$/, "")}?`
       : story.title;
@@ -67,16 +68,28 @@ export class EditorialBrain {
       featuredImageSearchBrief: `Editorial rugby image for ${category}: ${story.title}. Avoid misleading player, venue or match identification.`,
       brief: {
         angle: speculative
-          ? `Explore why ${story.title.toLowerCase()} is plausible, what supports it, what remains unknown, and why it matters.`
-          : `Explain the verified development in ${story.title.toLowerCase()} and why it matters to Irish and European rugby readers.`,
-        audiencePromise: "Give readers original context, clear sourcing boundaries and a useful reason to care.",
-        keyQuestions: ["What is confirmed?", "What is strongly reported or speculative?", "Why does this matter now?"],
-        requiredContext: [category, "Relevant recent developments", "Impact on supporters, team or competition"],
+          ? `Write the rugby story behind ${story.title.toLowerCase()}: explain the evidence, the realistic possibilities and what each outcome would mean, using natural uncertainty without editorial-process commentary.`
+          : previewLike
+            ? `Turn ${story.title.toLowerCase()} into a specific supporter-focused preview: who or what is worth watching, which named players or new signings matter when supported, what the fixture can reveal, and why there is genuine anticipation.`
+            : `Explain the development in ${story.title.toLowerCase()} through concrete rugby detail: the named people, teams, consequences and next questions that matter to supporters.`,
+        audiencePromise: "Give supporters specific rugby detail, useful context, named people where supported, and a clear reason to care or look forward to what happens next.",
+        keyQuestions: previewLike
+          ? ["What exactly is happening?", "Who or what should supporters watch?", "Which named players, signings or selection battles are relevant and supported?", "What could this reveal before the competitive season?"]
+          : speculative
+            ? ["What is the evidence?", "What are the realistic rugby implications?", "Who would be affected?", "What should supporters watch next?"]
+            : ["What happened?", "Who is directly involved?", "Why does it matter in rugby terms?", "What should supporters watch next?"],
+        requiredContext: [
+          category,
+          "Relevant recent rugby developments",
+          "Named players, coaches, signings, opponents or venues when supported by the evidence",
+          "Impact on supporters, team or competition",
+        ],
         prohibitedApproaches: [
           "Rewriting or closely paraphrasing a source article",
           "Presenting speculation as confirmed fact",
-          "Inventing quotations, statistics, motives or certainty",
-          "Publishing without human editorial approval",
+          "Inventing quotations, statistics, player involvement, signings, motives or certainty",
+          "Explaining internal sourcing, verification, confidence, AI, automation or editorial-review processes to readers",
+          "Using generic filler instead of available concrete rugby detail",
         ],
       },
       factLedger,

@@ -87,11 +87,14 @@ function generationInput(story: RawStoryInput, editorial: EditorialBrainResult, 
     },
     requirements: {
       originalComposition: true,
-      humanApprovalRequired: true,
       preserveUncertainty: true,
       targetLengthWords,
       useOnlySupportedClaims: true,
-      disclosureInstruction: "State briefly what remains unconfirmed or requires the human editor's check. Do not add an AI disclosure.",
+      concreteRugbyDetail: true,
+      nameSupportedPeopleAndTeams: true,
+      previewStoriesNeedWhatToWatch: true,
+      noReaderFacingEditorialProcess: true,
+      disclosureInstruction: "INTERNAL EDITOR NOTE ONLY: briefly list anything that still needs checking. Never repeat this disclosure or any editorial-process explanation in the article body, headline, standfirst, SEO fields or key points.",
     },
   });
 }

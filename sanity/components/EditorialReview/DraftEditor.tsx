@@ -73,40 +73,6 @@ export function DraftEditor({
           </strong>
         </div>
 
-        <div
-          style={{
-            display: "grid",
-            gap: ".45rem",
-            padding: "1rem",
-            borderRadius: 10,
-            border: "1px solid #b7d7b9",
-            background: "#f3faf4",
-          }}
-        >
-          <strong>Full article editor</strong>
-          <p style={{ margin: 0, color: "#4b5f4d", lineHeight: 1.5 }}>
-            Use Sanity&apos;s full Portable Text editor for the article body, headings, bold text, links, lists and images.
-          </p>
-          <div>
-            <IntentLink
-              intent="edit"
-              params={{ id: normaliseId(article._id), type: "article" }}
-              style={{
-                display: "inline-block",
-                marginTop: ".35rem",
-                padding: ".65rem .9rem",
-                borderRadius: 8,
-                background: "#2E7D32",
-                color: "#fff",
-                fontWeight: 700,
-                textDecoration: "none",
-              }}
-            >
-              Open full Sanity editor
-            </IntentLink>
-          </div>
-        </div>
-
         <label>
           Headline
           <input
@@ -130,8 +96,23 @@ export function DraftEditor({
           />
         </label>
 
-        <div style={{ display: "grid", gap: ".5rem" }}>
-          <strong>Formatted article preview</strong>
+        <label style={{ display: "grid", gap: ".45rem" }}>
+          <strong>Article body</strong>
+          <textarea
+            value={draft.bodyText}
+            onChange={(event) => onChange("bodyText", event.target.value)}
+            rows={24}
+            spellCheck={true}
+            lang="en-IE"
+            style={{ ...inputStyle, fontFamily: "inherit", lineHeight: 1.55, resize: "vertical" }}
+          />
+          <small style={{ color: "#666" }}>
+            Separate paragraphs with a blank line. Prefix a heading with <code>## </code> or <code>### </code>. Save here without leaving Editorial Review.
+          </small>
+        </label>
+
+        <details>
+          <summary style={{ cursor: "pointer", fontWeight: 600 }}>Stored formatted preview</summary>
           <div
             style={{
               border: "1px solid #ccc",
@@ -139,6 +120,7 @@ export function DraftEditor({
               padding: "1rem 1.1rem",
               background: "#fff",
               minHeight: 160,
+              marginTop: ".75rem",
             }}
           >
             {article.body?.length ? (
@@ -148,9 +130,9 @@ export function DraftEditor({
             )}
           </div>
           <small style={{ color: "#666" }}>
-            This preview reflects the stored Portable Text. Open the full editor above to change article formatting and structure.
+            This preview reflects the last saved Portable Text version.
           </small>
-        </div>
+        </details>
 
         <details>
           <summary style={{ cursor: "pointer", fontWeight: 600 }}>SEO</summary>
@@ -189,10 +171,34 @@ export function DraftEditor({
           }}
         >
           <button type="button" onClick={onSave} disabled={!isDirty || isSaving}>
-            {isSaving ? "Saving…" : "Save headline and metadata"}
+            {isSaving ? "Saving…" : "Save article changes"}
           </button>
 
           <small>Keyboard shortcut: Ctrl+S / Cmd+S</small>
+        </div>
+
+        <div
+          style={{
+            display: "grid",
+            gap: ".35rem",
+            padding: ".8rem 1rem",
+            borderRadius: 8,
+            border: "1px solid #ddd",
+            background: "#fafafa",
+          }}
+        >
+          <small style={{ color: "#555" }}>
+            Need rich formatting, links, lists or inline images? The full Sanity editor remains available as an advanced option.
+          </small>
+          <div>
+            <IntentLink
+              intent="edit"
+              params={{ id: normaliseId(article._id), type: "article" }}
+              style={{ fontWeight: 700 }}
+            >
+              Open full Sanity editor
+            </IntentLink>
+          </div>
         </div>
       </section>
 
