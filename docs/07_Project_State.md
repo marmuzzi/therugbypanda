@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-18 August 2026, after the first successful five-story AUTO-004 production import, editorial-quality remediation, multi-source synthesis work and fail-closed image relevance changes.
+18 August 2026, after PR #176 reached a READY production deployment and the 200+ Editorial Image candidate expansion was implemented from a 912-record Apify/Openverse collection.
 
 ## Source of truth
 
@@ -27,7 +27,7 @@ Read first in future sessions:
 13. `docs/37_2026-08-17_AUTO-004_NOTIF-003_Verification.md`
 14. `docs/38_2026-08-17_End_of_Session_Handoff.md`
 15. `docs/39_2026-08-18_AUTO-004_Multisource_Image_Handoff.md`
-16. all newer numbered handoff, automation, Sprint, launch and FinOps documents relevant to the task.
+16. all newer numbered handoff, automation, media, Sprint, launch and FinOps documents relevant to the task.
 
 Where older documentation conflicts with a later reconciled state or handoff, the newer document wins. Do not use chat history as the current source of truth.
 
@@ -40,7 +40,7 @@ Where older documentation conflicts with a later reconciled state or handoff, th
 - Sanity is the canonical CMS and mandatory human approval boundary.
 - No acquired or generated article/image is automatically approved or published.
 - Original Rugby Panda photography is preferred.
-- Third-party photographs require documented rights or explicit permission.
+- Third-party photographs require documented rights or explicit permission before public use.
 
 ## Architecture
 
@@ -62,12 +62,11 @@ GitHub source of truth
 - AUTO-001 consolidated five-article delivery, NOTIFY-001, NOTIFY-002 and NOTIFY-003 are production verified.
 - AUTO-004 production eligibility/diversity guard is production verified and excludes QA/test drafts.
 - A controlled AUTO-004 import successfully created five current production drafts after GitHub/Vercel secret alignment and the Sanity province-taxonomy fix in PR #173.
-- The successful five-story run exposed editorial quality and workflow defects: five per-draft emails, generic/process-oriented copy, and no direct article-body editing in Editorial Review.
 - PR #174 merged as `acac0fab15fd208a3609ca8eeac6ea70509c9e7d` and fixes morning notification suppression, concrete reader-facing generation requirements and direct body editing in Editorial Review.
 - PR #175 merged as `11a0adac765b6d4050dc67cd772d23b420d4e396` with richer controlled five-story source packets for verification.
-- PR #176 merged as `1470df4d9cf5ca0111a0fe1402742ac400b42440` and changes the generation contract to synthesize all available source records and changes image selection to fail closed when no sufficiently relevant approved image exists.
-- At the time of this reconciliation, the PR #176 Vercel production deployment had started but was still BUILDING. Do not call #176 production verified until its deployment is READY and representative behaviour is checked.
-- Apify was available earlier in the work but developer MCP execution became unavailable in the ending chat. The underlying service must not be assumed unconfigured. The next chat must check actual `@Apify` availability.
+- PR #176 merged as `1470df4d9cf5ca0111a0fe1402742ac400b42440`. Its Vercel production deployment is now READY. Representative regenerated-story verification is still required before calling the new synthesis/image-selection behaviour production verified.
+- The existing five AUTO-004 drafts pre-date #176 and still contain some historical image assignments, so they are not valid evidence for or against the new fail-closed selector.
+- Apify is available and was used on 18 August for the explicit image-candidate expansion task.
 
 ## Editorial content contract
 
@@ -87,7 +86,20 @@ Automatic image assignment is relevance-first and fail-closed.
 - If no sufficiently relevant approved image exists, leave the article without an automatically assigned image.
 - Ageing Pandas/amateur-veterans imagery must never illustrate a professional province/national-team story unless the story is actually about that team/event.
 
-The immediate media objective is to use Apify to collect **at least 200 additional relevant Editorial Image candidates** spanning the four Irish provinces, Ireland Men/Women, current players/coaches, new signings, professional match/training action, competitions and venues. Collection creates candidates only; rights review/approval remains mandatory.
+## Editorial Image candidate expansion — current state
+
+Apify/Openverse acquisition on 18 August produced 912 raw records across 32 recorded runs covering the requested province, national-team, European competition, international, match-action, training and venue scopes.
+
+The raw result count is deliberately not treated as the candidate count. On branch `media/2026-08-18-apify-image-candidates` the project now has:
+
+- a versioned Apify run/dataset manifest at `data/editorial-images/apify-collection-2026-08-18.json`;
+- `scripts/import-apify-editorial-image-candidates.mjs`, which filters licence/file/noise/relevance problems and deduplicates source records plus existing Sanity entries;
+- a hard minimum of 200 genuinely new candidates before the importer can report success;
+- candidate-only import semantics: `lifecycleStatus = candidate`, `usageApproved = false`;
+- enriched Editorial Image fields for source page, creator, team, named people, competition/event, event date and acquisition provenance;
+- Image Review cards that surface subject and rights context during human review.
+
+The collection milestone is **implemented but not yet complete** until the branch is merged, its import workflow succeeds, and a Sanity query verifies at least 200 genuinely new candidate-only records. No acquired image becomes approved automatically.
 
 ## AUTO-004 — current state
 
@@ -103,7 +115,7 @@ Verified:
 - correct Sanity province taxonomy mapping;
 - first controlled five-current-story draft import.
 
-Implemented/merged but still requiring representative verification:
+Merged/deployed but still requiring representative verification:
 
 - one consolidated morning notification instead of five per-draft emails (#174);
 - concrete, player-aware, supporter-focused copy with no internal process language (#174);
@@ -113,11 +125,11 @@ Implemented/merged but still requiring representative verification:
 
 Still pending:
 
-- at least 200 additional relevant Apify image candidates plus source/rights metadata;
-- production verification of #176 after READY deployment;
+- merge/deploy/import verification for the 200+ Editorial Image candidate expansion;
+- representative production verification of #176 fail-closed selection;
 - multi-source acquisition packs for the five representative stories;
 - regeneration and editorial inspection of those five stories;
-- authenticated Sanity Studio verification of body editing;
+- authenticated Sanity Studio verification of body editing and expanded Image Review;
 - exactly one consolidated AUTO-001 email for the regenerated five-story package.
 
 ## AUTO-003 — remaining morning orchestration
@@ -135,12 +147,13 @@ The introduction article is live. The minimum launch package still requires at l
 
 ## Immediate priority
 
-1. In a chat where `@Apify` execution is available, collect at least 200 relevant Editorial Image candidates with source/rights metadata and feed them through the existing review path without auto-approval.
-2. Verify PR #176 production deployment and fail-closed image behaviour.
+1. Merge/deploy the Editorial Image expansion and verify at least 200 genuinely new candidate-only records in Sanity.
+2. Verify the expanded authenticated Image Review queue and preserve the human rights/editorial approval boundary.
 3. Build multi-source evidence packs and regenerate the five AUTO-004 stories.
-4. Verify editorial quality, direct body editing and suppression of five individual morning draft emails.
-5. Run AUTO-001 and verify exactly one consolidated five-article email.
-6. Complete AUTO-004, then finish AUTO-003 scheduling and three-day verification.
+4. Verify #176 fail-closed image behaviour with representative province/national stories.
+5. Verify editorial quality, direct body editing and suppression of five individual morning draft emails.
+6. Run AUTO-001 and verify exactly one consolidated five-article email.
+7. Complete AUTO-004, then finish AUTO-003 scheduling and three-day verification.
 
 ## Completion rule
 
