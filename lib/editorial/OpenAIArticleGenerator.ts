@@ -1,5 +1,6 @@
 import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
 import type { EditorialBrainResult, RawStoryInput } from "./EditorialTypes";
+import { assessArticleOriginality } from "./OriginalityGuard";
 import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
@@ -100,6 +101,13 @@ function generationInput(story: RawStoryInput, editorial: EditorialBrainResult, 
       nameSupportedPeopleAndTeams: true,
       previewStoriesNeedWhatToWatch: true,
       noReaderFacingEditorialProcess: true,
+      originalityRules: [
+        "Write independently from the evidence. Do not rewrite or lightly paraphrase any source article.",
+        "Do not follow a source's sentence order, paragraph order, rhetorical structure or distinctive phrasing.",
+        "Never copy a source sentence. Avoid using eight or more consecutive words from any source except unavoidable proper names or official competition/team titles.",
+        "Facts may be the same; expression, analysis, structure and transitions must be original Rugby Panda composition.",
+        "Synthesize facts from different publishers into a new reader-focused argument and add supported implications or what-to-watch analysis.",
+      ],
       disclosureInstruction: "INTERNAL EDITOR NOTE ONLY: briefly list anything that still needs checking. Never repeat this disclosure or any editorial-process explanation in the article body, headline, standfirst, SEO fields or key points.",
     },
   });
@@ -187,11 +195,24 @@ export async function generateArticleDraft(
     const outputText = extractOutputText(payload);
     if (!outputText) throw new Error("OpenAI returned no structured article output in the response output array.");
 
+    let article: GeneratedArticleDraft;
     try {
-      return JSON.parse(outputText) as GeneratedArticleDraft;
+      article = JSON.parse(outputText) as GeneratedArticleDraft;
     } catch (error) {
       throw new Error(`OpenAI returned invalid structured article JSON: ${error instanceof Error ? error.message : "parse failed"}`);
     }
+
+    const originality = assessArticleOriginality(article, story.sourceRecords);
+    console.info("Editorial originality check completed", {
+      inputId: editorial.inputId,
+      passed: originality.passed,
+      findings: originality.findings,
+    });
+    if (!originality.passed) {
+      throw new Error(`Originality gate rejected draft: ${originality.reasons.join(" ")}`);
+    }
+
+    return article;
   } catch (error) {
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error(`OpenAI generation exceeded the ${Math.round(timeoutMs / 1000)}-second safety timeout.`);
