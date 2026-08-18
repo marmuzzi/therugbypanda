@@ -126,6 +126,10 @@ function extractOutputText(payload: ResponsesPayload): string | undefined {
   return undefined;
 }
 
+function rawStoryOriginalityText(story: RawStoryInput): string {
+  return [story.title, story.summary, story.bodyText].filter(Boolean).join("\n\n");
+}
+
 export async function generateArticleDraft(
   story: RawStoryInput,
   editorial: EditorialBrainResult,
@@ -202,7 +206,14 @@ export async function generateArticleDraft(
       throw new Error(`OpenAI returned invalid structured article JSON: ${error instanceof Error ? error.message : "parse failed"}`);
     }
 
-    const originality = assessArticleOriginality(article, story.sourceRecords);
+    const rawStoryMaterial = rawStoryOriginalityText(story);
+    const originality = assessArticleOriginality(
+      article,
+      story.sourceRecords,
+      rawStoryMaterial
+        ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }]
+        : [],
+    );
     console.info("Editorial originality check completed", {
       inputId: editorial.inputId,
       passed: originality.passed,
