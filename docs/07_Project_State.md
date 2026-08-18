@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-18 August 2026, after PR #176 reached a READY production deployment and the 200+ Editorial Image candidate expansion was implemented from a 912-record Apify/Openverse collection.
+18 August 2026, after PR #177's Editorial Image expansion import workflow completed GREEN and the low useful-image yield was traced to over-broad acquisition plus a relevance-filter bug.
 
 ## Source of truth
 
@@ -27,9 +27,11 @@ Read first in future sessions:
 13. `docs/37_2026-08-17_AUTO-004_NOTIF-003_Verification.md`
 14. `docs/38_2026-08-17_End_of_Session_Handoff.md`
 15. `docs/39_2026-08-18_AUTO-004_Multisource_Image_Handoff.md`
-16. all newer numbered handoff, automation, media, Sprint, launch and FinOps documents relevant to the task.
+16. `docs/40_2026-08-18_Apify_Editorial_Image_Candidate_Expansion.md`
+17. `docs/41_2026-08-18_Precision_Editorial_Image_Acquisition.md`
+18. all newer numbered handoff, automation, media, Sprint, launch and FinOps documents relevant to the task.
 
-Where older documentation conflicts with a later reconciled state or handoff, the newer document wins. Do not use chat history as the current source of truth.
+Where older documentation conflicts with a later reconciled state or handoff, the newer document wins. Do not use chat history as the source of truth.
 
 ## Operating context
 
@@ -37,10 +39,10 @@ Where older documentation conflicts with a later reconciled state or handoff, th
 - Daily editorial deadline: 08:00 Europe/Dublin.
 - Daily target: five review-ready drafts and one consolidated editorial email.
 - GitHub is the source of truth for versioned project state.
-- Sanity is the canonical CMS and mandatory human approval boundary.
-- No acquired or generated article/image is automatically approved or published.
-- Original Rugby Panda photography is preferred.
-- Third-party photographs require documented rights or explicit permission before public use.
+- Sanity is the canonical CMS and mandatory editorial approval boundary.
+- No acquired or generated article/image is automatically published.
+- Original Rugby Panda photography is preferred where relevant.
+- Third-party photographs require documented rights and editorial relevance before approval.
 
 ## Architecture
 
@@ -62,11 +64,13 @@ GitHub source of truth
 - AUTO-001 consolidated five-article delivery, NOTIFY-001, NOTIFY-002 and NOTIFY-003 are production verified.
 - AUTO-004 production eligibility/diversity guard is production verified and excludes QA/test drafts.
 - A controlled AUTO-004 import successfully created five current production drafts after GitHub/Vercel secret alignment and the Sanity province-taxonomy fix in PR #173.
-- PR #174 merged as `acac0fab15fd208a3609ca8eeac6ea70509c9e7d` and fixes morning notification suppression, concrete reader-facing generation requirements and direct body editing in Editorial Review.
-- PR #175 merged as `11a0adac765b6d4050dc67cd772d23b420d4e396` with richer controlled five-story source packets for verification.
-- PR #176 merged as `1470df4d9cf5ca0111a0fe1402742ac400b42440`. Its Vercel production deployment is now READY. Representative regenerated-story verification is still required before calling the new synthesis/image-selection behaviour production verified.
-- The existing five AUTO-004 drafts pre-date #176 and still contain some historical image assignments, so they are not valid evidence for or against the new fail-closed selector.
-- Apify is available and was used on 18 August for the explicit image-candidate expansion task.
+- PR #174 merged morning notification suppression, concrete reader-facing generation requirements and direct body editing in Editorial Review.
+- PR #175 merged richer five-story verification packets.
+- PR #176 merged all-source synthesis and fail-closed image relevance; its production deployment is READY, but representative regenerated-story verification remains pending.
+- PR #177 merged the 18 August Apify Editorial Image candidate expansion, source/rights metadata enrichment and the candidate-only import path.
+- After `APIFY_TOKEN` and a rotated replacement `SANITY_API_TOKEN` were configured in GitHub Actions, the `Import Apify Editorial Image Candidates` workflow completed GREEN.
+- The importer used by that run had a hard minimum of 200 genuinely new records after filtering and Sanity deduplication and forced every imported record to `lifecycleStatus=candidate` and `usageApproved=false`.
+- A quick visual review showed that only a minority of the imported results appeared useful enough. The current problem is therefore acquisition precision and review efficiency, not raw candidate volume.
 
 ## Editorial content contract
 
@@ -82,24 +86,65 @@ Automatic image assignment is relevance-first and fail-closed.
 
 - A province mismatch is not an acceptable fallback.
 - Generic or unrelated approved imagery must not be assigned merely because no better image exists.
-- The image should match the article subject through team, named person, fixture/event, competition or venue where possible.
+- Match the article through team, named person, fixture/event, competition or venue where possible.
 - If no sufficiently relevant approved image exists, leave the article without an automatically assigned image.
-- Ageing Pandas/amateur-veterans imagery must never illustrate a professional province/national-team story unless the story is actually about that team/event.
+- Ageing Pandas/amateur-veterans imagery must never illustrate a professional province/national-team story unless the story concerns that team/event.
 
-## Editorial Image candidate expansion — current state
+## MEDIA-007 — current precision acquisition state
 
-Apify/Openverse acquisition on 18 August produced 912 raw records across 32 recorded runs covering the requested province, national-team, European competition, international, match-action, training and venue scopes.
+The first 18 August collection generated 912 raw Openverse records and the subsequent import workflow completed GREEN. The high volume did not translate into sufficiently high editorial value.
 
-The raw result count is deliberately not treated as the candidate count. On branch `media/2026-08-18-apify-image-candidates` the project now has:
+### Root cause
 
-- a versioned Apify run/dataset manifest at `data/editorial-images/apify-collection-2026-08-18.json`;
-- `scripts/import-apify-editorial-image-candidates.mjs`, which filters licence/file/noise/relevance problems and deduplicates source records plus existing Sanity entries;
-- a hard minimum of 200 genuinely new candidates before the importer can report success;
-- candidate-only import semantics: `lifecycleStatus = candidate`, `usageApproved = false`;
-- enriched Editorial Image fields for source page, creator, team, named people, competition/event, event date and acquisition provenance;
-- Image Review cards that surface subject and rights context during human review.
+The original importer built its relevance text from both source image metadata and `run.query` / `run.scope`. This allowed the search request itself to satisfy its own relevance test. For example, an image returned by a Leinster search could pass a Leinster check because `Leinster` existed in the run metadata even when the image's title/tags/source metadata did not prove a Leinster connection.
 
-The collection milestone is **implemented but not yet complete** until the branch is merged, its import workflow succeeds, and a Sanity query verifies at least 200 genuinely new candidate-only records. No acquired image becomes approved automatically.
+### Precision fix implemented on branch
+
+Branch: `media/precision-apify-acquisition-v3`
+
+Implemented but not yet merged/deployed:
+
+- relevance proof now uses **source image metadata only**;
+- acquisition query/scope remain provenance/context only and cannot prove relevance;
+- future run records can carry exact `requiredSignals` which must appear in source metadata;
+- generic high-noise queries are forbidden by policy;
+- `data/editorial-images/acquisition-targets-2026-27.json` provides maintained target entities;
+- `scripts/generate-precision-apify-image-plan.mjs` generates narrow, capped search plans;
+- package command `media:plan-precision-acquisition` generates the plan without spending on Apify.
+
+### Coverage policy
+
+Precision acquisition remains broad enough for Rugby Panda coverage:
+
+- all 16 URC clubs;
+- all Six Nations teams;
+- all 12 Nations Championship teams;
+- Champions Cup and Challenge Cup subjects relevant to coverage;
+- Ireland Men and Ireland Women;
+- current priority Irish players/coaches;
+- new signings as editorial subjects are identified;
+- professional match/training action and relevant venues only when tied to an exact subject.
+
+The maintained 2026/27 target list reflects the current 16-club URC structure and the 2026 Nations Championship northern/southern participant groups. Current entities should be refreshed from official competition/team sources before future season-wide runs.
+
+### Cost-control policy
+
+- Default Openverse result cap: 6 per query.
+- Absolute plan cap: 8 per query.
+- Player/coach searches: normally 4 results.
+- Do not execute every generated query automatically.
+- Run Tier 1 first, measure useful-image yield, then expand only where justified.
+- No further paid Apify image crawl should start until the precision PR is merged and the next small batch is explicitly selected.
+
+### Review model
+
+The intended operating model is AI-led review for clear cases:
+
+- approve when visual subject, editorial relevance and rights metadata are clear;
+- reject obvious irrelevance, poor quality, duplicates or unsuitable rights;
+- leave only genuinely uncertain cases for owner review.
+
+Acquisition itself remains candidate-only and never auto-approves third-party imagery.
 
 ## AUTO-004 — current state
 
@@ -125,11 +170,12 @@ Merged/deployed but still requiring representative verification:
 
 Still pending:
 
-- merge/deploy/import verification for the 200+ Editorial Image candidate expansion;
+- precision Editorial Image acquisition merge/build verification;
+- small-batch precision-yield verification;
+- AI-led review of the current imported image pool;
 - representative production verification of #176 fail-closed selection;
-- multi-source acquisition packs for the five representative stories;
-- regeneration and editorial inspection of those five stories;
-- authenticated Sanity Studio verification of body editing and expanded Image Review;
+- multi-source acquisition packs and regeneration for the five representative stories;
+- authenticated Studio body-edit verification;
 - exactly one consolidated AUTO-001 email for the regenerated five-story package.
 
 ## AUTO-003 — remaining morning orchestration
@@ -147,12 +193,12 @@ The introduction article is live. The minimum launch package still requires at l
 
 ## Immediate priority
 
-1. Merge/deploy the Editorial Image expansion and verify at least 200 genuinely new candidate-only records in Sanity.
-2. Verify the expanded authenticated Image Review queue and preserve the human rights/editorial approval boundary.
-3. Build multi-source evidence packs and regenerate the five AUTO-004 stories.
-4. Verify #176 fail-closed image behaviour with representative province/national stories.
-5. Verify editorial quality, direct body editing and suppression of five individual morning draft emails.
-6. Run AUTO-001 and verify exactly one consolidated five-article email.
+1. Merge and verify the precision Editorial Image acquisition fix.
+2. Do not spend on another broad Apify crawl.
+3. Review the current candidate pool with AI handling clear approve/reject decisions and owner escalation only for uncertainty.
+4. Run a deliberately small Tier-1 precision acquisition sample and measure useful-image yield before expansion.
+5. Return to AUTO-004 multi-source regeneration and verify #176 fail-closed image behaviour.
+6. Verify direct body editing, morning notification suppression and exactly one consolidated AUTO-001 package email.
 7. Complete AUTO-004, then finish AUTO-003 scheduling and three-day verification.
 
 ## Completion rule
