@@ -5,7 +5,7 @@ const targetsPath = process.env.EDITORIAL_IMAGE_TARGETS_FILE ?? "data/editorial-
 const outputPath = process.env.EDITORIAL_IMAGE_PLAN_FILE ?? "data/editorial-images/precision-apify-query-plan-2026-08-18.json";
 
 const targets = JSON.parse(await fs.readFile(path.resolve(process.cwd(), targetsPath), "utf8"));
-const defaultLimit = Math.min(targets.defaultResultsPerQuery ?? 6, targets.maximumResultsPerQuery ?? 8);
+const defaultLimit = Math.min(targets.defaultResultsPerQuery ?? 3, targets.maximumResultsPerQuery ?? 5);
 const plan = [];
 const seen = new Set();
 
@@ -20,9 +20,10 @@ function add({ keyword, scope, subjectType, subject, competition, requiredSignal
     subject,
     competition,
     requiredSignals: [...new Set(requiredSignals.filter(Boolean))],
-    resultsWanted: Math.min(resultsWanted, targets.maximumResultsPerQuery ?? 8),
+    resultsWanted: Math.min(resultsWanted, targets.maximumResultsPerQuery ?? 5),
     sort: "relevance",
     tier,
+    preferredFromYear: targets.preferredCurrentImageYear ?? 2024,
   });
 }
 
@@ -33,7 +34,7 @@ for (const team of targets.priorityTeams) {
     subjectType: "team",
     subject: team,
     requiredSignals: [team.replace(/ Rugby$/i, ""), team],
-    resultsWanted: 8,
+    resultsWanted: 4,
     tier: 1,
   });
 }
@@ -46,7 +47,7 @@ for (const player of targets.priorityIrelandPlayers) {
     subject: player,
     competition: "international rugby",
     requiredSignals: [player],
-    resultsWanted: 4,
+    resultsWanted: 3,
     tier: 1,
   });
 }
@@ -58,7 +59,7 @@ for (const coach of targets.priorityCoaches) {
     subjectType: "person",
     subject: coach.name,
     requiredSignals: [coach.name],
-    resultsWanted: 4,
+    resultsWanted: 3,
     tier: 1,
   });
 }
@@ -71,7 +72,7 @@ for (const team of targets.urcTeams) {
     subject: team,
     competition: "United Rugby Championship",
     requiredSignals: [team.replace(/ Rugby$/i, ""), team],
-    resultsWanted: targets.priorityTeams.includes(team) ? 6 : 5,
+    resultsWanted: targets.priorityTeams.includes(team) ? 4 : 3,
     tier: targets.priorityTeams.includes(team) ? 1 : 2,
   });
 }
@@ -84,7 +85,7 @@ for (const team of targets.sixNationsTeams) {
     subject: team,
     competition: "Guinness Men's Six Nations",
     requiredSignals: [team],
-    resultsWanted: team === "Ireland" ? 7 : 5,
+    resultsWanted: team === "Ireland" ? 4 : 3,
     tier: team === "Ireland" ? 1 : 2,
   });
 }
@@ -97,7 +98,7 @@ for (const team of targets.nationsChampionshipTeams) {
     subject: team,
     competition: "Nations Championship",
     requiredSignals: [team],
-    resultsWanted: team === "Ireland" ? 7 : 5,
+    resultsWanted: team === "Ireland" ? 4 : 3,
     tier: team === "Ireland" ? 1 : 2,
   });
 }
@@ -109,7 +110,7 @@ for (const venue of targets.priorityVenues) {
     subjectType: "venue",
     subject: venue,
     requiredSignals: venue.split(/\s+(?:Stadium|Park)$/i).slice(0, 1),
-    resultsWanted: 4,
+    resultsWanted: 3,
     tier: 3,
   });
 }
@@ -132,7 +133,12 @@ const output = {
     paidRunRequiresExplicitApproval: true,
     broadGenericQueriesForbidden: true,
     expandOnlyAfterMeasuredUsefulYield: true,
-    approvalBoundary: "candidate-only; no automatic approval",
+    approvalBoundary: "assistant visual/editorial first-pass; owner only for genuinely uncertain cases",
+    initialPaidBatchMaximumQueries: targets.initialPaidBatchMaximumQueries ?? 12,
+    initialPaidBatchMaximumResults: targets.initialPaidBatchMaximumResults ?? 40,
+    minimumUsefulApprovalYieldPercent: targets.minimumUsefulApprovalYieldPercent ?? 60,
+    stopAndRedesignBelowUsefulYield: true,
+    fullPlanExecutionForbiddenByDefault: true,
   },
   totals,
   queries: plan,
@@ -140,4 +146,5 @@ const output = {
 
 await fs.writeFile(path.resolve(process.cwd(), outputPath), `${JSON.stringify(output, null, 2)}\n`);
 console.log(`Generated ${totals.queries} precision queries with a hard ceiling of ${totals.maximumRequestedResults} requested results.`);
+console.log(`Paid execution policy: max ${output.executionPolicy.initialPaidBatchMaximumQueries} queries / ${output.executionPolicy.initialPaidBatchMaximumResults} results before yield review.`);
 console.log(`Plan: ${outputPath}`);
