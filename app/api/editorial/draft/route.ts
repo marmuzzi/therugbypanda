@@ -10,6 +10,7 @@ export const runtime = "nodejs";
 export const maxDuration = 120;
 
 const ALLOWED_STUDIO_ORIGIN = "https://therugbypanda.sanity.studio";
+const EDITORIAL_GENERATION_TIMEOUT_MS = 110_000;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN,
@@ -111,7 +112,7 @@ export async function POST(request: NextRequest) {
     console.info("Editorial OpenAI stage starting", { requestId, inputId: body.story.id });
     const article = await generateArticleDraft(body.story, editorial, {
       targetLengthWords: body.qaMode === true ? "250-400" : "700-1100",
-      timeoutMs: 90_000,
+      timeoutMs: EDITORIAL_GENERATION_TIMEOUT_MS,
     });
     const pkg = { editorial, article };
 
