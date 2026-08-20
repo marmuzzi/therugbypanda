@@ -53,9 +53,20 @@ Requirements:
 - social failure must not roll back a successful website publication;
 - verify real production delivery through Meta before completion.
 
-## Priority 3 — Large, relevant and reusable Editorial Image pool
+## Priority 3 — Large, relevant and reusable media pool
 
-Build a varied image library suitable for likely Rugby Panda stories while controlling acquisition cost.
+Build a varied media library suitable for likely Rugby Panda stories while controlling acquisition cost.
+
+### Readiness targets
+
+The combined usable-media target includes approved Editorial Images plus approved Brand Assets such as team, union and competition logos.
+
+- **200 usable approved media assets** = minimum launch-ready library.
+- **500 usable approved media assets** = strong operating target.
+
+For reporting, always show both the combined total and the split between Editorial Images and Brand Assets. Brand Assets remain technically separate because logo/trademark controls differ from photography rights.
+
+A media item counts as usable only when it is relevant, rights-reviewed for its intended editorial use, stored in the approved Sanity workflow and genuinely suitable for publication. Candidate records, weak placeholders, unrelated images and unreviewed third-party assets do not count toward 200/500.
 
 Coverage should include:
 
@@ -67,9 +78,12 @@ Coverage should include:
 - Six Nations teams;
 - Nations Championship/international sides;
 - Champions Cup and Challenge Cup subjects;
-- professional match action, training and relevant venues.
+- professional match action, training and relevant venues;
+- approved team, union and competition logos needed for reader-facing coverage.
 
-Acquisition should be precision-first: exact team/player/event searches, small result caps and measured useful-image yield. Third-party material remains candidate-only until relevance and rights review. AI should handle clear approve/reject cases, escalating only genuinely uncertain cases to the owner.
+Acquisition should be precision-first: exact team/player/event searches, small result caps and measured useful-image yield. Apify is a metered service and must not be used to chase volume. The first paid batch after a query redesign should remain small; expand only after useful-image yield is strong.
+
+The assistant performs first-pass relevance review for clear approve/reject decisions, escalating only genuinely uncertain cases to the owner. Old images should be retained only when deliberately useful as historical/context or evergreen venue imagery; current-season subjects should prefer current imagery where reliable date metadata exists.
 
 Automatic article assignment remains fail-closed: no unrelated image is better than a wrong image.
 
@@ -108,12 +122,12 @@ The check must be conditional: do not create filler articles merely because the 
 ## Execution order
 
 1. Finish and production-verify Priority 1, including originality, independent-source synthesis, style diversity and exactly-one-email delivery.
-2. In parallel only where it does not distract from Priority 1, improve the relevant image pool because Priority 1 depends on it.
+2. In parallel only where it does not distract from Priority 1, improve the relevant media pool toward the 200 minimum and then 500 strong operating target.
 3. Complete automatic Meta social distribution after website publication.
 4. Build the phone-first Media Desk upload path.
 5. Add the 14:00 major-announcement watcher and conditional generation path.
 
-The image pool may continue incrementally throughout because it supports both morning articles and social distribution, but broad high-cost acquisition runs are not permitted.
+The image/media pool may continue incrementally throughout because it supports both morning articles and social distribution, but broad high-cost acquisition runs are not permitted.
 
 ## Completion rule
 
