@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
+import type { ArticleStyleProfileId } from "@/lib/editorial/ArticleStyleProfile";
 import type { FactLedger, RawStoryInput } from "@/lib/editorial/EditorialTypes";
 import { EditorialBrain } from "@/lib/editorial/EditorialBrain";
 import { notifyDraftCreated } from "@/lib/editorial/EditorialNotifications";
@@ -27,15 +28,13 @@ type DraftRequest = {
   dryRun?: boolean;
   qaMode?: boolean;
   notificationMode?: "draft" | "package";
+  styleProfileId?: ArticleStyleProfileId;
 };
 
 function jsonResponse(body: unknown, init?: ResponseInit) {
   return NextResponse.json(body, {
     ...init,
-    headers: {
-      ...corsHeaders,
-      ...(init?.headers ?? {}),
-    },
+    headers: { ...corsHeaders, ...(init?.headers ?? {}) },
   });
 }
 
@@ -50,9 +49,7 @@ export async function OPTIONS() {
 }
 
 export async function POST(request: NextRequest) {
-  if (!isAuthorized(request)) {
-    return jsonResponse({ error: "Unauthorized" }, { status: 401 });
-  }
+  if (!isAuthorized(request)) return jsonResponse({ error: "Unauthorized" }, { status: 401 });
 
   const requestId = crypto.randomUUID();
   const startedAt = Date.now();
@@ -69,6 +66,7 @@ export async function POST(request: NextRequest) {
       dryRun: body.dryRun === true,
       qaMode: body.qaMode === true,
       notificationMode: body.notificationMode ?? "draft",
+      styleProfileId: body.styleProfileId ?? null,
     });
 
     const editorial = new EditorialBrain().evaluate(body.story, { factLedger: body.factLedger });
@@ -113,6 +111,7 @@ export async function POST(request: NextRequest) {
     const article = await generateArticleDraft(body.story, editorial, {
       targetLengthWords: body.qaMode === true ? "250-400" : "700-1100",
       timeoutMs: EDITORIAL_GENERATION_TIMEOUT_MS,
+      styleProfileId: body.styleProfileId,
     });
     const pkg = { editorial, article };
 
@@ -129,11 +128,7 @@ export async function POST(request: NextRequest) {
     });
 
     const notification = body.notificationMode === "package"
-      ? {
-          status: "suppressed" as const,
-          eventId: null,
-          reason: "consolidated-morning-package",
-        }
+      ? { status: "suppressed" as const, eventId: null, reason: "consolidated-morning-package" }
       : await notifyDraftCreated({
           articleId: sanityDraft.id,
           articleTitle: article.title,

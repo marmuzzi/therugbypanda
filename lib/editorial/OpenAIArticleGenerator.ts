@@ -1,4 +1,10 @@
 import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
+import {
+  getArticleStyleProfile,
+  selectArticleStyleProfile,
+  type ArticleStyleProfile,
+  type ArticleStyleProfileId,
+} from "./ArticleStyleProfile";
 import type { EditorialBrainResult, RawStoryInput } from "./EditorialTypes";
 import { assessArticleOriginality, type OriginalityReport } from "./OriginalityGuard";
 import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
@@ -70,73 +76,8 @@ type ResponsesPayload = {
 type GenerateArticleOptions = {
   targetLengthWords?: string;
   timeoutMs?: number;
+  styleProfileId?: ArticleStyleProfileId;
 };
-
-type StyleProfile = {
-  id: string;
-  instructions: string[];
-};
-
-const STYLE_PROFILES: StyleProfile[] = [
-  {
-    id: "news-desk",
-    instructions: [
-      "Use a crisp news-led opening that delivers the development immediately.",
-      "Prefer short-to-medium paragraphs and restrained analysis after the core facts.",
-      "Use no more than two subheadings; omit them entirely if the story flows better without them.",
-      "Use a direct factual headline rather than a colon-led or question headline.",
-    ],
-  },
-  {
-    id: "analyst",
-    instructions: [
-      "Open with the consequence or rugby significance rather than simply repeating the announcement.",
-      "Build an analytical narrative with fewer, longer sections and deeper paragraphs.",
-      "Use descriptive subheadings only where they genuinely change the argument.",
-      "Finish on the implication, selection battle or tactical question supporters should watch.",
-    ],
-  },
-  {
-    id: "match-notebook",
-    instructions: [
-      "Write with the pace of a rugby correspondent's notebook: concrete detail first, context woven through it.",
-      "Mix short punchy paragraphs with occasional longer explanatory paragraphs.",
-      "Use several brief sections only when they help separate distinct talking points.",
-      "Avoid a generic summary conclusion; end on a specific player, contest, fixture or unresolved question.",
-    ],
-  },
-  {
-    id: "feature",
-    instructions: [
-      "Use a scene-setting or context-led opening before revealing the central argument naturally.",
-      "Prefer flowing prose and minimal subheadings; one substantial section with several paragraphs is acceptable.",
-      "Vary paragraph length and sentence cadence noticeably.",
-      "Use a more character- or narrative-led headline while remaining accurate and unsensational.",
-    ],
-  },
-  {
-    id: "supporter-preview",
-    instructions: [
-      "Frame the story around what supporters should notice next and why it matters.",
-      "Use an energetic but credible opening and concrete names, combinations, selection calls or fixtures.",
-      "Use two to four useful subheadings if the story contains distinct watch-points, but do not force symmetry.",
-      "End with a forward-looking observation rather than restating the introduction.",
-    ],
-  },
-];
-
-function stableHash(value: string): number {
-  let hash = 2166136261;
-  for (let index = 0; index < value.length; index += 1) {
-    hash ^= value.charCodeAt(index);
-    hash = Math.imul(hash, 16777619);
-  }
-  return hash >>> 0;
-}
-
-function styleProfileFor(story: RawStoryInput): StyleProfile {
-  return STYLE_PROFILES[stableHash(story.id) % STYLE_PROFILES.length];
-}
 
 function sourceProvenance(story: RawStoryInput) {
   return story.sourceRecords.map((source) => ({
@@ -149,13 +90,26 @@ function sourceProvenance(story: RawStoryInput) {
   }));
 }
 
+function retryOverlapFragments(report?: OriginalityReport) {
+  if (!report) return [];
+  return report.findings
+    .filter((finding) => finding.longestSharedRun > 11 && finding.longestSharedPhrase)
+    .map((finding) => ({
+      sourceId: finding.sourceId,
+      publisher: finding.publisher,
+      consecutiveWords: finding.longestSharedRun,
+      phrase: finding.longestSharedPhrase,
+    }));
+}
+
 function generationInput(
   story: RawStoryInput,
   editorial: EditorialBrainResult,
   targetLengthWords: string,
-  style: StyleProfile,
+  style: ArticleStyleProfile,
   originalityFeedback?: OriginalityReport,
 ) {
+  const overlapFragments = retryOverlapFragments(originalityFeedback);
   return JSON.stringify({
     assignment: editorial.brief,
     classification: {
@@ -168,10 +122,7 @@ function generationInput(
     evidence: {
       factLedger: editorial.factLedger,
       sourceProvenance: sourceProvenance(story),
-      storyIdentity: {
-        id: story.id,
-        title: story.title,
-      },
+      storyIdentity: { id: story.id, title: story.title },
       compositionBoundary: [
         "Treat the fact ledger as semantic evidence, not prose to imitate.",
         "Source excerpts and source body text are deliberately withheld from generation to reduce source-shaped phrasing.",
@@ -181,7 +132,9 @@ function generationInput(
     },
     editorialStyle: {
       profile: style.id,
-      instructions: style.instructions,
+      label: style.generationLabel,
+      instructions: style.generationInstructions,
+      presentationIntent: style.presentation,
       variationRules: [
         "Do not default to a fixed three-section article structure.",
         "The body may contain from one to seven sections according to the story and assigned style.",
@@ -193,8 +146,13 @@ function generationInput(
     },
     ...(originalityFeedback ? {
       originalityRetry: {
-        instruction: "The previous draft was rejected by the deterministic originality gate. Recompose the article independently from the semantic evidence. Do not merely edit the rejected wording. Preserve supported facts while changing sentence construction, sequencing, transitions and article architecture.",
+        instruction: [
+          "The previous draft was rejected by the deterministic originality gate. Recompose the article independently from the semantic evidence; do not merely edit the rejected wording.",
+          "For every listed overlap fragment, do not reproduce that phrase as one contiguous sequence. Preserve supported names and facts, but split long name/fact lists across sentences, alter their order where meaning allows, and use independent sentence construction.",
+          "The deterministic thresholds remain unchanged, so the replacement must genuinely clear the gate.",
+        ],
         reasons: originalityFeedback.reasons,
+        overlapFragments,
       },
     } : {}),
     requirements: {
@@ -229,9 +187,7 @@ function extractOutputText(payload: ResponsesPayload): string | undefined {
     if (item.type !== "message") continue;
     for (const part of item.content ?? []) {
       if (part.type === "output_text" && part.text) return part.text;
-      if (part.type === "refusal" && part.refusal) {
-        throw new Error(`OpenAI refused article generation: ${part.refusal}`);
-      }
+      if (part.type === "refusal" && part.refusal) throw new Error(`OpenAI refused article generation: ${part.refusal}`);
     }
   }
   return undefined;
@@ -242,16 +198,10 @@ function rawStoryOriginalityText(story: RawStoryInput): string {
 }
 
 function parseGeneratedArticle(payload: ResponsesPayload): GeneratedArticleDraft {
-  if (payload.status === "failed") {
-    throw new Error(`OpenAI generation failed: ${payload.error?.message ?? "unknown error"}`);
-  }
-  if (payload.status === "incomplete") {
-    throw new Error(`OpenAI generation was incomplete: ${payload.incomplete_details?.reason ?? "unknown reason"}`);
-  }
-
+  if (payload.status === "failed") throw new Error(`OpenAI generation failed: ${payload.error?.message ?? "unknown error"}`);
+  if (payload.status === "incomplete") throw new Error(`OpenAI generation was incomplete: ${payload.incomplete_details?.reason ?? "unknown reason"}`);
   const outputText = extractOutputText(payload);
   if (!outputText) throw new Error("OpenAI returned no structured article output in the response output array.");
-
   try {
     return JSON.parse(outputText) as GeneratedArticleDraft;
   } catch (error) {
@@ -269,14 +219,15 @@ export async function generateArticleDraft(
 
   const timeoutMs = Math.min(Math.max(options.timeoutMs ?? DEFAULT_TIMEOUT_MS, 5_000), 110_000);
   const startedAt = Date.now();
-  const style = styleProfileFor(story);
+  const style = options.styleProfileId
+    ? getArticleStyleProfile(options.styleProfileId)
+    : selectArticleStyleProfile(story.id, editorial.storyType);
   const targetLengthWords = options.targetLengthWords ?? "700-1100";
   const rawStoryMaterial = rawStoryOriginalityText(story);
   let originalityFeedback: OriginalityReport | undefined;
 
   for (let attempt = 1; attempt <= MAX_ORIGINALITY_ATTEMPTS; attempt += 1) {
-    const elapsedMs = Date.now() - startedAt;
-    const remainingMs = timeoutMs - elapsedMs;
+    const remainingMs = timeoutMs - (Date.now() - startedAt);
     if (remainingMs < MIN_RETRY_TIMEOUT_MS) {
       if (originalityFeedback) {
         throw new Error(`Originality gate rejected draft after ${attempt - 1} attempt(s): ${originalityFeedback.reasons.join(" ")}`);
@@ -301,24 +252,14 @@ export async function generateArticleDraft(
 
       const response = await fetch(OPENAI_RESPONSES_URL, {
         method: "POST",
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          "Content-Type": "application/json",
-        },
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         signal: controller.signal,
         body: JSON.stringify({
           model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
           store: false,
           instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
           input: generationInput(story, editorial, targetLengthWords, style, originalityFeedback),
-          text: {
-            format: {
-              type: "json_schema",
-              name: "rugby_panda_article_draft",
-              strict: true,
-              schema: ARTICLE_SCHEMA,
-            },
-          },
+          text: { format: { type: "json_schema", name: "rugby_panda_article_draft", strict: true, schema: ARTICLE_SCHEMA } },
         }),
       });
 
@@ -344,9 +285,7 @@ export async function generateArticleDraft(
       const originality = assessArticleOriginality(
         article,
         story.sourceRecords,
-        rawStoryMaterial
-          ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }]
-          : [],
+        rawStoryMaterial ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }] : [],
       );
       console.info("Editorial originality check completed", {
         inputId: editorial.inputId,
@@ -357,7 +296,6 @@ export async function generateArticleDraft(
       });
 
       if (originality.passed) return article;
-
       originalityFeedback = originality;
       if (attempt === MAX_ORIGINALITY_ATTEMPTS) {
         throw new Error(`Originality gate rejected draft after ${attempt} attempt(s): ${originality.reasons.join(" ")}`);
@@ -368,6 +306,7 @@ export async function generateArticleDraft(
         styleProfile: style.id,
         attempt,
         reasons: originality.reasons,
+        overlapFragments: retryOverlapFragments(originality),
         remainingMs: timeoutMs - (Date.now() - startedAt),
       });
     } catch (error) {
