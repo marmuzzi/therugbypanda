@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-18 August 2026, after PR #179 merged the precision Editorial Image acquisition fix and its code was verified on READY Vercel preview deployments; production deployment of the merge commit is currently blocked by the Vercel build-rate limit.
+20 August 2026, after production verification of PR #188 style diversity, PR #190 generation-timeout alignment, PR #192 bounded originality retry / subject-evidence image relevance, and a deliberately small measured Apify precision sample.
 
 ## Source of truth
 
@@ -22,14 +22,12 @@ Read first in future sessions:
 8. `docs/25_Go_Live_Editorial_Automation_and_Security_Plan.md`
 9. `docs/27_Sprint_5_Production_State.md`
 10. `docs/33_Version_1_Product_Roadmap.md`
-11. `docs/34_2026-07-29_Automation_Handoff.md`
-12. `docs/36_2026-08-17_AUTO-001_Production_Verification.md`
-13. `docs/37_2026-08-17_AUTO-004_NOTIF-003_Verification.md`
-14. `docs/38_2026-08-17_End_of_Session_Handoff.md`
-15. `docs/39_2026-08-18_AUTO-004_Multisource_Image_Handoff.md`
-16. `docs/40_2026-08-18_Apify_Editorial_Image_Candidate_Expansion.md`
-17. `docs/41_2026-08-18_Precision_Editorial_Image_Acquisition.md`
-18. all newer numbered handoff, automation, media, Sprint, launch and FinOps documents relevant to the task.
+11. `docs/41_2026-08-18_Precision_Editorial_Image_Acquisition.md`
+12. `docs/42_2026-08-18_Editorial_Originality_Gate.md`
+13. `docs/43_2026-08-20_AUTO-004_Resume.md`
+14. `docs/44_2026-08-20_Owner_Priorities.md`
+15. `docs/45_2026-08-20_Editorial_Style_and_Safety_Verification.md`
+16. all newer numbered handoff, automation, media, Sprint, launch and FinOps documents relevant to the task.
 
 Where older documentation conflicts with a later reconciled state or handoff, the newer document wins. Do not use chat history as the source of truth.
 
@@ -37,7 +35,9 @@ Where older documentation conflicts with a later reconciled state or handoff, th
 
 - Timezone: `Europe/Dublin`.
 - Daily editorial deadline: 08:00 Europe/Dublin.
-- Daily target: five review-ready drafts and one consolidated editorial email.
+- Daily target: five review-ready drafts and exactly one consolidated editorial email.
+- Core readiness target: 26 August 2026.
+- Meaningful go-live target: 27 August 2026.
 - GitHub is the source of truth for versioned project state.
 - Sanity is the canonical CMS and mandatory editorial approval boundary.
 - No acquired or generated article/image is automatically published.
@@ -49,29 +49,23 @@ Where older documentation conflicts with a later reconciled state or handoff, th
 ```text
 GitHub source of truth
 → Make.com orchestration
-→ Apify multi-source acquisition
+→ precision acquisition
 → Editorial Brain and structured generation
-→ relevant rights-approved Editorial Image assignment
+→ deterministic originality gate
+→ subject-relevant rights-approved image assignment or no image
 → Sanity canonical CMS and human editorial review
 → Vercel public website
 → Meta social distribution only after controlled publication
 ```
 
-## Reconciled live baseline — 18 August 2026
+## Reconciled live baseline — 20 August 2026
 
-- Production reader site is healthy on Vercel.
-- `https://therugbypanda.ie` remains live with the launch introduction as lead article.
-- AUTO-001 consolidated five-article delivery, NOTIFY-001, NOTIFY-002 and NOTIFY-003 are production verified.
-- AUTO-004 production eligibility/diversity guard is production verified and excludes QA/test drafts.
-- A controlled AUTO-004 import successfully created five current production drafts after GitHub/Vercel secret alignment and the Sanity province-taxonomy fix in PR #173.
-- PR #174 merged morning notification suppression, concrete reader-facing generation requirements and direct body editing in Editorial Review.
-- PR #175 merged richer five-story verification packets.
-- PR #176 merged all-source synthesis and fail-closed image relevance; its production deployment is READY, but representative regenerated-story verification remains pending.
-- PR #177 merged the 18 August Apify Editorial Image candidate expansion, source/rights metadata enrichment and candidate-only import path.
-- After `APIFY_TOKEN` and a rotated replacement `SANITY_API_TOKEN` were configured in GitHub Actions, the `Import Apify Editorial Image Candidates` workflow completed GREEN.
-- The importer used by that run had a hard minimum of 200 genuinely new records after filtering and Sanity deduplication and forced every imported record to `lifecycleStatus=candidate` and `usageApproved=false`.
-- A quick visual review showed that only a minority of the imported results appeared useful enough. The current problem is acquisition precision and review efficiency, not raw candidate volume.
-- PR #179 merged as `1e27411884c108448f8398b71af9c6f92af09b09` with the precision acquisition fix. The individual code commits built READY on Vercel preview deployments, but the merge-to-production deployment was refused because the Vercel account hit its build-rate limit. Therefore #179 is merged and preview-build verified, but not production deployed or production verified.
+- Production reader site is healthy on Vercel and `https://therugbypanda.ie` is live.
+- AUTO-001 consolidated five-article delivery, NOTIFY-001, NOTIFY-002 and NOTIFY-003 remain production verified. AUTO-001 was not restarted during the 20 August quality work.
+- PR #188 merged as `a1ae569bad4f4e4a279dcb947b3f4cd9e5f594f5`, reached production READY and was verified reachable through the production domain. It introduced deterministic editorial style profiles, three article presentation variants, removed the forced three-section shape, locked the 26/27 August launch dates, set the 200 approved-media launch floor / 500 operating target and tightened precision-acquisition caps.
+- PR #190 merged as `836563e7050662a21fbe36c2623dcc66abcb2ea5`, reached production READY and production runtime confirmed a 110-second OpenAI generation safety budget inside the route's existing 120-second maximum.
+- PR #192 merged as `3540757e305d71c9889f4fec1350d1147c6f6d05`, reached production READY and introduced one bounded originality recomposition attempt without changing any originality thresholds, plus strict positive subject evidence for automatic image assignment.
+- Controlled trigger PRs #189, #191 and #193 were merged only to rerun the established AUTO-004 verification path; they do not represent new product functionality.
 
 ## Editorial content contract
 
@@ -81,78 +75,97 @@ For each story, acquisition should deliberately build a multi-source evidence pa
 
 Where evidence supports it, articles should name relevant players, coaches, new signings and selection battles, and explain what supporters should watch for. Reader-facing copy must not explain internal sourcing rules, confidence ledgers, AI/process mechanics or why speculation is being handled in a particular way.
 
+### Originality verification state
+
+The deterministic originality gate is now directly production-proven fail-closed before Sanity write.
+
+On the 20 August controlled Munster story:
+
+- attempt 1 was rejected for 13 consecutive normalized shared words and 28.6% six-word phrase coverage against `munster-preseason-squad-2026`;
+- after PR #192, one fresh recomposition attempt was permitted without weakening thresholds;
+- attempt 2 was again rejected at 13 shared words and 32.1% six-word coverage;
+- the API failed and the prior Sanity revision remained unchanged.
+
+Therefore the guard itself is working. The current blocker is that one short dense primary-source excerpt contains a concentrated list of names/facts that repeatedly trips the coverage metric even after recomposition. Do not weaken originality thresholds merely to pass the batch. Correct the protected source material/overlap treatment for unavoidable factual lists while preserving deterministic fail-closed plagiarism protection.
+
+## Editorial style-diversity state
+
+PR #188 style machinery is active in production, but the complete five-story quality sign-off is not yet complete because the first Munster story currently fails the originality gate and the sequential importer stops.
+
+The current deterministic generation-profile mapping for the stable AUTO-004 IDs is:
+
+- Munster: `news-desk`
+- Connacht: `feature`
+- Ulster: `match-notebook`
+- Leinster: `feature`
+- Ireland Women: `feature`
+
+The first successful post-#188 Munster output showed real improvement over the old template: a direct lead, fewer headings and a more natural section count. However, three of five stable IDs map to `feature`, so package-level balancing is required before the five-story daily package can be considered genuinely varied by design.
+
+The public article page has three deterministic slug-based presentation variants that vary content width, image dimensions/frame and Key Points placement. Those layout variants are independent of the five generation styles.
+
 ## Editorial image contract
 
 Automatic image assignment is relevance-first and fail-closed.
 
 - A province mismatch is not an acceptable fallback.
+- A province-specific story now requires positive image metadata for the same province before automatic assignment.
+- An Ireland story now requires image metadata that explicitly identifies Ireland.
+- Generic rugby, article-layout and usage terms do not count as subject evidence.
 - Generic or unrelated approved imagery must not be assigned merely because no better image exists.
 - Match the article through team, named person, fixture/event, competition or venue where possible.
 - If no sufficiently relevant approved image exists, leave the article without an automatically assigned image.
 - Ageing Pandas/amateur-veterans imagery must never illustrate a professional province/national-team story unless the story concerns that team/event.
 
-## MEDIA-007 — current precision acquisition state
+### 20 August production diagnosis
 
-The first 18 August collection generated 912 raw Openverse records and the subsequent import workflow completed GREEN. The high volume did not translate into sufficiently high editorial value.
+A prior post-#188 Munster draft had received `editorialImage-original-1000090450`, titled `Sevilla veterans rugby portrait`. The image is grassroots veterans rugby in Sevilla and has no Munster or La Rochelle relationship.
 
-### Root cause
+Root cause: the old score allowed generic rugby vocabulary and article-use metadata to cross the relevance threshold.
 
-The original importer built its relevance text from both source image metadata and `run.query` / `run.scope`. This allowed the search request itself to satisfy its own relevance test. For example, an image returned by a Leinster search could pass a Leinster check because `Leinster` existed in the run metadata even when the image's title/tags/source metadata did not prove a Leinster connection.
+PR #192 removes that path and requires positive subject evidence. The fix is merged and production READY; representative successful proof that a regenerated province story now resolves to no image when no matching approved image exists is still pending because the Munster generation currently fails originality before reaching the Sanity writer.
 
-### Precision fix merged in PR #179
+Legacy AUTO-004 drafts still contain known unrelated images from before #192 and require cleanup/replacement; do not treat them as valid launch media.
 
-PR #179 is merged on `main` as `1e27411884c108448f8398b71af9c6f92af09b09`.
+## Media baseline — 20 August 2026
 
-Merged implementation:
+Sanity production currently contains:
 
-- relevance proof uses **source image metadata only**;
-- acquisition query/scope remain provenance/context only and cannot prove relevance;
-- future run records can carry exact `requiredSignals` which must appear in source metadata;
-- generic high-noise queries are forbidden by policy;
-- `data/editorial-images/acquisition-targets-2026-27.json` provides maintained target entities;
-- `scripts/generate-precision-apify-image-plan.mjs` generates narrow, capped search plans;
-- package command `media:plan-precision-acquisition` generates the plan without spending on Apify.
+- 278 Editorial Image documents total.
+- 22 Editorial Images with `usageApproved == true`, lifecycle `approved/published`, and a local Sanity image asset.
+- 35 Brand Asset records total.
+- 24 Brand Asset records marked approved for editorial use.
+- 0 Brand Assets currently with a local `logo.asset` reference; 22 of the approved records still point at external candidate URLs.
 
-Deployment state:
+The 24 approved Brand Asset records must therefore remain separately governed and should not be counted as launch-ready local logo assets until their actual logo files are imported and no-hotlink/public-use requirements are verified.
 
-- the underlying code commits each produced READY Vercel preview deployments;
-- the merge commit's production deployment is currently blocked by Vercel build-rate limiting;
-- do not call #179 deployed or production verified until a production deployment reaches READY.
+The project is materially below the 200 approved usable media launch floor.
 
-### Coverage policy
+## MEDIA-007 — precision acquisition state
 
-Precision acquisition remains broad enough for Rugby Panda coverage:
+The broad 18 August Openverse collection produced high raw volume but low editorial value. PR #179 fixed source-metadata relevance proof and prohibited broad query metadata from proving its own relevance.
 
-- all 16 URC clubs;
-- all Six Nations teams;
-- all 12 Nations Championship teams;
-- Champions Cup and Challenge Cup subjects relevant to coverage;
-- Ireland Men and Ireland Women;
-- current priority Irish players/coaches;
-- new signings as editorial subjects are identified;
-- professional match/training action and relevant venues only when tied to an exact subject.
+PR #188 further tightened the operational acquisition rules:
 
-The maintained 2026/27 target list should be refreshed from official competition/team sources before future season-wide runs.
+- default result cap: 3 per query;
+- hard cap: 5 per query;
+- initial paid/test batch: no more than 12 queries and no more than 40 total returned results;
+- continuation threshold: at least 60% useful approval yield;
+- current/relevant imagery preferred; old material is acceptable only for genuine historical/context/venue use;
+- assistant performs first-pass clear approve/reject decisions; only uncertainty is escalated.
 
-### Cost-control policy
+### Measured precision sample on 20 August
 
-- Default Openverse result cap: 6 per query.
-- Absolute plan cap: 8 per query.
-- Player/coach searches: normally 4 results.
-- Do not execute every generated query automatically.
-- Run Tier 1 first, measure useful-image yield, then expand only where justified.
-- No further broad paid Apify image crawl should run.
-- The next paid run should be a deliberately small Tier-1 precision sample after #179 is production deployed or after deployment is otherwise confirmed not to affect the acquisition code path.
+A deliberately small Apify/Openverse sample was run at three requested results per query:
 
-### Review model
+1. `Munster Rugby La Rochelle` — 0 returned candidates.
+2. `Connacht Rugby Will Connors` — 0 returned candidates.
+3. `Ulster Rugby Jamie Benson` — 0 returned candidates.
+4. `Leinster Rugby South Africa` — 1 returned candidate, but it was an unrelated Lord Killanin/Howth Village photograph matched through loose metadata/tags.
 
-The intended operating model is AI-led review for clear cases:
+Measured useful yield: **0 useful assets**. Three searches had zero recall and the single returned image was rejected as unrelated.
 
-- approve when visual subject, editorial relevance and rights metadata are clear;
-- reject obvious irrelevance, poor quality, duplicates or unsuitable rights;
-- leave only genuinely uncertain cases for owner review.
-
-Acquisition itself remains candidate-only and never auto-approves third-party imagery.
+Do not scale this Openverse query pattern. It is far below the 60% continuation threshold. Change source/query strategy before any further meaningful Apify spend, then run another tiny measured sample.
 
 ## AUTO-004 — current state
 
@@ -164,27 +177,23 @@ Verified:
 - explicit production eligibility metadata;
 - source/topic/angle package diversity guard;
 - reusable controlled acquisition-batch import path;
-- GitHub/Vercel production authentication path after secret rotation;
-- correct Sanity province taxonomy mapping;
-- first controlled five-current-story draft import.
-
-Merged/deployed but still requiring representative verification:
-
-- one consolidated morning notification instead of five per-draft emails (#174);
-- concrete, player-aware, supporter-focused copy with no internal process language (#174);
-- direct article-body editing in Editorial Review (#174);
-- deliberate multi-source synthesis across all source records (#176);
-- fail-closed relevant image selection (#176).
+- production authentication and Sanity taxonomy path;
+- package notification suppression on a successful controlled story;
+- deterministic originality gate failing before Sanity write;
+- bounded second originality attempt also remaining fail-closed;
+- style-profile selection active in production;
+- #192 strict image subject-evidence code deployed.
 
 Still pending:
 
-- production deployment/verification of #179 after the Vercel build-rate limit clears;
-- small-batch precision-yield verification;
-- AI-led review of the current imported image pool;
-- representative production verification of #176 fail-closed selection;
-- multi-source acquisition packs and regeneration for the five representative stories;
+- correct the Munster protected-source/overlap problem without weakening originality safety;
+- add package-level style balancing so five stories do not cluster three into `feature`;
+- regenerate all five controlled stories successfully;
+- inspect all five side-by-side for headline construction, opening, paragraph rhythm, subheadings, overall structure, conclusion and layout;
+- production-prove #192 image fail-closed behaviour with a successful draft reaching the Sanity writer and receiving no unrelated fallback;
+- clean legacy wrong image assignments;
 - authenticated Studio body-edit verification;
-- exactly one consolidated AUTO-001 email for the regenerated five-story package.
+- verify exactly one consolidated AUTO-001 email for a complete regenerated five-story package.
 
 ## AUTO-003 — remaining morning orchestration
 
@@ -197,17 +206,23 @@ After AUTO-004 quality is verified:
 
 ## Launch state
 
-The introduction article is live. The minimum launch package still requires at least eight additional reviewed, image-backed articles covering recent internationals and all four Irish provinces, followed by production verification of homepage, News/category and article routes.
+- Core readiness target remains 26 August 2026.
+- Meaningful go-live target remains 27 August 2026.
+- Introduction article is live.
+- Minimum media floor is 200 approved usable assets; 500 is the stronger operating target.
+- Current locally usable approved Editorial Image count is 22, so the launch-media gap is significant.
+- Approved Brand Asset records are not yet locally imported logo assets and must remain separately reported.
 
 ## Immediate priority
 
-1. Wait for or retry the Vercel production deployment for PR #179 after the build-rate limit clears, then verify READY.
-2. Do not spend on another broad Apify crawl.
-3. Review the current candidate pool with AI handling clear approve/reject decisions and owner escalation only for uncertainty when the Sanity review connector is available.
-4. Run a deliberately small Tier-1 precision acquisition sample and measure useful-image yield before expansion.
-5. Return to AUTO-004 multi-source regeneration and verify #176 fail-closed image behaviour.
-6. Verify direct body editing, morning notification suppression and exactly one consolidated AUTO-001 package email.
-7. Complete AUTO-004, then finish AUTO-003 scheduling and three-day verification.
+1. Preserve the working originality thresholds; fix the short dense source-excerpt/overlap-model problem rather than weakening the gate.
+2. Add package-level style-profile balancing for a five-story batch.
+3. Rerun the same controlled five-story independent-source batch and complete side-by-side editorial inspection.
+4. Verify in production that unrelated approved images now resolve to no image after a successful story reaches Sanity.
+5. Clean the legacy wrong image assignments on the five old AUTO-004 drafts.
+6. Do not run another broad image scrape. Redesign the precision source/query strategy, then run another tiny measured sample only.
+7. Move separately governed approved logos into local Sanity assets before counting them toward launch-ready usable media.
+8. Then continue the remaining priorities: Facebook/Instagram publication snippets, phone-first upload and the 14:00 major-announcement check.
 
 ## Completion rule
 
@@ -218,8 +233,5 @@ Always distinguish implemented, committed, PR opened, merged, deployed, verified
 - Prefer maintainable reusable components.
 - Keep `main` deployable.
 - Keep `docs/08_Issue_Log.md` current.
-- Batch related changes where practical to conserve deployments.
-- Keep separate Make scenarios focused on one responsibility.
-- Do not expose internal AI/process references on reader-facing pages.
-- Do not publish third-party photographs without documented rights.
-- Do not hotlink unreviewed external image candidates into public templates.
+- Batch related changes when appropriate to reduce unnecessary deployments.
+- Never restart a verified workflow merely to recreate state that is already proven.
