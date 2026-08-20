@@ -61,21 +61,27 @@ for (const candidate of batch.candidates) {
     continue;
   }
 
-  const response = await fetch(`${baseUrl}/api/editorial/draft`, {
-    method: "POST",
-    headers: {
-      authorization: `Bearer ${secret}`,
-      "content-type": "application/json",
-    },
-    body: JSON.stringify(payload),
-  });
-  const body = await response.json().catch(() => ({ error: "Non-JSON response" }));
-  results.push({ id: candidate.id, status: response.status, ok: response.ok, body });
-
-  if (!response.ok) {
-    console.error(JSON.stringify(results, null, 2));
-    process.exit(2);
+  try {
+    const response = await fetch(`${baseUrl}/api/editorial/draft`, {
+      method: "POST",
+      headers: {
+        authorization: `Bearer ${secret}`,
+        "content-type": "application/json",
+      },
+      body: JSON.stringify(payload),
+    });
+    const body = await response.json().catch(() => ({ error: "Non-JSON response" }));
+    results.push({ id: candidate.id, status: response.status, ok: response.ok, body });
+  } catch (error) {
+    results.push({
+      id: candidate.id,
+      status: "request-error",
+      ok: false,
+      body: { error: error instanceof Error ? error.message : "Request failed" },
+    });
   }
 }
 
-console.log(JSON.stringify({ batchId: batch.batchId, results }, null, 2));
+const failed = results.filter((result) => result.ok === false);
+console.log(JSON.stringify({ batchId: batch.batchId, results, failedCount: failed.length }, null, 2));
+if (failed.length > 0) process.exitCode = 2;
