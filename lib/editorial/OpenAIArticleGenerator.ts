@@ -138,6 +138,17 @@ function styleProfileFor(story: RawStoryInput): StyleProfile {
   return STYLE_PROFILES[stableHash(story.id) % STYLE_PROFILES.length];
 }
 
+function sourceProvenance(story: RawStoryInput) {
+  return story.sourceRecords.map((source) => ({
+    sourceId: source.id,
+    publisher: source.publisher,
+    title: source.title,
+    url: source.url,
+    publishedAt: source.publishedAt,
+    isPrimarySource: source.isPrimarySource === true,
+  }));
+}
+
 function generationInput(
   story: RawStoryInput,
   editorial: EditorialBrainResult,
@@ -154,12 +165,19 @@ function generationInput(
       confidence: editorial.confidence,
       needsHumanFactCheck: editorial.needsHumanFactCheck,
     },
-    factLedger: editorial.factLedger,
-    sources: story.sourceRecords,
-    sourceMaterial: {
-      title: story.title,
-      summary: story.summary,
-      bodyText: story.bodyText,
+    evidence: {
+      factLedger: editorial.factLedger,
+      sourceProvenance: sourceProvenance(story),
+      storyIdentity: {
+        id: story.id,
+        title: story.title,
+      },
+      compositionBoundary: [
+        "Treat the fact ledger as semantic evidence, not prose to imitate.",
+        "Source excerpts and source body text are deliberately withheld from generation to reduce source-shaped phrasing.",
+        "Use source provenance to understand which publishers support the evidence and to populate sourceNotes accurately.",
+        "Do not echo fact-ledger claim wording when a natural independent sentence can express the same supported fact.",
+      ],
     },
     editorialStyle: {
       profile: style.id,
@@ -175,7 +193,7 @@ function generationInput(
     },
     ...(originalityFeedback ? {
       originalityRetry: {
-        instruction: "The previous draft was rejected by the deterministic originality gate. Recompose the article independently from the evidence. Do not merely edit the rejected wording. Preserve supported facts while changing sentence construction, sequencing, transitions and article architecture.",
+        instruction: "The previous draft was rejected by the deterministic originality gate. Recompose the article independently from the semantic evidence. Do not merely edit the rejected wording. Preserve supported facts while changing sentence construction, sequencing, transitions and article architecture.",
         reasons: originalityFeedback.reasons,
       },
     } : {}),
@@ -278,6 +296,7 @@ export async function generateArticleDraft(
         timeoutMs: remainingMs,
         styleProfile: style.id,
         attempt,
+        sourceProseIncluded: false,
       });
 
       const response = await fetch(OPENAI_RESPONSES_URL, {
