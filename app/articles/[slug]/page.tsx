@@ -23,6 +23,12 @@ type ArticlePageProps = {
   params: Promise<{ slug: string }>;
 };
 
+function presentationVariant(slug: string): number {
+  let hash = 0;
+  for (const character of slug) hash = (Math.imul(hash, 31) + character.charCodeAt(0)) | 0;
+  return Math.abs(hash) % 3;
+}
+
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
@@ -73,6 +79,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const featuredImage = getFeaturedImage(cmsArticle);
   const editorialImage = cmsArticle.useBrandImage ? undefined : featuredImage;
   const canonicalUrl = cmsArticle.slug ? articleUrl(cmsArticle.slug) : siteUrl("/");
+  const variant = presentationVariant(cmsArticle.slug ?? slug);
+  const showKeyPointsBeforeBody = variant === 1 && Boolean(cmsArticle.keyPoints?.length);
+  const imageClassName =
+    variant === 2
+      ? "h-[260px] w-full object-cover sm:h-[340px] md:h-[430px]"
+      : variant === 1
+        ? "h-[210px] w-full object-cover sm:h-[260px] md:h-[310px]"
+        : "h-[220px] w-full object-cover sm:h-[280px] md:h-[340px]";
+  const imageFrameClassName = variant === 2 ? "overflow-hidden bg-zinc-100" : "overflow-hidden rounded-2xl bg-zinc-100";
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "NewsArticle",
@@ -110,15 +125,11 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         readingTime={cmsArticle.readingTime ?? "Read"}
       />
 
-      <div className="mx-auto max-w-[920px] px-5 pb-20 pt-7 md:px-6 md:pt-9">
+      <div className={`mx-auto px-5 pb-20 md:px-6 ${variant === 2 ? "max-w-[1080px] pt-5 md:pt-7" : "max-w-[920px] pt-7 md:pt-9"}`}>
         {editorialImage ? (
-          <figure className="mb-9">
-            <div className="overflow-hidden rounded-2xl bg-zinc-100">
-              <img
-                src={editorialImage.src}
-                alt={editorialImage.alt}
-                className="h-[220px] w-full object-cover sm:h-[280px] md:h-[340px]"
-              />
+          <figure className={variant === 1 ? "mb-7 md:ml-auto md:w-[78%]" : "mb-9"}>
+            <div className={imageFrameClassName}>
+              <img src={editorialImage.src} alt={editorialImage.alt} className={imageClassName} />
             </div>
             {editorialImage.caption || editorialImage.credit ? (
               <figcaption className="mt-2 text-xs leading-5 text-zinc-500">
@@ -128,7 +139,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </figure>
         ) : null}
 
-        <div className="space-y-10">
+        <div className={variant === 2 ? "mx-auto max-w-[820px] space-y-10" : "space-y-10"}>
+          {showKeyPointsBeforeBody ? <KeyPoints points={cmsArticle.keyPoints ?? []} /> : null}
+
           {cmsArticle.body?.length ? (
             <ArticleBody body={cmsArticle.body} />
           ) : (
@@ -137,7 +150,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </p>
           )}
 
-          {cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
+          {!showKeyPointsBeforeBody && cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
 
           <ReaderSupport
             title="Independent rugby coverage takes time."
