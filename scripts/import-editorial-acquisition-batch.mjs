@@ -7,22 +7,20 @@ if (!inputPath) {
   process.exit(1);
 }
 
+const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "notebook", "explainer"];
 const baseUrl = (process.env.EDITORIAL_API_BASE_URL || "https://therugbypanda.ie").replace(/\/$/, "");
 const secret = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
 const dryRun = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
 
-if (!secret && !dryRun) {
-  throw new Error("EDITORIAL_AUTOMATION_SECRET is required unless DRY_RUN=1.");
-}
+if (!secret && !dryRun) throw new Error("EDITORIAL_AUTOMATION_SECRET is required unless DRY_RUN=1.");
 
 const raw = await fs.readFile(path.resolve(inputPath), "utf8");
 const batch = JSON.parse(raw);
-
 if (batch?.schemaVersion !== "1.0" || !Array.isArray(batch?.candidates) || batch.candidates.length === 0) {
   throw new Error("Invalid editorial acquisition batch.");
 }
 
-function buildRequest(candidate) {
+function buildRequest(candidate, index) {
   const retrievedAt = batch.acquiredAt || new Date().toISOString();
   const sourceRecords = candidate.sourceRecords.map((source) => ({ ...source, retrievedAt }));
   const sourceIds = sourceRecords.map((source) => source.id);
@@ -36,8 +34,8 @@ function buildRequest(candidate) {
       suggestedCategory: candidate.suggestedCategory,
     },
     factLedger: {
-      facts: candidate.facts.map((claim, index) => ({
-        id: `${candidate.id}-fact-${index + 1}`,
+      facts: candidate.facts.map((claim, factIndex) => ({
+        id: `${candidate.id}-fact-${factIndex + 1}`,
         claim,
         status: "confirmed",
         confidence: 98,
@@ -50,31 +48,30 @@ function buildRequest(candidate) {
     createSanityDraft: true,
     qaMode: false,
     notificationMode: "package",
+    styleProfileId: PACKAGE_STYLE_PROFILES[index % PACKAGE_STYLE_PROFILES.length],
   };
 }
 
 const results = [];
-for (const candidate of batch.candidates) {
-  const payload = buildRequest(candidate);
+for (const [index, candidate] of batch.candidates.entries()) {
+  const payload = buildRequest(candidate, index);
   if (dryRun) {
-    results.push({ id: candidate.id, status: "dry-run", payload });
+    results.push({ id: candidate.id, status: "dry-run", styleProfileId: payload.styleProfileId, payload });
     continue;
   }
 
   try {
     const response = await fetch(`${baseUrl}/api/editorial/draft`, {
       method: "POST",
-      headers: {
-        authorization: `Bearer ${secret}`,
-        "content-type": "application/json",
-      },
+      headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
       body: JSON.stringify(payload),
     });
     const body = await response.json().catch(() => ({ error: "Non-JSON response" }));
-    results.push({ id: candidate.id, status: response.status, ok: response.ok, body });
+    results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: response.status, ok: response.ok, body });
   } catch (error) {
     results.push({
       id: candidate.id,
+      styleProfileId: payload.styleProfileId,
       status: "request-error",
       ok: false,
       body: { error: error instanceof Error ? error.message : "Request failed" },

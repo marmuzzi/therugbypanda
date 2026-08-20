@@ -109,6 +109,10 @@ function compatibleProfiles(storyType?: StoryType | string): ArticleStyleProfile
   }
 }
 
+export function getArticleStyleProfile(id: ArticleStyleProfileId): ArticleStyleProfile {
+  return PROFILES[id];
+}
+
 export function selectArticleStyleProfile(seed: string, storyType?: StoryType | string): ArticleStyleProfile {
   const candidates = compatibleProfiles(storyType);
   const index = stableHash(`${seed}|${storyType ?? "news"}`) % candidates.length;
