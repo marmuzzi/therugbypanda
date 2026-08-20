@@ -1,10 +1,12 @@
 import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
 import type { EditorialBrainResult, RawStoryInput } from "./EditorialTypes";
-import { assessArticleOriginality } from "./OriginalityGuard";
+import { assessArticleOriginality, type OriginalityReport } from "./OriginalityGuard";
 import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_TIMEOUT_MS = 45_000;
+const MAX_ORIGINALITY_ATTEMPTS = 2;
+const MIN_RETRY_TIMEOUT_MS = 25_000;
 
 const ARTICLE_SCHEMA = {
   type: "object",
@@ -136,7 +138,13 @@ function styleProfileFor(story: RawStoryInput): StyleProfile {
   return STYLE_PROFILES[stableHash(story.id) % STYLE_PROFILES.length];
 }
 
-function generationInput(story: RawStoryInput, editorial: EditorialBrainResult, targetLengthWords: string, style: StyleProfile) {
+function generationInput(
+  story: RawStoryInput,
+  editorial: EditorialBrainResult,
+  targetLengthWords: string,
+  style: StyleProfile,
+  originalityFeedback?: OriginalityReport,
+) {
   return JSON.stringify({
     assignment: editorial.brief,
     classification: {
@@ -165,6 +173,12 @@ function generationInput(story: RawStoryInput, editorial: EditorialBrainResult, 
         "Key points are editorial metadata; do not turn them into a repeated reader-facing formula inside the body.",
       ],
     },
+    ...(originalityFeedback ? {
+      originalityRetry: {
+        instruction: "The previous draft was rejected by the deterministic originality gate. Recompose the article independently from the evidence. Do not merely edit the rejected wording. Preserve supported facts while changing sentence construction, sequencing, transitions and article architecture.",
+        reasons: originalityFeedback.reasons,
+      },
+    } : {}),
     requirements: {
       originalComposition: true,
       preserveUncertainty: true,
@@ -209,6 +223,24 @@ function rawStoryOriginalityText(story: RawStoryInput): string {
   return [story.title, story.summary, story.bodyText].filter(Boolean).join("\n\n");
 }
 
+function parseGeneratedArticle(payload: ResponsesPayload): GeneratedArticleDraft {
+  if (payload.status === "failed") {
+    throw new Error(`OpenAI generation failed: ${payload.error?.message ?? "unknown error"}`);
+  }
+  if (payload.status === "incomplete") {
+    throw new Error(`OpenAI generation was incomplete: ${payload.incomplete_details?.reason ?? "unknown reason"}`);
+  }
+
+  const outputText = extractOutputText(payload);
+  if (!outputText) throw new Error("OpenAI returned no structured article output in the response output array.");
+
+  try {
+    return JSON.parse(outputText) as GeneratedArticleDraft;
+  } catch (error) {
+    throw new Error(`OpenAI returned invalid structured article JSON: ${error instanceof Error ? error.message : "parse failed"}`);
+  }
+}
+
 export async function generateArticleDraft(
   story: RawStoryInput,
   editorial: EditorialBrainResult,
@@ -218,101 +250,116 @@ export async function generateArticleDraft(
   if (!apiKey) throw new Error("OPENAI_API_KEY is not configured.");
 
   const timeoutMs = Math.min(Math.max(options.timeoutMs ?? DEFAULT_TIMEOUT_MS, 5_000), 110_000);
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const startedAt = Date.now();
   const style = styleProfileFor(story);
+  const targetLengthWords = options.targetLengthWords ?? "700-1100";
+  const rawStoryMaterial = rawStoryOriginalityText(story);
+  let originalityFeedback: OriginalityReport | undefined;
 
-  try {
-    console.info("Editorial OpenAI generation started", {
-      inputId: editorial.inputId,
-      model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
-      targetLengthWords: options.targetLengthWords ?? "700-1100",
-      timeoutMs,
-      styleProfile: style.id,
-    });
-
-    const response = await fetch(OPENAI_RESPONSES_URL, {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
-        store: false,
-        instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
-        input: generationInput(story, editorial, options.targetLengthWords ?? "700-1100", style),
-        text: {
-          format: {
-            type: "json_schema",
-            name: "rugby_panda_article_draft",
-            strict: true,
-            schema: ARTICLE_SCHEMA,
-          },
-        },
-      }),
-    });
-
-    if (!response.ok) {
-      const details = await response.text();
-      throw new Error(`OpenAI generation failed (${response.status}): ${details.slice(0, 500)}`);
-    }
-
-    const payload = (await response.json()) as ResponsesPayload;
-    console.info("Editorial OpenAI generation completed", {
-      inputId: editorial.inputId,
-      responseId: payload.id,
-      model: payload.model,
-      status: payload.status,
-      durationMs: Date.now() - startedAt,
-      usage: payload.usage,
-      styleProfile: style.id,
-    });
-
-    if (payload.status === "failed") {
-      throw new Error(`OpenAI generation failed: ${payload.error?.message ?? "unknown error"}`);
-    }
-    if (payload.status === "incomplete") {
-      throw new Error(`OpenAI generation was incomplete: ${payload.incomplete_details?.reason ?? "unknown reason"}`);
-    }
-
-    const outputText = extractOutputText(payload);
-    if (!outputText) throw new Error("OpenAI returned no structured article output in the response output array.");
-
-    let article: GeneratedArticleDraft;
-    try {
-      article = JSON.parse(outputText) as GeneratedArticleDraft;
-    } catch (error) {
-      throw new Error(`OpenAI returned invalid structured article JSON: ${error instanceof Error ? error.message : "parse failed"}`);
-    }
-
-    const rawStoryMaterial = rawStoryOriginalityText(story);
-    const originality = assessArticleOriginality(
-      article,
-      story.sourceRecords,
-      rawStoryMaterial
-        ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }]
-        : [],
-    );
-    console.info("Editorial originality check completed", {
-      inputId: editorial.inputId,
-      passed: originality.passed,
-      findings: originality.findings,
-      styleProfile: style.id,
-    });
-    if (!originality.passed) {
-      throw new Error(`Originality gate rejected draft: ${originality.reasons.join(" ")}`);
-    }
-
-    return article;
-  } catch (error) {
-    if (error instanceof Error && error.name === "AbortError") {
+  for (let attempt = 1; attempt <= MAX_ORIGINALITY_ATTEMPTS; attempt += 1) {
+    const elapsedMs = Date.now() - startedAt;
+    const remainingMs = timeoutMs - elapsedMs;
+    if (remainingMs < MIN_RETRY_TIMEOUT_MS) {
+      if (originalityFeedback) {
+        throw new Error(`Originality gate rejected draft after ${attempt - 1} attempt(s): ${originalityFeedback.reasons.join(" ")}`);
+      }
       throw new Error(`OpenAI generation exceeded the ${Math.round(timeoutMs / 1000)}-second safety timeout.`);
     }
-    throw error;
-  } finally {
-    clearTimeout(timeout);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), remainingMs);
+    const attemptStartedAt = Date.now();
+
+    try {
+      console.info("Editorial OpenAI generation started", {
+        inputId: editorial.inputId,
+        model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
+        targetLengthWords,
+        timeoutMs: remainingMs,
+        styleProfile: style.id,
+        attempt,
+      });
+
+      const response = await fetch(OPENAI_RESPONSES_URL, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+        body: JSON.stringify({
+          model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
+          store: false,
+          instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
+          input: generationInput(story, editorial, targetLengthWords, style, originalityFeedback),
+          text: {
+            format: {
+              type: "json_schema",
+              name: "rugby_panda_article_draft",
+              strict: true,
+              schema: ARTICLE_SCHEMA,
+            },
+          },
+        }),
+      });
+
+      if (!response.ok) {
+        const details = await response.text();
+        throw new Error(`OpenAI generation failed (${response.status}): ${details.slice(0, 500)}`);
+      }
+
+      const payload = (await response.json()) as ResponsesPayload;
+      console.info("Editorial OpenAI generation completed", {
+        inputId: editorial.inputId,
+        responseId: payload.id,
+        model: payload.model,
+        status: payload.status,
+        durationMs: Date.now() - attemptStartedAt,
+        totalDurationMs: Date.now() - startedAt,
+        usage: payload.usage,
+        styleProfile: style.id,
+        attempt,
+      });
+
+      const article = parseGeneratedArticle(payload);
+      const originality = assessArticleOriginality(
+        article,
+        story.sourceRecords,
+        rawStoryMaterial
+          ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }]
+          : [],
+      );
+      console.info("Editorial originality check completed", {
+        inputId: editorial.inputId,
+        passed: originality.passed,
+        findings: originality.findings,
+        styleProfile: style.id,
+        attempt,
+      });
+
+      if (originality.passed) return article;
+
+      originalityFeedback = originality;
+      if (attempt === MAX_ORIGINALITY_ATTEMPTS) {
+        throw new Error(`Originality gate rejected draft after ${attempt} attempt(s): ${originality.reasons.join(" ")}`);
+      }
+
+      console.warn("Editorial originality retry scheduled", {
+        inputId: editorial.inputId,
+        styleProfile: style.id,
+        attempt,
+        reasons: originality.reasons,
+        remainingMs: timeoutMs - (Date.now() - startedAt),
+      });
+    } catch (error) {
+      if (error instanceof Error && error.name === "AbortError") {
+        throw new Error(`OpenAI generation exceeded the ${Math.round(timeoutMs / 1000)}-second safety timeout.`);
+      }
+      throw error;
+    } finally {
+      clearTimeout(timeout);
+    }
   }
+
+  throw new Error("OpenAI generation failed before producing an original draft.");
 }
