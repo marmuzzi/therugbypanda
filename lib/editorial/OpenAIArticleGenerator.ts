@@ -5,14 +5,15 @@ import {
   type ArticleStyleProfile,
   type ArticleStyleProfileId,
 } from "./ArticleStyleProfile";
+import { assessDraftQuality, DRAFT_READY_LIMITS, type DraftQualityReport } from "./DraftQualityGuard";
 import type { EditorialBrainResult, RawStoryInput } from "./EditorialTypes";
 import { assessArticleOriginality, type OriginalityReport } from "./OriginalityGuard";
 import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_TIMEOUT_MS = 45_000;
-const MAX_ORIGINALITY_ATTEMPTS = 2;
-const MIN_RETRY_TIMEOUT_MS = 25_000;
+const MAX_GENERATION_ATTEMPTS = 3;
+const MIN_RETRY_TIMEOUT_MS = 20_000;
 
 const ARTICLE_SCHEMA = {
   type: "object",
@@ -63,14 +64,7 @@ type ResponsesPayload = {
   error?: { message?: string } | null;
   incomplete_details?: { reason?: string } | null;
   usage?: { input_tokens?: number; output_tokens?: number; total_tokens?: number };
-  output?: Array<{
-    type?: string;
-    content?: Array<{
-      type?: string;
-      text?: string;
-      refusal?: string;
-    }>;
-  }>;
+  output?: Array<{ type?: string; content?: Array<{ type?: string; text?: string; refusal?: string }> }>;
 };
 
 type GenerateArticleOptions = {
@@ -108,6 +102,7 @@ function generationInput(
   targetLengthWords: string,
   style: ArticleStyleProfile,
   originalityFeedback?: OriginalityReport,
+  qualityFeedback?: DraftQualityReport,
 ) {
   const overlapFragments = retryOverlapFragments(originalityFeedback);
   return JSON.stringify({
@@ -139,8 +134,10 @@ function generationInput(
         "Do not default to a fixed three-section article structure.",
         "The body may contain from one to seven sections according to the story and assigned style.",
         "A section heading may be null. Do not add a heading merely to satisfy a template.",
-        "Vary paragraph length naturally. Do not make every section contain the same number of paragraphs.",
+        "Vary paragraph and sentence length naturally; avoid symmetrical paragraph rhythm.",
         "Do not use the same headline construction, opening rhythm and conclusion pattern across stories.",
+        "Avoid stacked metaphors, slogan-like fragments, generic clever-sounding conclusions and repeated rhetorical contrasts.",
+        "Use figurative language sparingly. Prefer precise rugby reporting to laboratory/platform/driver/gears-style metaphor chains.",
         "Key points are editorial metadata; do not turn them into a repeated reader-facing formula inside the body.",
       ],
     },
@@ -153,6 +150,12 @@ function generationInput(
         ],
         reasons: originalityFeedback.reasons,
         overlapFragments,
+      },
+    } : {}),
+    ...(qualityFeedback ? {
+      draftReadyRetry: {
+        instruction: "The previous draft failed deterministic Draft Ready checks. Rewrite the affected fields or paragraphs while preserving supported facts, the assigned style and original composition. Clear every listed issue; do not merely truncate text mid-sentence.",
+        issues: qualityFeedback.issues,
       },
     } : {}),
     requirements: {
@@ -170,6 +173,17 @@ function generationInput(
       nameSupportedPeopleAndTeams: true,
       previewStoriesNeedWhatToWatch: true,
       noReaderFacingEditorialProcess: true,
+      draftReadyRules: [
+        `Headline must be ${DRAFT_READY_LIMITS.headlineCharacters} characters or fewer.`,
+        `Standfirst must be ${DRAFT_READY_LIMITS.standfirstCharacters} characters or fewer.`,
+        `SEO title must be ${DRAFT_READY_LIMITS.seoTitleCharacters} characters or fewer.`,
+        `SEO description must be ${DRAFT_READY_LIMITS.seoDescriptionCharacters} characters or fewer.`,
+        `Every body paragraph must be ${DRAFT_READY_LIMITS.paragraphWords} words or fewer.`,
+        "Avoid filler words such as just, simply, really, clearly, obviously, basically and actually; never repeat one as a verbal tic.",
+        "Qualify tactical projections and causal analysis with can, could, may, likely or similar language when the outcome is not an established fact.",
+        "Use concrete, verifiable rugby detail only when supported by the fact ledger. Never invent statistics, targets, quotes or historical comparisons to sound authoritative.",
+        "Prefer precise rugby terminology over decorative metaphor. Avoid multiple metaphors in the same passage.",
+      ],
       originalityRules: [
         "Write independently from the evidence. Do not rewrite or lightly paraphrase any source article.",
         "Do not follow a source's sentence order, paragraph order, rhetorical structure or distinctive phrasing.",
@@ -219,19 +233,20 @@ export async function generateArticleDraft(
 
   const timeoutMs = Math.min(Math.max(options.timeoutMs ?? DEFAULT_TIMEOUT_MS, 5_000), 110_000);
   const startedAt = Date.now();
-  const style = options.styleProfileId
-    ? getArticleStyleProfile(options.styleProfileId)
-    : selectArticleStyleProfile(story.id, editorial.storyType);
+  const style = options.styleProfileId ? getArticleStyleProfile(options.styleProfileId) : selectArticleStyleProfile(story.id, editorial.storyType);
   const targetLengthWords = options.targetLengthWords ?? "700-1100";
   const rawStoryMaterial = rawStoryOriginalityText(story);
   let originalityFeedback: OriginalityReport | undefined;
+  let qualityFeedback: DraftQualityReport | undefined;
 
-  for (let attempt = 1; attempt <= MAX_ORIGINALITY_ATTEMPTS; attempt += 1) {
+  for (let attempt = 1; attempt <= MAX_GENERATION_ATTEMPTS; attempt += 1) {
     const remainingMs = timeoutMs - (Date.now() - startedAt);
     if (remainingMs < MIN_RETRY_TIMEOUT_MS) {
-      if (originalityFeedback) {
-        throw new Error(`Originality gate rejected draft after ${attempt - 1} attempt(s): ${originalityFeedback.reasons.join(" ")}`);
-      }
+      const failures = [
+        ...(originalityFeedback?.reasons ?? []),
+        ...(qualityFeedback?.issues.map((issue) => issue.message) ?? []),
+      ];
+      if (failures.length > 0) throw new Error(`Draft Ready gate rejected draft after ${attempt - 1} attempt(s): ${failures.join(" ")}`);
       throw new Error(`OpenAI generation exceeded the ${Math.round(timeoutMs / 1000)}-second safety timeout.`);
     }
 
@@ -248,6 +263,7 @@ export async function generateArticleDraft(
         styleProfile: style.id,
         attempt,
         sourceProseIncluded: false,
+        draftReadyRetry: Boolean(qualityFeedback),
       });
 
       const response = await fetch(OPENAI_RESPONSES_URL, {
@@ -258,7 +274,7 @@ export async function generateArticleDraft(
           model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
           store: false,
           instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
-          input: generationInput(story, editorial, targetLengthWords, style, originalityFeedback),
+          input: generationInput(story, editorial, targetLengthWords, style, originalityFeedback, qualityFeedback),
           text: { format: { type: "json_schema", name: "rugby_panda_article_draft", strict: true, schema: ARTICLE_SCHEMA } },
         }),
       });
@@ -287,37 +303,45 @@ export async function generateArticleDraft(
         story.sourceRecords,
         rawStoryMaterial ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }] : [],
       );
-      console.info("Editorial originality check completed", {
+      const quality = assessDraftQuality(article);
+      console.info("Editorial Draft Ready checks completed", {
         inputId: editorial.inputId,
-        passed: originality.passed,
-        findings: originality.findings,
+        originalityPassed: originality.passed,
+        qualityPassed: quality.passed,
+        originalityFindings: originality.findings,
+        qualityIssues: quality.issues,
         styleProfile: style.id,
         attempt,
       });
 
-      if (originality.passed) return article;
-      originalityFeedback = originality;
-      if (attempt === MAX_ORIGINALITY_ATTEMPTS) {
-        throw new Error(`Originality gate rejected draft after ${attempt} attempt(s): ${originality.reasons.join(" ")}`);
+      if (originality.passed && quality.passed) return article;
+      originalityFeedback = originality.passed ? undefined : originality;
+      qualityFeedback = quality.passed ? undefined : quality;
+
+      if (attempt === MAX_GENERATION_ATTEMPTS) {
+        const failures = [
+          ...(originalityFeedback?.reasons ?? []),
+          ...(qualityFeedback?.issues.map((issue) => issue.message) ?? []),
+        ];
+        throw new Error(`Draft Ready gate rejected draft after ${attempt} attempt(s): ${failures.join(" ")}`);
       }
 
-      console.warn("Editorial originality retry scheduled", {
+      console.warn("Editorial Draft Ready retry scheduled", {
         inputId: editorial.inputId,
         styleProfile: style.id,
         attempt,
-        reasons: originality.reasons,
-        overlapFragments: retryOverlapFragments(originality),
+        originalityReasons: originalityFeedback?.reasons ?? [],
+        overlapFragments: retryOverlapFragments(originalityFeedback),
+        qualityIssues: qualityFeedback?.issues ?? [],
         remainingMs: timeoutMs - (Date.now() - startedAt),
       });
     } catch (error) {
-      if (error instanceof Error && error.name === "AbortError") {
-        throw new Error(`OpenAI generation exceeded the ${Math.round(timeoutMs / 1000)}-second safety timeout.`);
-      }
+      if (error instanceof Error && error.name === "AbortError") throw new Error(`OpenAI generation exceeded the ${Math.round(timeoutMs / 1000)}-second safety timeout.`);
       throw error;
     } finally {
       clearTimeout(timeout);
     }
   }
 
-  throw new Error("OpenAI generation failed before producing an original draft.");
+  throw new Error("OpenAI generation failed before producing a Draft Ready article.");
 }
