@@ -15,17 +15,18 @@ const ARTICLE_SCHEMA = {
     standfirst: { type: "string" },
     seoTitle: { type: "string" },
     seoDescription: { type: "string" },
-    keyPoints: { type: "array", minItems: 3, maxItems: 6, items: { type: "string" } },
+    keyPoints: { type: "array", minItems: 2, maxItems: 6, items: { type: "string" } },
     body: {
       type: "array",
-      minItems: 3,
+      minItems: 1,
+      maxItems: 7,
       items: {
         type: "object",
         additionalProperties: false,
         required: ["heading", "paragraphs"],
         properties: {
           heading: { type: ["string", "null"] },
-          paragraphs: { type: "array", minItems: 1, items: { type: "string" } },
+          paragraphs: { type: "array", minItems: 1, maxItems: 8, items: { type: "string" } },
         },
       },
     },
@@ -69,7 +70,73 @@ type GenerateArticleOptions = {
   timeoutMs?: number;
 };
 
-function generationInput(story: RawStoryInput, editorial: EditorialBrainResult, targetLengthWords: string) {
+type StyleProfile = {
+  id: string;
+  instructions: string[];
+};
+
+const STYLE_PROFILES: StyleProfile[] = [
+  {
+    id: "news-desk",
+    instructions: [
+      "Use a crisp news-led opening that delivers the development immediately.",
+      "Prefer short-to-medium paragraphs and restrained analysis after the core facts.",
+      "Use no more than two subheadings; omit them entirely if the story flows better without them.",
+      "Use a direct factual headline rather than a colon-led or question headline.",
+    ],
+  },
+  {
+    id: "analyst",
+    instructions: [
+      "Open with the consequence or rugby significance rather than simply repeating the announcement.",
+      "Build an analytical narrative with fewer, longer sections and deeper paragraphs.",
+      "Use descriptive subheadings only where they genuinely change the argument.",
+      "Finish on the implication, selection battle or tactical question supporters should watch.",
+    ],
+  },
+  {
+    id: "match-notebook",
+    instructions: [
+      "Write with the pace of a rugby correspondent's notebook: concrete detail first, context woven through it.",
+      "Mix short punchy paragraphs with occasional longer explanatory paragraphs.",
+      "Use several brief sections only when they help separate distinct talking points.",
+      "Avoid a generic summary conclusion; end on a specific player, contest, fixture or unresolved question.",
+    ],
+  },
+  {
+    id: "feature",
+    instructions: [
+      "Use a scene-setting or context-led opening before revealing the central argument naturally.",
+      "Prefer flowing prose and minimal subheadings; one substantial section with several paragraphs is acceptable.",
+      "Vary paragraph length and sentence cadence noticeably.",
+      "Use a more character- or narrative-led headline while remaining accurate and unsensational.",
+    ],
+  },
+  {
+    id: "supporter-preview",
+    instructions: [
+      "Frame the story around what supporters should notice next and why it matters.",
+      "Use an energetic but credible opening and concrete names, combinations, selection calls or fixtures.",
+      "Use two to four useful subheadings if the story contains distinct watch-points, but do not force symmetry.",
+      "End with a forward-looking observation rather than restating the introduction.",
+    ],
+  },
+];
+
+function stableHash(value: string): number {
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function styleProfileFor(story: RawStoryInput): StyleProfile {
+  return STYLE_PROFILES[stableHash(story.id) % STYLE_PROFILES.length];
+}
+
+function generationInput(story: RawStoryInput, editorial: EditorialBrainResult, targetLengthWords: string, style: StyleProfile) {
   return JSON.stringify({
     assignment: editorial.brief,
     classification: {
@@ -85,6 +152,18 @@ function generationInput(story: RawStoryInput, editorial: EditorialBrainResult, 
       title: story.title,
       summary: story.summary,
       bodyText: story.bodyText,
+    },
+    editorialStyle: {
+      profile: style.id,
+      instructions: style.instructions,
+      variationRules: [
+        "Do not default to a fixed three-section article structure.",
+        "The body may contain from one to seven sections according to the story and assigned style.",
+        "A section heading may be null. Do not add a heading merely to satisfy a template.",
+        "Vary paragraph length naturally. Do not make every section contain the same number of paragraphs.",
+        "Do not use the same headline construction, opening rhythm and conclusion pattern across stories.",
+        "Key points are editorial metadata; do not turn them into a repeated reader-facing formula inside the body.",
+      ],
     },
     requirements: {
       originalComposition: true,
@@ -142,6 +221,7 @@ export async function generateArticleDraft(
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
   const startedAt = Date.now();
+  const style = styleProfileFor(story);
 
   try {
     console.info("Editorial OpenAI generation started", {
@@ -149,6 +229,7 @@ export async function generateArticleDraft(
       model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
       targetLengthWords: options.targetLengthWords ?? "700-1100",
       timeoutMs,
+      styleProfile: style.id,
     });
 
     const response = await fetch(OPENAI_RESPONSES_URL, {
@@ -162,7 +243,7 @@ export async function generateArticleDraft(
         model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
         store: false,
         instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
-        input: generationInput(story, editorial, options.targetLengthWords ?? "700-1100"),
+        input: generationInput(story, editorial, options.targetLengthWords ?? "700-1100", style),
         text: {
           format: {
             type: "json_schema",
@@ -187,6 +268,7 @@ export async function generateArticleDraft(
       status: payload.status,
       durationMs: Date.now() - startedAt,
       usage: payload.usage,
+      styleProfile: style.id,
     });
 
     if (payload.status === "failed") {
@@ -218,6 +300,7 @@ export async function generateArticleDraft(
       inputId: editorial.inputId,
       passed: originality.passed,
       findings: originality.findings,
+      styleProfile: style.id,
     });
     if (!originality.passed) {
       throw new Error(`Originality gate rejected draft: ${originality.reasons.join(" ")}`);
