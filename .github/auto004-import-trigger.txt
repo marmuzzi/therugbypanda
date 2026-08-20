@@ -1,5 +1,5 @@
 AUTO-004 controlled production import trigger
 Batch: data/editorial-acquisition/auto004-2026-08-18-independent.json
-Purpose: regenerate the same five production-eligible Sanity drafts through the protected production editorial API after PR #188 style-diversity production deployment, preserving the independent source packs, fail-closed originality gate and package-mode suppression.
+Purpose: retry the same five production-eligible Sanity drafts after PR #190 aligned the generation timeout with the 120-second route budget; preserve independent source packs, fail-closed originality, fail-closed image relevance and package-mode suppression.
 Date: 2026-08-20
-Trigger attempt: 5
+Trigger attempt: 6
