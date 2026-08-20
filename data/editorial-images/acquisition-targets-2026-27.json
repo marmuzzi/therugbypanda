@@ -1,16 +1,23 @@
 {
-  "version": "2026-08-18",
+  "version": "2026-08-20",
   "purpose": "High-precision, cost-controlled Editorial Image acquisition targets. Discovery only; never implies approval.",
   "actor": "shahidirfan/OpenVerse-Image-Scraper",
-  "defaultResultsPerQuery": 6,
-  "maximumResultsPerQuery": 8,
+  "defaultResultsPerQuery": 3,
+  "maximumResultsPerQuery": 5,
   "minimumStrongSignals": 1,
+  "preferredCurrentImageYear": 2024,
+  "initialPaidBatchMaximumQueries": 12,
+  "initialPaidBatchMaximumResults": 40,
+  "minimumUsefulApprovalYieldPercent": 60,
   "rules": [
     "Prefer exact named team, player, coach, fixture, competition or venue queries.",
     "Do not run generic rugby, rugby union, professional player, international rugby or match-action-only queries.",
-    "Keep initial result limits small; expand only when a query proves useful.",
+    "Keep initial result limits very small; expand only when a query proves useful.",
     "Reject results whose title/tags/source metadata do not contain an exact subject signal before Sanity import.",
-    "No discovered image is approved automatically."
+    "Prefer images from 2024 onward for current-player, current-team and current-coach coverage when a reliable date is available.",
+    "Older images may survive only for deliberate historical coverage, evergreen venue imagery or a clearly still-relevant identifiable subject.",
+    "A paid batch must stop for query redesign when fewer than 60 percent of visually reviewed candidates are useful enough to approve or retain as a strong candidate.",
+    "No discovered image is approved automatically; the assistant performs visual/editorial first-pass review and escalates only genuinely uncertain cases."
   ],
   "urcTeams": [
     "Benetton Rugby",
