@@ -10,7 +10,7 @@ type ApprovedEditorialImage = {
   altText?: string;
   caption?: string;
   editorialCategory?: string;
-  photoType?: string;
+  photoType?: string[];
   suggestedUse?: string[];
   publicCredit?: string;
   creditLine?: string;
@@ -47,6 +47,11 @@ type SanityTaxonomyTarget = {
 const PROVINCE_CATEGORIES = new Set<EditorialCategory>(["Leinster", "Munster", "Ulster", "Connacht"]);
 const PROVINCE_TERMS = ["leinster", "munster", "ulster", "connacht"] as const;
 const GENERIC_IMAGE_TERMS = ["rugby panda", "panda logo", "brand logo", "newsroom logo", "the rugby panda"];
+const GENERIC_RUGBY_TERMS = new Set([
+  "rugby", "match", "game", "team", "teams", "player", "players", "supporter", "supporters", "stadium", "pitch",
+  "season", "preseason", "friendly", "fixture", "fixtures", "squad", "coach", "coaching", "crowd", "article", "header",
+  "homepage", "card", "gallery", "international", "news", "provinces", "province", "urc",
+]);
 const MIN_AUTOMATIC_IMAGE_RELEVANCE_SCORE = 8;
 
 function taxonomyForEditorialCategory(category: EditorialCategory): SanityTaxonomyTarget {
@@ -117,7 +122,7 @@ function imageSearchText(image: ApprovedEditorialImage): string {
     image.altText,
     image.caption,
     image.editorialCategory,
-    image.photoType,
+    ...(image.photoType ?? []),
     ...(image.suggestedUse ?? []),
   ]
     .filter(Boolean)
@@ -141,13 +146,33 @@ function imageHasConflictingProvince(image: ApprovedEditorialImage, storyText: s
   return imageProvinces.length > 0 && !imageProvinces.includes(storyProvince);
 }
 
+function meaningfulStoryTerms(storyText: string): string[] {
+  return [...new Set(
+    storyText
+      .split(/[^a-z0-9]+/)
+      .filter((term) => term.length >= 4 && !GENERIC_RUGBY_TERMS.has(term)),
+  )];
+}
+
+function hasRequiredSubjectEvidence(image: ApprovedEditorialImage, storyText: string): boolean {
+  const haystack = imageSearchText(image);
+  const storyProvince = PROVINCE_TERMS.find((province) => storyText.includes(province));
+  if (storyProvince) return haystack.includes(storyProvince);
+
+  if (storyText.includes("ireland")) return haystack.includes("ireland");
+
+  const terms = meaningfulStoryTerms(storyText);
+  return terms.some((term) => haystack.includes(term));
+}
+
 function imageRelevanceScore(image: ApprovedEditorialImage, searchTerms: string[], storyText: string): number {
   const haystack = imageSearchText(image);
   if (imageHasConflictingProvince(image, storyText)) return Number.NEGATIVE_INFINITY;
+  if (!hasRequiredSubjectEvidence(image, storyText)) return Number.NEGATIVE_INFINITY;
 
   const uniqueTerms = [...new Set(searchTerms)];
   const termScore = uniqueTerms.reduce((score, term) => {
-    if (term.length < 3 || !haystack.includes(term)) return score;
+    if (term.length < 3 || GENERIC_RUGBY_TERMS.has(term) || !haystack.includes(term)) return score;
     return score + (term.length >= 7 ? 5 : term.length >= 5 ? 3 : 2);
   }, 0);
   const useScore = image.suggestedUse?.some((use) => use === "hero-image" || use === "article-header") ? 4 : 0;
@@ -325,6 +350,6 @@ export async function createSanityArticleDraft(pkg: EditorialDraftPackage, optio
     editorialImageId: editorialImage?._id,
     automationContentClass,
     morningPackageEligible,
-    studioIntent: `/intent/edit/id=${result._id};type=article/`,
+    studioIntent: `/intent/edit/id=${result._id};type=article`,
   };
 }
