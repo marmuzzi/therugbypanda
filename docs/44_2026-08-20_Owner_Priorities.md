@@ -1,0 +1,120 @@
+# Owner Priorities — 20 August 2026
+
+## Purpose
+
+This document records the approved execution order for The Rugby Panda. Where older roadmap sequencing conflicts with these priorities, this document wins until the roadmap is reconciled.
+
+## Priority 1 — Five quality articles in one mailbox package by 08:00 every day
+
+The daily editorial system must automatically deliver one consolidated email to the editor by 08:00 Europe/Dublin containing five distinct, current, production-eligible, review-ready Rugby Panda articles.
+
+Completion requires all of the following together:
+
+- five genuinely current stories are acquired automatically;
+- each story uses sufficiently independent source material;
+- each generated article is materially original and passes the fail-closed originality gate;
+- copy is concrete, player/coach/signing-aware and useful to supporters when evidence supports it;
+- no QA/test content enters the package;
+- article image assignment is relevant or deliberately left blank;
+- five per-draft emails are suppressed;
+- exactly one consolidated editorial package reaches the mailbox by 08:00;
+- retries/failures raise the technical-alert path;
+- successful automatic delivery is verified on multiple consecutive mornings.
+
+### Mandatory style diversity inside Priority 1
+
+The five articles must not read as if one template or one journalist produced all of them.
+
+The generator should deliberately vary, within Rugby Panda editorial standards:
+
+- headline construction and length;
+- opening style;
+- paragraph rhythm and length;
+- article structure and section count;
+- use of subheadings;
+- selective bold emphasis where editorially useful;
+- analytical versus news-led framing;
+- concluding style;
+- sentence cadence and vocabulary.
+
+Variation must never weaken factual accuracy, originality, readability or the no-process-language rule. The public author identity may remain The Rugby Panda; style variation must not falsely attribute work to named real journalists.
+
+## Priority 2 — Automatic Facebook and Instagram snippets after publication
+
+After controlled website publication, automatically prepare and publish platform-appropriate snippets to Facebook and Instagram.
+
+Requirements:
+
+- website publication remains the prerequisite;
+- use an approved relevant image;
+- generate platform-specific copy rather than posting the article body;
+- preserve the article-level social opt-out control;
+- store provider post IDs, timestamps, success/failure state and retry information;
+- social failure must not roll back a successful website publication;
+- verify real production delivery through Meta before completion.
+
+## Priority 3 — Large, relevant and reusable Editorial Image pool
+
+Build a varied image library suitable for likely Rugby Panda stories while controlling acquisition cost.
+
+Coverage should include:
+
+- Leinster, Munster, Ulster and Connacht;
+- Ireland Men and Ireland Women;
+- current players and coaches;
+- new signings;
+- all URC clubs;
+- Six Nations teams;
+- Nations Championship/international sides;
+- Champions Cup and Challenge Cup subjects;
+- professional match action, training and relevant venues.
+
+Acquisition should be precision-first: exact team/player/event searches, small result caps and measured useful-image yield. Third-party material remains candidate-only until relevance and rights review. AI should handle clear approve/reject cases, escalating only genuinely uncertain cases to the owner.
+
+Automatic article assignment remains fail-closed: no unrelated image is better than a wrong image.
+
+## Priority 4 — Very easy phone-first photo upload
+
+Create a secure mobile workflow that makes original Rugby Panda photo upload fast enough to use at matches and events.
+
+Target experience:
+
+1. open a phone-friendly upload page;
+2. select or take one or many photos;
+3. optionally choose team/event/competition and add a short note;
+4. upload directly into the controlled media workflow;
+5. automatically preserve orientation and useful metadata;
+6. create review-ready Sanity media records with sensible caption/tag suggestions.
+
+The flow should require minimal typing and no GitHub/manual desktop steps.
+
+## Priority 5 — 14:00 major-announcement check and conditional article generation
+
+Every day at 14:00 Europe/Dublin, automatically check approved rugby news sources for major developments that materially justify new Rugby Panda coverage.
+
+Examples include:
+
+- major squad or team announcements;
+- coaching changes;
+- significant signings/departures;
+- competition/fixture changes;
+- disciplinary decisions;
+- major injuries where responsibly reported;
+- IRFU/province/URC/EPCR/World Rugby announcements;
+- other high-impact developments relevant to Irish, URC, European or international rugby coverage.
+
+The check must be conditional: do not create filler articles merely because the 14:00 job ran. When a major development is detected, build a multi-source evidence pack and create a new review-ready draft through the same originality, image-relevance and Sanity approval boundaries as the morning workflow.
+
+## Execution order
+
+1. Finish and production-verify Priority 1, including originality, independent-source synthesis, style diversity and exactly-one-email delivery.
+2. In parallel only where it does not distract from Priority 1, improve the relevant image pool because Priority 1 depends on it.
+3. Complete automatic Meta social distribution after website publication.
+4. Build the phone-first Media Desk upload path.
+5. Add the 14:00 major-announcement watcher and conditional generation path.
+
+The image pool may continue incrementally throughout because it supports both morning articles and social distribution, but broad high-cost acquisition runs are not permitted.
+
+## Completion rule
+
+For every priority distinguish: implemented, committed, PR opened, merged, deployed, verified in production, and provider-specific verification where relevant. A priority is not complete until the user-facing production outcome has been verified.
