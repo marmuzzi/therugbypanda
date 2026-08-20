@@ -1,5 +1,5 @@
 AUTO-004 controlled production import trigger
 Batch: data/editorial-acquisition/auto004-2026-08-18-independent.json
-Purpose: rerun the same five production-eligible Sanity drafts after PR #192 added one bounded originality recomposition attempt and strict subject-evidence image relevance; preserve independent source packs, fail-closed originality and package-mode suppression.
+Purpose: rerun the same five production-eligible Sanity drafts after PR #195 moved generation to fact-ledger plus source provenance only; preserve independent source packs, fail-closed originality, fail-closed image relevance and package-mode suppression.
 Date: 2026-08-20
-Trigger attempt: 7
+Trigger attempt: 8
