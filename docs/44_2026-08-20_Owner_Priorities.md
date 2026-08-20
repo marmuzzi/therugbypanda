@@ -4,6 +4,16 @@
 
 This document records the approved execution order for The Rugby Panda. Where older roadmap sequencing conflicts with these priorities, this document wins until the roadmap is reconciled.
 
+## Go-live milestone
+
+**Meaningful production go-live target: Thursday 27 August 2026.**
+
+The essential launch system should be substantially ready by **Wednesday 26 August**, leaving 27 August primarily for production verification, controlled launch actions and issue resolution rather than unfinished core development.
+
+The owner is unavailable Saturday 22 and Sunday 23 August. Work should therefore be batched efficiently, avoid unnecessary deployments, and prioritise launch blockers over non-essential polish.
+
+A meaningful go-live does not require every future roadmap item to be complete. It does require a credible automated newsroom, safe/original editorial output, a useful relevant media pool, and a production website/social workflow that can be operated sustainably.
+
 ## Priority 1 — Five quality articles in one mailbox package by 08:00 every day
 
 The daily editorial system must automatically deliver one consolidated email to the editor by 08:00 Europe/Dublin containing five distinct, current, production-eligible, review-ready Rugby Panda articles.
@@ -25,17 +35,18 @@ Completion requires all of the following together:
 
 The five articles must not read as if one template or one journalist produced all of them.
 
-The generator should deliberately vary, within Rugby Panda editorial standards:
+The generator and public renderer should deliberately vary, within Rugby Panda editorial standards:
 
 - headline construction and length;
 - opening style;
 - paragraph rhythm and length;
 - article structure and section count;
-- use of subheadings;
+- use or omission of subheadings;
 - selective bold emphasis where editorially useful;
 - analytical versus news-led framing;
 - concluding style;
-- sentence cadence and vocabulary.
+- sentence cadence and vocabulary;
+- image placement/presentation and other supported article-layout treatments where appropriate.
 
 Variation must never weaken factual accuracy, originality, readability or the no-process-language rule. The public author identity may remain The Rugby Panda; style variation must not falsely attribute work to named real journalists.
 
@@ -87,6 +98,17 @@ The assistant performs first-pass relevance review for clear approve/reject deci
 
 Automatic article assignment remains fail-closed: no unrelated image is better than a wrong image.
 
+### Logo editorial-use rule
+
+Approved team, union and competition logos may be used when the article is genuinely about that specific team, union or competition. Logos must not be used as unrelated decoration or in a way that implies sponsorship, endorsement or official affiliation. Brand Assets remain separately governed and rights-recorded even though approved logos count toward the combined 200/500 readiness target.
+
+Preferred article-media fallback order is:
+
+1. relevant approved current photo;
+2. relevant approved historical/context or evergreen venue photo where editorially appropriate;
+3. relevant approved team/union/competition logo;
+4. no image rather than an unrelated image.
+
 ## Priority 4 — Very easy phone-first photo upload
 
 Create a secure mobile workflow that makes original Rugby Panda photo upload fast enough to use at matches and events.
@@ -119,13 +141,13 @@ Examples include:
 
 The check must be conditional: do not create filler articles merely because the 14:00 job ran. When a major development is detected, build a multi-source evidence pack and create a new review-ready draft through the same originality, image-relevance and Sanity approval boundaries as the morning workflow.
 
-## Execution order
+## Execution order to 27 August
 
-1. Finish and production-verify Priority 1, including originality, independent-source synthesis, style diversity and exactly-one-email delivery.
-2. In parallel only where it does not distract from Priority 1, improve the relevant media pool toward the 200 minimum and then 500 strong operating target.
-3. Complete automatic Meta social distribution after website publication.
-4. Build the phone-first Media Desk upload path.
-5. Add the 14:00 major-announcement watcher and conditional generation path.
+1. Finish and production-verify Priority 1, including originality, independent-source synthesis, meaningful style/layout diversity and exactly-one-email delivery.
+2. In parallel, improve the relevant media pool toward the 200 launch minimum using precision/cost-controlled acquisition and assistant-led review.
+3. Complete and production-verify automatic Meta social distribution after website publication.
+4. Build the phone-first Media Desk upload path if it can be completed without jeopardising the first three launch gates.
+5. Add the 14:00 major-announcement watcher and conditional generation path if the core morning newsroom is stable; otherwise it is the first immediate post-launch enhancement.
 
 The image/media pool may continue incrementally throughout because it supports both morning articles and social distribution, but broad high-cost acquisition runs are not permitted.
 
