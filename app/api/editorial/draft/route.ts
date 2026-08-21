@@ -8,10 +8,10 @@ import { generateArticleDraft } from "@/lib/editorial/OpenAIArticleGenerator";
 import { createSanityArticleDraft, validateSanityConnectivity } from "@/lib/editorial/SanityDraftWriter";
 
 export const runtime = "nodejs";
-export const maxDuration = 120;
+export const maxDuration = 240;
 
 const ALLOWED_STUDIO_ORIGIN = "https://therugbypanda.sanity.studio";
-const EDITORIAL_GENERATION_TIMEOUT_MS = 110_000;
+const EDITORIAL_GENERATION_TIMEOUT_MS = 220_000;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN,
