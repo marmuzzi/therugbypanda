@@ -12,6 +12,7 @@ import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const DEFAULT_TIMEOUT_MS = 45_000;
+const MAX_TIMEOUT_MS = 220_000;
 const MAX_GENERATION_ATTEMPTS = 3;
 const MIN_RETRY_TIMEOUT_MS = 20_000;
 
@@ -231,7 +232,7 @@ export async function generateArticleDraft(
   const apiKey = process.env.OPENAI_API_KEY;
   if (!apiKey) throw new Error("OPENAI_API_KEY is not configured.");
 
-  const timeoutMs = Math.min(Math.max(options.timeoutMs ?? DEFAULT_TIMEOUT_MS, 5_000), 110_000);
+  const timeoutMs = Math.min(Math.max(options.timeoutMs ?? DEFAULT_TIMEOUT_MS, 5_000), MAX_TIMEOUT_MS);
   const startedAt = Date.now();
   const style = options.styleProfileId ? getArticleStyleProfile(options.styleProfileId) : selectArticleStyleProfile(story.id, editorial.storyType);
   const targetLengthWords = options.targetLengthWords ?? "700-1100";
