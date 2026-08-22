@@ -10,18 +10,88 @@ const perQueryApprovalCap = 4;
 const perScopeApprovalCap = 24;
 
 // Diversity is deliberate: exact recent fixtures/players first, then teams/venues.
+// Player-led searches are intentionally included for Irish provinces because Commons often
+// indexes international match photography by player/event rather than professional club.
 const targets = [
-  { scope: "Ireland Men", subjects: ["Ireland", "Irish", "Six Nations", "Garry Ringrose", "Dan Sheehan", "Caelan Doris", "Tadhg Beirne", "James Ryan"], queries: ["2025 Six Nations Italy Ireland", "2025 Six Nations Ireland France", "2025 Six Nations Ireland England", "Garry Ringrose 2025 rugby", "Dan Sheehan 2025 rugby", "Caelan Doris 2025 rugby", "Tadhg Beirne 2025 rugby", "James Ryan 2025 rugby"] },
-  { scope: "Ireland Women", subjects: ["Ireland", "Irish", "Ireland women", "Women's Rugby World Cup"], queries: ["2025 Rugby World Cup Women Ireland Spain", "2025 Rugby World Cup Women Ireland Japan", "2025 Rugby World Cup Women Ireland New Zealand"] },
-  { scope: "Leinster", subjects: ["Leinster", "Garry Ringrose", "James Ryan", "Dan Sheehan"], queries: ["Leinster Rugby 2025", "Leinster Rugby 2026", "Garry Ringrose Leinster 2025", "James Ryan Leinster 2025"] },
-  { scope: "Munster", subjects: ["Munster Rugby", "Thomond Park", "Tadhg Beirne", "Jack Crowley"], queries: ["\"Munster Rugby\" 2025", "\"Munster Rugby\" 2026", "Tadhg Beirne Munster 2025", "Jack Crowley Munster 2025", "\"Thomond Park\" rugby"] },
-  { scope: "Ulster", subjects: ["Ulster Rugby", "Kingspan Stadium", "Affidea Stadium", "Jacob Stockdale"], queries: ["\"Ulster Rugby\" 2025", "\"Ulster Rugby\" 2026", "Jacob Stockdale 2025 rugby", "\"Kingspan Stadium\" rugby", "\"Affidea Stadium\" rugby"] },
-  { scope: "Connacht", subjects: ["Connacht Rugby", "Dexcom Stadium", "Sportsground Galway", "Bundee Aki"], queries: ["\"Connacht Rugby\" 2025", "\"Connacht Rugby\" 2026", "Bundee Aki 2025 rugby", "\"Dexcom Stadium\" rugby", "\"Sportsground Galway\" rugby"] },
-  { scope: "URC opposition", subjects: ["Glasgow Warriors", "Edinburgh Rugby", "Cardiff Rugby", "Scarlets", "Ospreys", "Benetton Rugby", "Stormers", "Bulls", "Sharks"], queries: ["Glasgow Warriors 2025 rugby", "Edinburgh Rugby 2025", "Cardiff Rugby 2025", "Scarlets rugby 2025", "Ospreys rugby 2025", "Benetton Rugby 2025", "Stormers rugby 2025", "Bulls rugby 2025", "Sharks rugby 2025"] },
-  { scope: "Six Nations opposition", subjects: ["England", "France", "Scotland", "Wales", "Italy", "Six Nations"], queries: ["2025 Six Nations England rugby", "2025 Six Nations France rugby", "2025 Six Nations Scotland rugby", "2025 Six Nations Wales rugby", "2025 Six Nations Italy rugby"] },
-  { scope: "European rugby", subjects: ["Champions Cup", "Challenge Cup", "Toulouse", "Bordeaux", "La Rochelle", "Leicester Tigers", "Northampton Saints"], queries: ["2025 Champions Cup rugby Toulouse", "2025 Champions Cup rugby Bordeaux", "2025 Champions Cup rugby La Rochelle", "2025 Champions Cup Leicester Tigers", "2025 Champions Cup Northampton Saints", "2025 Challenge Cup rugby"] },
-  { scope: "International", subjects: ["South Africa", "New Zealand", "Australia", "Argentina", "Japan", "Fiji", "rugby union"], queries: ["South Africa rugby union 2025", "New Zealand rugby union 2025", "Australia rugby union 2025", "Argentina rugby union 2025", "Japan rugby union 2025", "Fiji rugby union 2025"] },
-  { scope: "Venues", subjects: ["Aviva Stadium", "Thomond Park", "Murrayfield", "Twickenham", "Principality Stadium", "Stade de France", "Stadio Olimpico"], queries: ["Aviva Stadium rugby 2025", "Thomond Park rugby", "Murrayfield rugby 2025", "Twickenham rugby 2025", "Principality Stadium rugby 2025", "Stade de France rugby 2025", "Stadio Olimpico rugby 2025"] },
+  {
+    scope: "Ireland Men",
+    subjects: ["Ireland", "Irish", "Six Nations", "Garry Ringrose", "Dan Sheehan", "Caelan Doris", "Tadhg Beirne", "James Ryan", "Hugo Keenan", "James Lowe", "Jamison Gibson-Park", "Tadhg Furlong", "Jack Crowley", "Bundee Aki"],
+    queries: [
+      "2025 Six Nations Italy Ireland", "2025 Six Nations Ireland France", "2025 Six Nations Ireland England", "2025 Six Nations Ireland Wales", "2025 Six Nations Scotland Ireland",
+      "Garry Ringrose 2025 rugby", "Dan Sheehan 2025 rugby", "Caelan Doris 2025 rugby", "Tadhg Beirne 2025 rugby", "James Ryan 2025 rugby", "Hugo Keenan 2025 rugby", "James Lowe 2025 rugby", "Jamison Gibson-Park 2025 rugby", "Tadhg Furlong 2025 rugby", "Jack Crowley 2025 rugby", "Bundee Aki 2025 rugby"
+    ]
+  },
+  {
+    scope: "Ireland Women",
+    subjects: ["Ireland", "Irish", "Ireland women", "Women's Rugby World Cup", "Aoife Wafer", "Béibhinn Parsons", "Erin King", "Edel McMahon", "Sam Monaghan"],
+    queries: [
+      "2025 Rugby World Cup Women Ireland Spain", "2025 Rugby World Cup Women Ireland Japan", "2025 Rugby World Cup Women Ireland New Zealand",
+      "Aoife Wafer 2025 rugby", "Beibhinn Parsons 2025 rugby", "Erin King Ireland rugby 2025", "Edel McMahon Ireland rugby 2025", "Sam Monaghan Ireland rugby 2025"
+    ]
+  },
+  {
+    scope: "Leinster",
+    subjects: ["Leinster", "Garry Ringrose", "James Ryan", "Dan Sheehan", "Caelan Doris", "Hugo Keenan", "James Lowe", "Jamison Gibson-Park", "Tadhg Furlong", "Sam Prendergast"],
+    queries: [
+      "Leinster Rugby 2025", "Leinster Rugby 2026", "Garry Ringrose Leinster 2025", "James Ryan Leinster 2025", "Dan Sheehan Leinster 2025", "Caelan Doris Leinster 2025", "Hugo Keenan Leinster 2025", "James Lowe Leinster 2025", "Jamison Gibson-Park Leinster 2025", "Tadhg Furlong Leinster 2025", "Sam Prendergast Leinster 2025"
+    ]
+  },
+  {
+    scope: "Munster",
+    subjects: ["Munster Rugby", "Thomond Park", "Tadhg Beirne", "Jack Crowley", "Craig Casey", "Calvin Nash", "Tom Ahern", "Alex Nankivell"],
+    queries: [
+      "\"Munster Rugby\" 2025", "\"Munster Rugby\" 2026", "Tadhg Beirne Munster 2025", "Jack Crowley Munster 2025", "Craig Casey Munster 2025", "Calvin Nash Munster 2025", "Tom Ahern Munster rugby 2025", "Alex Nankivell Munster 2025", "\"Thomond Park\" rugby"
+    ]
+  },
+  {
+    scope: "Ulster",
+    subjects: ["Ulster Rugby", "Kingspan Stadium", "Affidea Stadium", "Jacob Stockdale", "Stuart McCloskey", "Iain Henderson", "Nick Timoney", "Tom Stewart"],
+    queries: [
+      "\"Ulster Rugby\" 2025", "\"Ulster Rugby\" 2026", "Jacob Stockdale 2025 rugby", "Stuart McCloskey 2025 rugby", "Iain Henderson 2025 rugby", "Nick Timoney 2025 rugby", "Tom Stewart Ulster rugby 2025", "\"Kingspan Stadium\" rugby", "\"Affidea Stadium\" rugby"
+    ]
+  },
+  {
+    scope: "Connacht",
+    subjects: ["Connacht Rugby", "Dexcom Stadium", "Sportsground Galway", "Bundee Aki", "Mack Hansen", "Finlay Bealham", "Cian Prendergast"],
+    queries: [
+      "\"Connacht Rugby\" 2025", "\"Connacht Rugby\" 2026", "Bundee Aki 2025 rugby", "Mack Hansen 2025 rugby", "Finlay Bealham 2025 rugby", "Cian Prendergast 2025 rugby", "\"Dexcom Stadium\" rugby", "\"Sportsground Galway\" rugby"
+    ]
+  },
+  {
+    scope: "URC opposition",
+    subjects: ["Glasgow Warriors", "Edinburgh Rugby", "Cardiff Rugby", "Scarlets", "Ospreys", "Dragons RFC", "Benetton Rugby", "Zebre Parma", "Stormers", "Bulls", "Sharks", "Lions"],
+    queries: [
+      "Glasgow Warriors 2025 rugby", "Edinburgh Rugby 2025", "Cardiff Rugby 2025", "Scarlets rugby 2025", "Ospreys rugby 2025", "Dragons RFC rugby 2025", "Benetton Rugby 2025", "Zebre Parma rugby 2025", "Stormers rugby 2025", "Bulls rugby 2025", "Sharks rugby 2025", "Lions South Africa rugby 2025", "2025-26 United Rugby Championship Zebre Edinburgh", "2025-26 United Rugby Championship Zebre Glasgow"
+    ]
+  },
+  {
+    scope: "Six Nations opposition",
+    subjects: ["England", "France", "Scotland", "Wales", "Italy", "Six Nations"],
+    queries: [
+      "2025 Six Nations England rugby", "2025 Six Nations France rugby", "2025 Six Nations Scotland rugby", "2025 Six Nations Wales rugby", "2025 Six Nations Italy rugby", "2025 Six Nations France Scotland", "2025 Six Nations England France", "2025 Six Nations Wales England", "2025 Six Nations Italy France"
+    ]
+  },
+  {
+    scope: "European rugby",
+    subjects: ["Champions Cup", "Challenge Cup", "Toulouse", "Bordeaux", "La Rochelle", "Leicester Tigers", "Northampton Saints", "Bath Rugby", "Saracens", "Harlequins", "Clermont", "Racing 92", "Toulon", "Bristol Bears"],
+    queries: [
+      "2025 Champions Cup rugby Toulouse", "2025 Champions Cup rugby Bordeaux", "2025 Champions Cup rugby La Rochelle", "2025 Champions Cup Leicester Tigers", "2025 Champions Cup Northampton Saints", "2025 Champions Cup Bath Rugby", "2025 Champions Cup Saracens", "2025 Champions Cup Harlequins", "2025 Champions Cup Clermont rugby", "2025 Champions Cup Racing 92", "2025 Challenge Cup rugby", "2025 Challenge Cup Toulon rugby", "2025 Challenge Cup Bristol Bears"
+    ]
+  },
+  {
+    scope: "International",
+    subjects: ["South Africa", "New Zealand", "Australia", "Argentina", "Japan", "Fiji", "rugby union", "Springboks", "All Blacks", "Wallabies", "Pumas"],
+    queries: [
+      "South Africa rugby union 2025", "Springboks rugby 2025", "New Zealand rugby union 2025", "All Blacks rugby 2025", "Australia rugby union 2025", "Wallabies rugby 2025", "Argentina rugby union 2025", "Pumas rugby union 2025", "Japan rugby union 2025", "Fiji rugby union 2025"
+    ]
+  },
+  {
+    scope: "Venues",
+    subjects: ["Aviva Stadium", "Thomond Park", "Dexcom Stadium", "Murrayfield", "Twickenham", "Principality Stadium", "Stade de France", "Stadio Olimpico", "Scotstoun Stadium", "Stade Ernest-Wallon", "Stade Marcel-Deflandre"],
+    queries: [
+      "Aviva Stadium rugby 2025", "Thomond Park rugby", "Dexcom Stadium rugby 2025", "Murrayfield rugby 2025", "Twickenham rugby 2025", "Principality Stadium rugby 2025", "Stade de France rugby 2025", "Stadio Olimpico rugby 2025", "Scotstoun Stadium rugby 2025", "Stade Ernest-Wallon rugby 2025", "Stade Marcel-Deflandre rugby 2025"
+    ]
+  },
 ];
 
 const allowedLicences = /^(CC BY(?:-SA)?(?: [234]\.0)?|CC0|Public domain)/i;

@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/discover-wikimedia-editorial-images.yml'
+      - 'scripts/discover-wikimedia-editorial-images.mjs'
 
 permissions:
   contents: write
