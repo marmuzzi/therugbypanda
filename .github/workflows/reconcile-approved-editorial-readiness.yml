@@ -1,0 +1,53 @@
+name: Reconcile approved Editorial Image readiness
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/reconcile-approved-editorial-readiness.yml'
+      - 'scripts/reconcile-approved-editorial-readiness.mjs'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: approved-editorial-readiness-reconcile
+  cancel-in-progress: false
+
+jobs:
+  reconcile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Reconcile approved local Editorial Image metadata
+        run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/approved-readiness-reconcile.log
+      - name: Re-audit Editorial Image readiness
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/approved-readiness-audit.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/approved-readiness.json
+      - name: Persist reconciliation evidence
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/editorial-images/approved-readiness-reconcile.log data/editorial-images/approved-readiness-audit.log data/editorial-images/approved-readiness.json || true
+          if git diff --cached --quiet; then
+            echo "No readiness evidence changed."
+            exit 0
+          fi
+          git commit -m "Media: persist approved readiness reconciliation [skip ci]"
+          git push --force origin HEAD:refs/heads/media/approved-readiness-report
