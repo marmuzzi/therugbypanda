@@ -22,7 +22,7 @@ jobs:
           node-version: '22'
       - name: Discover diverse rights-aware candidates
         env:
-          WIKIMEDIA_RESULTS_PER_QUERY: '15'
+          WIKIMEDIA_RESULTS_PER_QUERY: '30'
           WIKIMEDIA_OUTPUT: data/editorial-images/wikimedia-candidates.json
         run: npm run media:discover-wikimedia
       - name: Publish measured candidate set artifact
