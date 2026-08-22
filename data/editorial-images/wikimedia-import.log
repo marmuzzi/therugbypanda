@@ -1,0 +1,12 @@
+
+> therugbypanda@0.3.0 media:import-reviewed-wikimedia
+> node scripts/import-reviewed-wikimedia-images.mjs
+
+{
+  "approvedInput": 107,
+  "imported": 0,
+  "skippedExisting": 107,
+  "failed": 0,
+  "coverage": {},
+  "recentRate": 0
+}

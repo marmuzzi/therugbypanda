@@ -1,0 +1,30 @@
+{
+  "generatedAt": "2026-08-22T20:41:45.977Z",
+  "sourceGeneratedAt": "2026-08-22T20:34:53.815Z",
+  "totalCandidates": 735,
+  "counts": {
+    "reject": 624,
+    "approve": 107,
+    "owner-review": 4
+  },
+  "approvedCoverage": {
+    "Venues": 13,
+    "International": 21,
+    "URC opposition": 23,
+    "European rugby": 4,
+    "Ireland Men": 7,
+    "Six Nations opposition": 15,
+    "Connacht": 9,
+    "Ireland Women": 8,
+    "Ulster": 3,
+    "Munster": 4
+  },
+  "recentApprovalRate": 0.9252336448598131,
+  "ownerReviewRate": 0.005442176870748299,
+  "maxScopeShare": 0.21495327102803738,
+  "policyChecks": {
+    "majorityRecent": true,
+    "ownerReviewAtOrBelowFivePercent": true,
+    "noScopeAboveTwentyFivePercent": true
+  }
+}
