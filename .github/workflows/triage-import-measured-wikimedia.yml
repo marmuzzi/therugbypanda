@@ -1,0 +1,56 @@
+name: Triage and import measured Wikimedia images
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/triage-import-measured-wikimedia.yml'
+      - 'scripts/triage-wikimedia-candidates.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  triage-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      WIKIMEDIA_CANDIDATE_FILE: data/editorial-images/wikimedia-candidates.json
+      WIKIMEDIA_REVIEW_FILE: data/editorial-images/wikimedia-reviewed.json
+      WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/wikimedia-triage-report.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Load latest measured discovery output
+        run: |
+          git fetch origin media/wikimedia-discovery-output
+          git show FETCH_HEAD:data/editorial-images/wikimedia-candidates.json > data/editorial-images/wikimedia-candidates.json
+      - name: Apply strict assistant triage
+        run: node scripts/triage-wikimedia-candidates.mjs
+      - name: Import assistant-approved images as local Sanity assets
+        run: npm run media:import-reviewed-wikimedia | tee data/editorial-images/wikimedia-import.log
+      - name: Audit local media readiness
+        run: npm run media:audit-readiness | tee data/editorial-images/wikimedia-post-import-audit.log
+      - name: Persist triage and import evidence
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/editorial-images/wikimedia-triage-report.json data/editorial-images/wikimedia-import.log data/editorial-images/wikimedia-post-import-audit.log || true
+          if git diff --cached --quiet; then
+            echo "No report changes to persist."
+            exit 0
+          fi
+          git commit -m "Media: persist Wikimedia triage/import evidence [skip ci]"
+          git push --force origin HEAD:refs/heads/media/wikimedia-import-report
