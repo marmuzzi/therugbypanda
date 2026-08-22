@@ -2,17 +2,16 @@ name: Triage and import measured Wikimedia images
 
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
-    paths:
-      - '.github/workflows/triage-import-measured-wikimedia.yml'
-      - 'scripts/triage-wikimedia-candidates.mjs'
+  workflow_run:
+    workflows: ["Discover Wikimedia editorial images"]
+    types: [completed]
 
 permissions:
   contents: write
 
 jobs:
   triage-import:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
