@@ -5,13 +5,18 @@ on:
   workflow_run:
     workflows: ["Discover Wikimedia editorial images"]
     types: [completed]
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/triage-import-measured-wikimedia.yml'
+      - 'scripts/reconcile-wikimedia-readiness-metadata.mjs'
 
 permissions:
   contents: write
 
 jobs:
   triage-import:
-    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    if: github.event_name == 'workflow_dispatch' || github.event_name == 'push' || github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -39,6 +44,8 @@ jobs:
         run: node scripts/triage-wikimedia-candidates.mjs
       - name: Import assistant-approved images as local Sanity assets
         run: npm run media:import-reviewed-wikimedia | tee data/editorial-images/wikimedia-import.log
+      - name: Reconcile Wikimedia publication metadata
+        run: node scripts/reconcile-wikimedia-readiness-metadata.mjs | tee data/editorial-images/wikimedia-metadata-reconcile.log
       - name: Audit local media readiness
         run: npm run media:audit-readiness | tee data/editorial-images/wikimedia-post-import-audit.log
       - name: Persist triage and import evidence
@@ -46,7 +53,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/editorial-images/wikimedia-triage-report.json data/editorial-images/wikimedia-import.log data/editorial-images/wikimedia-post-import-audit.log || true
+          git add data/editorial-images/wikimedia-triage-report.json data/editorial-images/wikimedia-import.log data/editorial-images/wikimedia-metadata-reconcile.log data/editorial-images/wikimedia-post-import-audit.log || true
           if git diff --cached --quiet; then
             echo "No report changes to persist."
             exit 0
