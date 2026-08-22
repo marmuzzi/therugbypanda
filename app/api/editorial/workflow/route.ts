@@ -2,6 +2,7 @@ import { revalidatePath } from "next/cache";
 import { NextRequest, NextResponse } from "next/server";
 
 import { authenticateEditorialRequest } from "@/lib/editorial/EditorialApiAuth";
+import { requestEditorialReplacement } from "@/lib/editorial/EditorialReplacementTrigger";
 import { notifyArticlePublished } from "@/lib/editorial/EditorialSocialDistribution";
 import { applyEditorialAction, type EditorialAction } from "@/lib/editorial/EditorialWorkflow";
 
@@ -73,7 +74,31 @@ export async function POST(request: NextRequest) {
         ? await notifyArticlePublished(result.articleId)
         : undefined;
 
-    return jsonResponse({ status: "ok", workflow: result, socialDistribution });
+    // A rejection must immediately request fresh acquisition. The orchestrator is responsible
+    // for selecting a genuinely different angle/source set and then calling the protected
+    // /api/editorial/replacement endpoint. Do not recycle the rejected story here.
+    const replacementTrigger =
+      body.action === "reject"
+        ? await requestEditorialReplacement({
+            articleId: result.articleId,
+            actor,
+            note: body.note,
+            requestedAt: new Date().toISOString(),
+          })
+        : undefined;
+
+    if (body.action === "reject" && replacementTrigger?.status !== "requested") {
+      return jsonResponse(
+        {
+          error: "Article was rejected, but immediate replacement acquisition is not configured.",
+          workflow: result,
+          replacementTrigger,
+        },
+        { status: 503 },
+      );
+    }
+
+    return jsonResponse({ status: "ok", workflow: result, socialDistribution, replacementTrigger });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Editorial workflow failed";
     const status =
