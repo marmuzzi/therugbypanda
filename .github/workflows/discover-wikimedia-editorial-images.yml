@@ -1,0 +1,33 @@
+name: Discover Wikimedia editorial images
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/discover-wikimedia-editorial-images.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Discover diverse rights-aware candidates
+        env:
+          WIKIMEDIA_RESULTS_PER_QUERY: '15'
+          WIKIMEDIA_OUTPUT: data/editorial-images/wikimedia-candidates.json
+        run: npm run media:discover-wikimedia
+      - name: Publish measured candidate set
+        uses: actions/upload-artifact@v4
+        with:
+          name: wikimedia-editorial-candidates
+          path: data/editorial-images/wikimedia-candidates.json
+          if-no-files-found: error
+          retention-days: 7
