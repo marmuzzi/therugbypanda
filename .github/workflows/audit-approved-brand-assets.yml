@@ -1,0 +1,40 @@
+name: Audit approved Brand Assets for localization
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/audit-approved-brand-assets.yml'
+      - 'scripts/audit-approved-brand-assets.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      BRAND_ASSET_AUDIT_OUTPUT: data/brand-assets/approved-brand-localization-audit.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Audit approved Brand Assets
+        run: node scripts/audit-approved-brand-assets.mjs
+      - name: Persist audit output
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/brand-assets/approved-brand-localization-audit.json
+          git commit -m "Media: persist approved Brand Asset localization audit [skip ci]"
+          git push --force origin HEAD:refs/heads/media/brand-asset-audit-output
