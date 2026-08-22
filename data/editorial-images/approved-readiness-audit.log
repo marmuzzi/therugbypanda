@@ -1,0 +1,15 @@
+
+> therugbypanda@0.3.0 media:audit-readiness
+> node scripts/audit-editorial-image-readiness.mjs
+
+{
+  "total": 430,
+  "publicationReady": 174,
+  "needsAttention": 256,
+  "approvedOrPublished": 184,
+  "approvedButNotReady": 10,
+  "duplicateAssetGroups": 0,
+  "duplicateSourceGroups": 2
+}
+Wrote artifacts/editorial-image-audit/editorial-image-readiness.json
+Wrote artifacts/editorial-image-audit/editorial-image-readiness.md
