@@ -47,13 +47,15 @@ jobs:
       - name: Reconcile Wikimedia publication metadata
         run: node scripts/reconcile-wikimedia-readiness-metadata.mjs | tee data/editorial-images/wikimedia-metadata-reconcile.log
       - name: Audit local media readiness
-        run: npm run media:audit-readiness | tee data/editorial-images/wikimedia-post-import-audit.log
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/wikimedia-post-import-audit.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/wikimedia-readiness.json
       - name: Persist triage and import evidence
         if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/editorial-images/wikimedia-triage-report.json data/editorial-images/wikimedia-import.log data/editorial-images/wikimedia-metadata-reconcile.log data/editorial-images/wikimedia-post-import-audit.log || true
+          git add data/editorial-images/wikimedia-triage-report.json data/editorial-images/wikimedia-import.log data/editorial-images/wikimedia-metadata-reconcile.log data/editorial-images/wikimedia-post-import-audit.log data/editorial-images/wikimedia-readiness.json || true
           if git diff --cached --quiet; then
             echo "No report changes to persist."
             exit 0
