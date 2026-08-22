@@ -8,7 +8,7 @@ on:
       - '.github/workflows/discover-wikimedia-editorial-images.yml'
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   discover:
@@ -24,10 +24,21 @@ jobs:
           WIKIMEDIA_RESULTS_PER_QUERY: '15'
           WIKIMEDIA_OUTPUT: data/editorial-images/wikimedia-candidates.json
         run: npm run media:discover-wikimedia
-      - name: Publish measured candidate set
+      - name: Publish measured candidate set artifact
         uses: actions/upload-artifact@v4
         with:
           name: wikimedia-editorial-candidates
           path: data/editorial-images/wikimedia-candidates.json
           if-no-files-found: error
           retention-days: 7
+      - name: Persist measured candidate set for autonomous review
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/editorial-images/wikimedia-candidates.json
+          if git diff --cached --quiet; then
+            echo "Candidate set unchanged; nothing to persist."
+            exit 0
+          fi
+          git commit -m "Media: refresh measured Wikimedia candidates [skip ci]"
+          git push --force origin HEAD:refs/heads/media/wikimedia-discovery-output
