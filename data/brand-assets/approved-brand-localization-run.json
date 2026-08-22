@@ -1,0 +1,176 @@
+{
+  "approvedMissingLocal": 24,
+  "localized": 12,
+  "noStrongCandidate": 12,
+  "failed": 0,
+  "results": [
+    {
+      "id": "brandAsset-candidate-connacht-rugby",
+      "title": "Connacht Rugby",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-epcr-challenge-cup",
+      "title": "EPCR Challenge Cup",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-european-professional-club-rugby",
+      "title": "European Professional Club Rugby",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-european-rugby-champions-cup",
+      "title": "European Rugby Champions Cup",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-federazione-italiana-rugby",
+      "title": "Federazione Italiana Rugby",
+      "status": "localized",
+      "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Italy_-_Dark.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 40487,
+      "assetId": "image-25a519f712ed1290da86c4d0dc1854e204c5f05f-500x500-svg"
+    },
+    {
+      "id": "brandAsset-candidate-fiji-rugby-union",
+      "title": "Fiji Rugby Union",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-federation-francaise-de-rugby",
+      "title": "Fédération Française de Rugby",
+      "status": "localized",
+      "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/France_-_Dark.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 6641,
+      "assetId": "image-90cece3e973120ddb657f22ba29631dc178533c5-500x500-svg"
+    },
+    {
+      "id": "brandAsset-candidate-irish-rugby-football-union",
+      "title": "Irish Rugby Football Union",
+      "status": "localized",
+      "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Ireland_-_Dark.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 14742,
+      "assetId": "image-37a40dc3655c9fde9616296717e2e24c2c6f8e0a-500x500-svg"
+    },
+    {
+      "id": "brandAsset-candidate-japan-rugby-football-union",
+      "title": "Japan Rugby Football Union",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-leinster-rugby",
+      "title": "Leinster Rugby",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-men-s-rugby-world-cup-2027",
+      "title": "Men's Rugby World Cup 2027",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-munster-rugby",
+      "title": "Munster Rugby",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-new-zealand-rugby",
+      "title": "New Zealand Rugby",
+      "status": "localized",
+      "url": "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png",
+      "contentType": "image/png",
+      "bytes": 5258,
+      "assetId": "image-e976d450646c44b937ed77db0509f925b83a37ed-283x200-png"
+    },
+    {
+      "id": "brandAsset-candidate-rugby-australia",
+      "title": "Rugby Australia",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-rugby-football-union",
+      "title": "Rugby Football Union",
+      "status": "localized",
+      "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/England_-_Dark.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 15688,
+      "assetId": "image-ec38c500d9b25851a46993a86e97f49f6d8a823f-500x500-svg"
+    },
+    {
+      "id": "brandAsset-candidate-rugby-world-cup",
+      "title": "Rugby World Cup",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-scottish-rugby-union",
+      "title": "Scottish Rugby Union",
+      "status": "localized",
+      "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Scottish_Rugby_-_Dark.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 13829,
+      "assetId": "image-f7d171937d6cf6f985a699fabf6eb97a942ac188-500x500-svg"
+    },
+    {
+      "id": "brandAsset-candidate-six-nations-rugby",
+      "title": "Six Nations Rugby",
+      "status": "localized",
+      "url": "https://media.sixnationsrugby.com/wp-content/uploads/2025/10/Frame-3.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 8119,
+      "assetId": "image-582890aa672c670ab25fffeacad96871ff69e27e-81x91-svg"
+    },
+    {
+      "id": "brandAsset-candidate-south-african-rugby-union",
+      "title": "South African Rugby Union",
+      "status": "localized",
+      "url": "https://springboks.rugby/assets/svg/springbok.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 47120,
+      "assetId": "image-46a09858293a7dd91466d07b9343467dff350780-277x91-svg"
+    },
+    {
+      "id": "brandAsset-candidate-ulster-rugby",
+      "title": "Ulster Rugby",
+      "status": "localized",
+      "url": "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301",
+      "contentType": "image/png",
+      "bytes": 2031,
+      "assetId": "image-2783d0fcb25d81bfa9854b522af9e7d986936732-100x100-png"
+    },
+    {
+      "id": "brandAsset-candidate-united-rugby-championship",
+      "title": "United Rugby Championship",
+      "status": "localized",
+      "url": "https://www.unitedrugby.com/wp-content/themes/sp-starter-theme/public/images/app-banner-logo.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 1591,
+      "assetId": "image-a43cd7f0ea6a1d27c31c1b54cb1d8e6bac8dafa4-39x40-svg"
+    },
+    {
+      "id": "brandAsset-candidate-union-argentina-de-rugby",
+      "title": "Unión Argentina de Rugby",
+      "status": "localized",
+      "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 12215,
+      "assetId": "image-7609dd51b765de98edb5e2c87d8d0f1d2c1b30fb-800x212-svg"
+    },
+    {
+      "id": "brandAsset-candidate-welsh-rugby-union",
+      "title": "Welsh Rugby Union",
+      "status": "localized",
+      "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Welsh_Rugby_-_Dark.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 3735,
+      "assetId": "image-4ba14bcb8b212fce41be28429fcdde95c169f963-500x500-svg"
+    },
+    {
+      "id": "brandAsset-candidate-world-rugby",
+      "title": "World Rugby",
+      "status": "no-strong-candidate"
+    }
+  ]
+}
