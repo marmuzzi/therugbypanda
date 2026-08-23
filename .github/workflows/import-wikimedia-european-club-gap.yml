@@ -9,6 +9,7 @@ on:
       - 'scripts/discover-wikimedia-european-clubs.mjs'
       - 'scripts/triage-wikimedia-candidates.mjs'
       - 'scripts/import-reviewed-wikimedia-images.mjs'
+      - 'scripts/reconcile-approved-editorial-readiness.mjs'
 
 permissions:
   contents: write
@@ -49,6 +50,8 @@ jobs:
         run: node scripts/triage-wikimedia-candidates.mjs
       - name: Import approved images locally into Sanity
         run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/wikimedia-european-club-import.log
+      - name: Reconcile approved publication metadata
+        run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/wikimedia-european-club-reconcile.log
       - name: Audit publication readiness
         run: |
           npm run media:audit-readiness | tee data/editorial-images/wikimedia-european-club-readiness.log
