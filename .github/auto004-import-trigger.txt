@@ -1,5 +1,5 @@
 AUTO-004 controlled production import trigger
 Batch: data/editorial-acquisition/auto004-2026-08-18-independent.json
-Purpose: verify PR #199 extended generation/retry budget against the existing independent five-story package while preserving Draft Ready limits, fail-closed originality, fail-closed image relevance, one-of-each package style allocation and package-mode notification suppression.
-Date: 2026-08-21
-Trigger attempt: 11
+Purpose: verify PR #219 metadata-only Draft Ready repair against the existing independent five-story package while preserving Draft Ready limits, fail-closed originality, fail-closed image relevance, one-of-each package style allocation and package-mode notification suppression.
+Date: 2026-08-23
+Trigger attempt: 12
