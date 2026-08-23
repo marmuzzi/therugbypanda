@@ -55,3 +55,5 @@ jobs:
           if git diff --cached --quiet; then echo "No evidence changed."; exit 0; fi
           git commit -m "Media: persist URC club gap wave evidence [skip ci]"
           git push --force origin HEAD:refs/heads/media/urc-club-gap-report
+
+# Controlled retrigger: 2026-08-23 after #224 merged without persisted run evidence.
