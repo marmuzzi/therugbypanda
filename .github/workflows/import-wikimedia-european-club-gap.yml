@@ -1,0 +1,67 @@
+name: Import Wikimedia European club gap wave
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/import-wikimedia-european-club-gap.yml'
+      - 'scripts/discover-wikimedia-european-clubs.mjs'
+      - 'scripts/triage-wikimedia-candidates.mjs'
+      - 'scripts/import-reviewed-wikimedia-images.mjs'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wikimedia-european-club-gap-import
+  cancel-in-progress: false
+
+jobs:
+  discover-triage-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: production
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      WIKIMEDIA_CANDIDATE_FILE: data/editorial-images/wikimedia-european-club-candidates.json
+      WIKIMEDIA_REVIEW_FILE: data/editorial-images/wikimedia-european-club-reviewed.json
+      WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/wikimedia-european-club-triage.json
+      EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
+      WIKIMEDIA_MIN_APPROVED: '12'
+      WIKIMEDIA_MAX_SCOPE_SHARE: '0.17'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Discover recent European club images
+        env:
+          WIKIMEDIA_OUTPUT: data/editorial-images/wikimedia-european-club-candidates.json
+        run: node scripts/discover-wikimedia-european-clubs.mjs
+      - name: Strict assistant triage
+        run: node scripts/triage-wikimedia-candidates.mjs
+      - name: Import approved images locally into Sanity
+        run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/wikimedia-european-club-import.log
+      - name: Audit publication readiness
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/wikimedia-european-club-readiness.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/wikimedia-european-club-readiness.json
+      - name: Persist measured evidence
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "4189826+github-actions[bot]@users.noreply.github.com"
+          git add data/editorial-images/wikimedia-european-club-*.json data/editorial-images/wikimedia-european-club-*.log || true
+          if git diff --cached --quiet; then
+            echo "No evidence changed."
+            exit 0
+          fi
+          git commit -m "Media: persist European club gap wave evidence [skip ci]"
+          git push --force origin HEAD:refs/heads/media/european-club-gap-report
