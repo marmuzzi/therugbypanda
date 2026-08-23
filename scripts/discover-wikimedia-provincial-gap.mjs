@@ -3,7 +3,8 @@ import path from "node:path";
 
 const API = "https://commons.wikimedia.org/w/api.php";
 const outputPath = process.env.WIKIMEDIA_OUTPUT ?? "data/editorial-images/wikimedia-provincial-gap-candidates.json";
-const recentFloor = 2024;
+const recentFloor = 2025;
+const searchYears = [2026, 2025];
 const perQueryApprovalCap = 2;
 const perScopeApprovalCap = 10;
 
@@ -38,8 +39,8 @@ function extractYear(...values) {
   return match ? Number(match[1]) : null;
 }
 
-async function searchPlayer(scope, player) {
-  const query = `\"${player}\" rugby 2025`;
+async function searchPlayer(scope, player, searchYear) {
+  const query = `\"${player}\" rugby ${searchYear}`;
   const url = new URL(API);
   const params = {
     action: "query", format: "json", generator: "search", gsrnamespace: "6",
@@ -67,7 +68,7 @@ async function searchPlayer(scope, player) {
       ? "reject"
       : rightsClear ? "approve-candidate" : "owner-review";
     return {
-      source: "Wikimedia Commons", scope, query, title, description, categories,
+      source: "Wikimedia Commons", scope, query, searchYear, title, description, categories,
       sourcePage: info.descriptionurl, imageUrl: info.url, width: info.width, height: info.height, mime: info.mime,
       creator: stripHtml(meta.Artist?.value), credit: stripHtml(meta.Credit?.value), licence,
       licenceUrl: meta.LicenseUrl?.value ?? null, dateText: dateText || null, year, recent,
@@ -78,22 +79,25 @@ async function searchPlayer(scope, player) {
 
 const all = [];
 for (const target of targets) {
-  for (const player of target.players) all.push(...await searchPlayer(target.scope, player));
+  for (const player of target.players) {
+    for (const searchYear of searchYears) all.push(...await searchPlayer(target.scope, player, searchYear));
+  }
 }
 const deduped = [...new Map(all.filter((x) => x.imageUrl).map((x) => [x.imageUrl, x])).values()];
-deduped.sort((a, b) => Number(b.recent) - Number(a.recent) || (b.width ?? 0) - (a.width ?? 0));
+deduped.sort((a, b) => Number(b.year ?? 0) - Number(a.year ?? 0) || (b.width ?? 0) - (a.width ?? 0));
 
-const queryCounts = new Map();
+const playerCounts = new Map();
 const scopeCounts = new Map();
 for (const item of deduped) {
   if (item.autoDecision !== "approve-candidate") continue;
-  const q = queryCounts.get(item.query) ?? 0;
+  const playerKey = `${item.scope}:${item.subjectEvidence[0] ?? item.query}`;
+  const q = playerCounts.get(playerKey) ?? 0;
   const s = scopeCounts.get(item.scope) ?? 0;
   if (q >= perQueryApprovalCap || s >= perScopeApprovalCap) {
     item.autoDecision = "diversity-hold";
     continue;
   }
-  queryCounts.set(item.query, q + 1);
+  playerCounts.set(playerKey, q + 1);
   scopeCounts.set(item.scope, s + 1);
 }
 
@@ -112,7 +116,7 @@ const maxScopeShare = approved.length ? Math.max(...Object.values(coverage)) / a
 
 const output = {
   generatedAt: new Date().toISOString(),
-  policy: { recentFloor, perQueryApprovalCap, perScopeApprovalCap, ownerReviewTargetMaximum: 0.05, relevantImageOrNoImage: true },
+  policy: { recentFloor, searchYears, perPlayerApprovalCap: perQueryApprovalCap, perScopeApprovalCap, ownerReviewTargetMaximum: 0.05, relevantImageOrNoImage: true },
   counts, coverage, ownerReviewRate, recentApprovalRate, maxScopeShare, candidates: deduped,
 };
 await fs.mkdir(path.dirname(outputPath), { recursive: true });
