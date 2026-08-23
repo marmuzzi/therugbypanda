@@ -15,6 +15,14 @@ const DEFAULT_TIMEOUT_MS = 45_000;
 const MAX_TIMEOUT_MS = 220_000;
 const MAX_GENERATION_ATTEMPTS = 3;
 const MIN_RETRY_TIMEOUT_MS = 20_000;
+const MIN_METADATA_REPAIR_TIMEOUT_MS = 8_000;
+
+const REPAIRABLE_METADATA_CODES = new Set([
+  "headline-length",
+  "standfirst-length",
+  "seo-title-length",
+  "seo-description-length",
+]);
 
 const ARTICLE_SCHEMA = {
   type: "object",
@@ -58,6 +66,18 @@ const ARTICLE_SCHEMA = {
   },
 } as const;
 
+const METADATA_REPAIR_SCHEMA = {
+  type: "object",
+  additionalProperties: false,
+  required: ["title", "standfirst", "seoTitle", "seoDescription"],
+  properties: {
+    title: { type: "string" },
+    standfirst: { type: "string" },
+    seoTitle: { type: "string" },
+    seoDescription: { type: "string" },
+  },
+} as const;
+
 type ResponsesPayload = {
   id?: string;
   model?: string;
@@ -73,6 +93,8 @@ type GenerateArticleOptions = {
   timeoutMs?: number;
   styleProfileId?: ArticleStyleProfileId;
 };
+
+type MetadataRepair = Pick<GeneratedArticleDraft, "title" | "standfirst" | "seoTitle" | "seoDescription">;
 
 function sourceProvenance(story: RawStoryInput) {
   return story.sourceRecords.map((source) => ({
@@ -212,16 +234,62 @@ function rawStoryOriginalityText(story: RawStoryInput): string {
   return [story.title, story.summary, story.bodyText].filter(Boolean).join("\n\n");
 }
 
-function parseGeneratedArticle(payload: ResponsesPayload): GeneratedArticleDraft {
-  if (payload.status === "failed") throw new Error(`OpenAI generation failed: ${payload.error?.message ?? "unknown error"}`);
-  if (payload.status === "incomplete") throw new Error(`OpenAI generation was incomplete: ${payload.incomplete_details?.reason ?? "unknown reason"}`);
+function parseStructuredOutput<T>(payload: ResponsesPayload, label: string): T {
+  if (payload.status === "failed") throw new Error(`OpenAI ${label} failed: ${payload.error?.message ?? "unknown error"}`);
+  if (payload.status === "incomplete") throw new Error(`OpenAI ${label} was incomplete: ${payload.incomplete_details?.reason ?? "unknown reason"}`);
   const outputText = extractOutputText(payload);
-  if (!outputText) throw new Error("OpenAI returned no structured article output in the response output array.");
+  if (!outputText) throw new Error(`OpenAI returned no structured ${label} output in the response output array.`);
   try {
-    return JSON.parse(outputText) as GeneratedArticleDraft;
+    return JSON.parse(outputText) as T;
   } catch (error) {
-    throw new Error(`OpenAI returned invalid structured article JSON: ${error instanceof Error ? error.message : "parse failed"}`);
+    throw new Error(`OpenAI returned invalid structured ${label} JSON: ${error instanceof Error ? error.message : "parse failed"}`);
   }
+}
+
+function parseGeneratedArticle(payload: ResponsesPayload): GeneratedArticleDraft {
+  return parseStructuredOutput<GeneratedArticleDraft>(payload, "article generation");
+}
+
+function metadataOnlyFailure(report: DraftQualityReport): boolean {
+  return report.issues.length > 0 && report.issues.every((issue) => REPAIRABLE_METADATA_CODES.has(issue.code));
+}
+
+function metadataRepairInput(article: GeneratedArticleDraft, quality: DraftQualityReport, editorial: EditorialBrainResult) {
+  return JSON.stringify({
+    assignment: "Repair only the failing Draft Ready metadata fields on an otherwise accepted Rugby Panda article.",
+    currentMetadata: {
+      title: article.title,
+      standfirst: article.standfirst,
+      seoTitle: article.seoTitle,
+      seoDescription: article.seoDescription,
+    },
+    failingIssues: quality.issues,
+    factualBoundary: {
+      storyId: editorial.inputId,
+      instruction: [
+        "Use only facts already present in the supplied metadata. Do not introduce a new claim, statistic, quote, player, team or conclusion.",
+        "Preserve meaning and tone while making the smallest natural rewrite needed to satisfy the limits.",
+        "Do not truncate mid-sentence or return fragments merely to fit a limit.",
+      ],
+    },
+    limits: {
+      title: DRAFT_READY_LIMITS.headlineCharacters,
+      standfirst: DRAFT_READY_LIMITS.standfirstCharacters,
+      seoTitle: DRAFT_READY_LIMITS.seoTitleCharacters,
+      seoDescription: DRAFT_READY_LIMITS.seoDescriptionCharacters,
+    },
+  });
+}
+
+function applyMetadataRepair(article: GeneratedArticleDraft, repair: MetadataRepair, quality: DraftQualityReport): GeneratedArticleDraft {
+  const codes = new Set(quality.issues.map((issue) => issue.code));
+  return {
+    ...article,
+    title: codes.has("headline-length") ? repair.title : article.title,
+    standfirst: codes.has("standfirst-length") ? repair.standfirst : article.standfirst,
+    seoTitle: codes.has("seo-title-length") ? repair.seoTitle : article.seoTitle,
+    seoDescription: codes.has("seo-description-length") ? repair.seoDescription : article.seoDescription,
+  };
 }
 
 export async function generateArticleDraft(
@@ -299,12 +367,12 @@ export async function generateArticleDraft(
       });
 
       const article = parseGeneratedArticle(payload);
-      const originality = assessArticleOriginality(
+      let originality = assessArticleOriginality(
         article,
         story.sourceRecords,
         rawStoryMaterial ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }] : [],
       );
-      const quality = assessDraftQuality(article);
+      let quality = assessDraftQuality(article);
       console.info("Editorial Draft Ready checks completed", {
         inputId: editorial.inputId,
         originalityPassed: originality.passed,
@@ -316,6 +384,62 @@ export async function generateArticleDraft(
       });
 
       if (originality.passed && quality.passed) return article;
+
+      if (originality.passed && metadataOnlyFailure(quality)) {
+        const repairRemainingMs = timeoutMs - (Date.now() - startedAt);
+        if (repairRemainingMs >= MIN_METADATA_REPAIR_TIMEOUT_MS) {
+          const repairStartedAt = Date.now();
+          console.info("Editorial Draft Ready metadata repair started", {
+            inputId: editorial.inputId,
+            styleProfile: style.id,
+            attempt,
+            issues: quality.issues,
+            remainingMs: repairRemainingMs,
+          });
+
+          const repairResponse = await fetch(OPENAI_RESPONSES_URL, {
+            method: "POST",
+            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+            signal: controller.signal,
+            body: JSON.stringify({
+              model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
+              store: false,
+              instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
+              input: metadataRepairInput(article, quality, editorial),
+              text: { format: { type: "json_schema", name: "rugby_panda_metadata_repair", strict: true, schema: METADATA_REPAIR_SCHEMA } },
+            }),
+          });
+
+          if (!repairResponse.ok) {
+            const details = await repairResponse.text();
+            throw new Error(`OpenAI metadata repair failed (${repairResponse.status}): ${details.slice(0, 500)}`);
+          }
+
+          const repairPayload = (await repairResponse.json()) as ResponsesPayload;
+          const repaired = applyMetadataRepair(article, parseStructuredOutput<MetadataRepair>(repairPayload, "metadata repair"), quality);
+          originality = assessArticleOriginality(
+            repaired,
+            story.sourceRecords,
+            rawStoryMaterial ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }] : [],
+          );
+          quality = assessDraftQuality(repaired);
+
+          console.info("Editorial Draft Ready metadata repair completed", {
+            inputId: editorial.inputId,
+            styleProfile: style.id,
+            attempt,
+            durationMs: Date.now() - repairStartedAt,
+            totalDurationMs: Date.now() - startedAt,
+            originalityPassed: originality.passed,
+            qualityPassed: quality.passed,
+            originalityFindings: originality.findings,
+            qualityIssues: quality.issues,
+          });
+
+          if (originality.passed && quality.passed) return repaired;
+        }
+      }
+
       originalityFeedback = originality.passed ? undefined : originality;
       qualityFeedback = quality.passed ? undefined : quality;
 

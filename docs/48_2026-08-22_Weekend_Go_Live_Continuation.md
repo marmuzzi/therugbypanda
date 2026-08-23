@@ -14,6 +14,15 @@ Operational continuation point for autonomous go-live work through 24 August. Th
 - PR #201 merged/deployed READY: Wikimedia Commons precision discovery path exists. It is discovery/triage only; discovered files do not count toward the 200 local approved-media launch floor until visually reviewed, rights-cleared and imported into Sanity.
 - Representative post-#192 writes have resolved to no image where no subject-relevant approved image exists. Do not reintroduce generic fallback behaviour.
 
+## 23 August continuation evidence
+
+- PR #202 is merged and deployed: rejecting an article now emits an immediate replacement-acquisition trigger after the workflow transition. End-to-end completion still requires the persistent orchestrator endpoint to consume that event and create a genuinely different replacement draft.
+- Wikimedia discovery, assistant triage, local Sanity ingestion, readiness reconciliation and diversity controls are now implemented through PRs #203-#218.
+- The latest persisted production audit before the current provincial rerun shows 174 publication-ready Editorial Images, 184 approved/published local Editorial Images and zero duplicate Sanity asset groups. The remaining Editorial Image gap to the 200 floor is 26.
+- Recent Commons triage evidence remains strongly current-season/last-season and below the <=5% owner-escalation ceiling; discovered URLs still never count until rights-cleared and stored locally.
+- PR #218 merged on 23 August and retriggers the targeted provincial wave with a minimum of eight approvals, a 40% maximum share per province, and mandatory approved coverage for Leinster, Munster, Ulster and Connacht. Broad-library diversity defaults remain unchanged.
+- The current functional branch adds bounded metadata-only Draft Ready repair. When originality passes and the only failures are headline, standfirst, SEO-title or SEO-description lengths, the accepted body is preserved and only failing metadata fields are rewritten. The repaired complete article must then pass both originality and Draft Ready checks; body-quality/originality failures still use full recomposition.
+
 ## Owner-approved editorial rules to preserve
 
 - Daily package target remains five review-ready production drafts and exactly one consolidated morning notification.
@@ -29,18 +38,17 @@ Operational continuation point for autonomous go-live work through 24 August. Th
 - Relevant image or no image; never use an unrelated fallback merely to fill a slot.
 - Assistant handles at least 95% of clear approve/reject decisions. Owner escalation is reserved for genuinely ambiguous rights/relevance cases and should remain at or below 5%.
 - Third-party public use requires rights metadata and a local Sanity asset; do not hotlink source originals.
-- The verified local approved Editorial Image baseline entering this work remains 22 against the 200 launch floor. Wikimedia discovery results are not yet counted.
+- Do not bulk-import deep collections from one match. Use per-event/player/team/scope caps and measure coverage distribution as well as totals.
 - Do not spend more on the failed broad Openverse/Apify pattern. Use exact-subject Commons discovery and other legally reusable, rights/date-aware sources.
 
 ## Highest-priority implementation order
 
-1. Add a bounded mechanical-repair path for an originality-passing draft when failures are limited to headline/standfirst/SEO field lengths or other safely repairable Draft Ready metadata. Preserve the accepted body; rerun both Draft Ready and originality checks on the repaired complete draft before return. Fall back to full recomposition for body-quality or originality failures.
-2. Rerun the controlled five-story package and require 5/5 Draft Ready + originality pass, five distinct style profiles, package notification suppression and relevant-image-or-no-image behaviour.
-3. Implement/verify immediate rejection replacement end-to-end through `/api/editorial/replacement` with a different source/angle identity.
-4. Complete persistent morning orchestration so five eligible drafts and one consolidated notification are ready by 08:00 Europe/Dublin. The Make schedule was never implemented; absence of the schedule is a missing feature, not a regression.
-5. Run measured Wikimedia candidate discovery, visually triage clear cases, ingest rights-cleared approvals as local Sanity assets, deduplicate, and re-audit the local approved count. Scale only if relevance and recency yield remain strong and owner escalation stays <=5%.
-6. Reconcile `docs/07_Project_State.md`, `docs/08_Issue_Log.md` and `docs/09_Publishing_Workflow.md` with #195-#201 and subsequent weekend evidence in the same functional batch.
-7. After priorities 1-5 are stable, continue SOCIAL-001, MEDIA-004 and remaining launch blockers.
+1. Production-verify bounded mechanical metadata repair, then rerun the controlled five-story package and require 5/5 Draft Ready + originality pass, five distinct style profiles, package notification suppression and relevant-image-or-no-image behaviour.
+2. Complete immediate rejection replacement end-to-end through `/api/editorial/replacement` with a different source/angle identity.
+3. Complete persistent morning orchestration so five eligible drafts and one consolidated notification are ready by 08:00 Europe/Dublin. The Make schedule was never implemented; absence of the schedule is a missing feature, not a regression.
+4. Continue targeted diverse Wikimedia acquisition, assistant triage and local Sanity ingestion until the publication-ready library reaches the 200 floor without lowering relevance, recency, rights or diversity standards.
+5. Reconcile `docs/07_Project_State.md`, `docs/08_Issue_Log.md` and `docs/09_Publishing_Workflow.md` with the full weekend evidence in the next batched production change.
+6. After priorities 1-4 are stable, continue SOCIAL-001, MEDIA-004 and remaining launch blockers.
 
 ## Completion discipline
 
