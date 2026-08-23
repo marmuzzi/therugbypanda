@@ -1,0 +1,62 @@
+name: Import Wikimedia provincial gap wave
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/import-wikimedia-provincial-gap.yml'
+      - 'scripts/discover-wikimedia-provincial-gap.mjs'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: wikimedia-provincial-gap-import
+  cancel-in-progress: false
+
+jobs:
+  discover-triage-import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      WIKIMEDIA_CANDIDATE_FILE: data/editorial-images/wikimedia-provincial-gap-candidates.json
+      WIKIMEDIA_REVIEW_FILE: data/editorial-images/wikimedia-provincial-gap-reviewed.json
+      WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/wikimedia-provincial-gap-triage.json
+      EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Discover current provincial player images
+        env:
+          WIKIMEDIA_OUTPUT: data/editorial-images/wikimedia-provincial-gap-candidates.json
+        run: node scripts/discover-wikimedia-provincial-gap.mjs
+      - name: Strict assistant triage
+        run: node scripts/triage-wikimedia-candidates.mjs
+      - name: Import approved images locally into Sanity
+        run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/wikimedia-provincial-gap-import.log
+      - name: Audit publication readiness
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/wikimedia-provincial-gap-readiness.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/wikimedia-provincial-gap-readiness.json
+      - name: Persist measured evidence
+        if: always()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/editorial-images/wikimedia-provincial-gap-*.json data/editorial-images/wikimedia-provincial-gap-*.log || true
+          if git diff --cached --quiet; then
+            echo "No evidence changed."
+            exit 0
+          fi
+          git commit -m "Media: persist provincial gap wave evidence [skip ci]"
+          git push --force origin HEAD:refs/heads/media/provincial-gap-report
