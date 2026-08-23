@@ -7,6 +7,7 @@ on:
     paths:
       - '.github/workflows/import-wikimedia-provincial-gap.yml'
       - 'scripts/discover-wikimedia-provincial-gap.mjs'
+      - 'scripts/triage-wikimedia-candidates.mjs'
 
 permissions:
   contents: write
@@ -28,6 +29,9 @@ jobs:
       WIKIMEDIA_REVIEW_FILE: data/editorial-images/wikimedia-provincial-gap-reviewed.json
       WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/wikimedia-provincial-gap-triage.json
       EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
+      WIKIMEDIA_MIN_APPROVED: '8'
+      WIKIMEDIA_MAX_SCOPE_SHARE: '0.40'
+      WIKIMEDIA_REQUIRED_SCOPES: 'Leinster,Munster,Ulster,Connacht'
     steps:
       - uses: actions/checkout@v4
         with:
