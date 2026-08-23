@@ -1,5 +1,6 @@
 name: Import Wikimedia provincial gap wave
 
+# Operational retrigger: 2026-08-23 after PR #218 policy correction.
 on:
   workflow_dispatch:
   push:
