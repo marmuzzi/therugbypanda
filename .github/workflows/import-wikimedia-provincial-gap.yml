@@ -31,6 +31,7 @@ jobs:
       EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
       WIKIMEDIA_MIN_APPROVED: '8'
       WIKIMEDIA_MAX_SCOPE_SHARE: '0.40'
+      WIKIMEDIA_REQUIRED_SCOPES: 'Leinster,Munster,Ulster,Connacht'
     steps:
       - uses: actions/checkout@v4
         with:
