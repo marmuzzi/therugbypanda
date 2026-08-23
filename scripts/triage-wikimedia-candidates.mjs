@@ -6,6 +6,7 @@ const outputPath = process.env.WIKIMEDIA_REVIEW_FILE ?? "data/editorial-images/w
 const reportPath = process.env.WIKIMEDIA_TRIAGE_REPORT ?? "data/editorial-images/wikimedia-triage-report.json";
 const minimumApproved = Number(process.env.WIKIMEDIA_MIN_APPROVED ?? 20);
 const maximumScopeShare = Number(process.env.WIKIMEDIA_MAX_SCOPE_SHARE ?? 0.25);
+const requiredScopes = String(process.env.WIKIMEDIA_REQUIRED_SCOPES ?? "").split(",").map((value) => value.trim()).filter(Boolean);
 if (!Number.isFinite(minimumApproved) || minimumApproved < 1) throw new Error("WIKIMEDIA_MIN_APPROVED must be >= 1.");
 if (!Number.isFinite(maximumScopeShare) || maximumScopeShare <= 0 || maximumScopeShare > 1) throw new Error("WIKIMEDIA_MAX_SCOPE_SHARE must be > 0 and <= 1.");
 
@@ -51,6 +52,7 @@ const coverage = approved.reduce((acc, item) => {
   acc[item.scope ?? "Unknown"] = (acc[item.scope ?? "Unknown"] ?? 0) + 1;
   return acc;
 }, {});
+const missingRequiredScopes = requiredScopes.filter((scope) => !coverage[scope]);
 const recentRate = approved.length ? approved.filter((item) => item.recent).length / approved.length : 0;
 const ownerReviewRate = reviewed.length ? (counts["owner-review"] ?? 0) / reviewed.length : 0;
 const maxScopeShare = approved.length ? Math.max(...Object.values(coverage)) / approved.length : 0;
@@ -66,11 +68,14 @@ const report = {
   maxScopeShare,
   configuredMinimumApproved: minimumApproved,
   configuredMaximumScopeShare: maximumScopeShare,
+  configuredRequiredScopes: requiredScopes,
+  missingRequiredScopes,
   policyChecks: {
     majorityRecent: recentRate >= 0.5,
     ownerReviewAtOrBelowFivePercent: ownerReviewRate <= 0.05,
     scopeWithinConfiguredCeiling: maxScopeShare <= maximumScopeShare,
     minimumApprovedReached: approved.length >= minimumApproved,
+    requiredScopesCovered: missingRequiredScopes.length === 0,
   },
 };
 
@@ -83,3 +88,4 @@ if (!report.policyChecks.majorityRecent) throw new Error(`Recent approval rate $
 if (!report.policyChecks.ownerReviewAtOrBelowFivePercent) throw new Error(`Owner review rate ${(ownerReviewRate * 100).toFixed(1)}% exceeds 5%.`);
 if (!report.policyChecks.scopeWithinConfiguredCeiling) throw new Error(`Largest scope share ${(maxScopeShare * 100).toFixed(1)}% exceeds configured diversity ceiling ${(maximumScopeShare * 100).toFixed(1)}%.`);
 if (!report.policyChecks.minimumApprovedReached) throw new Error(`Only ${approved.length} candidates survived strict assistant triage; configured minimum is ${minimumApproved}.`);
+if (!report.policyChecks.requiredScopesCovered) throw new Error(`Required acquisition scopes have no approved images: ${missingRequiredScopes.join(", ")}.`);
