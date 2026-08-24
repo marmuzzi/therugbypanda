@@ -6,7 +6,7 @@ import { sendZohoMail } from "@/lib/email/ZohoSmtp";
 
 export const runtime = "nodejs";
 
-const TEST_LOCK_ID = "editorial-zoho-smtp-test-2026-08-24-01";
+const TEST_LOCK_ID = "editorial-zoho-smtp-test-2026-08-24-02";
 
 function createWriteClient() {
   const token = process.env.SANITY_API_TOKEN ?? process.env.SANITY_AUTH_TOKEN;
