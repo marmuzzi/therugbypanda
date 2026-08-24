@@ -6,7 +6,8 @@ import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const REVIEW_MODEL = process.env.OPENAI_EDITORIAL_REVIEW_MODEL ?? "gpt-5-mini";
-const REVIEW_TIMEOUT_MS = 45_000;
+const REVIEW_TIMEOUT_MS = 25_000;
+const CORRECTION_TIMEOUT_MS = 35_000;
 
 export type PublicationReviewSeverity = "critical" | "high" | "medium" | "low";
 export type PublicationReviewIssue = {
@@ -222,7 +223,7 @@ export async function runPublicationReviewCycle(
 
   let correctedArticle = article;
   if (needsCorrection) {
-    const correction = await structuredCall<GeneratedArticleDraft>(correctionInput(article, review1, editorial), ARTICLE_SCHEMA, "rugby_panda_publication_correction", 60_000);
+    const correction = await structuredCall<GeneratedArticleDraft>(correctionInput(article, review1, editorial), ARTICLE_SCHEMA, "rugby_panda_publication_correction", CORRECTION_TIMEOUT_MS);
     correctedArticle = correction.value;
     assertDeterministicGates(correctedArticle, story);
   }
