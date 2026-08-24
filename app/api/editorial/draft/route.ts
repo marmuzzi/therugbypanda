@@ -5,6 +5,7 @@ import type { FactLedger, RawStoryInput } from "@/lib/editorial/EditorialTypes";
 import { EditorialBrain } from "@/lib/editorial/EditorialBrain";
 import { notifyDraftCreated } from "@/lib/editorial/EditorialNotifications";
 import { generateArticleDraft } from "@/lib/editorial/OpenAIArticleGenerator";
+import { runPublicationReviewCycle } from "@/lib/editorial/PublicationReviewCycle";
 import { createSanityArticleDraft, validateSanityConnectivity } from "@/lib/editorial/SanityDraftWriter";
 
 export const runtime = "nodejs";
@@ -96,7 +97,9 @@ export async function POST(request: NextRequest) {
         editorialDecision: editorial.decision,
         openAiConfigured: Boolean(process.env.OPENAI_API_KEY),
         openAiModel: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
+        reviewModel: process.env.OPENAI_EDITORIAL_REVIEW_MODEL ?? "gpt-5-mini",
         structuredSchemaConfigured: true,
+        publicationReviewConfigured: true,
         sanity,
       };
       console.info("Editorial dry run completed", {
@@ -108,15 +111,19 @@ export async function POST(request: NextRequest) {
     }
 
     console.info("Editorial OpenAI stage starting", { requestId, inputId: body.story.id });
-    const article = await generateArticleDraft(body.story, editorial, {
+    const generatedArticle = await generateArticleDraft(body.story, editorial, {
       targetLengthWords: body.qaMode === true ? "250-400" : "700-1100",
       timeoutMs: EDITORIAL_GENERATION_TIMEOUT_MS,
       styleProfileId: body.styleProfileId,
     });
+
+    console.info("Publication review cycle starting", { requestId, inputId: body.story.id });
+    const publicationReview = await runPublicationReviewCycle(generatedArticle, editorial, body.story);
+    const article = publicationReview.article;
     const pkg = { editorial, article };
 
     if (body.createSanityDraft === false) {
-      return jsonResponse({ status: "generated", ...pkg, requestId });
+      return jsonResponse({ status: "generated", ...pkg, publicationReview, requestId });
     }
 
     console.info("Editorial Sanity draft stage starting", { requestId, inputId: body.story.id });
@@ -144,9 +151,12 @@ export async function POST(request: NextRequest) {
       notificationStatus: notification.status,
       notificationEventId: notification.eventId,
       morningPackageEligible: sanityDraft.morningPackageEligible,
+      publicationReviewCorrected: publicationReview.corrected,
+      review1Issues: publicationReview.review1.issues.length,
+      review2Issues: publicationReview.review2.issues.length,
       durationMs: Date.now() - startedAt,
     });
-    return jsonResponse({ status: "draft-created", editorial, article, sanityDraft, notification, requestId });
+    return jsonResponse({ status: "draft-created", editorial, article, publicationReview, sanityDraft, notification, requestId });
   } catch (error) {
     console.error("Editorial draft pipeline failed", {
       requestId,
