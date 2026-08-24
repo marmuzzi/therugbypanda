@@ -57,4 +57,4 @@ jobs:
           git commit -m "Media: persist URC club gap wave evidence [skip ci]"
           git push --force origin HEAD:refs/heads/media/urc-club-gap-report
 
-# Controlled retrigger: 2026-08-24 with production environment aligned to the verified European media workflow.
+# Controlled retrigger: 2026-08-24 10:00 Europe/Dublin after production environment alignment.

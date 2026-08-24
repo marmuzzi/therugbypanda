@@ -56,3 +56,5 @@ jobs:
           if git diff --cached --quiet; then echo "No evidence changed."; exit 0; fi
           git commit -m "Media: persist international team gap evidence [skip ci]"
           git push --force origin HEAD:refs/heads/media/international-team-gap-report
+
+# Controlled retrigger: 2026-08-24 10:00 Europe/Dublin for first measured production evidence after #227.
