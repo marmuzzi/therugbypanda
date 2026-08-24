@@ -1,7 +1,15 @@
 import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
 
 export type DraftQualityIssue = {
-  code: "headline-length" | "standfirst-length" | "seo-title-length" | "seo-description-length" | "paragraph-length" | "filler-repetition";
+  code:
+    | "headline-length"
+    | "standfirst-length"
+    | "seo-title-length"
+    | "seo-description-length"
+    | "paragraph-length"
+    | "filler-repetition"
+    | "markdown-syntax"
+    | "formulaic-heading";
   message: string;
   value: number;
   limit: number;
@@ -23,6 +31,15 @@ export const DRAFT_READY_LIMITS = {
 } as const;
 
 const FILLER_WORDS = ["just", "simply", "really", "clearly", "obviously", "basically", "actually"] as const;
+const BANNED_GENERIC_HEADINGS = new Set([
+  "why this matters now",
+  "why this matters",
+  "what you need to know",
+  "the bigger picture",
+  "what happens next",
+  "what comes next",
+  "the bottom line",
+]);
 
 function wordCount(value: string): number {
   return value.trim().split(/\s+/).filter(Boolean).length;
@@ -34,6 +51,16 @@ function occurrences(value: string, word: string): number {
 
 function articleBodyText(article: GeneratedArticleDraft): string {
   return article.body.flatMap((section) => section.paragraphs).join(" ");
+}
+
+function containsMarkdownSyntax(value: string): boolean {
+  const trimmed = value.trim();
+  return /\\\*\\\*/.test(value)
+    || /\*\*[^*]+\*\*/.test(value)
+    || /^#{1,6}\s+/.test(trimmed)
+    || /^\\[-*]\s+/.test(trimmed)
+    || /^[-*]\s+/.test(trimmed)
+    || /`{1,3}[^`]+`{1,3}/.test(value);
 }
 
 export function assessDraftQuality(article: GeneratedArticleDraft): DraftQualityReport {
@@ -53,6 +80,28 @@ export function assessDraftQuality(article: GeneratedArticleDraft): DraftQuality
   }
 
   article.body.forEach((section, sectionIndex) => {
+    if (section.heading) {
+      const heading = section.heading.trim();
+      if (containsMarkdownSyntax(heading)) {
+        issues.push({
+          code: "markdown-syntax",
+          message: `Section heading ${sectionIndex + 1} contains Markdown syntax instead of structured article formatting.`,
+          value: 1,
+          limit: 0,
+          excerpt: heading.slice(0, 180),
+        });
+      }
+      if (BANNED_GENERIC_HEADINGS.has(heading.toLowerCase())) {
+        issues.push({
+          code: "formulaic-heading",
+          message: `Generic newsroom heading detected: “${heading}”. Use a story-specific heading or no heading.`,
+          value: 1,
+          limit: 0,
+          excerpt: heading,
+        });
+      }
+    }
+
     section.paragraphs.forEach((paragraph, paragraphIndex) => {
       const words = wordCount(paragraph);
       if (words > DRAFT_READY_LIMITS.paragraphWords) {
@@ -61,6 +110,15 @@ export function assessDraftQuality(article: GeneratedArticleDraft): DraftQuality
           message: `Body paragraph ${sectionIndex + 1}.${paragraphIndex + 1} exceeds the Draft Ready word limit.`,
           value: words,
           limit: DRAFT_READY_LIMITS.paragraphWords,
+          excerpt: paragraph.slice(0, 180),
+        });
+      }
+      if (containsMarkdownSyntax(paragraph)) {
+        issues.push({
+          code: "markdown-syntax",
+          message: `Body paragraph ${sectionIndex + 1}.${paragraphIndex + 1} contains Markdown syntax instead of clean structured text.`,
+          value: 1,
+          limit: 0,
           excerpt: paragraph.slice(0, 180),
         });
       }

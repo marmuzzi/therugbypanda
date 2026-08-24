@@ -1,4 +1,7 @@
+import Image from "next/image";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
+
+import { urlForImage } from "@/lib/sanity";
 
 type PortableSpan = {
   _type?: string;
@@ -16,17 +19,36 @@ type PortableBlock = {
   [key: string]: unknown;
 };
 
+type PortableImage = {
+  _type?: string;
+  _key?: string;
+  asset?: { _ref?: string };
+  alt?: string;
+  caption?: string;
+  photographer?: string;
+  source?: string;
+  rights?: string;
+};
+
+function normalizeLegacyMarkdownText(value: string): string {
+  return value
+    .replace(/\\([*_#-])/g, "$1")
+    .replace(/^#{1,6}\s+/, "")
+    .replace(/^[-*]\s+/, "");
+}
+
 function expandMarkdownStrong(body: unknown[]): PortableBlock[] {
   return body.map((value) => {
     const block = value as PortableBlock;
     if (block?._type !== "block" || !Array.isArray(block.children)) return block;
 
     const children = block.children.flatMap((child, childIndex) => {
-      if (child?._type !== "span" || typeof child.text !== "string" || !child.text.includes("**")) {
-        return [child];
-      }
+      if (child?._type !== "span" || typeof child.text !== "string") return [child];
 
-      const parts = child.text.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
+      const normalizedText = normalizeLegacyMarkdownText(child.text);
+      if (!normalizedText.includes("**")) return [{ ...child, text: normalizedText }];
+
+      const parts = normalizedText.split(/(\*\*[^*]+\*\*)/g).filter(Boolean);
       return parts.map((part, partIndex) => {
         const isStrong = part.startsWith("**") && part.endsWith("**") && part.length > 4;
         return {
@@ -129,6 +151,27 @@ const components: PortableTextComponents = {
         {children}
       </blockquote>
     ),
+  },
+  types: {
+    image: ({ value }) => {
+      const image = value as PortableImage;
+      if (!image?.asset?._ref) return null;
+      const src = urlForImage(image as never).width(1400).quality(88).url();
+      const credit = image.photographer ?? image.source;
+      return (
+        <figure className="my-8 overflow-hidden rounded-2xl border border-zinc-200 bg-zinc-50 shadow-sm md:my-10">
+          <div className="relative aspect-[16/10] w-full bg-zinc-100">
+            <Image src={src} alt={image.alt ?? "Rugby editorial image"} fill sizes="(max-width: 900px) 100vw, 800px" className="object-cover" />
+          </div>
+          {(image.caption || credit) ? (
+            <figcaption className="space-y-1 px-4 py-3 text-sm leading-5 text-zinc-600">
+              {image.caption ? <p>{image.caption}</p> : null}
+              {credit ? <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">{credit}</p> : null}
+            </figcaption>
+          ) : null}
+        </figure>
+      );
+    },
   },
   marks: {
     strong: ({ children }) => <strong className="font-black text-zinc-950">{children}</strong>,
