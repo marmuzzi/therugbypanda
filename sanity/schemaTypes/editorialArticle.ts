@@ -44,6 +44,30 @@ export const editorialArticleType = defineType({
     defineField({ name: "featuredImage", title: "Featured image", type: "image", group: "content", options: { hotspot: true }, fields: imageFields }),
     defineField({ name: "keyPoints", title: "Key points", type: "array", group: "content", of: [{ type: "string" }] }),
     defineField({
+      name: "contextualDataCard",
+      title: "Contextual data card",
+      description: "Optional fact-backed player/team/match snapshot rendered beside the article on desktop and inline on mobile. Omit fields rather than estimate them.",
+      type: "object",
+      group: "content",
+      fields: [
+        defineField({ name: "kind", title: "Card type", type: "string", options: { list: ["player", "comparison", "team", "match"] }, validation: (rule) => rule.required() }),
+        defineField({ name: "title", title: "Card title", type: "string", validation: (rule) => rule.required() }),
+        defineField({ name: "subtitle", title: "Subtitle", type: "string" }),
+        defineField({
+          name: "rows",
+          title: "Rows",
+          type: "array",
+          validation: (rule) => rule.min(2).max(10),
+          of: [{ type: "object", fields: [
+            defineField({ name: "label", title: "Label", type: "string", validation: (rule) => rule.required() }),
+            defineField({ name: "value", title: "Value", type: "string", validation: (rule) => rule.required() }),
+            defineField({ name: "sourceIds", title: "Fact/source IDs", type: "array", of: [{ type: "string" }], validation: (rule) => rule.min(1) }),
+          ] }],
+        }),
+        defineField({ name: "note", title: "Note", type: "text", rows: 2 }),
+      ],
+    }),
+    defineField({
       name: "body",
       title: "Body",
       type: "array",
