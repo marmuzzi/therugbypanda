@@ -12,7 +12,7 @@ export const runtime = "nodejs";
 export const maxDuration = 240;
 
 const ALLOWED_STUDIO_ORIGIN = "https://therugbypanda.sanity.studio";
-const EDITORIAL_GENERATION_TIMEOUT_MS = 220_000;
+const EDITORIAL_GENERATION_TIMEOUT_MS = 120_000;
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN,
