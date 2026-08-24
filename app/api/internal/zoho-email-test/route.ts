@@ -4,7 +4,7 @@ import { sendZohoMail } from "@/lib/email/ZohoSmtp";
 
 export const runtime = "nodejs";
 
-export async function POST() {
+async function runTest() {
   if (process.env.VERCEL_ENV === "production") {
     return NextResponse.json({ ok: false, error: "Test route is disabled in production." }, { status: 403 });
   }
@@ -29,4 +29,12 @@ export async function POST() {
       { status: 500 },
     );
   }
+}
+
+export async function GET() {
+  return runTest();
+}
+
+export async function POST() {
+  return runTest();
 }
