@@ -15,6 +15,7 @@ jobs:
   discover-triage-import:
     runs-on: ubuntu-latest
     timeout-minutes: 30
+    environment: production
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
       NEXT_PUBLIC_SANITY_DATASET: production
@@ -56,4 +57,4 @@ jobs:
           git commit -m "Media: persist URC club gap wave evidence [skip ci]"
           git push --force origin HEAD:refs/heads/media/urc-club-gap-report
 
-# Controlled retrigger: 2026-08-23 after #224 merged without persisted run evidence.
+# Controlled retrigger: 2026-08-24 with production environment aligned to the verified European media workflow.
