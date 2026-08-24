@@ -105,10 +105,9 @@ function workspaceUrl(destination: string) {
 
 function articleUrl(articleId: string) {
   const documentId = articleId.replace(/^drafts\./, "");
-  const url = workspaceUrl("intent/edit");
-  url.searchParams.set("id", documentId);
-  url.searchParams.set("type", "article");
-  return url.toString();
+  return workspaceUrl(
+    `intent/edit/id=${encodeURIComponent(documentId)};type=article`,
+  ).toString();
 }
 
 function navigateTo(destination: string) {
