@@ -18,7 +18,7 @@ persistent scheduled acquisition
 → Editorial Brain / fact ledger
 → original structured generation
 → deterministic originality + Draft Ready gates
-→ subject-relevant rights-approved image or no image
+→ semantic image selection (hero + optional inline subject images) or no image
 → Sanity draft
 → human review/edit
 → publish or reject
@@ -33,6 +33,8 @@ Generated content and acquired images are never automatically published.
 Generation uses validated evidence/fact-ledger material rather than source prose. Source material remains available to the deterministic originality guard. Originality remains fail-closed.
 
 Draft Ready limits: headline <=70 characters, standfirst <=220, SEO title <=60, SEO description <=160, paragraph <=120 words, plus filler/formulaic-writing and qualified-projection safeguards. Metadata-only failures may use the bounded #219 repair path; the accepted body is preserved, only failing metadata fields are repaired, and the complete output must rerun both originality and Draft Ready checks.
+
+Generated article strings are structured content, not Markdown. Raw or escaped Markdown markers such as `##`, `**`, `\*\*` or escaped bullet markers must fail Draft Ready. Generic formula headings such as “Why this matters now”, “What you need to know”, “The bigger picture” and “What happens next” are prohibited; use a story-specific heading or no heading. Articles should begin with the story itself.
 
 The five-story package should allocate one each of `news-desk`, `analysis-led`, `feature-led`, `notebook`, `explainer` and must remain genuinely varied in voice/structure.
 
@@ -56,9 +58,15 @@ A rejection must immediately request a replacement rather than waiting for the n
 
 ## Images
 
-Only rights-reviewed, usage-approved local Sanity assets are eligible for automatic assignment. Assignment is relevance-first and fail-closed.
+Only rights-reviewed, usage-approved local Sanity assets are eligible for automatic assignment. Assignment is semantic, relevance-first and fail-closed.
 
-Priority order: strong current subject-specific image; relevant recent event/player/team/venue image; useful relevant historical/contextual image; approved relevant logo where appropriate; otherwise no image. Never use an unrelated fallback.
+Priority order: exact current fixture/player/coach/team image; relevant recent team/event/venue image; useful relevant historical/contextual image; approved relevant logo where appropriate; otherwise no image. Never use an unrelated fallback.
+
+Positive evidence must come from descriptive image metadata (title/alt/caption) or an exact named subject materially discussed in the article; a broad category tag such as “Ireland” or “Leinster” is not sufficient on its own. Women's stories require women's/female context for generic Ireland imagery unless a named subject is matched exactly. Conflicting province/team/venue evidence must reject a candidate unless the depicted named subject is itself directly discussed in the article.
+
+The same asset must not be reused across the current five-story morning package. Recent morning drafts are treated as a reservation set during automatic assignment. If no unused relevant image remains, use no hero image rather than duplicate or substitute an unrelated candidate.
+
+Articles may use up to three automatic inline subject images when distinct named people/teams/venues are materially discussed and exact rights-approved images are available. Inline images should be placed near the paragraph discussing that subject. A multi-person article can therefore use several relevant images rather than forcing one generic hero to represent the whole piece.
 
 The majority of the library should be current/previous season. Maintain broad coverage across Leinster, Munster, Ulster, Connacht, Ireland, URC, Six Nations, European clubs, internationals, players/coaches and venues. Cap per event/player/team/scope so one collection cannot dominate. Assistant handles >=95% of clear approve/reject decisions; owner escalation target <=5%.
 
@@ -70,6 +78,8 @@ Last certified strict audit before the #228 retrigger: 186 publication-ready loc
 
 Article and homepage presentation should express editorial meaning rather than arbitrary randomness. #229 provides content-led article treatments for news, analysis, feature, notebook and explainer. #230 provides homepage hierarchy with lead, spotlight, compact news, province and analysis/notebook treatments. Homepage cards must use the canonical article featured image only; no unrelated visual fallback.
 
+Portable Text image blocks are valid body content and the public ArticleBody renderer must display them with alt text, caption/credit where available and responsive image treatment.
+
 Verify representative desktop/mobile article layouts and a multi-story homepage in production before closing presentation work.
 
 ## Social, mobile upload and major-news check
@@ -80,4 +90,4 @@ Verify representative desktop/mobile article layouts and a multi-story homepage 
 
 ## Current verification boundary — 24 August 2026
 
-Merged foundations include #195-#230 as documented in `docs/49_2026-08-24_Monday_Go_Live_Reconciliation.md`. Remaining hard proofs are: >=200 publication-ready images; 5/5 AUTO-004 production package; rejection-to-replacement end-to-end; persistent 08:00 orchestration; representative article/homepage production visuals; authenticated Sanity body editing; Meta social publication; phone upload; 14:00 conditional check.
+Merged foundations include #195-#232 as documented in the reconciled project state. Remaining hard proofs are: >=200 publication-ready images; a clean 5/5 AUTO-004 production package with no Markdown/formulaic-heading failures and correct unique semantic image assignment; rejection-to-replacement end-to-end; persistent 08:00 orchestration; representative article/homepage production visuals including inline images; authenticated Sanity body editing; Meta social publication; phone upload; 14:00 conditional check.
