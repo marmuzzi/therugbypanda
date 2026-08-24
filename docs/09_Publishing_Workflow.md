@@ -1,102 +1,83 @@
 # Publishing Workflow
 
-Sanity Studio is the canonical CMS and mandatory human approval boundary.
+Sanity Studio is the canonical CMS and mandatory human approval/publication boundary.
 
 ## Session startup
 
-Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, `docs/09_Publishing_Workflow.md`, `docs/10_New_Chat_Handoff.md`, `docs/11_Editorial_Image_Archive.md`, `docs/12_Brand_Assets_Library.md` and all later numbered documents relevant to the task, especially `docs/39_2026-08-18_AUTO-004_Multisource_Image_Handoff.md`. Check GitHub, Vercel and available connectors before asking the project owner to configure anything.
+Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, this file, `docs/49_2026-08-24_Monday_Go_Live_Reconciliation.md`, `docs/44_2026-08-20_Owner_Priorities.md`, `docs/48_2026-08-22_Weekend_Go_Live_Continuation.md` and any newer relevant handoff/evidence documents. Check GitHub, Vercel and available project connectors before asking the owner to configure anything. Use Europe/Dublin for schedules.
 
-Use `Europe/Dublin` for schedules, deadlines and operational timestamps.
+## Completion and deployment discipline
 
-## Completion rule
+Always distinguish implemented, committed, PR opened, merged, deployed, production verified, authenticated Sanity verified, orchestration verified, Meta verified and documentation updated. Batch related changes and minimise unnecessary Vercel deployments.
 
-Always distinguish implemented, committed, PR opened, merged, deployed, verified in production, verified in authenticated Sanity Studio, verified in Make.com, verified in Meta and documentation updated. Track unfinished work in `docs/08_Issue_Log.md`.
-
-## Deployment rule
-
-Batch related changes where practical. Keep `main` deployable and minimise unnecessary Vercel deployments.
-
-## Editorial architecture
+## Editorial flow
 
 ```text
-Approved-scope multi-source acquisition
-→ structured story candidate with multiple sourceRecords
-→ Editorial Brain classification/scoring and source-linked fact ledger
-→ original structured synthesis
-→ relevant rights-approved Editorial Image assignment (or no image)
+persistent scheduled acquisition
+→ multi-source evidence pack
+→ Editorial Brain / fact ledger
+→ original structured generation
+→ deterministic originality + Draft Ready gates
+→ subject-relevant rights-approved image or no image
 → Sanity draft
-→ human review / edit
-→ controlled publish / discard
-→ Vercel public website
-→ optional post-publication social distribution
+→ human review/edit
+→ publish or reject
+→ public website
+→ controlled social distribution after publication
 ```
 
-There is no separate `ready for review` approval gate. Draft creation places the article in the human editorial workflow. No generated article or acquired image is automatically approved or published.
+Generated content and acquired images are never automatically published.
 
-## Multi-source acquisition contract
+## Draft Ready and originality
 
-A Rugby Panda story should not be built as a rewrite of one source. Acquisition should deliberately gather multiple relevant sources around the same story and retain them as separate `sourceRecords` with provenance.
+Generation uses validated evidence/fact-ledger material rather than source prose. Source material remains available to the deterministic originality guard. Originality remains fail-closed.
 
-Use official/primary sources to anchor hard facts. Reputable secondary reporting may contribute interviews, context, analysis, historical comparison and useful colour. The generator must synthesize all useful source records, reconcile conflicts conservatively, preserve traceability and produce an original Rugby Panda angle rather than closely paraphrasing any input.
+Draft Ready limits: headline <=70 characters, standfirst <=220, SEO title <=60, SEO description <=160, paragraph <=120 words, plus filler/formulaic-writing and qualified-projection safeguards. Metadata-only failures may use the bounded #219 repair path; the accepted body is preserved, only failing metadata fields are repaired, and the complete output must rerun both originality and Draft Ready checks.
 
-Where evidence supports it, the story should identify relevant players, coaches, new signings, selection battles and concrete what-to-watch angles. Internal sourcing policy, confidence-ledger mechanics, AI/process explanations and editorial workflow rules must not appear in reader-facing copy.
+The five-story package should allocate one each of `news-desk`, `analysis-led`, `feature-led`, `notebook`, `explainer` and must remain genuinely varied in voice/structure.
 
-## Protected editorial endpoints
+Women's rugby and other underrepresented/non-core rugby coverage is welcome but should normally total no more than 3-4 stories per week unless major news warrants more.
 
-- `POST /api/editorial/draft` — create or replace a Sanity draft from a structured story and fact ledger.
-- `POST /api/editorial/workflow` — approve, reject, publish or discard with server-side transition validation and audit history.
-- `POST /api/editorial/review` — run on-demand, non-destructive AI Editorial Review.
-- `POST /api/editorial/replacement` — validate and create a linked replacement draft from a genuinely different angle and source set.
-- `POST /api/editorial/daily-package` — select five eligible, editorially distinct production drafts and emit the consolidated morning-package event.
+## Morning package
 
-Protected endpoints use bearer authentication with `EDITORIAL_AUTOMATION_SECRET`.
+Required daily behaviour:
 
-## Morning package eligibility and notification
+1. persistent acquisition/generation runs early enough to finish before 08:00 Europe/Dublin;
+2. five distinct production-eligible Draft Ready drafts exist in Sanity;
+3. individual draft notifications are suppressed for the morning batch;
+4. exactly one consolidated editorial notification is emitted to the configured Zoho editorial recipient;
+5. incomplete/failing batches raise a technical failure rather than silently sending nothing or substituting QA content.
 
-Generated drafts carry:
+The persistent schedule itself is still missing and must be implemented/verified. Do not use Gmail for Rugby Panda editorial verification.
 
-- `automationContentClass = production | qa`
-- `morningPackageEligible = true | false`
+## Rejection and replacement
 
-QA-mode drafts must never be eligible for production packages. The selector requires production classification and explicit eligibility, then applies source/topic/angle diversity. If five distinct production-eligible drafts are unavailable, return HTTP 409 and raise a technical alert rather than falling back to QA/test content.
+A rejection must immediately request a replacement rather than waiting for the next morning. #202 emits the replacement-acquisition event after the rejection transition. The persistent orchestrator must consume it and supply `/api/editorial/replacement` with a genuinely different eligible source set and editorial angle. The replacement must pass the same originality, Draft Ready and image safeguards and replenish the review queue. End-to-end production verification remains required.
 
-For the morning batch, individual NOTIFY-001 draft emails must be suppressed. The intended editor experience is one AUTO-001 consolidated email containing the five daily articles. Ad-hoc/non-morning draft creation retains NOTIFY-001.
+## Images
 
-## Editorial image acquisition and assignment
+Only rights-reviewed, usage-approved local Sanity assets are eligible for automatic assignment. Assignment is relevance-first and fail-closed.
 
-Only Editorial Images that are usage-approved, approved or published, backed by a Sanity asset and supported by reviewed rights metadata may be automatically assigned. The canonical frontend contract remains `article.featuredImage`.
+Priority order: strong current subject-specific image; relevant recent event/player/team/venue image; useful relevant historical/contextual image; approved relevant logo where appropriate; otherwise no image. Never use an unrelated fallback.
 
-Automatic assignment is relevance-first and fail-closed:
+The majority of the library should be current/previous season. Maintain broad coverage across Leinster, Munster, Ulster, Connacht, Ireland, URC, Six Nations, European clubs, internationals, players/coaches and venues. Cap per event/player/team/scope so one collection cannot dominate. Assistant handles >=95% of clear approve/reject decisions; owner escalation target <=5%.
 
-- reject province/team mismatches;
-- do not select generic or unrelated imagery simply because it is approved;
-- prefer a direct match to team, named player/coach, fixture/event, competition or venue;
-- if no sufficiently relevant approved image exists, leave the article without an automatically assigned image;
-- amateur/veterans imagery such as Ageing Pandas must not illustrate professional province/national-team stories unless directly relevant to the article.
+Wikimedia Commons exact-subject discovery is the current primary external route. Preserve creator/licence/date/source metadata, deduplicate, triage before import, store approved originals locally in Sanity, reconcile publication metadata and audit readiness. Candidate URLs do not count toward the launch floor. Do not scale the failed broad Openverse/Apify pattern.
 
-Apify may be used to expand the candidate pool, but collection is **candidate-only**. Preserve source page, image URL, caption/alt/context and any rights/licensing/permission evidence. Deduplicate before import. Do not auto-approve third-party photographs and do not hotlink unreviewed candidates into public pages.
+Last certified strict audit before the #228 retrigger: 186 publication-ready local Editorial Images, 196 approved/published local Editorial Images, zero duplicate Sanity asset groups. Launch floor: 200 publication-ready Editorial Images.
 
-Current immediate media target: collect at least 200 additional relevant candidates spanning Leinster, Munster, Ulster, Connacht, Ireland Men/Women, current players/coaches, new signings, professional match/training action, major competitions and relevant venues.
+## Public presentation
 
-## Editorial Review
+Article and homepage presentation should express editorial meaning rather than arbitrary randomness. #229 provides content-led article treatments for news, analysis, feature, notebook and explainer. #230 provides homepage hierarchy with lead, spotlight, compact news, province and analysis/notebook treatments. Homepage cards must use the canonical article featured image only; no unrelated visual fallback.
 
-The authenticated Sanity Editorial Review workspace includes Review Queue, Draft Editor, Editorial Review Summary, AI Editorial Review, Featured Image, Sources, Fact Ledger, Workflow and Audit History panels. PR #174 adds direct article-body editing inside this workspace with heading preservation; authenticated Studio verification remains required before that issue is closed.
+Verify representative desktop/mobile article layouts and a multi-story homepage in production before closing presentation work.
 
-Deterministic checks recalculate locally and block approval/publication when blocking issues remain. AI review runs only when requested, never edits content, and does not alter workflow rules.
+## Social, mobile upload and major-news check
 
-## Notification workflows
+- SOCIAL-001: after controlled website publication, send image-backed snippets to Facebook/Instagram with idempotency/retry safeguards; production Meta verification remains required.
+- MEDIA-004: secure phone-first photo upload remains to be implemented/verified.
+- 14:00 major-announcement check: implement a conditional daily check that creates an extra article only when a genuinely significant rugby announcement warrants it.
 
-- Ad-hoc new Sanity draft: `editor@therugbypanda.ie` through NOTIFY-001.
-- Morning package: one consolidated five-article email through AUTO-001.
-- Workflow failures/technical alerts: `admin@therugbypanda.ie` through NOTIFY-002/003.
-- Public contact: `hello@therugbypanda.ie`.
+## Current verification boundary — 24 August 2026
 
-Persistent Make deduplication uses `Rugby Panda Event Deduplication`, keyed by `eventId`. Exact duplicate replay must not send a second email. Different material failure types on the same operational day use distinct stable failure identities.
-
-## Current verification boundary — 18 August 2026
-
-Production verified foundations: AUTO-001 delivery, NOTIFY-001, NOTIFY-002/003, AUTO-004 QA exclusion/diversity guard, controlled acquisition import and Sanity province taxonomy mapping.
-
-Merged but requiring representative verification: #174 morning notification suppression/editorial quality/body editing and #176 multi-source synthesis/fail-closed image relevance.
-
-The next chat should follow `docs/39_2026-08-18_AUTO-004_Multisource_Image_Handoff.md`, expand the image candidate library through Apify if available, regenerate representative multi-source stories, inspect the copy/images, verify Editorial Review editing, and then verify exactly one consolidated AUTO-001 email.
+Merged foundations include #195-#230 as documented in `docs/49_2026-08-24_Monday_Go_Live_Reconciliation.md`. Remaining hard proofs are: >=200 publication-ready images; 5/5 AUTO-004 production package; rejection-to-replacement end-to-end; persistent 08:00 orchestration; representative article/homepage production visuals; authenticated Sanity body editing; Meta social publication; phone upload; 14:00 conditional check.
