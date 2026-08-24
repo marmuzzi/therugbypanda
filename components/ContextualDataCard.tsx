@@ -8,6 +8,8 @@ export type ContextualDataCardData = {
   kind?: "player" | "comparison" | "team" | "match";
   title: string;
   subtitle?: string;
+  imageUrl?: string;
+  imageAlt?: string;
   rows?: ContextualDataCardRow[];
   note?: string;
 };
@@ -30,6 +32,17 @@ export default function ContextualDataCard({ card }: Props) {
 
   return (
     <aside className="overflow-hidden rounded-3xl border border-zinc-200 bg-zinc-950 text-white shadow-xl shadow-zinc-950/10">
+      {card.imageUrl ? (
+        <div className="relative aspect-[5/4] overflow-hidden bg-zinc-900">
+          <img
+            src={card.imageUrl}
+            alt={card.imageAlt ?? card.title}
+            className="h-full w-full object-cover object-top"
+          />
+          <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-zinc-950 to-transparent" />
+        </div>
+      ) : null}
+
       <div className="border-b border-white/10 px-5 py-5 md:px-6">
         <p className="text-[11px] font-black uppercase tracking-[0.22em] text-[#a7d96b]">{eyebrow}</p>
         <h2 className="mt-2 text-2xl font-black leading-tight tracking-tight">{card.title}</h2>
