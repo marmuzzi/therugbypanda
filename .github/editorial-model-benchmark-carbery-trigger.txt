@@ -1,0 +1,1 @@
+Complete the canonical GPT-5-mini benchmark by running candidate 0 (Carbery) only. Do not rerun the four completed candidates.
