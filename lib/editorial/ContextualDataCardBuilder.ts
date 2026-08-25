@@ -29,7 +29,7 @@ function articleText(article: GeneratedArticleDraft) {
 }
 
 function properNameCandidates(text: string) {
-  const matches = text.match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+(?:(?:van|de|der|von|di|da)\s+)?[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,2}\b/g) ?? [];
+  const matches = text.match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]+(?:\s+(?:(?:van|de|der|von|di|da)\s+)?[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]+){1,2}\b/g) ?? [];
   return [...new Set(matches.map((value) => value.trim().replace(LEADING_CONTEXT_WORDS, "")))]
     .filter((value) => value.split(/\s+/).length >= 2)
     .filter((value) => !NON_PERSON_TERMS.has(value))
