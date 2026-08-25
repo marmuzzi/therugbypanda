@@ -4,7 +4,7 @@ Sanity Studio is the canonical CMS and mandatory human approval/publication boun
 
 ## Session startup
 
-Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, this file, `docs/49_2026-08-24_Monday_Go_Live_Reconciliation.md`, `docs/44_2026-08-20_Owner_Priorities.md`, `docs/48_2026-08-22_Weekend_Go_Live_Continuation.md` and any newer relevant handoff/evidence documents. Check GitHub, Vercel and available project connectors before asking the owner to configure anything. Use Europe/Dublin for schedules.
+Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, this file, `docs/51_2026-08-25_Go_Live_Production_Verification.md` and any newer relevant handoff/evidence documents. Check GitHub, Vercel and available project integrations before asking the owner to configure anything. Use Europe/Dublin for schedules.
 
 ## Completion and deployment discipline
 
@@ -13,14 +13,18 @@ Always distinguish implemented, committed, PR opened, merged, deployed, producti
 ## Editorial flow
 
 ```text
-persistent scheduled acquisition
+06:30 Europe/Dublin scheduled acquisition/generation
 → multi-source evidence pack
 → Editorial Brain / fact ledger
 → original structured generation
 → deterministic originality + Draft Ready gates
+→ Publication Review + bounded correction when needed
+→ deterministic post-review normalization + gates
 → semantic image selection (hero + optional inline subject images) or no image
-→ Sanity draft
-→ human review/edit
+→ production-eligible Sanity draft
+→ five distinct accepted morning positions
+→ 07:45 exactly-once consolidated Zoho editorial email
+→ human review/edit in Sanity
 → publish or reject
 → public website
 → controlled social distribution after publication
@@ -28,66 +32,86 @@ persistent scheduled acquisition
 
 Generated content and acquired images are never automatically published.
 
-## Draft Ready and originality
+## Draft Ready, originality and cost-efficient recovery
 
 Generation uses validated evidence/fact-ledger material rather than source prose. Source material remains available to the deterministic originality guard. Originality remains fail-closed.
 
-Draft Ready limits: headline <=70 characters, standfirst <=220, SEO title <=60, SEO description <=160, paragraph <=120 words, plus filler/formulaic-writing and qualified-projection safeguards. Metadata-only failures may use the bounded #219 repair path; the accepted body is preserved, only failing metadata fields are repaired, and the complete output must rerun both originality and Draft Ready checks.
+Hard Draft Ready limits: headline <=70 characters, standfirst <=220, SEO title <=60, SEO description <=160, paragraph <=120 words, plus filler/formulaic-writing and qualified-projection safeguards.
 
-Generated article strings are structured content, not Markdown. Raw or escaped Markdown markers such as `##`, `**`, `\*\*` or escaped bullet markers must fail Draft Ready. Generic formula headings such as “Why this matters now”, “What you need to know”, “The bigger picture” and “What happens next” are prohibited; use a story-specific heading or no heading. Articles should begin with the story itself.
+Generated article strings are structured content, not Markdown. Raw/escaped Markdown and generic newsroom headings are removed/rejected before acceptance. Mechanical presentation fixes must not trigger a whole new expensive generation when the article body and originality already pass.
 
-The five-story package should allocate one each of `news-desk`, `analysis-led`, `feature-led`, `notebook`, `explainer` and must remain genuinely varied in voice/structure.
+Recovery rules:
 
-Women's rugby and other underrepresented/non-core rugby coverage is welcome but should normally total no more than 3-4 stories per week unless major news warrants more.
+1. preserve every already-accepted morning position;
+2. regenerate only missing/rejected positions;
+3. use deterministic sentence/word-boundary metadata normalization for hard character limits where safe;
+4. split overlong paragraphs deterministically rather than regenerate an otherwise valid article;
+5. after a bounded Publication Review correction, reapply the same metadata/paragraph normalization and rerun Draft Ready + originality;
+6. never weaken quality/originality/image gates to obtain 5/5;
+7. stop blind retries and diagnose measured failure telemetry.
 
-## Morning package
+The five-story package allocates one each of `news-desk`, `analysis-led`, `feature-led`, `notebook`, `explainer` and must remain genuinely varied in voice/structure.
 
-Required daily behaviour:
+## Morning package — production verified 25 August
 
-1. persistent acquisition/generation runs early enough to finish before 08:00 Europe/Dublin;
-2. five distinct production-eligible Draft Ready drafts exist in Sanity;
-3. individual draft notifications are suppressed for the morning batch;
-4. exactly one consolidated editorial notification is emitted to the configured Zoho editorial recipient;
-5. incomplete/failing batches raise a technical failure rather than silently sending nothing or substituting QA content.
+Required and now verified behaviour:
 
-The persistent schedule itself is still missing and must be implemented/verified. Do not use Gmail for Rugby Panda editorial verification.
+1. acquisition/generation runs at **06:30 Europe/Dublin**;
+2. five distinct production-eligible Draft Ready/originality-safe drafts exist in Sanity;
+3. individual morning draft notifications are suppressed;
+4. consolidated delivery runs at **07:45 Europe/Dublin**;
+5. `/api/editorial/daily-package` fails closed when fewer than five editorially distinct eligible drafts exist;
+6. when complete, it sends exactly one plain-text review package through direct Zoho SMTP to `editor@therugbypanda.ie`;
+7. a deterministic Sanity delivery lock keyed to operational date + package fingerprint prevents duplicates;
+8. SMTP failure clears a provisional lock; accepted delivery records SMTP response/completion evidence;
+9. incomplete/failing packages raise technical failure rather than substituting QA content or silently sending partial mail.
+
+Production evidence on 25 August: first controlled trigger returned HTTP 200, `articleCount:5`, `status:sent`, Zoho `250 Message received`; identical second trigger returned `status:already-sent` using the same persisted event/completion evidence and did not issue a second SMTP send.
+
+Do not use Gmail for Rugby Panda editorial verification.
 
 ## Rejection and replacement
 
-A rejection must immediately request a replacement rather than waiting for the next morning. #202 emits the replacement-acquisition event after the rejection transition. The persistent orchestrator must consume it and supply `/api/editorial/replacement` with a genuinely different eligible source set and editorial angle. The replacement must pass the same originality, Draft Ready and image safeguards and replenish the review queue. End-to-end production verification remains required.
+A rejection must immediately request a replacement rather than wait for the next morning. #202 emits the replacement-acquisition event after rejection. `/api/editorial/replacement` requires the rejected record to be replacement-required, refuses an identical source set and refuses a repeated normalized editorial angle. Any replacement must pass normal generation/originality/Draft Ready/image safeguards and replenish the review queue.
+
+End-to-end production verification of rejection -> genuinely different replacement remains required.
 
 ## Images
 
-Only rights-reviewed, usage-approved local Sanity assets are eligible for automatic assignment. Assignment is semantic, relevance-first and fail-closed.
+Only rights-reviewed, usage-approved **local Sanity assets** are eligible for automatic assignment or for the launch-floor count. External image URLs alone never satisfy readiness.
 
-Priority order: exact current fixture/player/coach/team image; relevant recent team/event/venue image; useful relevant historical/contextual image; approved relevant logo where appropriate; otherwise no image. Never use an unrelated fallback.
+Assignment is semantic, relevance-first and fail-closed. Priority: exact current fixture/player/coach/team; relevant recent team/event/venue; useful relevant historical/context; approved relevant logo when appropriate; otherwise no image. Never use unrelated fallback imagery.
 
-Positive evidence must come from descriptive image metadata (title/alt/caption) or an exact named subject materially discussed in the article; a broad category tag such as “Ireland” or “Leinster” is not sufficient on its own. Women's stories require women's/female context for generic Ireland imagery unless a named subject is matched exactly. Conflicting province/team/venue evidence must reject a candidate unless the depicted named subject is itself directly discussed in the article.
+The same asset must not be reused across the current five-story morning package. If no unused relevant image remains, use no hero image rather than duplicate/substitute. Up to three automatic inline subject images may be used when exact rights-approved images exist for materially discussed subjects.
 
-The same asset must not be reused across the current five-story morning package. Recent morning drafts are treated as a reservation set during automatic assignment. If no unused relevant image remains, use no hero image rather than duplicate or substitute an unrelated candidate.
+Wikimedia Commons exact-subject discovery is the primary external route. Preserve creator/licence/date/source metadata, deduplicate, review before import, store approved originals locally in Sanity, reconcile publication metadata and audit readiness. Do not scale the failed broad Openverse/Apify pattern.
 
-Articles may use up to three automatic inline subject images when distinct named people/teams/venues are materially discussed and exact rights-approved images are available. Inline images should be placed near the paragraph discussing that subject. A multi-person article can therefore use several relevant images rather than forcing one generic hero to represent the whole piece.
+**25 August production certification: 200 local assets, 200 strict publication-ready, 200 approved/published publication-ready, gap 0, zero duplicate Sanity asset groups.**
 
-The majority of the library should be current/previous season. Maintain broad coverage across Leinster, Munster, Ulster, Connacht, Ireland, URC, Six Nations, European clubs, internationals, players/coaches and venues. Cap per event/player/team/scope so one collection cannot dominate. Assistant handles >=95% of clear approve/reject decisions; owner escalation target <=5%.
+## AI FinOps / model selection
 
-Wikimedia Commons exact-subject discovery is the current primary external route. Preserve creator/licence/date/source metadata, deduplicate, triage before import, store approved originals locally in Sanity, reconcile publication metadata and audit readiness. Candidate URLs do not count toward the launch floor. Do not scale the failed broad Openverse/Apify pattern.
-
-Last certified strict audit before the #228 retrigger: 186 publication-ready local Editorial Images, 196 approved/published local Editorial Images, zero duplicate Sanity asset groups. Launch floor: 200 publication-ready Editorial Images.
+- Existing prepaid OpenAI balance is the spend ceiling until cheaper alternatives are tested; do not add credit to brute-force retries.
+- Production generation remains on the configured model unless equivalent quality is evidenced.
+- Controlled model benchmarks must use the same representative evidence packs and the same deterministic Draft Ready/originality/Publication Review gates, must not persist benchmark drafts, and must record pass/failure, generation attempts, token usage where available, corrective work and editorial-quality observations.
+- GPT-5-mini benchmark evidence is being collected against the canonical 5/5 pack.
+- Gemini Flash must not be claimed as tested until a usable Gemini/Google AI integration and real run exist.
+- Target steady-state AI spend below USD $10/month if quality permits.
+- Temporary benchmark routes/workflows must be removed after evidence capture.
 
 ## Public presentation
 
-Article and homepage presentation should express editorial meaning rather than arbitrary randomness. #229 provides content-led article treatments for news, analysis, feature, notebook and explainer. #230 provides homepage hierarchy with lead, spotlight, compact news, province and analysis/notebook treatments. Homepage cards must use the canonical article featured image only; no unrelated visual fallback.
+Article/homepage presentation is content-led. #229 provides article treatments; #230 homepage hierarchy; #241 reusable contextual editorial data cards. Portable Text image blocks must render responsively with alt/caption/credit.
 
-Portable Text image blocks are valid body content and the public ArticleBody renderer must display them with alt text, caption/credit where available and responsive image treatment.
-
-Verify representative desktop/mobile article layouts and a multi-story homepage in production before closing presentation work.
+Verify representative desktop/mobile article layouts, hero/inline image relevance and a multi-story homepage in production before closing presentation work. Do not publish a draft solely to manufacture test evidence; human publication remains mandatory.
 
 ## Social, mobile upload and major-news check
 
 - SOCIAL-001: after controlled website publication, send image-backed snippets to Facebook/Instagram with idempotency/retry safeguards; production Meta verification remains required.
 - MEDIA-004: secure phone-first photo upload remains to be implemented/verified.
-- 14:00 major-announcement check: implement a conditional daily check that creates an extra article only when a genuinely significant rugby announcement warrants it.
+- NEWS-001: implement a conditional daily 14:00 check that produces an extra article only when a genuinely significant rugby announcement warrants it.
 
-## Current verification boundary — 24 August 2026
+## Current verification boundary — 25 August 2026
 
-Merged foundations include #195-#232 as documented in the reconciled project state. Remaining hard proofs are: >=200 publication-ready images; a clean 5/5 AUTO-004 production package with no Markdown/formulaic-heading failures and correct unique semantic image assignment; rejection-to-replacement end-to-end; persistent 08:00 orchestration; representative article/homepage production visuals including inline images; authenticated Sanity body editing; Meta social publication; phone upload; 14:00 conditional check.
+Production-verified: strict 200-image local floor; genuine five-story production morning package; exactly-once direct Zoho consolidated package with SMTP 250 + idempotent re-trigger; cost-bounded partial recovery mechanics.
+
+Still open: cost benchmark completion/cleanup; rejection-to-different-replacement E2E; representative desktop/mobile article/homepage/inline-image proof; authenticated Sanity body edit/save/reload; Meta social provider proof; secure phone upload; 14:00 conditional check; remaining security/backup/accreditation checks; final editorial/go-live acceptance.
