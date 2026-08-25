@@ -34,12 +34,23 @@ const FILLER_WORDS = ["just", "simply", "really", "clearly", "obviously", "basic
 const BANNED_GENERIC_HEADINGS = new Set([
   "why this matters now",
   "why this matters",
+  "what happened",
   "what you need to know",
   "the bigger picture",
   "what happens next",
   "what comes next",
+  "what to watch next",
+  "what supporters should watch next",
   "the bottom line",
 ]);
+
+const BANNED_GENERIC_HEADING_PATTERNS = [
+  /^why (?:this|it) matters(?:\b|\s+for\b)/i,
+  /^what (?:happened|happens next|comes next|to watch next)\b/i,
+  /^what (?:supporters|fans|you) (?:should )?watch next\b/i,
+  /^what you need to know\b/i,
+  /^the (?:bigger picture|bottom line)\b/i,
+];
 
 function wordCount(value: string): number {
   return value.trim().split(/\s+/).filter(Boolean).length;
@@ -61,6 +72,13 @@ function containsMarkdownSyntax(value: string): boolean {
     || /^\\[-*]\s+/.test(trimmed)
     || /^[-*]\s+/.test(trimmed)
     || /`{1,3}[^`]+`{1,3}/.test(value);
+}
+
+export function isFormulaicHeading(value: string): boolean {
+  const heading = value.trim();
+  const normalised = heading.toLowerCase();
+  return BANNED_GENERIC_HEADINGS.has(normalised)
+    || BANNED_GENERIC_HEADING_PATTERNS.some((pattern) => pattern.test(heading));
 }
 
 export function assessDraftQuality(article: GeneratedArticleDraft): DraftQualityReport {
@@ -91,7 +109,7 @@ export function assessDraftQuality(article: GeneratedArticleDraft): DraftQuality
           excerpt: heading.slice(0, 180),
         });
       }
-      if (BANNED_GENERIC_HEADINGS.has(heading.toLowerCase())) {
+      if (isFormulaicHeading(heading)) {
         issues.push({
           code: "formulaic-heading",
           message: `Generic newsroom heading detected: “${heading}”. Use a story-specific heading or no heading.`,
