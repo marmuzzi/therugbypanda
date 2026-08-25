@@ -1,3 +1,0 @@
-Apply guarded deterministic metadata-boundary repair
-Date: 2026-08-25
-Purpose: prevent metadata-length-only Draft Ready misses from causing another full GPT-5 generation.
