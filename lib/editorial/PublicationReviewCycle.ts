@@ -98,10 +98,13 @@ function repairReviewPresentation(article: GeneratedArticleDraft): GeneratedArti
     seoTitle: clipAtWordBoundary(article.seoTitle, SEO_TITLE_LIMIT),
     seoDescription: clipAtWordBoundary(article.seoDescription, SEO_DESCRIPTION_LIMIT),
     disclosure: isInternalDisclosure(article.disclosure) ? "" : article.disclosure.trim(),
-    body: article.body.map((section) => ({
-      ...section,
-      heading: section.heading && isFormulaicHeading(section.heading) ? null : section.heading,
-    })),
+    body: article.body.map((section) => {
+      const heading = section.heading?.trim();
+      return {
+        ...section,
+        heading: heading && !isFormulaicHeading(heading) ? heading : undefined,
+      };
+    }),
   };
 }
 
