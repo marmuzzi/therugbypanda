@@ -30,3 +30,10 @@ jobs:
           node-version: 22
       - name: Enrich and verify current five-article package
         run: node --experimental-strip-types scripts/enrich-current-morning-visuals.mjs
+      - name: Upload verification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: visual-enrichment-summary
+          path: visual-enrichment-summary.json
+          if-no-files-found: error
+          retention-days: 7
