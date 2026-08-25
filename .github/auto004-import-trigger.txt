@@ -1,5 +1,5 @@
 AUTO-004 controlled production import trigger
 Batch: data/editorial-acquisition/auto004-2026-08-24-fresh.json
-Purpose: verify PR #233 semantic image/formatting safeguards plus the approved two-pass publication review cycle against a fresh five-story package with diverse angles and current evidence.
-Date: 2026-08-24
-Trigger attempt: 13
+Purpose: verify PR #237 deterministic metadata repair plus semantic image/formatting safeguards and two-pass publication review against the fresh five-story package.
+Date: 2026-08-25
+Trigger attempt: 14
