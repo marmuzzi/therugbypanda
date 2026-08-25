@@ -54,8 +54,12 @@ jobs:
           DISPATCH_BATCH_PATH: ${{ inputs.batch_path }}
         run: |
           batch_path="$DISPATCH_BATCH_PATH"
-          if [ -z "$batch_path" ] && [ -f .github/auto004-import-trigger.txt ]; then
-            batch_path=$(sed -n 's/^Batch:[[:space:]]*//p' .github/auto004-import-trigger.txt | head -n 1)
+          reuse_ids=""
+          if [ -f .github/auto004-import-trigger.txt ]; then
+            if [ -z "$batch_path" ]; then
+              batch_path=$(sed -n 's/^Batch:[[:space:]]*//p' .github/auto004-import-trigger.txt | head -n 1)
+            fi
+            reuse_ids=$(sed -n 's/^Reuse:[[:space:]]*//p' .github/auto004-import-trigger.txt | head -n 1)
           fi
           batch_path="${batch_path:-data/editorial-acquisition/auto004-2026-08-24-fresh.json}"
           if [ ! -f "$batch_path" ]; then
@@ -63,7 +67,11 @@ jobs:
             exit 1
           fi
           echo "Using acquisition batch: $batch_path"
+          if [ -n "$reuse_ids" ]; then
+            echo "Reusing accepted candidate IDs: $reuse_ids"
+          fi
           echo "batch_path=$batch_path" >> "$GITHUB_OUTPUT"
+          echo "reuse_ids=$reuse_ids" >> "$GITHUB_OUTPUT"
 
       - name: Delete superseded generated drafts
         run: node scripts/cleanup-old-auto004-drafts.mjs
@@ -73,4 +81,5 @@ jobs:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
           BATCH_PATH: ${{ steps.batch.outputs.batch_path }}
+          REUSE_EXISTING_IDS: ${{ steps.batch.outputs.reuse_ids }}
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"

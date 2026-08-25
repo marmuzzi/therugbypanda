@@ -11,6 +11,12 @@ const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "not
 const baseUrl = (process.env.EDITORIAL_API_BASE_URL || "https://therugbypanda.ie").replace(/\/$/, "");
 const secret = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
 const dryRun = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
+const reuseExistingIds = new Set(
+  (process.env.REUSE_EXISTING_IDS || "")
+    .split(",")
+    .map((value) => value.trim())
+    .filter(Boolean),
+);
 
 if (!secret && !dryRun) throw new Error("EDITORIAL_AUTOMATION_SECRET is required unless DRY_RUN=1.");
 
@@ -63,8 +69,9 @@ function buildRequest(candidate, index) {
 const results = [];
 for (const [index, candidate] of batch.candidates.entries()) {
   const styleProfileId = styleForCandidate(candidate, index);
+  const shouldReuse = candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id);
 
-  if (candidate.reuseExistingDraft === true) {
+  if (shouldReuse) {
     results.push({
       id: candidate.id,
       styleProfileId,

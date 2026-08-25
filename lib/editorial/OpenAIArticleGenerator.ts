@@ -5,7 +5,12 @@ import {
   type ArticleStyleProfile,
   type ArticleStyleProfileId,
 } from "./ArticleStyleProfile";
-import { assessDraftQuality, DRAFT_READY_LIMITS, type DraftQualityReport } from "./DraftQualityGuard";
+import {
+  assessDraftQuality,
+  DRAFT_READY_LIMITS,
+  isFormulaicHeading,
+  type DraftQualityReport,
+} from "./DraftQualityGuard";
 import type { EditorialBrainResult, RawStoryInput } from "./EditorialTypes";
 import { assessArticleOriginality, type OriginalityReport } from "./OriginalityGuard";
 import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
@@ -16,6 +21,7 @@ const MAX_TIMEOUT_MS = 220_000;
 const MAX_GENERATION_ATTEMPTS = 3;
 const MIN_RETRY_TIMEOUT_MS = 20_000;
 const MIN_METADATA_REPAIR_TIMEOUT_MS = 8_000;
+const MAX_METADATA_REPAIR_TIMEOUT_MS = 25_000;
 
 const REPAIRABLE_METADATA_CODES = new Set([
   "headline-length",
@@ -250,6 +256,55 @@ function parseGeneratedArticle(payload: ResponsesPayload): GeneratedArticleDraft
   return parseStructuredOutput<GeneratedArticleDraft>(payload, "article generation");
 }
 
+function wordCount(value: string): number {
+  return value.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function splitLongParagraph(value: string, maxWords: number): string[] {
+  if (wordCount(value) <= maxWords) return [value.trim()];
+
+  const sentences = value.match(/[^.!?]+(?:[.!?]+[”’"')\]]*|$)/g)?.map((sentence) => sentence.trim()).filter(Boolean) ?? [];
+  const chunks: string[] = [];
+  let current = "";
+
+  const appendChunk = (part: string) => {
+    const words = part.trim().split(/\s+/).filter(Boolean);
+    if (words.length <= maxWords) {
+      const candidate = current ? `${current} ${part.trim()}` : part.trim();
+      if (wordCount(candidate) <= maxWords) {
+        current = candidate;
+        return;
+      }
+      if (current) chunks.push(current);
+      current = part.trim();
+      return;
+    }
+
+    if (current) {
+      chunks.push(current);
+      current = "";
+    }
+    for (let index = 0; index < words.length; index += maxWords) {
+      chunks.push(words.slice(index, index + maxWords).join(" "));
+    }
+  };
+
+  for (const sentence of sentences.length > 0 ? sentences : [value]) appendChunk(sentence);
+  if (current) chunks.push(current);
+  return chunks.filter(Boolean);
+}
+
+function applyDeterministicPresentationRepair(article: GeneratedArticleDraft): GeneratedArticleDraft {
+  return {
+    ...article,
+    body: article.body.map((section) => ({
+      ...section,
+      heading: section.heading && isFormulaicHeading(section.heading) ? null : section.heading,
+      paragraphs: section.paragraphs.flatMap((paragraph) => splitLongParagraph(paragraph, DRAFT_READY_LIMITS.paragraphWords)),
+    })),
+  };
+}
+
 function metadataOnlyFailure(report: DraftQualityReport): boolean {
   return report.issues.length > 0 && report.issues.every((issue) => REPAIRABLE_METADATA_CODES.has(issue.code));
 }
@@ -366,13 +421,26 @@ export async function generateArticleDraft(
         attempt,
       });
 
-      const article = parseGeneratedArticle(payload);
+      const generatedArticle = parseGeneratedArticle(payload);
+      const generatedQuality = assessDraftQuality(generatedArticle);
+      const article = applyDeterministicPresentationRepair(generatedArticle);
       let originality = assessArticleOriginality(
         article,
         story.sourceRecords,
         rawStoryMaterial ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }] : [],
       );
       let quality = assessDraftQuality(article);
+
+      if (generatedQuality.issues.length !== quality.issues.length) {
+        console.info("Editorial deterministic Draft Ready presentation repair applied", {
+          inputId: editorial.inputId,
+          styleProfile: style.id,
+          attempt,
+          beforeIssues: generatedQuality.issues,
+          afterIssues: quality.issues,
+        });
+      }
+
       console.info("Editorial Draft Ready checks completed", {
         inputId: editorial.inputId,
         originalityPassed: originality.passed,
@@ -389,54 +457,79 @@ export async function generateArticleDraft(
         const repairRemainingMs = timeoutMs - (Date.now() - startedAt);
         if (repairRemainingMs >= MIN_METADATA_REPAIR_TIMEOUT_MS) {
           const repairStartedAt = Date.now();
+          const repairModel = process.env.OPENAI_EDITORIAL_REPAIR_MODEL ?? process.env.OPENAI_EDITORIAL_REVIEW_MODEL ?? "gpt-5-mini";
+          const repairTimeoutMs = Math.min(repairRemainingMs, MAX_METADATA_REPAIR_TIMEOUT_MS);
+          const repairController = new AbortController();
+          const repairTimeout = setTimeout(() => repairController.abort(), repairTimeoutMs);
           console.info("Editorial Draft Ready metadata repair started", {
             inputId: editorial.inputId,
             styleProfile: style.id,
             attempt,
+            model: repairModel,
             issues: quality.issues,
             remainingMs: repairRemainingMs,
+            repairTimeoutMs,
           });
 
-          const repairResponse = await fetch(OPENAI_RESPONSES_URL, {
-            method: "POST",
-            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-            signal: controller.signal,
-            body: JSON.stringify({
-              model: process.env.OPENAI_EDITORIAL_MODEL ?? "gpt-5",
-              store: false,
-              instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
-              input: metadataRepairInput(article, quality, editorial),
-              text: { format: { type: "json_schema", name: "rugby_panda_metadata_repair", strict: true, schema: METADATA_REPAIR_SCHEMA } },
-            }),
-          });
+          try {
+            const repairResponse = await fetch(OPENAI_RESPONSES_URL, {
+              method: "POST",
+              headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+              signal: repairController.signal,
+              body: JSON.stringify({
+                model: repairModel,
+                store: false,
+                max_output_tokens: 1200,
+                instructions: RUGBY_PANDA_EDITORIAL_CHARTER,
+                input: metadataRepairInput(article, quality, editorial),
+                text: { format: { type: "json_schema", name: "rugby_panda_metadata_repair", strict: true, schema: METADATA_REPAIR_SCHEMA } },
+              }),
+            });
 
-          if (!repairResponse.ok) {
-            const details = await repairResponse.text();
-            throw new Error(`OpenAI metadata repair failed (${repairResponse.status}): ${details.slice(0, 500)}`);
+            if (!repairResponse.ok) {
+              const details = await repairResponse.text();
+              throw new Error(`OpenAI metadata repair failed (${repairResponse.status}): ${details.slice(0, 500)}`);
+            }
+
+            const repairPayload = (await repairResponse.json()) as ResponsesPayload;
+            const repaired = applyMetadataRepair(article, parseStructuredOutput<MetadataRepair>(repairPayload, "metadata repair"), quality);
+            originality = assessArticleOriginality(
+              repaired,
+              story.sourceRecords,
+              rawStoryMaterial ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }] : [],
+            );
+            quality = assessDraftQuality(repaired);
+
+            console.info("Editorial Draft Ready metadata repair completed", {
+              inputId: editorial.inputId,
+              styleProfile: style.id,
+              attempt,
+              model: repairPayload.model ?? repairModel,
+              durationMs: Date.now() - repairStartedAt,
+              totalDurationMs: Date.now() - startedAt,
+              usage: repairPayload.usage,
+              originalityPassed: originality.passed,
+              qualityPassed: quality.passed,
+              originalityFindings: originality.findings,
+              qualityIssues: quality.issues,
+            });
+
+            if (originality.passed && quality.passed) return repaired;
+          } catch (error) {
+            if (error instanceof Error && error.name === "AbortError") {
+              console.warn("Editorial Draft Ready metadata repair timed out", {
+                inputId: editorial.inputId,
+                styleProfile: style.id,
+                attempt,
+                model: repairModel,
+                repairTimeoutMs,
+              });
+            } else {
+              throw error;
+            }
+          } finally {
+            clearTimeout(repairTimeout);
           }
-
-          const repairPayload = (await repairResponse.json()) as ResponsesPayload;
-          const repaired = applyMetadataRepair(article, parseStructuredOutput<MetadataRepair>(repairPayload, "metadata repair"), quality);
-          originality = assessArticleOriginality(
-            repaired,
-            story.sourceRecords,
-            rawStoryMaterial ? [{ id: `${story.id}:raw-story-material`, publisher: "Acquired story material", text: rawStoryMaterial }] : [],
-          );
-          quality = assessDraftQuality(repaired);
-
-          console.info("Editorial Draft Ready metadata repair completed", {
-            inputId: editorial.inputId,
-            styleProfile: style.id,
-            attempt,
-            durationMs: Date.now() - repairStartedAt,
-            totalDurationMs: Date.now() - startedAt,
-            originalityPassed: originality.passed,
-            qualityPassed: quality.passed,
-            originalityFindings: originality.findings,
-            qualityIssues: quality.issues,
-          });
-
-          if (originality.passed && quality.passed) return repaired;
         }
       }
 
