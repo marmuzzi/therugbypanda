@@ -15,15 +15,15 @@ const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "not
 const ALLOWED_CATEGORIES = new Set(["Leinster", "Ulster", "Connacht", "Munster", "Ireland", "URC", "Europe", "Opinion"] as const);
 
 type BenchmarkModel = "gpt-5" | "gpt-5-mini";
-type BenchmarkRequest = {
+type CanonicalCandidate = (typeof benchmarkBatch.candidates)[number];
+type SuggestedCategory = NonNullable<RawStoryInput["suggestedCategory"]>;
+type BenchmarkRequest = { model: BenchmarkModel; candidate: number };
+type ResolvedBenchmarkRequest = {
   model: BenchmarkModel;
   story: RawStoryInput;
   factLedger: FactLedger;
-  styleProfileId?: ArticleStyleProfileId;
+  styleProfileId: ArticleStyleProfileId;
 };
-
-type CanonicalCandidate = (typeof benchmarkBatch.candidates)[number];
-type SuggestedCategory = NonNullable<RawStoryInput["suggestedCategory"]>;
 
 function authorised(request: NextRequest) {
   const expected = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
@@ -34,7 +34,7 @@ function typedCategory(value: string): SuggestedCategory | undefined {
   return ALLOWED_CATEGORIES.has(value as SuggestedCategory) ? value as SuggestedCategory : undefined;
 }
 
-function canonicalRequest(candidate: CanonicalCandidate, index: number, model: BenchmarkModel): BenchmarkRequest {
+function canonicalRequest(candidate: CanonicalCandidate, index: number, model: BenchmarkModel): ResolvedBenchmarkRequest {
   const retrievedAt = benchmarkBatch.acquiredAt;
   const sourceRecords = candidate.sourceRecords.map((source) => ({ ...source, retrievedAt }));
   const sourceIds = sourceRecords.map((source) => source.id);
@@ -64,27 +64,23 @@ function canonicalRequest(candidate: CanonicalCandidate, index: number, model: B
   };
 }
 
-async function runBenchmark(body: BenchmarkRequest) {
+async function runBenchmark(body: ResolvedBenchmarkRequest) {
   const requestId = crypto.randomUUID();
   const startedAt = Date.now();
   const previousModel = process.env.OPENAI_EDITORIAL_MODEL;
 
   try {
-    if (!ALLOWED_MODELS.has(body.model) || !body.story || !body.factLedger) {
-      return NextResponse.json({ error: "model, story and factLedger are required." }, { status: 400 });
-    }
-
     process.env.OPENAI_EDITORIAL_MODEL = body.model;
     const editorial = new EditorialBrain().evaluate(body.story, { factLedger: body.factLedger });
     if (editorial.decision !== "draft") {
-      return NextResponse.json({ status: editorial.decision, requestId, model: body.model, editorial, persisted: false });
+      return NextResponse.json({ status: editorial.decision, requestId, model: body.model, inputId: body.story.id, persisted: false });
     }
 
     console.info("Editorial benchmark started", {
       requestId,
       inputId: body.story.id,
       model: body.model,
-      styleProfileId: body.styleProfileId ?? null,
+      styleProfileId: body.styleProfileId,
     });
 
     const generatedArticle = await generateArticleDraft(body.story, editorial, {
@@ -113,7 +109,8 @@ async function runBenchmark(body: BenchmarkRequest) {
       model: body.model,
       inputId: body.story.id,
       styleProfileId: body.styleProfileId,
-      article: publicationReview.article,
+      title: publicationReview.article.title,
+      standfirst: publicationReview.article.standfirst,
       publicationReview,
       durationMs: Date.now() - startedAt,
       persisted: false,
@@ -121,7 +118,7 @@ async function runBenchmark(body: BenchmarkRequest) {
   } catch (error) {
     console.error("Editorial benchmark failed", {
       requestId,
-      inputId: body.story?.id,
+      inputId: body.story.id,
       model: body.model,
       durationMs: Date.now() - startedAt,
       error: error instanceof Error ? error.message : String(error),
@@ -130,7 +127,7 @@ async function runBenchmark(body: BenchmarkRequest) {
       status: "benchmark-failed",
       requestId,
       model: body.model,
-      inputId: body.story?.id,
+      inputId: body.story.id,
       error: error instanceof Error ? error.message : String(error),
       durationMs: Date.now() - startedAt,
       persisted: false,
@@ -141,22 +138,21 @@ async function runBenchmark(body: BenchmarkRequest) {
   }
 }
 
-export async function GET(request: NextRequest) {
-  if (process.env.VERCEL_ENV === "production") {
-    return NextResponse.json({ error: "Benchmark route is disabled in production." }, { status: 403 });
-  }
-  const model = request.nextUrl.searchParams.get("model") as BenchmarkModel | null;
-  const candidateIndex = Number.parseInt(request.nextUrl.searchParams.get("candidate") ?? "", 10);
-  if (!model || !ALLOWED_MODELS.has(model) || !Number.isInteger(candidateIndex) || candidateIndex < 0 || candidateIndex >= benchmarkBatch.candidates.length) {
-    return NextResponse.json({ error: "Use ?model=gpt-5-mini&candidate=0..4 on a preview deployment." }, { status: 400 });
-  }
-  return runBenchmark(canonicalRequest(benchmarkBatch.candidates[candidateIndex], candidateIndex, model));
+export async function GET() {
+  return NextResponse.json({
+    status: "ready",
+    benchmarkMode: "controlled-canonical-package",
+    candidateCount: benchmarkBatch.candidates.length,
+    allowedModels: [...ALLOWED_MODELS],
+    persisted: false,
+  });
 }
 
 export async function POST(request: NextRequest) {
   if (!authorised(request)) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  if (process.env.VERCEL_ENV === "production") {
-    return NextResponse.json({ error: "Benchmark route is disabled in production." }, { status: 403 });
+  const body = (await request.json()) as BenchmarkRequest;
+  if (!ALLOWED_MODELS.has(body.model) || !Number.isInteger(body.candidate) || body.candidate < 0 || body.candidate >= benchmarkBatch.candidates.length) {
+    return NextResponse.json({ error: "model must be gpt-5 or gpt-5-mini and candidate must be 0..4." }, { status: 400 });
   }
-  return runBenchmark((await request.json()) as BenchmarkRequest);
+  return runBenchmark(canonicalRequest(benchmarkBatch.candidates[body.candidate], body.candidate, body.model));
 }
