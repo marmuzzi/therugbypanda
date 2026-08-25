@@ -19,6 +19,7 @@ const NON_PERSON_TERMS = new Set([
   "Champions Cup", "Challenge Cup", "Six Nations", "World Cup", "Global Series", "Academy",
 ]);
 const LEADING_CONTEXT_WORDS = /^(?:With|After|Before|While|As|For|From|By|Against|At|On|The)\s+/i;
+const SURNAME_PARTICLE_ONLY = /^(?:van|de|der|von|di|da)\b/i;
 
 function articleText(article: GeneratedArticleDraft) {
   return [
@@ -67,7 +68,9 @@ function choosePrimarySubject(article: GeneratedArticleDraft, facts: FactLike[])
     return { candidate, score: 30 + articleMentions * 3 + factMentions * 8 + completenessBonus, factMentions, titleMatch };
   }).filter((item) => item.titleMatch && item.factMentions > 0).sort((a, b) => b.score - a.score);
 
-  return ranked[0]?.candidate;
+  const subject = ranked[0]?.candidate;
+  if (!subject || SURNAME_PARTICLE_ONLY.test(subject)) return undefined;
+  return subject;
 }
 
 function rowLabel(claim: string) {
