@@ -1,5 +1,5 @@
 import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
-import { assessDraftQuality, isFormulaicHeading } from "./DraftQualityGuard";
+import { assessDraftQuality, DRAFT_READY_LIMITS, isFormulaicHeading } from "./DraftQualityGuard";
 import type { EditorialBrainResult, RawStoryInput } from "./EditorialTypes";
 import { assessArticleOriginality } from "./OriginalityGuard";
 import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
@@ -77,12 +77,65 @@ function reviewInput(article: GeneratedArticleDraft, editorial: EditorialBrainRe
 }
 
 function correctionInput(article: GeneratedArticleDraft, review: PublicationReview, editorial: EditorialBrainResult) {
-  return JSON.stringify({ assignment: "Make one bounded publication-quality correction pass. Return the complete corrected article.", article, reviewIssues: review.issues, factLedger: editorial.factLedger, constraints: ["Fix every critical/high issue and worthwhile medium issue without turning the article into a different story.", "Use only supported facts in the fact ledger; introduce no new names, numbers, quotes or claims.", "Preserve originality and the article's assigned editorial identity.", "Prefer natural prose changes over adding headings, lists, bold markers or explanatory boilerplate.", "Generated strings are structured plain text, not Markdown.", "Do not add generic headings such as What happened, Why this matters now, Why it matters for..., What you need to know, The bigger picture, What to watch next or What happens next.", "Keep sourceNotes accurate. The disclosure field is reader-facing only: remove internal verification, sourcing, fact-check or publication instructions and return an empty disclosure when no genuine reader-facing disclosure is needed.", `Hard metadata limits: standfirst <=${STANDFIRST_LIMIT}, SEO title <=${SEO_TITLE_LIMIT}, SEO description <=${SEO_DESCRIPTION_LIMIT} characters.`] });
+  return JSON.stringify({ assignment: "Make one bounded publication-quality correction pass. Return the complete corrected article.", article, reviewIssues: review.issues, factLedger: editorial.factLedger, constraints: ["Fix every critical/high issue and worthwhile medium issue without turning the article into a different story.", "Use only supported facts in the fact ledger; introduce no new names, numbers, quotes or claims.", "Preserve originality and the article's assigned editorial identity.", "Prefer natural prose changes over adding headings, lists, bold markers or explanatory boilerplate.", "Generated strings are structured plain text, not Markdown.", "Do not add generic headings such as What happened, Why this matters now, Why it matters for..., What you need to know, The bigger picture, What to watch next or What happens next.", "Keep sourceNotes accurate. The disclosure field is reader-facing only: remove internal verification, sourcing, fact-check or publication instructions and return an empty disclosure when no genuine reader-facing disclosure is needed.", `Hard metadata limits: standfirst <=${STANDFIRST_LIMIT}, SEO title <=${SEO_TITLE_LIMIT}, SEO description <=${SEO_DESCRIPTION_LIMIT} characters.`, `Every body paragraph must remain <=${DRAFT_READY_LIMITS.paragraphWords} words.`] });
 }
 
 function blockingIssues(review: PublicationReview) { return review.issues.filter((issue) => issue.severity === "critical" || issue.severity === "high"); }
 function rawStoryMaterial(story: RawStoryInput) { return [story.title, story.summary, story.bodyText].filter(Boolean).join("\n\n"); }
-function clipAtWordBoundary(value: string, max: number) { if (value.length <= max) return value; const clipped = value.slice(0, max + 1); const boundary = clipped.lastIndexOf(" "); return clipped.slice(0, boundary > Math.floor(max * 0.65) ? boundary : max).replace(/[,:;\-–—\s]+$/u, "").trim(); }
+
+function clipAtNaturalBoundary(value: string, max: number) {
+  const trimmed = value.trim();
+  if (trimmed.length <= max) return trimmed;
+  const candidate = trimmed.slice(0, max + 1);
+  const floor = Math.floor(max * 0.6);
+  const sentenceBoundary = Math.max(candidate.lastIndexOf("."), candidate.lastIndexOf("?"), candidate.lastIndexOf("!"));
+  if (sentenceBoundary >= floor) return candidate.slice(0, sentenceBoundary + 1).trim();
+
+  const clauseMarkers = [", before ", ", while ", ", as ", ", with ", ", but ", "; ", ": "];
+  let clauseBoundary = -1;
+  for (const marker of clauseMarkers) {
+    const index = candidate.toLowerCase().lastIndexOf(marker);
+    if (index >= floor) clauseBoundary = Math.max(clauseBoundary, index);
+  }
+  if (clauseBoundary >= floor) {
+    const clipped = candidate.slice(0, clauseBoundary).replace(/[,:;\-–—\s]+$/u, "").trim();
+    return /[.!?]$/.test(clipped) ? clipped : `${clipped}.`;
+  }
+
+  const wordBoundary = candidate.lastIndexOf(" ");
+  const clipped = candidate.slice(0, wordBoundary > Math.floor(max * 0.65) ? wordBoundary : max).replace(/[,:;\-–—\s]+$/u, "").trim();
+  return /[.!?]$/.test(clipped) ? clipped : clipped.length < max ? `${clipped}.` : clipped;
+}
+
+function wordCount(value: string) {
+  return value.trim().split(/\s+/).filter(Boolean).length;
+}
+
+function splitLongParagraph(value: string, maxWords: number): string[] {
+  const trimmed = value.trim();
+  if (wordCount(trimmed) <= maxWords) return [trimmed];
+
+  const sentences = trimmed.match(/[^.!?]+(?:[.!?]+[”’"')\]]*|$)/g)?.map((sentence) => sentence.trim()).filter(Boolean) ?? [];
+  const chunks: string[] = [];
+  let current = "";
+
+  const append = (part: string) => {
+    const partWords = part.split(/\s+/).filter(Boolean);
+    if (partWords.length > maxWords) {
+      if (current) { chunks.push(current); current = ""; }
+      for (let index = 0; index < partWords.length; index += maxWords) chunks.push(partWords.slice(index, index + maxWords).join(" "));
+      return;
+    }
+    const candidate = current ? `${current} ${part}` : part;
+    if (wordCount(candidate) <= maxWords) { current = candidate; return; }
+    if (current) chunks.push(current);
+    current = part;
+  };
+
+  for (const sentence of sentences.length > 0 ? sentences : [trimmed]) append(sentence);
+  if (current) chunks.push(current);
+  return chunks.filter(Boolean);
+}
 
 function isInternalDisclosure(value: string): boolean {
   const disclosure = value.trim();
@@ -94,15 +147,16 @@ function isInternalDisclosure(value: string): boolean {
 function repairReviewPresentation(article: GeneratedArticleDraft): GeneratedArticleDraft {
   return {
     ...article,
-    standfirst: clipAtWordBoundary(article.standfirst, STANDFIRST_LIMIT),
-    seoTitle: clipAtWordBoundary(article.seoTitle, SEO_TITLE_LIMIT),
-    seoDescription: clipAtWordBoundary(article.seoDescription, SEO_DESCRIPTION_LIMIT),
+    standfirst: clipAtNaturalBoundary(article.standfirst, STANDFIRST_LIMIT),
+    seoTitle: clipAtNaturalBoundary(article.seoTitle, SEO_TITLE_LIMIT),
+    seoDescription: clipAtNaturalBoundary(article.seoDescription, SEO_DESCRIPTION_LIMIT),
     disclosure: isInternalDisclosure(article.disclosure) ? "" : article.disclosure.trim(),
     body: article.body.map((section) => {
       const heading = section.heading?.trim();
       return {
         ...section,
         heading: heading && !isFormulaicHeading(heading) ? heading : undefined,
+        paragraphs: section.paragraphs.flatMap((paragraph) => splitLongParagraph(paragraph, DRAFT_READY_LIMITS.paragraphWords)),
       };
     }),
   };
