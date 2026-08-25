@@ -1,0 +1,78 @@
+name: Send editorial daily package
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/daily-package-delivery-trigger.txt
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Verify production secret
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          if [ -z "$EDITORIAL_AUTOMATION_SECRET" ]; then
+            echo "EDITORIAL_AUTOMATION_SECRET is not available to this workflow."
+            exit 1
+          fi
+
+      - name: Wait for direct Zoho daily-package route
+        run: |
+          ready=""
+          for attempt in $(seq 1 36); do
+            response=$(curl --silent --show-error --max-time 15 https://therugbypanda.ie/api/editorial/daily-package || true)
+            if printf '%s' "$response" | grep -q '"deliveryMode":"direct-zoho-smtp"'; then
+              ready="yes"
+              echo "Direct Zoho daily-package route is live."
+              break
+            fi
+            echo "Waiting for production route (attempt $attempt/36)."
+            sleep 10
+          done
+          if [ "$ready" != "yes" ]; then
+            echo "Direct Zoho daily-package route did not become ready."
+            exit 1
+          fi
+
+      - name: Send exactly one consolidated editorial package
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          response_file=$(mktemp)
+          status=$(curl --silent --show-error \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --request POST \
+            --header "Authorization: Bearer $EDITORIAL_AUTOMATION_SECRET" \
+            https://therugbypanda.ie/api/editorial/daily-package)
+          cat "$response_file"
+          echo
+          if [ "$status" != "200" ]; then
+            echo "Daily package delivery returned HTTP $status."
+            exit 1
+          fi
+          if ! grep -q '"status":"sent"' "$response_file"; then
+            echo "This controlled verification expected the first delivery to be sent, not merely already-sent."
+            exit 1
+          fi
+          if ! grep -q '"articleCount":5' "$response_file"; then
+            echo "Daily package did not confirm exactly five articles."
+            exit 1
+          fi
+          if ! grep -q '"accepted":"editor@therugbypanda.ie"' "$response_file"; then
+            echo "Zoho did not confirm acceptance for editor@therugbypanda.ie."
+            exit 1
+          fi
+          if ! grep -q '250' "$response_file"; then
+            echo "SMTP response did not contain a 250 acceptance code."
+            exit 1
+          fi
