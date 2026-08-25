@@ -20,6 +20,14 @@ if (batch?.schemaVersion !== "1.0" || !Array.isArray(batch?.candidates) || batch
   throw new Error("Invalid editorial acquisition batch.");
 }
 
+function styleForCandidate(candidate, index) {
+  const styleProfileId = candidate.styleProfileId || PACKAGE_STYLE_PROFILES[index % PACKAGE_STYLE_PROFILES.length];
+  if (!PACKAGE_STYLE_PROFILES.includes(styleProfileId)) {
+    throw new Error(`Invalid styleProfileId ${styleProfileId} for candidate ${candidate.id}.`);
+  }
+  return styleProfileId;
+}
+
 function buildRequest(candidate, index) {
   const retrievedAt = batch.acquiredAt || new Date().toISOString();
   const sourceRecords = candidate.sourceRecords.map((source) => ({ ...source, retrievedAt }));
@@ -48,12 +56,25 @@ function buildRequest(candidate, index) {
     createSanityDraft: true,
     qaMode: false,
     notificationMode: "package",
-    styleProfileId: PACKAGE_STYLE_PROFILES[index % PACKAGE_STYLE_PROFILES.length],
+    styleProfileId: styleForCandidate(candidate, index),
   };
 }
 
 const results = [];
 for (const [index, candidate] of batch.candidates.entries()) {
+  const styleProfileId = styleForCandidate(candidate, index);
+
+  if (candidate.reuseExistingDraft === true) {
+    results.push({
+      id: candidate.id,
+      styleProfileId,
+      status: "reused-existing",
+      ok: true,
+      body: { message: "Generation deliberately skipped; final package validation must confirm the existing production draft." },
+    });
+    continue;
+  }
+
   const payload = buildRequest(candidate, index);
   if (dryRun) {
     results.push({ id: candidate.id, status: "dry-run", styleProfileId: payload.styleProfileId, payload });

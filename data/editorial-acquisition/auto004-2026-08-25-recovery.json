@@ -1,0 +1,114 @@
+{
+  "schemaVersion": "1.0",
+  "batchId": "auto004-2026-08-25-recovery",
+  "acquiredAt": "2026-08-24T20:46:00.000Z",
+  "acquisition": {
+    "provider": "Rugby Panda fresh multi-source evidence pack",
+    "actor": "editorial-recovery",
+    "requestCount": 15,
+    "successfulRequestCount": 15,
+    "notes": "Cost-bounded recovery of the 25 Aug 1/5 production package. Reuse the already accepted Carbery draft and regenerate only the four missing candidates while preserving the original one-of-each style positions. Final package validation remains fail-closed."
+  },
+  "candidates": [
+    {
+      "id": "auto004-fresh-leinster-carbery-20260824",
+      "reuseExistingDraft": true,
+      "title": "What Joey Carbery's return could change in Leinster's 10 picture",
+      "summary": "Joey Carbery is back at Leinster after eight years away, but his ACL rehabilitation and the presence of Sam Prendergast make his role a more interesting question than a simple homecoming story.",
+      "suggestedCategory": "Leinster",
+      "sourceRecords": [
+        {"id":"rte-carbery-return-2026","url":"https://www.rte.ie/sport/rugby/2026/0702/1581393-carberys-leinster-return-is-confirmed/","publisher":"RTÉ Sport","title":"Carbery's Leinster return is confirmed","publishedAt":"2026-07-02T00:00:00Z","excerpt":"Leinster confirmed Joey Carbery's return for 2026/27. He scored 101 points in 37 appearances during his first Leinster spell and is rehabbing a cruciate injury suffered in February.","isPrimarySource":false},
+        {"id":"times-carbery-return-2026","url":"https://www.irishtimes.com/sport/rugby/2026/07/02/leinster-confirm-return-of-joey-carbery-to-ranks/","publisher":"The Irish Times","title":"Leinster confirm return of Joey Carbery to ranks","publishedAt":"2026-07-02T00:00:00Z","excerpt":"The Irish Times reported Carbery's return from Bordeaux-Bègles and his ongoing ACL rehabilitation, with Leo Cullen stressing the experience he brings back to the province.","isPrimarySource":false},
+        {"id":"times-carbery-role-2026","url":"https://www.irishtimes.com/sport/rugby/2026/01/09/leo-cullen-confirms-leinster-in-talks-for-joey-carbery-return/","publisher":"The Irish Times","title":"Leo Cullen confirms Leinster in talks for Joey Carbery return","publishedAt":"2026-01-09T00:00:00Z","excerpt":"The report framed Carbery as a possible replacement for departing Ciarán Frawley while noting competition at out-half around Sam Prendergast and Harry Byrne.","isPrimarySource":false}
+      ],
+      "facts": [
+        "Joey Carbery rejoined Leinster for the 2026/27 season after leaving the province in 2018.",
+        "Carbery scored 101 points in 37 appearances during his first Leinster spell.",
+        "He won the 2018 PRO14 and Champions Cup double with Leinster and the 2023 URC title with Munster.",
+        "He spent the previous two seasons with Bordeaux-Bègles and was part of a club that won back-to-back Champions Cups.",
+        "Carbery is recovering from an ACL injury suffered in February 2026.",
+        "Leinster's out-half options include Sam Prendergast, creating a genuine selection and role question once Carbery is fit.",
+        "Ciarán Frawley moved to Connacht, reducing one of Leinster's previous multi-position playmaking options."
+      ]
+    },
+    {
+      "id": "auto004-fresh-ulster-henderson-depth-20260824",
+      "title": "Henderson's absence puts Ulster's pack leadership under an early test",
+      "summary": "Iain Henderson will miss the start of Ulster's season after hip surgery, while Bryn Ward, Juarno Augustus and Jude Postlethwaite are also rehabbing. That makes pre-season less about combinations and more about who absorbs leadership and contact load.",
+      "suggestedCategory": "Ulster",
+      "sourceRecords": [
+        {"id":"rte-henderson-surgery-2026","url":"https://www.rte.ie/sport/rugby/2026/0811/1587446-henderson-out-for-a-number-of-months-after-surgery/","publisher":"RTÉ Sport","title":"Ireland lock Henderson sidelined for 'a number of months' after hip surgery","publishedAt":"2026-08-11T00:00:00Z","excerpt":"RTÉ reported that Ulster captain Iain Henderson will miss the start of 2026/27 following hip surgery; Bryn Ward, Juarno Augustus and Jude Postlethwaite also had offseason surgery.","isPrimarySource":false},
+        {"id":"times-henderson-surgery-2026","url":"https://www.irishtimes.com/sport/rugby/2026/08/11/ulster-and-ireland-secondrow-iain-henderson-to-miss-start-of-season-after-hip-surgery/","publisher":"The Irish Times","title":"Ulster and Ireland secondrow Iain Henderson to miss start of season after hip surgery","publishedAt":"2026-08-11T00:00:00Z","excerpt":"The Irish Times independently confirmed Henderson's layoff and Ulster's preseason dates against Edinburgh and Ospreys before the URC opener.","isPrimarySource":false},
+        {"id":"edinburgh-ulster-friendly-2026","url":"https://edinburghrugby.org/news-and-features/edinburgh-to-host-ulster-in-scottish-building-society-pre-season-friendly/","publisher":"Edinburgh Rugby","title":"Edinburgh to host Ulster in pre-season friendly","publishedAt":"2026-06-30T00:00:00Z","excerpt":"Edinburgh confirmed Ulster will visit Hive Stadium on 4 September at 7.45pm as part of both teams' pre-season programmes.","isPrimarySource":true}
+      ],
+      "facts": [
+        "Ulster captain Iain Henderson is expected to be unavailable for a number of months after hip surgery.",
+        "Henderson is 34 and has previously undergone hip surgery in 2014 and 2020.",
+        "Bryn Ward had shoulder surgery, Juarno Augustus ankle surgery and Jude Postlethwaite knee surgery during the off-season.",
+        "Ulster play Edinburgh away on 4 September and Ospreys at home on 11 September in pre-season.",
+        "Ulster open the URC season at home to Edinburgh on 25 September.",
+        "Ward earned his first Ireland cap against Japan during the 2026 Nations Championship.",
+        "The absences create early questions around lineout leadership, defensive communication and back-row balance."
+      ]
+    },
+    {
+      "id": "auto004-fresh-connacht-frontrow-20260824",
+      "title": "Connacht's new front-row mix gives Lancaster a different kind of depth",
+      "summary": "Francois van Wyk arrives with Premiership-winning experience while Thomas Connolly returns to his home province. Together with Finlay Bealham and younger props, Connacht now have a more layered front-row succession plan than a simple first-choice depth chart.",
+      "suggestedCategory": "Connacht",
+      "sourceRecords": [
+        {"id":"rte-vanwyk-connacht-2026","url":"https://www.rte.ie/sport/rugby/2026/0121/1554295-connacht-agree-deal-to-bring-in-van-wyk-from-bath/","publisher":"RTÉ Sport","title":"Connacht sign loosehead prop Van Wyk from Bath","publishedAt":"2026-01-21T00:00:00Z","excerpt":"RTÉ reported Connacht's signing of Francois van Wyk from Bath, including his nine seasons in England and Lancaster's emphasis on scrummaging, physicality and experience.","isPrimarySource":false},
+        {"id":"rugbypass-connacht-props-2026","url":"https://www.rugbypass.com/news/connacht-make-third-prop-signing-ahead-of-next-season/","publisher":"RugbyPass","title":"Connacht make third new prop signing ahead of next season","publishedAt":"2026-05-06T00:00:00Z","excerpt":"RugbyPass reported Thomas Connolly's return and noted Connacht's wider prop recruitment, including Van Wyk, with Lancaster describing the tighthead group as a blend of youth and experience.","isPrimarySource":false},
+        {"id":"connacht-squad-2026","url":"https://www.connachtrugby.ie/teams/squad/","publisher":"Connacht Rugby","title":"Men's Squad","excerpt":"Connacht's current senior squad lists Finlay Bealham, Francois Van Wyk, Thomas Connolly, Billy Bohan, Fiachna Barrett, Jerry Cahir and Sam Illo among the prop options.","isPrimarySource":true}
+      ],
+      "facts": [
+        "Connacht signed loosehead Francois van Wyk from Bath for the 2026/27 season.",
+        "Van Wyk spent nine seasons in English club rugby across Bath, Leicester and Northampton.",
+        "He made 28 appearances for Bath in the previous season as the club won the Premiership title.",
+        "Thomas Connolly returned to Connacht for 2026/27 after experience with Leinster A, Old Belvedere, Connacht Eagles and Cornish Pirates.",
+        "Finlay Bealham remains part of Connacht's senior prop group.",
+        "Billy Bohan, Fiachna Barrett, Jerry Cahir and Sam Illo add younger or developing options around the experienced props.",
+        "Stuart Lancaster specifically highlighted Van Wyk's scrummaging, physicality and experience and described Connolly's arrival as adding depth at tighthead."
+      ]
+    },
+    {
+      "id": "auto004-fresh-munster-academy-20260824",
+      "title": "Eight new academy recruits give Munster a useful development snapshot",
+      "summary": "Munster's eight-player Year 1 academy intake all came through the provincial pathway and Ireland U20 system. The more interesting question is what their positions and recent senior exposure say about where Munster are building depth.",
+      "suggestedCategory": "Munster",
+      "sourceRecords": [
+        {"id":"munster-academy-intake-2026","url":"https://www.munsterrugby.ie/2026/08/18/new-recruits-join-munster-rugby-academy/","publisher":"Munster Rugby","title":"New Recruits Join Munster Rugby Academy","publishedAt":"2026-08-18T00:00:00Z","excerpt":"Munster confirmed eight new Year 1 academy recruits, all products of the provincial system and Ireland U20 programme, and provided position, club and age details.","isPrimarySource":true},
+        {"id":"munster-preseason-hpc-2026","url":"https://www.munsterrugby.ie/?p=203186","publisher":"Munster Rugby","title":"Squad Update | Pre-Season Begins At HPC","publishedAt":"2026-07-27T00:00:00Z","excerpt":"Munster confirmed the senior pre-season group, new signings, academy graduates stepping into the senior squad and the timing of the incoming U20 academy players joining training.","isPrimarySource":true},
+        {"id":"munster-larochelle-2026","url":"https://www.munsterrugby.ie/2026/06/17/munster-to-face-la-rochelle-in-pre-season/","publisher":"Munster Rugby","title":"Munster To Face La Rochelle In Pre-Season","publishedAt":"2026-06-17T00:00:00Z","excerpt":"Munster's first senior pre-season fixture is away to La Rochelle on 28 August, providing the immediate senior context for the wider development group.","isPrimarySource":true}
+      ],
+      "facts": [
+        "Munster added eight players to Year 1 of the academy for 2026/27: Christopher Barrett, Rob Carney, Jamie Conway, Joe Finn, Christian Foley, Alex Lautsou, James O'Leary and Charlie O'Shea.",
+        "All eight came through the Munster pathway and were involved with Ireland U20s during the previous season or summer programme.",
+        "Christopher Barrett scored five tries in five games during Ireland U20s' 2026 Six Nations campaign.",
+        "Charlie O'Shea featured in all five Ireland U20 Six Nations games and kicked a late penalty from halfway in the win over England.",
+        "Alex Lautsou had already trained with the Munster senior men's team and made his Munster A debut in 2025.",
+        "Senior academy graduates Max Clein, Seán Edogbo, Ronan Foxe, Ben O'Connor and Ben O'Donovan began their first pre-season as senior squad members.",
+        "Munster's first senior pre-season game is away to La Rochelle on 28 August."
+      ]
+    },
+    {
+      "id": "auto004-fresh-ireland-women-wxv-20260824",
+      "title": "Ireland's WXV training squad raises fresh selection questions",
+      "summary": "Ireland's latest women's training group includes uncapped Caitríona Finn, adding another playmaking option before the autumn programme. The useful angle is not simply who was named, but where real selection pressure can emerge across the backline.",
+      "suggestedCategory": "Ireland",
+      "sourceRecords": [
+        {"id":"munster-finn-training-squad-2026","url":"https://www.munsterrugby.ie/domestic_news/ireland-squad-named-for-wxv-global-series/caitriona-finn-22-8-2026/","publisher":"Munster Rugby","title":"Uncapped Caitríona Finn is named in the training squad","publishedAt":"2026-08-24T00:00:00Z","excerpt":"Munster Rugby confirmed uncapped Caitríona Finn's inclusion in Ireland's training squad for the WXV Global Series preparations.","isPrimarySource":true},
+        {"id":"connacht-women-interpro-2026","url":"https://www.connachtrugby.ie/news/munster-see-off-connacht-in-womens-interpros/bp3783/","publisher":"Connacht Rugby","title":"Munster see off Connacht in Women's Interpros","publishedAt":"2026-08-24T00:00:00Z","excerpt":"Connacht's match report recorded Munster's 47-12 win, with Caitríona Finn starting at out-half and converting multiple tries during a third straight interprovincial victory.","isPrimarySource":true},
+        {"id":"munster-august-index-2026","url":"https://www.munsterrugby.ie/2026/08/","publisher":"Munster Rugby","title":"August 2026 archive","publishedAt":"2026-08-24T00:00:00Z","excerpt":"Munster's August archive records the province's three successive Women's Interprovincial wins and the progression to the final, providing current form context for players entering national consideration.","isPrimarySource":true}
+      ],
+      "facts": [
+        "Uncapped Munster back Caitríona Finn was named in Ireland's WXV Global Series training squad on 24 August 2026.",
+        "Finn started at out-half for Munster in their 47-12 Women's Interprovincial win over Connacht two days earlier.",
+        "Munster had won three successive Women's Interprovincial matches and booked a place in the final by 24 August.",
+        "The training squad gives Ireland an opportunity to assess combinations before the autumn international programme.",
+        "Selection analysis should distinguish confirmed squad inclusion from any projection about the eventual matchday role.",
+        "The article should focus on concrete selection pressure, playmaking roles and recent provincial form rather than generic advocacy language."
+      ]
+    }
+  ]
+}
