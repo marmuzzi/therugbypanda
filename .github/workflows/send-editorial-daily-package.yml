@@ -1,0 +1,69 @@
+name: Send editorial daily package
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '45 7 * * *'
+      timezone: Europe/Dublin
+  push:
+    branches:
+      - main
+    paths:
+      - .github/daily-package-delivery-trigger.txt
+
+permissions:
+  contents: read
+
+jobs:
+  send:
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - name: Verify production secret
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          if [ -z "$EDITORIAL_AUTOMATION_SECRET" ]; then
+            echo "EDITORIAL_AUTOMATION_SECRET is not available to this workflow."
+            exit 1
+          fi
+
+      - name: Wait for direct Zoho daily-package route
+        run: |
+          ready=""
+          for attempt in $(seq 1 24); do
+            response=$(curl --silent --show-error --max-time 15 https://therugbypanda.ie/api/editorial/daily-package || true)
+            if printf '%s' "$response" | grep -q '"deliveryMode":"direct-zoho-smtp"'; then
+              ready="yes"
+              echo "Direct Zoho daily-package route is live."
+              break
+            fi
+            echo "Waiting for production route (attempt $attempt/24)."
+            sleep 10
+          done
+          if [ "$ready" != "yes" ]; then
+            echo "Direct Zoho daily-package route did not become ready."
+            exit 1
+          fi
+
+      - name: Send one consolidated editorial package
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          response_file=$(mktemp)
+          status=$(curl --silent --show-error \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --request POST \
+            --header "Authorization: Bearer $EDITORIAL_AUTOMATION_SECRET" \
+            https://therugbypanda.ie/api/editorial/daily-package)
+          cat "$response_file"
+          echo
+          if [ "$status" != "200" ]; then
+            echo "Daily package delivery returned HTTP $status."
+            exit 1
+          fi
+          if ! grep -Eq '"status":"(sent|already-sent)"' "$response_file"; then
+            echo "Daily package response did not confirm a sent package."
+            exit 1
+          fi
