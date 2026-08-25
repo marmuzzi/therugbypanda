@@ -1,0 +1,39 @@
+name: Run missing Carbery GPT-5-mini benchmark
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/editorial-model-benchmark-carbery-trigger.txt'
+
+permissions:
+  contents: read
+
+jobs:
+  benchmark-carbery:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 10
+    env:
+      EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+      BASE_URL: https://therugbypanda.ie
+    steps:
+      - name: Benchmark canonical candidate 0 only
+        run: |
+          mkdir -p artifacts/editorial-model-benchmark-carbery
+          output=artifacts/editorial-model-benchmark-carbery/candidate-0.json
+          http=$(curl --silent --show-error --max-time 230 \
+            --output "$output" --write-out '%{http_code}' --request POST \
+            --header "Authorization: Bearer $EDITORIAL_AUTOMATION_SECRET" \
+            --header 'Content-Type: application/json' \
+            --data '{"model":"gpt-5-mini","candidate":0}' \
+            "$BASE_URL/api/internal/editorial-benchmark")
+          cat "$output"
+          echo
+          test "$http" = "200"
+          grep -q '"status":"benchmark-passed"' "$output"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: editorial-model-benchmark-gpt5-mini-carbery
+          path: artifacts/editorial-model-benchmark-carbery
+          retention-days: 30
