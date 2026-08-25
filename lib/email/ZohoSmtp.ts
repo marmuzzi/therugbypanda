@@ -4,6 +4,7 @@ type MailInput = {
   to?: string;
   subject: string;
   text: string;
+  html?: string;
 };
 
 type SmtpResponse = {
@@ -29,6 +30,34 @@ function encodeSubject(value: string): string {
   return /^[\x20-\x7E]*$/.test(value)
     ? value
     : `=?UTF-8?B?${Buffer.from(value, "utf8").toString("base64")}?=`;
+}
+
+function messageBody(input: MailInput) {
+  if (!input.html?.trim()) {
+    return [
+      "Content-Type: text/plain; charset=UTF-8",
+      "Content-Transfer-Encoding: 8bit",
+      "",
+      normaliseBody(input.text),
+    ];
+  }
+
+  const boundary = `rugby-panda-${crypto.randomUUID()}`;
+  return [
+    `Content-Type: multipart/alternative; boundary="${boundary}"`,
+    "",
+    `--${boundary}`,
+    "Content-Type: text/plain; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit",
+    "",
+    normaliseBody(input.text),
+    `--${boundary}`,
+    "Content-Type: text/html; charset=UTF-8",
+    "Content-Transfer-Encoding: 8bit",
+    "",
+    normaliseBody(input.html),
+    `--${boundary}--`,
+  ];
 }
 
 export async function sendZohoMail(input: MailInput) {
@@ -120,10 +149,7 @@ export async function sendZohoMail(input: MailInput) {
           `Subject: ${encodeSubject(input.subject)}`,
           `Date: ${new Date().toUTCString()}`,
           "MIME-Version: 1.0",
-          "Content-Type: text/plain; charset=UTF-8",
-          "Content-Transfer-Encoding: 8bit",
-          "",
-          normaliseBody(input.text),
+          ...messageBody(input),
           ".",
           "",
         ].join("\r\n");

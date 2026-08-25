@@ -154,6 +154,51 @@ function emailText(packageDate: string, articles: PackageArticle[]) {
   ].join("\n");
 }
 
+function escapeHtml(value: string) {
+  return value.replace(/[&<>"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;",
+  })[character] ?? character);
+}
+
+function emailHtml(packageDate: string, articles: PackageArticle[]) {
+  const cards = articles.map((article, index) => {
+    const title = escapeHtml(article.title ?? "Untitled article");
+    const metadata = escapeHtml([article.category, article.competition].filter(Boolean).join(" · "));
+    const standfirst = escapeHtml(article.standfirst ?? "");
+    const status = escapeHtml(`${article.workflowStatus ?? "draft"}${article.needsHumanFactCheck ? " · human fact-check flagged" : ""}`);
+    const imageStatus = article.featuredImageUrl ? "Image assigned" : "No relevant image assigned";
+    const url = escapeHtml(reviewUrl(article._id));
+    return `
+      <tr><td style="padding:0 0 16px 0;">
+        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate;border:1px solid #d1d5db;border-radius:14px;background:#ffffff;color:#111827;">
+          <tr><td style="padding:18px 18px 6px 18px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2e7d32;">Article ${index + 1}${metadata ? ` · ${metadata}` : ""}</td></tr>
+          <tr><td style="padding:0 18px 8px 18px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.25;font-weight:700;color:#111827;">${title}</td></tr>
+          ${standfirst ? `<tr><td style="padding:0 18px 12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.55;color:#374151;">${standfirst}</td></tr>` : ""}
+          <tr><td style="padding:0 18px 16px 18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#4b5563;">Status: ${status}<br>${imageStatus}</td></tr>
+          <tr><td style="padding:0 18px 18px 18px;"><a href="${url}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;padding:12px 18px;border-radius:10px;">Open in Sanity</a></td></tr>
+        </table>
+      </td></tr>`;
+  }).join("");
+
+  return `<!doctype html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light"></head>
+<body style="margin:0;padding:0;background:#f3f4f6;color:#111827;color-scheme:light only;">
+  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#f3f4f6;"><tr><td align="center" style="padding:20px 12px;">
+    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;border-collapse:collapse;background:#ffffff;color:#111827;border-radius:16px;">
+      <tr><td style="padding:24px 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#2e7d32;">The Rugby Panda</td></tr>
+      <tr><td style="padding:0 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.2;font-weight:700;color:#111827;">Five articles ready for review</td></tr>
+      <tr><td style="padding:0 22px 22px 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#4b5563;">Morning editorial package for ${escapeHtml(packageDate)}. Open each article in Sanity to review, edit, approve or reject it.</td></tr>
+      <tr><td style="padding:0 22px 8px 22px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">${cards}</table></td></tr>
+      <tr><td style="padding:4px 22px 24px 22px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6b7280;">This message also contains a plain-text fallback for mail clients that do not render HTML.</td></tr>
+    </table>
+  </td></tr></table>
+</body></html>`;
+}
+
 async function sendTechnicalAlert(failureCode: string, message: string, details: Record<string, unknown>) {
   const webhookUrl = process.env.EDITORIAL_TECHNICAL_ALERT_WEBHOOK_URL?.trim();
   if (!webhookUrl) return "skipped" as const;
@@ -242,7 +287,12 @@ export async function POST(request: NextRequest) {
 
     let smtpResult: Awaited<ReturnType<typeof sendZohoMail>>;
     try {
-      smtpResult = await sendZohoMail({ to: destination, subject: emailSubject(packageDate), text: emailText(packageDate, articles) });
+      smtpResult = await sendZohoMail({
+        to: destination,
+        subject: emailSubject(packageDate),
+        text: emailText(packageDate, articles),
+        html: emailHtml(packageDate, articles),
+      });
     } catch (error) {
       await client.delete(lockId).catch(() => undefined);
       const message = error instanceof Error ? error.message : "Direct Zoho SMTP delivery failed.";
