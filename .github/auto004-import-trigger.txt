@@ -1,5 +1,5 @@
 AUTO-004 controlled production import trigger
-Batch: data/editorial-acquisition/auto004-2026-08-24-fresh.json
-Purpose: verify reader-safe publication-review repair, broadened formulaic-heading guard, semantic image safeguards and two-pass publication review against the fresh five-story package.
+Batch: data/editorial-acquisition/auto004-2026-08-25-recovery.json
+Purpose: recover the 25 Aug 1/5 package without regenerating the already accepted Carbery draft; preserve all five style positions and all existing deterministic quality/originality/image gates.
 Date: 2026-08-25
-Trigger attempt: 15
+Trigger attempt: 16
