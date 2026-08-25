@@ -63,6 +63,11 @@ const GENERIC_RUGBY_TERMS = new Set([
   "season", "preseason", "friendly", "fixture", "fixtures", "squad", "coach", "coaching", "crowd", "article", "header",
   "homepage", "card", "gallery", "international", "news", "provinces", "province", "urc", "preview", "window",
 ]);
+const NON_PERSON_PROPER_NOUN_TERMS = new Set([
+  "rugby", "stadium", "championship", "cup", "club", "football", "union", "province", "provinces", "ireland",
+  "leinster", "munster", "ulster", "connacht", "nations", "united", "champions", "challenge", "european", "aviva",
+  "kingspan", "sportsground", "thomond", "rds", "urc", "world", "series", "league", "team", "academy",
+]);
 const MIN_AUTOMATIC_IMAGE_RELEVANCE_SCORE = 12;
 const MAX_INLINE_IMAGES = 3;
 
@@ -174,11 +179,14 @@ export async function validateSanityConnectivity(editorialCategory: EditorialCat
 
 const APPROVED_IMAGE_PROJECTION = `_id,title,altText,caption,editorialCategory,photoType,suggestedUse,publicCredit,creditLine,photographer,copyrightLine,copyright,source,sourceName,rightsNotes,image`;
 
-function descriptiveImageText(image: ApprovedEditorialImage): string {
+function rawDescriptiveImageText(image: ApprovedEditorialImage): string {
   return [image.title, image.altText, image.caption]
     .filter(Boolean)
-    .join(" ")
-    .toLowerCase();
+    .join(" ");
+}
+
+function descriptiveImageText(image: ApprovedEditorialImage): string {
+  return rawDescriptiveImageText(image).toLowerCase();
 }
 
 function imageSearchText(image: ApprovedEditorialImage): string {
@@ -227,6 +235,15 @@ function subjectPhrases(pkg: EditorialDraftPackage): string[] {
   return [...new Set(matches.map((match) => match.trim()).filter((match) => match.length >= 6))];
 }
 
+function namedPersonPhrasesFromImage(image: ApprovedEditorialImage): string[] {
+  const matches = rawDescriptiveImageText(image).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
+  return [...new Set(matches.map((match) => match.trim()).filter((match) => {
+    const terms = match.toLowerCase().split(/[^a-zà-öø-ÿ'’.-]+/).filter(Boolean);
+    if (terms.length < 2) return false;
+    return !terms.some((term) => NON_PERSON_PROPER_NOUN_TERMS.has(term));
+  }))];
+}
+
 function imageHasConflictingProvince(image: ApprovedEditorialImage, storyText: string): boolean {
   const haystack = descriptiveImageText(image);
   const storyProvince = PROVINCE_TERMS.find((province) => storyText.toLowerCase().includes(province));
@@ -238,6 +255,14 @@ function imageHasConflictingProvince(image: ApprovedEditorialImage, storyText: s
 function exactSubjectMatches(image: ApprovedEditorialImage, subjects: string[]): string[] {
   const descriptive = descriptiveImageText(image);
   return subjects.filter((subject) => descriptive.includes(subject.toLowerCase()));
+}
+
+function imageHasConflictingNamedPerson(image: ApprovedEditorialImage, storyText: string, exactSubjects: string[]): boolean {
+  if (exactSubjects.length > 0) return false;
+  const lowerStory = storyText.toLowerCase();
+  const namedPeople = namedPersonPhrasesFromImage(image);
+  if (namedPeople.length === 0) return false;
+  return !namedPeople.some((person) => lowerStory.includes(person.toLowerCase()));
 }
 
 function storyRequiresWomenEvidence(storyText: string): boolean {
@@ -269,6 +294,9 @@ function imageRelevanceScore(image: ApprovedEditorialImage, storyText: string, s
   const descriptive = descriptiveImageText(image);
   const exactSubjects = exactSubjectMatches(image, subjects);
   if (imageHasConflictingProvince(image, storyText) && exactSubjects.length === 0) {
+    return { image, score: Number.NEGATIVE_INFINITY, exactSubjects };
+  }
+  if (imageHasConflictingNamedPerson(image, storyText, exactSubjects)) {
     return { image, score: Number.NEGATIVE_INFINITY, exactSubjects };
   }
   if (!hasRequiredSubjectEvidence(image, storyText, exactSubjects)) {
