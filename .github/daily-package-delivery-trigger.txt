@@ -1,4 +1,4 @@
 Controlled production delivery of the verified five-article morning package
 Date: 2026-08-25
-Trigger attempt: 1
-Acceptance: exactly five production-eligible distinct drafts; one direct Zoho SMTP acceptance; persistent Sanity delivery evidence; no individual draft notifications.
+Trigger attempt: 2
+Acceptance: existing accepted package must return already-sent with HTTP 200 and must not issue a second Zoho SMTP send.
