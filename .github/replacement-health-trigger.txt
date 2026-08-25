@@ -1,0 +1,3 @@
+AUTO-002 production replacement health check
+Date: 2026-08-25
+Safety: configuration-only check; no article mutation and no model call.
