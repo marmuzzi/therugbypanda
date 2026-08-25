@@ -1,0 +1,38 @@
+name: Apply deterministic metadata boundaries
+
+on:
+  push:
+    branches:
+      - fix/deterministic-metadata-boundaries
+    paths:
+      - .github/auto004-metadata-boundary-trigger.txt
+
+permissions:
+  contents: write
+
+jobs:
+  patch-and-verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/deterministic-metadata-boundaries
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install
+      - name: Apply guarded source patch
+        run: node scripts/apply-deterministic-metadata-boundaries.mjs
+      - name: Verify lint and build
+        run: |
+          npm run lint
+          npm run build
+      - name: Commit verified generator change
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add lib/editorial/OpenAIArticleGenerator.ts
+          git commit -m "fix(editorial): enforce metadata limits deterministically [skip ci]"
+          git push origin HEAD:fix/deterministic-metadata-boundaries
