@@ -1,5 +1,6 @@
 AUTO-004 controlled production import trigger
 Batch: data/editorial-acquisition/auto004-2026-08-25-recovery.json
-Purpose: recover the 25 Aug 1/5 package without regenerating the already accepted Carbery draft; preserve all five style positions and all existing deterministic quality/originality/image gates.
+Reuse: auto004-fresh-leinster-carbery-20260824,auto004-fresh-munster-academy-20260824
+Purpose: recover only the three missing 25 Aug candidates after surgical Draft Ready repair deployment; preserve accepted Carbery and Munster drafts, all five style positions and all existing deterministic quality/originality/image gates.
 Date: 2026-08-25
-Trigger attempt: 16
+Trigger attempt: 17
