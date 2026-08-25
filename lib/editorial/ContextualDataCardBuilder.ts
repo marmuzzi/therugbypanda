@@ -18,6 +18,7 @@ const NON_PERSON_TERMS = new Set([
   "Ireland", "Leinster", "Munster", "Ulster", "Connacht", "Rugby", "URC", "United Rugby",
   "Champions Cup", "Challenge Cup", "Six Nations", "World Cup", "Global Series", "Academy",
 ]);
+const LEADING_CONTEXT_WORDS = /^(?:With|After|Before|While|As|For|From|By|Against|At|On|The)\s+/i;
 
 function articleText(article: GeneratedArticleDraft) {
   return [
@@ -29,7 +30,8 @@ function articleText(article: GeneratedArticleDraft) {
 
 function properNameCandidates(text: string) {
   const matches = text.match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+(?:(?:van|de|der|von|di|da)\s+)?[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,2}\b/g) ?? [];
-  return [...new Set(matches.map((value) => value.trim()))]
+  return [...new Set(matches.map((value) => value.trim().replace(LEADING_CONTEXT_WORDS, "")))]
+    .filter((value) => value.split(/\s+/).length >= 2)
     .filter((value) => !NON_PERSON_TERMS.has(value))
     .filter((value) => value.split(/\s+/).filter((part) => !/^(?:van|de|der|von|di|da)$/i.test(part)).every((part) => !NON_PERSON_TERMS.has(part)));
 }
@@ -38,11 +40,22 @@ function normalized(value: string) {
   return value.toLowerCase().replace(/[^a-z0-9à-öø-ÿ]+/g, " ").trim();
 }
 
+function canonicalCandidate(candidate: string, corpus: string) {
+  const clean = candidate.trim().replace(LEADING_CONTEXT_WORDS, "");
+  const surname = clean.split(/\s+/).at(-1) ?? "";
+  if (surname.length < 5) return clean;
+  const fuller = properNameCandidates(corpus)
+    .filter((value) => (normalized(value).split(" ").at(-1) ?? "") === normalized(surname))
+    .sort((a, b) => b.split(/\s+/).length - a.split(/\s+/).length || b.length - a.length)[0];
+  return fuller ?? clean;
+}
+
 function choosePrimarySubject(article: GeneratedArticleDraft, facts: FactLike[]) {
   const text = articleText(article);
   const titleText = `${article.title} ${article.standfirst}`.toLowerCase();
   const factText = facts.map((fact) => fact.claim).join(" ");
-  const candidates = properNameCandidates(`${article.title} ${article.standfirst} ${factText}`);
+  const corpus = `${article.title} ${article.standfirst} ${factText}`;
+  const candidates = [...new Set(properNameCandidates(corpus).map((candidate) => canonicalCandidate(candidate, corpus)))];
 
   const ranked = candidates.map((candidate) => {
     const terms = normalized(candidate).split(" ").filter(Boolean);
@@ -51,8 +64,8 @@ function choosePrimarySubject(article: GeneratedArticleDraft, facts: FactLike[])
     const articleMentions = normalized(text).split(normalized(candidate)).length - 1;
     const factMentions = facts.filter((fact) => normalized(fact.claim).includes(normalized(candidate)) || (surname.length >= 5 && normalized(fact.claim).includes(surname))).length;
     const completenessBonus = terms.length >= 2 ? terms.length * 3 : 0;
-    return { candidate, score: (titleMatch ? 30 : 0) + articleMentions * 3 + factMentions * 8 + completenessBonus, factMentions };
-  }).filter((item) => item.factMentions > 0).sort((a, b) => b.score - a.score);
+    return { candidate, score: 30 + articleMentions * 3 + factMentions * 8 + completenessBonus, factMentions, titleMatch };
+  }).filter((item) => item.titleMatch && item.factMentions > 0).sort((a, b) => b.score - a.score);
 
   return ranked[0]?.candidate;
 }
