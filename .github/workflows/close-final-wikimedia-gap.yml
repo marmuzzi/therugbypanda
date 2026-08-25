@@ -1,0 +1,57 @@
+name: Close final strict Wikimedia media gap
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/select-final-wikimedia-gap.mjs'
+      - '.github/workflows/close-final-wikimedia-gap.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  select-import-certify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      WIKIMEDIA_GAP_TARGET: '7'
+      WIKIMEDIA_CANDIDATE_FILE: /tmp/wikimedia-candidates.json
+      WIKIMEDIA_REVIEW_FILE: artifacts/final-seven/wikimedia-reviewed.json
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Load latest measured Wikimedia discovery output
+        run: |
+          git fetch origin media/wikimedia-discovery-output:refs/remotes/origin/media/wikimedia-discovery-output
+          git show origin/media/wikimedia-discovery-output:data/editorial-images/wikimedia-candidates.json > "$WIKIMEDIA_CANDIDATE_FILE"
+      - name: Select exactly seven strong non-existing candidates
+        run: node scripts/select-final-wikimedia-gap.mjs
+      - name: Import assistant-approved candidates into local Sanity assets
+        run: npm run media:import-reviewed-wikimedia
+      - name: Certify strict local publication-ready floor
+        run: |
+          mkdir -p artifacts/final-seven
+          EDITORIAL_IMAGE_LOCAL_FLOOR=200 node scripts/audit-local-editorial-image-floor.mjs | tee artifacts/final-seven/local-floor.json
+          node --input-type=module -e "import fs from 'node:fs'; const r=JSON.parse(fs.readFileSync('artifacts/final-seven/local-floor.json','utf8')); if(!r.targetMet) { console.error('Strict local media floor remains below 200:', r); process.exit(1); }"
+      - name: Run broader readiness/dedup audit
+        env:
+          EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/final-seven/readiness
+        run: npm run media:audit-readiness
+      - name: Upload final media certification evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: final-200-local-editorial-image-certification
+          path: artifacts/final-seven
+          if-no-files-found: error
+          retention-days: 30
