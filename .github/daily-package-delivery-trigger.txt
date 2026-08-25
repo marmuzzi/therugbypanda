@@ -1,0 +1,4 @@
+Direct Zoho consolidated daily-package production verification
+Date: 2026-08-25
+Trigger attempt: 1 on current main
+Acceptance: exactly five production-eligible distinct drafts and one SMTP-accepted email to editor@therugbypanda.ie.
