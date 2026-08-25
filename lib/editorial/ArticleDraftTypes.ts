@@ -1,5 +1,21 @@
 import type { EditorialBrainResult } from "./EditorialTypes";
 
+export type ContextualDataCardKind = "player" | "comparison" | "team" | "match";
+
+export type ContextualDataCardRow = {
+  label: string;
+  value: string;
+  sourceIds: string[];
+};
+
+export type ContextualDataCard = {
+  kind: ContextualDataCardKind;
+  title: string;
+  subtitle?: string;
+  rows: ContextualDataCardRow[];
+  note?: string;
+};
+
 export interface GeneratedArticleDraft {
   title: string;
   standfirst: string;
@@ -10,6 +26,7 @@ export interface GeneratedArticleDraft {
     heading?: string;
     paragraphs: string[];
   }>;
+  contextualDataCard?: ContextualDataCard | null;
   disclosure: string;
   sourceNotes: Array<{
     sourceId: string;
