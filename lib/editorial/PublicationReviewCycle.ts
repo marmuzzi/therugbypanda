@@ -1,5 +1,5 @@
 import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
-import { assessDraftQuality } from "./DraftQualityGuard";
+import { assessDraftQuality, isFormulaicHeading } from "./DraftQualityGuard";
 import type { EditorialBrainResult, RawStoryInput } from "./EditorialTypes";
 import { assessArticleOriginality } from "./OriginalityGuard";
 import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
@@ -73,17 +73,40 @@ async function structuredCall<T>(input: string, schema: object, name: string, ti
 }
 
 function reviewInput(article: GeneratedArticleDraft, editorial: EditorialBrainResult, story: RawStoryInput, pass: 1 | 2) {
-  return JSON.stringify({ assignment: `Publication Review #${pass} for a Rugby Panda draft. Judge whether it is genuinely ready for the owner to read.`, article, editorialBrief: editorial.brief, factLedger: editorial.factLedger, sourceProvenance: story.sourceRecords.map(({ id, publisher, title, url, publishedAt, isPrimarySource }) => ({ id, publisher, title, url, publishedAt, isPrimarySource })), winningKeys: ["diversity of angle and structure", "original synthesis rather than source-shaped rewriting", "genuine rugby curiosity", "facts grounded in supported stats, datapoints and names", "useful tactical or strategic rugby insight where evidence supports it", "natural human newsroom voice", "a unique reason for this article to exist"], hardRules: ["No invented facts, numbers, quotes or causal claims.", "No raw or escaped Markdown markers.", "No generic headings such as Why this matters now, What you need to know, The bigger picture or What happens next.", "The opening starts with the story itself.", "Do not reward verbosity, formulaic sectioning, repetitive bolding, generic conclusions or AI-sounding rhetorical patterns.", "Only critical/high issues block publication readiness. Medium/low observations should be specific and genuinely useful, not stylistic nitpicking."] });
+  return JSON.stringify({ assignment: `Publication Review #${pass} for a Rugby Panda draft. Judge whether it is genuinely ready for the owner to read.`, article, editorialBrief: editorial.brief, factLedger: editorial.factLedger, sourceProvenance: story.sourceRecords.map(({ id, publisher, title, url, publishedAt, isPrimarySource }) => ({ id, publisher, title, url, publishedAt, isPrimarySource })), winningKeys: ["diversity of angle and structure", "original synthesis rather than source-shaped rewriting", "genuine rugby curiosity", "facts grounded in supported stats, datapoints and names", "useful tactical or strategic rugby insight where evidence supports it", "natural human newsroom voice", "a unique reason for this article to exist"], hardRules: ["No invented facts, numbers, quotes or causal claims.", "No raw or escaped Markdown markers.", "No generic headings such as What happened, Why this matters now, Why it matters for..., What you need to know, The bigger picture, What to watch next or What happens next.", "The opening starts with the story itself.", "The disclosure field is reader-facing only. Internal verification, fact-check, sourcing or publication instructions must never appear there; an empty disclosure is valid.", "Do not reward verbosity, formulaic sectioning, repetitive bolding, generic conclusions or AI-sounding rhetorical patterns.", "Only critical/high issues block publication readiness. Medium/low observations should be specific and genuinely useful, not stylistic nitpicking."] });
 }
 
 function correctionInput(article: GeneratedArticleDraft, review: PublicationReview, editorial: EditorialBrainResult) {
-  return JSON.stringify({ assignment: "Make one bounded publication-quality correction pass. Return the complete corrected article.", article, reviewIssues: review.issues, factLedger: editorial.factLedger, constraints: ["Fix every critical/high issue and worthwhile medium issue without turning the article into a different story.", "Use only supported facts in the fact ledger; introduce no new names, numbers, quotes or claims.", "Preserve originality and the article's assigned editorial identity.", "Prefer natural prose changes over adding headings, lists, bold markers or explanatory boilerplate.", "Generated strings are structured plain text, not Markdown.", "Do not add Why this matters now, What you need to know, The bigger picture or What happens next headings.", "Keep sourceNotes and internal disclosure accurate.", `Hard metadata limits: standfirst <=${STANDFIRST_LIMIT}, SEO title <=${SEO_TITLE_LIMIT}, SEO description <=${SEO_DESCRIPTION_LIMIT} characters.`] });
+  return JSON.stringify({ assignment: "Make one bounded publication-quality correction pass. Return the complete corrected article.", article, reviewIssues: review.issues, factLedger: editorial.factLedger, constraints: ["Fix every critical/high issue and worthwhile medium issue without turning the article into a different story.", "Use only supported facts in the fact ledger; introduce no new names, numbers, quotes or claims.", "Preserve originality and the article's assigned editorial identity.", "Prefer natural prose changes over adding headings, lists, bold markers or explanatory boilerplate.", "Generated strings are structured plain text, not Markdown.", "Do not add generic headings such as What happened, Why this matters now, Why it matters for..., What you need to know, The bigger picture, What to watch next or What happens next.", "Keep sourceNotes accurate. The disclosure field is reader-facing only: remove internal verification, sourcing, fact-check or publication instructions and return an empty disclosure when no genuine reader-facing disclosure is needed.", `Hard metadata limits: standfirst <=${STANDFIRST_LIMIT}, SEO title <=${SEO_TITLE_LIMIT}, SEO description <=${SEO_DESCRIPTION_LIMIT} characters.`] });
 }
 
 function blockingIssues(review: PublicationReview) { return review.issues.filter((issue) => issue.severity === "critical" || issue.severity === "high"); }
 function rawStoryMaterial(story: RawStoryInput) { return [story.title, story.summary, story.bodyText].filter(Boolean).join("\n\n"); }
 function clipAtWordBoundary(value: string, max: number) { if (value.length <= max) return value; const clipped = value.slice(0, max + 1); const boundary = clipped.lastIndexOf(" "); return clipped.slice(0, boundary > Math.floor(max * 0.65) ? boundary : max).replace(/[,:;\-–—\s]+$/u, "").trim(); }
-function repairReviewMetadata(article: GeneratedArticleDraft): GeneratedArticleDraft { return { ...article, standfirst: clipAtWordBoundary(article.standfirst, STANDFIRST_LIMIT), seoTitle: clipAtWordBoundary(article.seoTitle, SEO_TITLE_LIMIT), seoDescription: clipAtWordBoundary(article.seoDescription, SEO_DESCRIPTION_LIMIT) }; }
+
+function isInternalDisclosure(value: string): boolean {
+  const disclosure = value.trim();
+  if (!disclosure) return false;
+  return /^(?:internal\s*:|verify\b|check\b|fact[- ]?check\b|editorial\b|no outstanding factual checks\b)/i.test(disclosure)
+    || /\b(?:before publication|before publishing|editorial note|internal note|verify (?:the|full|all|any)|confirm (?:the|all|any)|monitor whether|keep (?:an )?eye on)\b/i.test(disclosure);
+}
+
+function repairReviewPresentation(article: GeneratedArticleDraft): GeneratedArticleDraft {
+  return {
+    ...article,
+    standfirst: clipAtWordBoundary(article.standfirst, STANDFIRST_LIMIT),
+    seoTitle: clipAtWordBoundary(article.seoTitle, SEO_TITLE_LIMIT),
+    seoDescription: clipAtWordBoundary(article.seoDescription, SEO_DESCRIPTION_LIMIT),
+    disclosure: isInternalDisclosure(article.disclosure) ? "" : article.disclosure.trim(),
+    body: article.body.map((section) => {
+      const heading = section.heading?.trim();
+      return {
+        ...section,
+        heading: heading && !isFormulaicHeading(heading) ? heading : undefined,
+      };
+    }),
+  };
+}
 
 function assertDeterministicGates(article: GeneratedArticleDraft, story: RawStoryInput) {
   const quality = assessDraftQuality(article);
@@ -94,11 +117,11 @@ function assertDeterministicGates(article: GeneratedArticleDraft, story: RawStor
 export async function runPublicationReviewCycle(article: GeneratedArticleDraft, editorial: EditorialBrainResult, story: RawStoryInput): Promise<PublicationReviewCycleResult> {
   const first = await structuredCall<PublicationReview>(reviewInput(article, editorial, story, 1), REVIEW_SCHEMA, "rugby_panda_publication_review_1");
   const review1 = first.value; const needsCorrection = review1.verdict === "revise" || blockingIssues(review1).length > 0;
-  let correctedArticle = article;
-  if (needsCorrection) { const correction = await structuredCall<GeneratedArticleDraft>(correctionInput(article, review1, editorial), ARTICLE_SCHEMA, "rugby_panda_publication_correction", CORRECTION_TIMEOUT_MS); correctedArticle = repairReviewMetadata(correction.value); assertDeterministicGates(correctedArticle, story); }
+  let correctedArticle = repairReviewPresentation(article);
+  if (needsCorrection) { const correction = await structuredCall<GeneratedArticleDraft>(correctionInput(article, review1, editorial), ARTICLE_SCHEMA, "rugby_panda_publication_correction", CORRECTION_TIMEOUT_MS); correctedArticle = repairReviewPresentation(correction.value); assertDeterministicGates(correctedArticle, story); }
   const second = await structuredCall<PublicationReview>(reviewInput(correctedArticle, editorial, story, 2), REVIEW_SCHEMA, "rugby_panda_publication_review_2");
   const review2 = second.value; const blocking = blockingIssues(review2); if (blocking.length > 0) throw new Error(`Publication Review #2 rejected article: ${blocking.map((issue) => `${issue.category}: ${issue.message}`).join(" ")}`);
-  correctedArticle = repairReviewMetadata(correctedArticle); assertDeterministicGates(correctedArticle, story);
+  correctedArticle = repairReviewPresentation(correctedArticle); assertDeterministicGates(correctedArticle, story);
   console.info("Publication review cycle completed", { inputId: editorial.inputId, model: REVIEW_MODEL, corrected: needsCorrection, review1Issues: review1.issues.length, review1Blocking: blockingIssues(review1).length, review2Issues: review2.issues.length, review2Blocking: blocking.length, review1Usage: first.usage, review2Usage: second.usage });
   return { article: correctedArticle, review1, review2, corrected: needsCorrection };
 }
