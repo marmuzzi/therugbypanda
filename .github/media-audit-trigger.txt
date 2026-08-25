@@ -1,0 +1,3 @@
+Strict production Editorial Image readiness audit
+Date: 2026-08-25
+Purpose: measure the post-#228 publication-ready local image count against the >=200 launch floor without changing any readiness criteria.
