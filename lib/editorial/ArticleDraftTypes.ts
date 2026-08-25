@@ -23,7 +23,7 @@ export interface GeneratedArticleDraft {
   seoDescription: string;
   keyPoints: string[];
   body: Array<{
-    heading?: string;
+    heading?: string | null;
     paragraphs: string[];
   }>;
   contextualDataCard?: ContextualDataCard | null;
