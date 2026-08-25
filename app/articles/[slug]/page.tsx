@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 
 import ArticleBody from "@/components/ArticleBody";
 import ArticleHeader from "@/components/ArticleHeader";
+import ContextualDataCard from "@/components/ContextualDataCard";
 import ContinueReading from "@/components/ContinueReading";
 import KeyPoints from "@/components/KeyPoints";
 import ReaderSupport from "@/components/ReaderSupport";
@@ -64,7 +65,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const insetHero = presentation === "analysis";
   const notebook = presentation === "notebook";
   const imageClassName = wideHero ? "h-[300px] w-full object-cover sm:h-[420px] md:h-[540px]" : insetHero ? "h-[230px] w-full object-cover sm:h-[300px] md:h-[360px]" : notebook ? "h-[250px] w-full object-cover sm:h-[330px] md:h-[410px]" : "h-[230px] w-full object-cover sm:h-[300px] md:h-[370px]";
-  const shellClassName = wideHero ? "max-w-[1180px] pt-4 md:pt-6" : notebook ? "max-w-[1040px] pt-8 md:pt-10" : "max-w-[920px] pt-7 md:pt-9";
+  const shellClassName = wideHero ? "max-w-[1180px] pt-4 md:pt-6" : notebook ? "max-w-[1040px] pt-8 md:pt-10" : "max-w-[1040px] pt-7 md:pt-9";
   const bodyClassName = wideHero ? "mx-auto max-w-[760px] space-y-12" : notebook ? "md:ml-[12%] max-w-[760px] space-y-8" : insetHero ? "mx-auto max-w-[720px] space-y-10" : "space-y-10";
   const jsonLd = { "@context": "https://schema.org", "@type": "NewsArticle", headline: cmsArticle.title, description: cmsArticle.standfirst, datePublished: cmsArticle.publishedAt, dateModified: cmsArticle.updatedAt ?? cmsArticle.publishedAt, mainEntityOfPage: canonicalUrl, url: canonicalUrl, articleSection: articleLabel(cmsArticle), image: featuredImage ? [featuredImage.src] : undefined, publisher: { "@type": "Organization", name: "The Rugby Panda", url: siteUrl("/"), logo: siteUrl("/rugby-panda-logo.png") } };
 
@@ -77,6 +78,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     </figure>
   ) : null;
 
+  const articleBody = cmsArticle.body?.length ? <ArticleBody body={cmsArticle.body} /> : <p className="rounded-3xl border border-dashed border-zinc-300 p-8 text-sm font-semibold text-zinc-500">This article has no body content yet.</p>;
+
   return (
     <main className="min-h-screen bg-white text-zinc-950">
       <SiteHeader />
@@ -87,7 +90,14 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         <div className={bodyClassName}>
           {beforeBody && cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
           {presentation === "notebook" ? imageFigure : null}
-          {cmsArticle.body?.length ? <ArticleBody body={cmsArticle.body} /> : <p className="rounded-3xl border border-dashed border-zinc-300 p-8 text-sm font-semibold text-zinc-500">This article has no body content yet.</p>}
+          {cmsArticle.contextualDataCard ? (
+            <div className="grid items-start gap-8 lg:grid-cols-[minmax(0,1fr)_280px] lg:gap-10">
+              {articleBody}
+              <div className="order-first lg:order-none lg:sticky lg:top-24">
+                <ContextualDataCard card={cmsArticle.contextualDataCard} />
+              </div>
+            </div>
+          ) : articleBody}
           {!beforeBody && cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
           <ReaderSupport title="Independent rugby coverage takes time." body="Future partner placements will sit clearly outside the editorial copy, helping support the newsroom without interrupting the reader experience." />
           {cmsArticle.tags?.length ? <TagList tags={cmsArticle.tags} /> : null}
