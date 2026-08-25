@@ -4,7 +4,7 @@ Sanity Studio is the canonical CMS and mandatory human approval/publication boun
 
 ## Session startup
 
-Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, this file, `docs/51_2026-08-25_Go_Live_Production_Verification.md` and any newer relevant handoff/evidence documents. Check GitHub, Vercel and available project integrations before asking the owner to configure anything. Use Europe/Dublin for schedules.
+Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, this file, `docs/52_2026-08-25_Article_Visual_Enrichment.md`, `docs/51_2026-08-25_Go_Live_Production_Verification.md` and any newer relevant handoff/evidence documents. Check GitHub, Vercel and available project integrations before asking the owner to configure anything. Use Europe/Dublin for schedules.
 
 ## Completion and deployment discipline
 
@@ -21,6 +21,7 @@ Always distinguish implemented, committed, PR opened, merged, deployed, producti
 → Publication Review + bounded correction when needed
 → deterministic post-review normalization + gates
 → semantic image selection (hero + optional inline subject images) or no image
+→ evidence-backed contextual-card enrichment when useful
 → production-eligible Sanity draft
 → five distinct accepted morning positions
 → 07:45 exactly-once consolidated Zoho editorial email
@@ -61,7 +62,7 @@ Required and now verified behaviour:
 3. individual morning draft notifications are suppressed;
 4. consolidated delivery runs at **07:45 Europe/Dublin**;
 5. `/api/editorial/daily-package` fails closed when fewer than five editorially distinct eligible drafts exist;
-6. when complete, it sends exactly one plain-text review package through direct Zoho SMTP to `editor@therugbypanda.ie`;
+6. when complete, it sends exactly one consolidated review package through direct Zoho SMTP to `editor@therugbypanda.ie`;
 7. a deterministic Sanity delivery lock keyed to operational date + package fingerprint prevents duplicates;
 8. SMTP failure clears a provisional lock; accepted delivery records SMTP response/completion evidence;
 9. incomplete/failing packages raise technical failure rather than substituting QA content or silently sending partial mail.
@@ -76,13 +77,19 @@ A rejection must immediately request a replacement rather than wait for the next
 
 End-to-end production verification of rejection -> genuinely different replacement remains required.
 
-## Images
+## Images and article visual breaks
 
 Only rights-reviewed, usage-approved **local Sanity assets** are eligible for automatic assignment or for the launch-floor count. External image URLs alone never satisfy readiness.
 
 Assignment is semantic, relevance-first and fail-closed. Priority: exact current fixture/player/coach/team; relevant recent team/event/venue; useful relevant historical/context; approved relevant logo when appropriate; otherwise no image. Never use unrelated fallback imagery.
 
-The same asset must not be reused across the current five-story morning package. If no unused relevant image remains, use no hero image rather than duplicate/substitute. Up to three automatic inline subject images may be used when exact rights-approved images exist for materially discussed subjects.
+The same asset must not be reused across the current five-story morning package. If no unused relevant image remains, use no hero image rather than duplicate/substitute.
+
+Up to three automatic inline subject images may be used when exact rights-approved images exist for materially discussed subjects. An inline image must be placed beside/after a paragraph that materially discusses that exact subject. If there is no such paragraph or no unused relevant asset, omit the image; do not append a weak visual merely to fill space.
+
+Contextual side cards are a second visual-interruption mechanism. They are built deterministically **after Publication Review** from confirmed/strongly-reported fact-ledger facts that have source IDs and sufficient confidence. A card requires at least two supported rows. Player cards are used only when the named player is genuinely central to the title/standfirst and has enough supported facts; otherwise the system may use a team snapshot. An optional portrait is allowed only when an approved local Sanity image matches the exact card subject. Missing/uncertain imagery is omitted.
+
+PR #276 production-Sanity evidence verified cards on all five current morning drafts and retained only two additional exact-subject inline images (Carbery and Munster Academy). The other three stories intentionally received no extra inline photo because no additional unused exact-subject approved asset met the rule. This is correct fail-closed behaviour, not an invitation to lower relevance standards.
 
 Wikimedia Commons exact-subject discovery is the primary external route. Preserve creator/licence/date/source metadata, deduplicate, review before import, store approved originals locally in Sanity, reconcile publication metadata and audit readiness. Do not scale the failed broad Openverse/Apify pattern.
 
@@ -93,7 +100,7 @@ Wikimedia Commons exact-subject discovery is the primary external route. Preserv
 - Existing prepaid OpenAI balance is the spend ceiling until cheaper alternatives are tested; do not add credit to brute-force retries.
 - Production generation remains on the configured model unless equivalent quality is evidenced.
 - Controlled model benchmarks must use the same representative evidence packs and the same deterministic Draft Ready/originality/Publication Review gates, must not persist benchmark drafts, and must record pass/failure, generation attempts, token usage where available, corrective work and editorial-quality observations.
-- GPT-5-mini benchmark evidence is being collected against the canonical 5/5 pack.
+- GPT-5-mini completed a 5/5 controlled benchmark but required Publication Review correction on all five and did not establish equivalent editorial polish, so production remains GPT-5.
 - Gemini Flash must not be claimed as tested until a usable Gemini/Google AI integration and real run exist.
 - Target steady-state AI spend below USD $10/month if quality permits.
 - Temporary benchmark routes/workflows must be removed after evidence capture.
@@ -102,7 +109,9 @@ Wikimedia Commons exact-subject discovery is the primary external route. Preserv
 
 Article/homepage presentation is content-led. #229 provides article treatments; #230 homepage hierarchy; #241 reusable contextual editorial data cards. Portable Text image blocks must render responsively with alt/caption/credit.
 
-Verify representative desktop/mobile article layouts, hero/inline image relevance and a multi-story homepage in production before closing presentation work. Do not publish a draft solely to manufacture test evidence; human publication remains mandatory.
+PR #276 fills the contextual-card population/persistence gap for normal and replacement draft paths without another model call. Current production-Sanity backfill/read-back is verified; merged runtime deployment and representative live desktop/mobile rendering remain required before WEB-012 closes.
+
+Verify representative desktop/mobile article layouts, hero/inline image relevance, contextual-card placement and a multi-story homepage in production before closing presentation work. Do not publish a draft solely to manufacture test evidence; human publication remains mandatory.
 
 ## Social, mobile upload and major-news check
 
@@ -112,6 +121,6 @@ Verify representative desktop/mobile article layouts, hero/inline image relevanc
 
 ## Current verification boundary — 25 August 2026
 
-Production-verified: strict 200-image local floor; genuine five-story production morning package; exactly-once direct Zoho consolidated package with SMTP 250 + idempotent re-trigger; cost-bounded partial recovery mechanics.
+Production-verified: strict 200-image local floor; genuine five-story production morning package; exactly-once direct Zoho consolidated package with SMTP 250 + idempotent re-trigger; cost-bounded recovery mechanics; current five-draft contextual-card persistence/read-back and strict inline-image enrichment in production Sanity.
 
-Still open: cost benchmark completion/cleanup; rejection-to-different-replacement E2E; representative desktop/mobile article/homepage/inline-image proof; authenticated Sanity body edit/save/reload; Meta social provider proof; secure phone upload; 14:00 conditional check; remaining security/backup/accreditation checks; final editorial/go-live acceptance.
+Still open: PR #276 merged runtime deployment and representative public visual proof; rejection-to-different-replacement E2E; authenticated Sanity body edit/save/reload; Meta social provider proof; secure phone upload; 14:00 conditional check; remaining security/backup/accreditation checks; final editorial/go-live acceptance.

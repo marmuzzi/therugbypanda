@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-25 August 2026, after production verification of the five-article morning package, exactly-once consolidated Zoho delivery, the strict 200-local-image floor, and the first controlled lower-cost model benchmark.
+25 August 2026, after production verification of the five-article morning package, exactly-once consolidated Zoho delivery, the strict 200-local-image floor, the first controlled lower-cost model benchmark, and direct production-Sanity verification of contextual cards/inline article visual enrichment.
 
 ## Source of truth
 
@@ -15,10 +15,11 @@ Read first in future sessions:
 1. `docs/07_Project_State.md`
 2. `docs/08_Issue_Log.md`
 3. `docs/09_Publishing_Workflow.md`
-4. `docs/51_2026-08-25_Go_Live_Production_Verification.md`
-5. `docs/49_2026-08-24_Monday_Go_Live_Reconciliation.md`
-6. `docs/44_2026-08-20_Owner_Priorities.md`
-7. all newer numbered handoff/evidence documents relevant to the task.
+4. `docs/52_2026-08-25_Article_Visual_Enrichment.md`
+5. `docs/51_2026-08-25_Go_Live_Production_Verification.md`
+6. `docs/49_2026-08-24_Monday_Go_Live_Reconciliation.md`
+7. `docs/44_2026-08-20_Owner_Priorities.md`
+8. all newer numbered handoff/evidence documents relevant to the task.
 
 Where older documents conflict with later measured evidence, the newer reconciled evidence wins. Do not use chat history as project truth.
 
@@ -72,10 +73,10 @@ Cost-efficient recovery now preserves accepted package positions and regenerates
 ## AI FinOps / model benchmark
 
 - Production generation remains on the configured GPT-5 model unless evidence supports a safe change.
-- A controlled canonical-package GPT-5-mini benchmark was started 25 August using the same five evidence packs, style allocation, deterministic Draft Ready/originality gates and Publication Review cycle, with no Sanity persistence.
-- Early measured mini samples passed generation/originality/Draft Ready on first generation attempts but frequently required Publication Review correction; editorial-quality equivalence is not yet established.
+- A controlled canonical-package GPT-5-mini benchmark completed 25 August using the same five evidence packs, style allocation, deterministic Draft Ready/originality gates and Publication Review cycle, with no Sanity persistence.
+- GPT-5-mini passed 5/5 generation gates but all five required Publication Review correction and editorial polish was not judged equivalent, so production remains GPT-5.
 - Gemini Flash pricing is potentially attractive, but no usable Gemini/Google AI API integration or credential is exposed in the current project integrations. No Gemini result may be claimed until a real controlled run exists.
-- Temporary benchmark infrastructure must be removed after evidence capture.
+- Temporary benchmark infrastructure was removed after evidence capture.
 
 ## Image contract and certified media state
 
@@ -85,27 +86,29 @@ Third-party assets require rights metadata and **local Sanity storage**; externa
 
 **Production certification on 25 August: 200 local Editorial Images, 200 strict publication-ready, 200 approved/published publication-ready, gap to target 0, zero duplicate Sanity asset groups.** MEDIA-007 is closed. Broad Openverse/Apify acquisition remains rejected; exact-subject Wikimedia Commons plus local ingestion is the current external route.
 
-Semantic assignment / inline-image work still requires representative production visual inspection before MEDIA-009/CMS-002 can close.
+The wrong-player image defect observed on Iain Henderson was fixed permanently by #273 and repaired on the existing draft by #274. Relevant-image-or-no-image remains the rule.
 
-## Public website presentation
+## Article visual enrichment
 
 - #229: content-led article treatments for news, analysis, feature, notebook and explainer are merged/deployed.
 - #230: editorial homepage hierarchy is merged/deployed.
-- #241: contextual editorial data-card support merged and deployed.
-- Inline Portable Text images and semantic image work exist in the deployed code path, but representative production desktop/mobile visual proof remains required.
-- Do not publish review drafts merely to manufacture visual evidence; the human publication boundary remains mandatory.
+- #241: contextual editorial data-card schema/model/public renderer is merged/deployed.
+- PR #276 closes the card population/persistence gap by deterministically deriving side cards from confirmed/strongly-reported fact-ledger material **after Publication Review**, persisting them to the Sanity draft and reading them back. It adds no model call.
+- The #276 production-Sanity verification workflow successfully enriched all five current morning drafts with contextual cards: Connacht team (4 rows), Ireland team (4), Joey Carbery player (4), Munster team (4), Iain Henderson player (2).
+- Current package inline photography remains relevance-first: Carbery and Munster Academy each have one additional exact-subject inline image. Connacht, Ireland Women and Henderson received no extra inline photo because no additional unused exact-subject approved asset met the placement rule. The system intentionally uses no filler.
+- Up to three inline images remain permitted where distinct exact-subject assets exist and can be placed beside a paragraph materially discussing that subject.
+- Representative live desktop/mobile visual proof remains required. Current review drafts are not auto-published merely to manufacture evidence.
 
 ## Remaining launch priorities
 
-1. Complete and document the controlled cost benchmark; remove temporary benchmark infrastructure; keep production model unchanged until quality evidence supports a switch.
-2. Production-prove rejection -> genuinely different replacement end-to-end (AUTO-002).
-3. Production-verify article/homepage/inline-image presentation on desktop/mobile using human-approved published content.
-4. Finish/verify automatic Facebook and Instagram snippets after controlled publication.
-5. Finish/verify secure phone-first image upload.
-6. Implement/verify the 14:00 major-announcement conditional check.
-7. Complete authenticated Sanity edit/save/reload verification where technically possible.
-8. Complete remaining security, backup/recovery and accreditation/provider checks.
-9. Complete final editorial review and go-live acceptance.
+1. Merge/deploy PR #276 when safe and production-verify the normal contextual-card enrichment path; complete representative desktop/mobile article/homepage visual proof on human-approved published content.
+2. Production-prove rejection -> genuinely different replacement end-to-end (AUTO-002) once the missing downstream webhook/orchestrator is available.
+3. Finish/verify automatic Facebook and Instagram snippets after controlled publication.
+4. Finish/verify secure phone-first image upload.
+5. Implement/verify the 14:00 major-announcement conditional check.
+6. Complete authenticated Sanity edit/save/reload verification where technically possible.
+7. Complete remaining security, backup/recovery and accreditation/provider checks.
+8. Complete final editorial review and go-live acceptance.
 
 ## Owner-help boundary
 

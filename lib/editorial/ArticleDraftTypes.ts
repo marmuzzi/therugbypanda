@@ -12,6 +12,8 @@ export type ContextualDataCard = {
   kind: ContextualDataCardKind;
   title: string;
   subtitle?: string;
+  imageUrl?: string;
+  imageAlt?: string;
   rows: ContextualDataCardRow[];
   note?: string;
 };

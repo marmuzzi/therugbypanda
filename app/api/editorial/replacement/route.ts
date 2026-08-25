@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "next-sanity";
 
+import { enrichSanityDraftWithContextualCard } from "@/lib/editorial/ContextualDataCardEnricher";
 import type { FactLedger, RawStoryInput, SourceRecord } from "@/lib/editorial/EditorialTypes";
 import { EditorialBrain } from "@/lib/editorial/EditorialBrain";
 import { generateArticleDraft } from "@/lib/editorial/OpenAIArticleGenerator";
@@ -111,14 +112,23 @@ export async function POST(request: NextRequest) {
     ]));
 
     const article = await generateArticleDraft(body.replacementStory, editorial);
+    const pkg = { editorial, article };
     const sanityDraft = await createSanityArticleDraft(
-      { editorial, article },
+      pkg,
       {
         editorialImageId: body.editorialImageId,
         story: body.replacementStory,
         replacementOf: rejected._id,
       },
     );
+
+    let contextualCard: Awaited<ReturnType<typeof enrichSanityDraftWithContextualCard>> | { status: "failed"; error: string };
+    try {
+      contextualCard = await enrichSanityDraftWithContextualCard(sanityDraft.id, pkg);
+    } catch (error) {
+      contextualCard = { status: "failed", error: error instanceof Error ? error.message : "Contextual card enrichment failed" };
+      console.warn("Replacement contextual card enrichment failed", { replacementId: sanityDraft.id, error: contextualCard.error });
+    }
 
     const now = new Date().toISOString();
     await writeClient
@@ -145,6 +155,7 @@ export async function POST(request: NextRequest) {
       status: "replacement-created",
       rejectedArticleId: publishedId,
       replacement: sanityDraft,
+      contextualCard,
       editorial,
       article,
     });
