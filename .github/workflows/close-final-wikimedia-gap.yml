@@ -39,6 +39,8 @@ jobs:
         run: node scripts/select-final-wikimedia-gap.mjs
       - name: Import assistant-approved candidates into local Sanity assets
         run: npm run media:import-reviewed-wikimedia
+      - name: Reconcile Wikimedia publication-readiness metadata
+        run: node scripts/reconcile-wikimedia-readiness-metadata.mjs
       - name: Certify strict local publication-ready floor
         run: |
           mkdir -p artifacts/final-seven
