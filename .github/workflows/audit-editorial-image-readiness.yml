@@ -2,6 +2,11 @@ name: Audit Editorial Image Readiness
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - .github/media-audit-trigger.txt
 
 jobs:
   audit-editorial-images:
