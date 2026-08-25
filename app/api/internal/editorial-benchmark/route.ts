@@ -12,6 +12,7 @@ export const maxDuration = 240;
 
 const ALLOWED_MODELS = new Set(["gpt-5", "gpt-5-mini"]);
 const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "notebook", "explainer"] as const;
+const ALLOWED_CATEGORIES = new Set(["Leinster", "Ulster", "Connacht", "Munster", "Ireland", "URC", "Europe", "Opinion"] as const);
 
 type BenchmarkModel = "gpt-5" | "gpt-5-mini";
 type BenchmarkRequest = {
@@ -22,10 +23,15 @@ type BenchmarkRequest = {
 };
 
 type CanonicalCandidate = (typeof benchmarkBatch.candidates)[number];
+type SuggestedCategory = NonNullable<RawStoryInput["suggestedCategory"]>;
 
 function authorised(request: NextRequest) {
   const expected = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
   return Boolean(expected) && request.headers.get("authorization") === `Bearer ${expected}`;
+}
+
+function typedCategory(value: string): SuggestedCategory | undefined {
+  return ALLOWED_CATEGORIES.has(value as SuggestedCategory) ? value as SuggestedCategory : undefined;
 }
 
 function canonicalRequest(candidate: CanonicalCandidate, index: number, model: BenchmarkModel): BenchmarkRequest {
@@ -40,7 +46,7 @@ function canonicalRequest(candidate: CanonicalCandidate, index: number, model: B
       summary: candidate.summary,
       sourceRecords,
       discoveredAt: retrievedAt,
-      suggestedCategory: candidate.suggestedCategory,
+      suggestedCategory: typedCategory(candidate.suggestedCategory),
     },
     factLedger: {
       facts: candidate.facts.map((claim, factIndex) => ({
