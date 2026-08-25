@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { createClient } from "next-sanity";
 import { NextRequest, NextResponse } from "next/server";
 
+import { sendZohoMail } from "@/lib/email/ZohoSmtp";
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 
 export const runtime = "nodejs";
@@ -40,6 +41,14 @@ type PackageArticle = {
   editorialAngle?: string;
   sourceStoryTitle?: string;
   sourceRecords?: SourceRecord[];
+};
+
+type DeliveryEvidence = {
+  _id: string;
+  status?: "sending" | "accepted";
+  accepted?: string;
+  smtpResponse?: string;
+  completedAt?: string;
 };
 
 function authorised(request: NextRequest) {
@@ -145,6 +154,36 @@ function packageEventId(packageDate: string, articles: PackageArticle[]) {
   return `editorial-daily-package:${packageDate}:${packageFingerprint(articles)}`;
 }
 
+function packageLockId(packageDate: string, articles: PackageArticle[]) {
+  const safeDate = packageDate.replace(/[^0-9]/g, "");
+  return `editorial-daily-package-${safeDate}-${packageFingerprint(articles)}`;
+}
+
+function emailSubject(packageDate: string) {
+  return `The Rugby Panda — ${PACKAGE_SIZE} articles ready for review — ${packageDate}`;
+}
+
+function emailText(packageDate: string, articles: PackageArticle[]) {
+  const articleSections = articles.flatMap((article, index) => [
+    `${index + 1}. ${article.title ?? "Untitled article"}`,
+    [article.category, article.competition].filter(Boolean).join(" · "),
+    article.standfirst ?? "",
+    `Review: ${reviewUrl(article._id)}`,
+    `Status: ${article.workflowStatus ?? "draft"}${article.needsHumanFactCheck ? " · human fact-check flagged" : ""}`,
+    article.featuredImageUrl ? "Image: assigned" : "Image: no relevant image assigned",
+    "",
+  ]);
+
+  return [
+    `The Rugby Panda morning editorial package for ${packageDate}.`,
+    "",
+    "Five production-eligible, editorially distinct articles are ready for review in Sanity.",
+    "",
+    ...articleSections,
+    "Open each Review link to edit, approve or reject the article.",
+  ].join("\n");
+}
+
 async function sendTechnicalAlert(
   failureCode: string,
   message: string,
@@ -178,22 +217,18 @@ async function sendTechnicalAlert(
   }
 }
 
+export async function GET() {
+  return NextResponse.json({
+    status: "ready",
+    deliveryMode: "direct-zoho-smtp",
+    requiredArticleCount: PACKAGE_SIZE,
+    destination,
+  });
+}
+
 export async function POST(request: NextRequest) {
   if (!authorised(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
-  const webhookUrl = process.env.EDITORIAL_DAILY_PACKAGE_WEBHOOK_URL?.trim();
-  if (!webhookUrl) {
-    await sendTechnicalAlert(
-      "daily-package-webhook-unconfigured",
-      "Daily editorial package webhook is not configured.",
-      {},
-    );
-    return NextResponse.json(
-      { error: "EDITORIAL_DAILY_PACKAGE_WEBHOOK_URL is not configured." },
-      { status: 503 },
-    );
   }
 
   try {
@@ -256,52 +291,72 @@ export async function POST(request: NextRequest) {
     }
 
     const eventId = packageEventId(packageDate, articles);
+    const lockId = packageLockId(packageDate, articles);
 
-    const response = await fetch(webhookUrl, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "x-editorial-event-id": eventId,
-        ...(process.env.EDITORIAL_DAILY_PACKAGE_WEBHOOK_SECRET?.trim()
-          ? { authorization: `Bearer ${process.env.EDITORIAL_DAILY_PACKAGE_WEBHOOK_SECRET?.trim()}` }
-          : {}),
-      },
-      body: JSON.stringify({
-        event: "editorial.daily_package.ready",
+    try {
+      await client.create({
+        _id: lockId,
+        _type: "editorialAutomationEvidence",
+        kind: "daily-package-direct-zoho",
+        status: "sending",
         eventId,
         packageDate,
         destination,
-        requiredArticleCount: PACKAGE_SIZE,
-        articleCount: articles.length,
-        generatedAt: new Date().toISOString(),
-        articles: articles.map((article, index) => ({
-          position: index + 1,
-          articleId: article._id.replace(/^drafts\./, ""),
-          title: article.title ?? "Untitled article",
-          standfirst: article.standfirst,
-          workflowStatus: article.workflowStatus ?? "draft",
-          editorialGeneratedAt: article.editorialGeneratedAt,
-          updatedAt: article.updatedAt,
-          category: article.category,
-          competition: article.competition,
-          needsHumanFactCheck: article.needsHumanFactCheck ?? false,
-          featuredImageUrl: article.featuredImageUrl,
-          reviewUrl: reviewUrl(article._id),
-        })),
-      }),
-      cache: "no-store",
-    });
+        articleIds: articles.map((article) => article._id.replace(/^drafts\./, "")),
+        createdAt: new Date().toISOString(),
+      });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (/already exists|document.*exists|conflict/i.test(message)) {
+        const evidence = await client.fetch<DeliveryEvidence | null>(
+          `*[_id == $lockId][0]{_id,status,accepted,smtpResponse,completedAt}`,
+          { lockId },
+        );
+        return NextResponse.json({
+          status: evidence?.status === "accepted" ? "already-sent" : "delivery-in-progress",
+          eventId,
+          articleCount: articles.length,
+          destination,
+          accepted: evidence?.accepted,
+          smtpResponse: evidence?.smtpResponse,
+          completedAt: evidence?.completedAt,
+        }, { status: evidence?.status === "accepted" ? 200 : 409 });
+      }
+      throw error;
+    }
 
-    if (!response.ok) {
+    let smtpResult: Awaited<ReturnType<typeof sendZohoMail>>;
+    try {
+      smtpResult = await sendZohoMail({
+        to: destination,
+        subject: emailSubject(packageDate),
+        text: emailText(packageDate, articles),
+      });
+    } catch (error) {
+      await client.delete(lockId).catch(() => undefined);
+      const message = error instanceof Error ? error.message : "Direct Zoho SMTP delivery failed.";
       const technicalAlertStatus = await sendTechnicalAlert(
-        `daily-package-webhook-http-${response.status}`,
-        `Daily editorial package webhook returned ${response.status}.`,
-        { eventId, responseStatus: response.status },
+        "direct-zoho-smtp-failed",
+        message,
+        { eventId, articleCount: articles.length },
       );
       return NextResponse.json(
-        { status: "failed", eventId, responseStatus: response.status, technicalAlertStatus },
+        { status: "failed", eventId, error: message, technicalAlertStatus },
         { status: 502 },
       );
+    }
+
+    let evidenceStatus: "recorded" | "record-failed" = "recorded";
+    try {
+      await client.patch(lockId).set({
+        status: "accepted",
+        accepted: smtpResult.accepted,
+        smtpResponse: smtpResult.response,
+        completedAt: new Date().toISOString(),
+      }).commit();
+    } catch (error) {
+      evidenceStatus = "record-failed";
+      console.error("Daily package SMTP was accepted but evidence update failed", error);
     }
 
     return NextResponse.json({
@@ -310,6 +365,9 @@ export async function POST(request: NextRequest) {
       articleCount: articles.length,
       eligibleCandidateCount: candidates.length,
       destination,
+      accepted: smtpResult.accepted,
+      smtpResponse: smtpResult.response,
+      evidenceStatus,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Daily editorial package failed.";
