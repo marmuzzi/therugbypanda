@@ -1,5 +1,0 @@
-Controlled Rugby Panda editorial model benchmark
-Date: 2026-08-25
-Model: gpt-5-mini
-Evidence: canonical five-story AUTO-004 production pack
-Safety: no Sanity persistence; stop after two consecutive failures; production model unchanged.
