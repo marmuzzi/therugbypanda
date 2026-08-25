@@ -2,6 +2,9 @@ name: Send editorial daily package
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: '45 7 * * *'
+      timezone: Europe/Dublin
   push:
     branches:
       - main
