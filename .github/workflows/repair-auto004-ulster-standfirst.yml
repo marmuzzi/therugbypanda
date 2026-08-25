@@ -1,0 +1,30 @@
+name: Repair AUTO-004 Ulster standfirst
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'scripts/repair-auto004-ulster-standfirst.mjs'
+      - '.github/workflows/repair-auto004-ulster-standfirst.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  repair:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Install dependencies
+        run: npm install
+      - name: Repair and verify the measured incomplete standfirst
+        run: node scripts/repair-auto004-ulster-standfirst.mjs
