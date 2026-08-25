@@ -44,6 +44,14 @@ type SanityArticleSummary = {
   featuredImage?: SanityImage;
 };
 
+export type CmsContextualDataCard = {
+  kind?: "player" | "comparison" | "team" | "match";
+  title: string;
+  subtitle?: string;
+  rows?: Array<{ label: string; value: string; sourceIds?: string[] }>;
+  note?: string;
+};
+
 export type CmsArticle = {
   title: string;
   slug?: string;
@@ -58,6 +66,7 @@ export type CmsArticle = {
   competition?: string;
   tags?: string[];
   keyPoints?: string[];
+  contextualDataCard?: CmsContextualDataCard;
   featuredImage?: SanityImage;
   body?: Array<{ _type?: string; children?: Array<{ text?: string }>; style?: string }>;
 };
@@ -126,6 +135,7 @@ const articleBySlugQuery = `*[_type == "article" && workflowStatus == "published
   "competition": competition->title,
   "tags": tags[]->title,
   keyPoints,
+  contextualDataCard,
   featuredImage,
   body
 }`;
