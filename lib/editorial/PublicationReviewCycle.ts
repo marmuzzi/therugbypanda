@@ -82,7 +82,32 @@ function correctionInput(article: GeneratedArticleDraft, review: PublicationRevi
 
 function blockingIssues(review: PublicationReview) { return review.issues.filter((issue) => issue.severity === "critical" || issue.severity === "high"); }
 function rawStoryMaterial(story: RawStoryInput) { return [story.title, story.summary, story.bodyText].filter(Boolean).join("\n\n"); }
-function clipAtWordBoundary(value: string, max: number) { if (value.length <= max) return value; const clipped = value.slice(0, max + 1); const boundary = clipped.lastIndexOf(" "); return clipped.slice(0, boundary > Math.floor(max * 0.65) ? boundary : max).replace(/[,:;\-–—\s]+$/u, "").trim(); }
+
+function clipAtBoundary(value: string, max: number, sentenceLike = false) {
+  const trimmed = value.trim();
+  if (trimmed.length <= max) return trimmed;
+
+  const candidate = trimmed.slice(0, max + 1);
+  if (sentenceLike) {
+    const sentenceFloor = Math.floor(max * 0.55);
+    const sentenceBoundary = Math.max(candidate.lastIndexOf("."), candidate.lastIndexOf("?"), candidate.lastIndexOf("!"));
+    if (sentenceBoundary >= sentenceFloor) return candidate.slice(0, sentenceBoundary + 1).trim();
+
+    const clauseFloor = Math.floor(max * 0.5);
+    const clauseBoundary = Math.max(candidate.lastIndexOf(","), candidate.lastIndexOf(";"), candidate.lastIndexOf(":"), candidate.lastIndexOf(" — "), candidate.lastIndexOf(" – "));
+    if (clauseBoundary >= clauseFloor) {
+      return `${candidate.slice(0, clauseBoundary).replace(/[,:;\-–—\s]+$/u, "").trim()}.`;
+    }
+  }
+
+  const wordBoundary = candidate.lastIndexOf(" ");
+  const clipped = candidate
+    .slice(0, wordBoundary > Math.floor(max * 0.65) ? wordBoundary : max)
+    .replace(/[,:;\-–—\s]+$/u, "")
+    .trim();
+
+  return sentenceLike && !/[.!?]$/.test(clipped) && clipped.length < max ? `${clipped}.` : clipped;
+}
 
 function isInternalDisclosure(value: string): boolean {
   const disclosure = value.trim();
@@ -94,9 +119,9 @@ function isInternalDisclosure(value: string): boolean {
 function repairReviewPresentation(article: GeneratedArticleDraft): GeneratedArticleDraft {
   return {
     ...article,
-    standfirst: clipAtWordBoundary(article.standfirst, STANDFIRST_LIMIT),
-    seoTitle: clipAtWordBoundary(article.seoTitle, SEO_TITLE_LIMIT),
-    seoDescription: clipAtWordBoundary(article.seoDescription, SEO_DESCRIPTION_LIMIT),
+    standfirst: clipAtBoundary(article.standfirst, STANDFIRST_LIMIT, true),
+    seoTitle: clipAtBoundary(article.seoTitle, SEO_TITLE_LIMIT),
+    seoDescription: clipAtBoundary(article.seoDescription, SEO_DESCRIPTION_LIMIT, true),
     disclosure: isInternalDisclosure(article.disclosure) ? "" : article.disclosure.trim(),
     body: article.body.map((section) => {
       const heading = section.heading?.trim();
