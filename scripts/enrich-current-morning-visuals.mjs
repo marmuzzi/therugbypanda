@@ -1,3 +1,4 @@
+import { writeFileSync } from "node:fs";
 import { buildContextualDataCard } from "../lib/editorial/ContextualDataCardBuilder.ts";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
@@ -95,8 +96,10 @@ function enrichBodyWithInlineImages(article, images, globallyUsedAssets) {
   const text = articleText(article);
   const subjects = subjectPhrases(text);
   const existingAssets = new Set(body.filter((block) => block?._type === "image").map((block) => block?.asset?._ref).filter(Boolean));
+  const remainingSlots = Math.max(0, MAX_INLINE_IMAGES - existingAssets.size);
   const selected = [];
   const selectedSubjects = new Set();
+  if (remainingSlots === 0) return { body, added: [] };
 
   for (const subject of subjects) {
     const subjectLower = subject.toLowerCase();
@@ -112,7 +115,7 @@ function enrichBodyWithInlineImages(article, images, globallyUsedAssets) {
     selected.push({ subject, image, paragraphKey: body[paragraphIndex]?._key });
     selectedSubjects.add(subjectLower);
     globallyUsedAssets.add(image.assetRef);
-    if (selected.length >= MAX_INLINE_IMAGES) break;
+    if (selected.length >= remainingSlots) break;
   }
 
   if (selected.length === 0) return { body, added: [] };
@@ -181,8 +184,12 @@ for (const article of articles) {
   if (card && (!verified?.contextualDataCard || (verified.contextualDataCard.rows?.length ?? 0) < 2)) {
     throw new Error(`Contextual card verification failed for ${article._id}.`);
   }
+  if ((verified?.inlineAssets?.length ?? 0) > MAX_INLINE_IMAGES) {
+    throw new Error(`Inline image cap exceeded for ${article._id}: ${verified.inlineAssets.length}.`);
+  }
   for (const added of inline.added) {
-    if (!(verified?.inlineAssets ?? []).includes(images.find((image) => image._id === added.imageId)?.assetRef)) {
+    const assetRef = images.find((image) => image._id === added.imageId)?.assetRef;
+    if (!assetRef || !(verified?.inlineAssets ?? []).includes(assetRef)) {
       throw new Error(`Inline image verification failed for ${article._id}: ${added.imageId}.`);
     }
   }
@@ -191,9 +198,11 @@ for (const article of articles) {
     articleId: article._id,
     title: article.title,
     contextualCard: card ? { title: card.title, kind: card.kind, rows: card.rows.length, portrait: Boolean(card.imageUrl) } : null,
-    inlineAdded: inline.added,
+    inlineAddedThisRun: inline.added,
     totalInlineImages: verified?.inlineAssets?.length ?? 0,
   });
 }
 
-console.log(JSON.stringify({ status: "enriched-and-verified", articleCount: summary.length, summary }, null, 2));
+const result = { status: "enriched-and-verified", articleCount: summary.length, summary };
+writeFileSync("visual-enrichment-summary.json", `${JSON.stringify(result, null, 2)}\n`, "utf8");
+console.log(JSON.stringify(result, null, 2));
