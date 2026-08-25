@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 
 import type { ArticleStyleProfileId } from "@/lib/editorial/ArticleStyleProfile";
+import { enrichSanityDraftWithContextualCard } from "@/lib/editorial/ContextualDataCardEnricher";
 import type { FactLedger, RawStoryInput } from "@/lib/editorial/EditorialTypes";
 import { EditorialBrain } from "@/lib/editorial/EditorialBrain";
 import { notifyDraftCreated } from "@/lib/editorial/EditorialNotifications";
@@ -100,6 +101,7 @@ export async function POST(request: NextRequest) {
         reviewModel: process.env.OPENAI_EDITORIAL_REVIEW_MODEL ?? "gpt-5-mini",
         structuredSchemaConfigured: true,
         publicationReviewConfigured: true,
+        contextualCardEnrichmentConfigured: true,
         sanity,
       };
       console.info("Editorial dry run completed", {
@@ -134,6 +136,14 @@ export async function POST(request: NextRequest) {
       morningPackageEligible: body.qaMode !== true,
     });
 
+    let contextualCard: Awaited<ReturnType<typeof enrichSanityDraftWithContextualCard>> | { status: "failed"; error: string };
+    try {
+      contextualCard = await enrichSanityDraftWithContextualCard(sanityDraft.id, pkg);
+    } catch (error) {
+      contextualCard = { status: "failed", error: error instanceof Error ? error.message : "Contextual card enrichment failed" };
+      console.warn("Contextual card enrichment failed", { requestId, inputId: body.story.id, error: contextualCard.error });
+    }
+
     const notification = body.notificationMode === "package"
       ? { status: "suppressed" as const, eventId: null, reason: "consolidated-morning-package" }
       : await notifyDraftCreated({
@@ -151,12 +161,13 @@ export async function POST(request: NextRequest) {
       notificationStatus: notification.status,
       notificationEventId: notification.eventId,
       morningPackageEligible: sanityDraft.morningPackageEligible,
+      contextualCardStatus: contextualCard.status,
       publicationReviewCorrected: publicationReview.corrected,
       review1Issues: publicationReview.review1.issues.length,
       review2Issues: publicationReview.review2.issues.length,
       durationMs: Date.now() - startedAt,
     });
-    return jsonResponse({ status: "draft-created", editorial, article, publicationReview, sanityDraft, notification, requestId });
+    return jsonResponse({ status: "draft-created", editorial, article, publicationReview, sanityDraft, contextualCard, notification, requestId });
   } catch (error) {
     console.error("Editorial draft pipeline failed", {
       requestId,
