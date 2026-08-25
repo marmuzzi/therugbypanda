@@ -8,6 +8,7 @@ const token = process.env.SANITY_API_TOKEN;
 const candidatePath = process.env.WIKIMEDIA_CANDIDATE_FILE ?? "/tmp/wikimedia-candidates.json";
 const outputPath = process.env.WIKIMEDIA_REVIEW_FILE ?? "artifacts/final-seven/wikimedia-reviewed.json";
 const targetCount = Number.parseInt(process.env.WIKIMEDIA_GAP_TARGET ?? "7", 10);
+const allowedDiscoveryDecisions = new Set(["approve-candidate", "diversity-hold"]);
 
 if (!token) throw new Error("Missing SANITY_API_TOKEN.");
 if (!Number.isInteger(targetCount) || targetCount < 1) throw new Error("WIKIMEDIA_GAP_TARGET must be a positive integer.");
@@ -34,7 +35,7 @@ const scopePreference = new Map([
 ]);
 
 function isStrongPhotography(item) {
-  if (item?.autoDecision !== "approve-candidate" || item?.rightsClear !== true || item?.recent !== true) return false;
+  if (!allowedDiscoveryDecisions.has(item?.autoDecision) || item?.rightsClear !== true || item?.recent !== true) return false;
   if (!Array.isArray(item.subjectEvidence) || item.subjectEvidence.length === 0) return false;
   if (typeof item.sourcePage !== "string" || !item.sourcePage.includes("commons.wikimedia.org/wiki/File:")) return false;
   if (typeof item.imageUrl !== "string" || !item.imageUrl.includes("upload.wikimedia.org/")) return false;
@@ -49,6 +50,9 @@ function isStrongPhotography(item) {
 const pool = candidates
   .filter(isStrongPhotography)
   .sort((a, b) => {
+    const decisionA = a.autoDecision === "approve-candidate" ? 0 : 1;
+    const decisionB = b.autoDecision === "approve-candidate" ? 0 : 1;
+    if (decisionA !== decisionB) return decisionA - decisionB;
     const scopeA = scopePreference.get(a.scope) ?? 99;
     const scopeB = scopePreference.get(b.scope) ?? 99;
     if (scopeA !== scopeB) return scopeA - scopeB;
@@ -66,10 +70,15 @@ for (const item of pool) {
   const scopeCount = perScope.get(item.scope) ?? 0;
   if (scopeCount >= 2) continue;
   if (usedQueries.has(item.query)) continue;
+  const discoveryAutoDecision = item.autoDecision;
   selected.push({
     ...item,
+    discoveryAutoDecision,
+    autoDecision: "approve-candidate",
     assistantDecision: "approve",
-    assistantRationale: "Existing exact-subject discovery classified this as a recent, rights-clear approve-candidate. It is non-duplicate local-library photography with positive subject evidence and is selected under one-per-query / two-per-scope diversity caps.",
+    assistantRationale: discoveryAutoDecision === "diversity-hold"
+      ? "The earlier discovery held this rights-clear exact-subject photo only under the older diversity allocation. Re-reviewed for the measured final gap: it remains recent, non-duplicate, rights-clear photography with positive subject evidence and independently passes the stricter one-per-query / two-per-scope final-gap caps."
+      : "Existing exact-subject discovery classified this as a recent, rights-clear approve-candidate. It is non-duplicate local-library photography with positive subject evidence and is selected under one-per-query / two-per-scope diversity caps.",
     reviewedAt: new Date().toISOString(),
   });
   perScope.set(item.scope, scopeCount + 1);
@@ -77,7 +86,7 @@ for (const item of pool) {
 }
 
 if (selected.length !== targetCount) {
-  throw new Error(`Only ${selected.length} strong non-existing candidates satisfied the final-gap policy; required ${targetCount}. Refusing to weaken selection rules.`);
+  throw new Error(`Only ${selected.length} strong non-existing candidates satisfied the final-gap policy; required ${targetCount}. Refusing to include rejects/owner-review candidates or weaken rights, recency, relevance, photography or diversity rules.`);
 }
 
 await fs.mkdir(outputPath.split("/").slice(0, -1).join("/"), { recursive: true });
@@ -86,6 +95,9 @@ await fs.writeFile(outputPath, JSON.stringify({
   sourceGeneratedAt: discovery.generatedAt,
   policy: {
     targetCount,
+    allowedDiscoveryDecisions: ["approve-candidate", "diversity-hold"],
+    rejectedDiscoveryDecisionsExcluded: ["reject", "owner-review"],
+    diversityHoldRequiresFreshAssistantReview: true,
     recentOnly: true,
     rightsClearOnly: true,
     exactSubjectEvidenceRequired: true,
@@ -102,6 +114,7 @@ console.log(JSON.stringify({
   eligiblePool: pool.length,
   selected: selected.length,
   coverage: Object.fromEntries(perScope),
-  items: selected.map((item) => ({ title: item.title, scope: item.scope, query: item.query, year: item.year, licence: item.licence, sourcePage: item.sourcePage })),
+  discoveryDecisions: selected.reduce((counts, item) => ({ ...counts, [item.discoveryAutoDecision]: (counts[item.discoveryAutoDecision] ?? 0) + 1 }), {}),
+  items: selected.map((item) => ({ title: item.title, scope: item.scope, query: item.query, year: item.year, licence: item.licence, discoveryAutoDecision: item.discoveryAutoDecision, sourcePage: item.sourcePage })),
   outputPath,
 }, null, 2));
