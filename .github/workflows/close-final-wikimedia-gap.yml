@@ -31,17 +31,30 @@ jobs:
           node-version: '22'
       - name: Install dependencies
         run: npm install
+      - name: Reconcile already-approved local readiness metadata
+        run: node scripts/reconcile-approved-editorial-readiness.mjs
+      - name: Measure strict local floor before any acquisition
+        id: preaudit
+        run: |
+          mkdir -p artifacts/final-seven
+          EDITORIAL_IMAGE_LOCAL_FLOOR=200 node scripts/audit-local-editorial-image-floor.mjs | tee artifacts/final-seven/local-floor-before.json
+          node --input-type=module -e "import fs from 'node:fs'; const r=JSON.parse(fs.readFileSync('artifacts/final-seven/local-floor-before.json','utf8')); console.log('target_met=' + r.targetMet); console.log('gap=' + r.gapToTarget);" >> "$GITHUB_OUTPUT"
       - name: Load latest measured Wikimedia discovery output
+        if: steps.preaudit.outputs.target_met != 'true'
         run: |
           git fetch origin media/wikimedia-discovery-output:refs/remotes/origin/media/wikimedia-discovery-output
           git show origin/media/wikimedia-discovery-output:data/editorial-images/wikimedia-candidates.json > "$WIKIMEDIA_CANDIDATE_FILE"
       - name: Select exactly seven strong non-existing candidates
+        if: steps.preaudit.outputs.target_met != 'true'
         run: node scripts/select-final-wikimedia-gap.mjs
       - name: Import assistant-approved candidates into local Sanity assets
+        if: steps.preaudit.outputs.target_met != 'true'
         run: npm run media:import-reviewed-wikimedia
+      - name: Reconcile imported readiness metadata
+        if: steps.preaudit.outputs.target_met != 'true'
+        run: node scripts/reconcile-approved-editorial-readiness.mjs
       - name: Certify strict local publication-ready floor
         run: |
-          mkdir -p artifacts/final-seven
           EDITORIAL_IMAGE_LOCAL_FLOOR=200 node scripts/audit-local-editorial-image-floor.mjs | tee artifacts/final-seven/local-floor.json
           node --input-type=module -e "import fs from 'node:fs'; const r=JSON.parse(fs.readFileSync('artifacts/final-seven/local-floor.json','utf8')); if(!r.targetMet) { console.error('Strict local media floor remains below 200:', r); process.exit(1); }"
       - name: Run broader readiness/dedup audit
