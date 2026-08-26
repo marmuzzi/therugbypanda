@@ -1,0 +1,42 @@
+name: Verify Social Production Configuration
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app/api/internal/social-health/route.ts'
+      - '.github/workflows/verify-social-production-config.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Wait for production route and verify configuration
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          set -euo pipefail
+          if [ -z "${EDITORIAL_AUTOMATION_SECRET:-}" ]; then
+            echo "EDITORIAL_AUTOMATION_SECRET GitHub secret is unavailable"
+            exit 1
+          fi
+          url="https://therugbypanda.ie/api/internal/social-health"
+          for attempt in $(seq 1 18); do
+            code=$(curl -sS -o /tmp/social-health.json -w '%{http_code}' \
+              -H "Authorization: Bearer ${EDITORIAL_AUTOMATION_SECRET}" \
+              "$url" || true)
+            if [ "$code" = "200" ]; then
+              cat /tmp/social-health.json
+              node -e 'const fs=require("fs"); const x=JSON.parse(fs.readFileSync("/tmp/social-health.json","utf8")); if(x.status!=="ready") process.exit(2); console.log(JSON.stringify({status:x.status,socialWebhookConfigured:Boolean(x.socialWebhookConfigured),socialWebhookSecretConfigured:Boolean(x.socialWebhookSecretConfigured),siteUrlConfigured:Boolean(x.siteUrlConfigured),checkedAt:x.checkedAt}))'
+              exit 0
+            fi
+            echo "Attempt ${attempt}: production health route returned HTTP ${code}; waiting for deployment"
+            sleep 10
+          done
+          echo "Production social health route did not become available"
+          [ -f /tmp/social-health.json ] && cat /tmp/social-health.json || true
+          exit 1
