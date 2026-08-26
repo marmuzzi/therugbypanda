@@ -1,5 +1,6 @@
 name: Enrich Current Morning Visuals
 
+# Re-run after targeted launch-image imports to production Sanity.
 on:
   workflow_dispatch:
   push:
