@@ -3,7 +3,7 @@ name: Discover Wikimedia editorial images
 on:
   workflow_dispatch:
   push:
-    branches: [main]
+    branches: [main, verify/social-production-health-20260826]
     paths:
       - '.github/workflows/discover-wikimedia-editorial-images.yml'
       - 'scripts/discover-wikimedia-editorial-images.mjs'
