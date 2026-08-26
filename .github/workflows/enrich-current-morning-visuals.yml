@@ -6,6 +6,7 @@ on:
     branches:
       - feat/article-visual-enrichment
       - main
+      - verify/social-production-health-20260826
     paths:
       - lib/editorial/ContextualDataCardBuilder.ts
       - scripts/enrich-current-morning-visuals.mjs
