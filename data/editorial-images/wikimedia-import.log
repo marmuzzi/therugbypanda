@@ -1,0 +1,18 @@
+
+> therugbypanda@0.3.0 media:import-reviewed-wikimedia
+> node scripts/import-reviewed-wikimedia-images.mjs
+
+{
+  "approvedInput": 109,
+  "imported": 12,
+  "skippedExisting": 97,
+  "failed": 0,
+  "coverage": {
+    "Connacht": 4,
+    "Six Nations opposition": 1,
+    "Ulster": 4,
+    "Launch — Connacht front row": 1,
+    "Leinster": 2
+  },
+  "recentRate": 0.16666666666666666
+}
