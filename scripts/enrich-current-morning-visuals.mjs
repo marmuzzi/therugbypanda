@@ -17,9 +17,20 @@ const CURRENT_INPUT_IDS = [
   "auto004-fresh-ireland-women-wxv-20260824",
 ];
 const MAX_INLINE_IMAGES = 3;
+const TEAM_TERMS = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland"];
 const NON_PERSON_TERMS = new Set([
   "Ireland", "Leinster", "Munster", "Ulster", "Connacht", "Rugby", "URC", "United Rugby",
   "Champions Cup", "Challenge Cup", "Six Nations", "World Cup", "Global Series", "Academy",
+  "Thomond Park", "Aviva Stadium", "Dexcom Stadium", "Kingspan Stadium", "Affidea Stadium",
+]);
+const NON_PERSON_WORDS = new Set([
+  "rugby", "stadium", "championship", "cup", "club", "football", "union", "province", "provinces", "ireland",
+  "leinster", "munster", "ulster", "connacht", "nations", "united", "champions", "challenge", "european", "aviva",
+  "kingspan", "affidea", "sportsground", "thomond", "dexcom", "rds", "urc", "world", "series", "league", "team", "academy",
+]);
+const GENERIC_WORDS = new Set([
+  "rugby", "match", "game", "team", "teams", "player", "players", "season", "squad", "coach", "coaching", "article",
+  "news", "preview", "depth", "fresh", "live", "makes", "gives", "could", "change", "return", "academy", "front", "row",
 ]);
 
 async function query(groq, params = {}) {
@@ -51,14 +62,23 @@ function articleText(article) {
 }
 
 function subjectPhrases(text) {
-  const matches = text.match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,2}\b/g) ?? [];
+  const matches = text.match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
   return [...new Set(matches.map((value) => value.trim()))]
-    .filter((value) => !NON_PERSON_TERMS.has(value))
-    .filter((value) => value.split(/\s+/).every((part) => !NON_PERSON_TERMS.has(part)));
+    .filter((value) => value.length >= 6)
+    .filter((value) => !NON_PERSON_TERMS.has(value));
 }
 
 function descriptiveImageText(image) {
-  return [image.title, image.altText, image.caption].filter(Boolean).join(" ").toLowerCase();
+  return [image.title, image.altText, image.caption].filter(Boolean).join(" ");
+}
+
+function namedPersonPhrasesFromImage(image) {
+  const matches = descriptiveImageText(image).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
+  return [...new Set(matches.map((match) => match.trim()).filter((match) => {
+    const terms = match.toLowerCase().split(/[^a-zà-öø-ÿ'’.-]+/).filter(Boolean);
+    if (terms.length < 2) return false;
+    return !terms.some((term) => NON_PERSON_WORDS.has(term));
+  }))];
 }
 
 function portableImage(image) {
@@ -91,30 +111,69 @@ function generatedArticleShape(article) {
   };
 }
 
+function meaningfulTerms(text) {
+  return [...new Set(text.toLowerCase().split(/[^a-z0-9à-öø-ÿ]+/).filter((term) => term.length >= 5 && !GENERIC_WORDS.has(term)))];
+}
+
+function storyRequiresWomenEvidence(text) {
+  return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b/i.test(text);
+}
+
+function candidateScore(image, paragraph, fullArticleText, subjects) {
+  if (!image.assetRef) return Number.NEGATIVE_INFINITY;
+  const imageTextRaw = descriptiveImageText(image);
+  const imageText = imageTextRaw.toLowerCase();
+  const paragraphLower = paragraph.toLowerCase();
+  const articleLower = fullArticleText.toLowerCase();
+
+  const namedPeople = namedPersonPhrasesFromImage(image);
+  if (namedPeople.some((person) => !articleLower.includes(person.toLowerCase()))) return Number.NEGATIVE_INFINITY;
+
+  const articleTeam = TEAM_TERMS.find((team) => articleLower.includes(team.toLowerCase()));
+  const imageTeams = TEAM_TERMS.filter((team) => imageText.includes(team.toLowerCase()));
+  if (articleTeam && imageTeams.length > 0 && !imageTeams.includes(articleTeam)) return Number.NEGATIVE_INFINITY;
+
+  if (storyRequiresWomenEvidence(fullArticleText) && imageText.includes("ireland") && !/\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b/.test(imageText)) {
+    return Number.NEGATIVE_INFINITY;
+  }
+
+  const exactSubjects = subjects.filter((subject) => paragraphLower.includes(subject.toLowerCase()) && imageText.includes(subject.toLowerCase()));
+  const paragraphTeam = TEAM_TERMS.find((team) => paragraphLower.includes(team.toLowerCase()) && imageText.includes(team.toLowerCase()));
+  const sharedTerms = meaningfulTerms(paragraph).filter((term) => imageText.includes(term));
+
+  // Require positive paragraph-level evidence. Team/context images are allowed only when the same
+  // team is materially discussed in that paragraph, while named-person conflicts always fail closed.
+  if (exactSubjects.length === 0 && !paragraphTeam && sharedTerms.length < 2) return Number.NEGATIVE_INFINITY;
+
+  return (exactSubjects.length * 50) + (paragraphTeam ? 24 : 0) + Math.min(sharedTerms.length, 5) * 4;
+}
+
 function enrichBodyWithInlineImages(article, images, globallyUsedAssets) {
   const body = [...(article.body ?? [])];
-  const text = articleText(article);
-  const subjects = subjectPhrases(text);
+  const fullText = articleText(article);
+  const subjects = subjectPhrases(fullText);
   const existingAssets = new Set(body.filter((block) => block?._type === "image").map((block) => block?.asset?._ref).filter(Boolean));
   const remainingSlots = Math.max(0, MAX_INLINE_IMAGES - existingAssets.size);
-  const selected = [];
-  const selectedSubjects = new Set();
   if (remainingSlots === 0) return { body, added: [] };
 
-  for (const subject of subjects) {
-    const subjectLower = subject.toLowerCase();
-    const paragraphIndex = body.findIndex((block) => block?._type === "block" && block.style !== "h2" && blockText(block).toLowerCase().includes(subjectLower));
-    if (paragraphIndex < 0) continue;
-    const image = images.find((candidate) =>
-      candidate.assetRef
-      && !globallyUsedAssets.has(candidate.assetRef)
-      && !existingAssets.has(candidate.assetRef)
-      && descriptiveImageText(candidate).includes(subjectLower),
-    );
-    if (!image || selectedSubjects.has(subjectLower)) continue;
-    selected.push({ subject, image, paragraphKey: body[paragraphIndex]?._key });
-    selectedSubjects.add(subjectLower);
-    globallyUsedAssets.add(image.assetRef);
+  const selected = [];
+  const selectedAssetRefs = new Set();
+  for (const block of body) {
+    if (block?._type !== "block" || block.style === "h2") continue;
+    const paragraph = blockText(block);
+    if (!paragraph) continue;
+
+    const ranked = images
+      .filter((candidate) => candidate.assetRef && !globallyUsedAssets.has(candidate.assetRef) && !existingAssets.has(candidate.assetRef) && !selectedAssetRefs.has(candidate.assetRef))
+      .map((candidate) => ({ image: candidate, score: candidateScore(candidate, paragraph, fullText, subjects) }))
+      .filter(({ score }) => Number.isFinite(score) && score >= 20)
+      .sort((a, b) => b.score - a.score);
+
+    const best = ranked[0];
+    if (!best) continue;
+    selected.push({ image: best.image, paragraphKey: block._key, score: best.score });
+    selectedAssetRefs.add(best.image.assetRef);
+    globallyUsedAssets.add(best.image.assetRef);
     if (selected.length >= remainingSlots) break;
   }
 
@@ -125,7 +184,10 @@ function enrichBodyWithInlineImages(article, images, globallyUsedAssets) {
     const match = selected.find((item) => item.paragraphKey === block?._key);
     if (match) output.push(portableImage(match.image));
   }
-  return { body: output, added: selected.map(({ subject, image }) => ({ subject, imageId: image._id, imageTitle: image.title ?? null })) };
+  return {
+    body: output,
+    added: selected.map(({ image, score }) => ({ imageId: image._id, imageTitle: image.title ?? null, score })),
+  };
 }
 
 const articles = await query(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && editorialInputId in $ids] | order(editorialInputId asc){
@@ -163,7 +225,8 @@ for (const article of articles) {
       candidate.assetUrl
       && candidate.assetRef
       && !globallyUsedAssets.has(candidate.assetRef)
-      && descriptiveImageText(candidate).includes(subjectLower),
+      && descriptiveImageText(candidate).toLowerCase().includes(subjectLower)
+      && !namedPersonPhrasesFromImage(candidate).some((person) => person.toLowerCase() !== subjectLower && !articleText(article).toLowerCase().includes(person.toLowerCase())),
     );
     if (portrait) {
       card = { ...card, imageUrl: portrait.assetUrl, imageAlt: portrait.altText ?? portrait.title ?? card.title };
