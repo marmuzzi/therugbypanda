@@ -1,0 +1,3 @@
+# End readiness notes
+
+Proceed.
