@@ -1,4 +1,4 @@
 Controlled production delivery of the verified five-article morning package
-Date: 2026-08-25
-Trigger attempt: 2
-Acceptance: existing accepted package must return already-sent with HTTP 200 and must not issue a second Zoho SMTP send.
+Date: 2026-08-27
+Trigger attempt: launch-morning-1
+Acceptance: require HTTP 200 and status sent/already-sent; exactly one consolidated Zoho editorial package, no duplicate SMTP delivery.
