@@ -1,6 +1,6 @@
 AUTO-004 controlled production import trigger
-Batch: data/editorial-acquisition/auto004-2026-08-25-recovery.json
-Reuse: auto004-fresh-leinster-carbery-20260824,auto004-fresh-connacht-frontrow-20260824,auto004-fresh-munster-academy-20260824,auto004-fresh-ireland-women-wxv-20260824
-Purpose: recover only the missing Ulster analysis-led position after #257 post-review deterministic normalization; preserve all four accepted drafts and all deterministic quality, originality, publication-review and image gates.
-Date: 2026-08-25
-Trigger attempt: 20
+Batch: data/editorial-acquisition/auto004-2026-08-27-live.json
+Reuse:
+Purpose: generate five genuinely fresh current positions from the 27 August live evidence pack after PR #284 disabled stale scheduled replay; preserve all deterministic quality, originality, publication-review and image gates.
+Date: 2026-08-27
+Trigger attempt: fresh-recovery-1
