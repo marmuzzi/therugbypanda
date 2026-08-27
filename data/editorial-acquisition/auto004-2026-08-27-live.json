@@ -1,0 +1,109 @@
+{
+  "schemaVersion": "1.0",
+  "batchId": "auto004-2026-08-27-live",
+  "acquiredAt": "2026-08-27T21:20:00.000Z",
+  "acquisition": {
+    "provider": "Rugby Panda live multi-source evidence pack",
+    "actor": "sunday-recovery",
+    "requestCount": 16,
+    "successfulRequestCount": 16,
+    "notes": "Five fresh editorial positions selected from current 25-27 August reporting. No position reuses the stale 24 August package."
+  },
+  "candidates": [
+    {
+      "id": "auto004-live-munster-crowley-20260827",
+      "title": "Crowley setback turns Munster's 10 depth into an early-season test",
+      "summary": "Jack Crowley is now expected to miss the rest of 2026, leaving JJ Hanrahan and academy out-halves Tom Wood and Charlie O'Shea carrying a much larger early-season load while Will Harrison also manages a knee setback.",
+      "suggestedCategory": "Munster",
+      "sourceRecords": [
+        {"id":"munster-crowley-update-20260827","url":"https://www.munsterrugby.ie/2026/08/27/squad-update-pre-season-2026-27/","publisher":"Munster Rugby","title":"Squad Update | Pre-Season 2026/27","publishedAt":"2026-08-27T00:00:00Z","excerpt":"Munster confirmed Jack Crowley is not expected to return until the new year, while Will Harrison is managing a knee injury and JJ Hanrahan, Tom Wood and Charlie O'Shea are available out-half options.","isPrimarySource":true},
+        {"id":"rte-crowley-20260827","url":"https://www.rte.ie/sport/rugby/2026/0827/1589448-munster-setback-as-crowley-ruled-out-until-the-new-year/","publisher":"RTÉ Sport","title":"Munster setback as Jack Crowley ruled out until the new year","publishedAt":"2026-08-27T14:24:00Z","excerpt":"RTÉ reported Crowley's lower limb vascular injury will keep him out until early 2027 and noted the knock-on effect for Munster and Ireland.","isPrimarySource":false},
+        {"id":"reuters-crowley-20260827","url":"https://www.reuters.com/sports/irelands-injured-flyhalf-crowley-out-until-new-year-munster-say-2026-08-27/","publisher":"Reuters","title":"Ireland's injured flyhalf Crowley out until new year, Munster say","publishedAt":"2026-08-27T00:00:00Z","excerpt":"Reuters independently confirmed the timeline and that Crowley will miss Ireland's autumn programme and the early stages of Munster's season.","isPrimarySource":false}
+      ],
+      "facts": [
+        "Munster say Jack Crowley is not expected to return to action until the new year following specialist assessment of a lower limb vascular injury.",
+        "Crowley will miss Ireland's autumn Tests against Argentina, Fiji and South Africa.",
+        "JJ Hanrahan is available as an experienced Munster out-half and has played 160 games for the province.",
+        "Academy out-halves Tom Wood and Charlie O'Shea are also in Munster's current depth picture.",
+        "New signing Will Harrison has aggravated a knee injury during pre-season.",
+        "Munster open the URC season at home to Glasgow Warriors in late September."
+      ]
+    },
+    {
+      "id": "auto004-live-connacht-hansen-return-20260827",
+      "title": "Hansen's return gives Connacht a first real look at Lancaster's backline",
+      "summary": "Mack Hansen and Byron Ralston are both back in Connacht's starting XV against RC Vannes, giving Stuart Lancaster an important chance to test a backline that barely existed at full strength last season.",
+      "suggestedCategory": "Connacht",
+      "sourceRecords": [
+        {"id":"connacht-vannes-team-20260827","url":"https://www.connachtrugby.ie/news/team-announcement-rc-vannes-v-connacht/bp3789/","publisher":"Connacht Rugby","title":"Team Announcement: RC Vannes v Connacht","publishedAt":"2026-08-27T00:00:00Z","excerpt":"Connacht named Mack Hansen at left wing and Byron Ralston at inside centre for the Vannes friendly, with a 28-man squad and several academy players involved.","isPrimarySource":true},
+        {"id":"bbc-hansen-return-20260827","url":"https://au.sports.yahoo.com/hansen-long-awaited-return-injury-153301248.html","publisher":"BBC via Yahoo Sports","title":"Hansen to make long-awaited return from injury","publishedAt":"2026-08-27T15:33:00Z","excerpt":"BBC reporting noted Hansen's return after a long foot-injury layoff and Ralston's first game since October.","isPrimarySource":false},
+        {"id":"independent-hansen-target-20260215","url":"https://www.independent.ie/sport/rugby/connacht-rugby/i-wish-it-was-a-shark-bite-mack-hansen-confirms-absence-from-summer-tests-due-to-freak-long-term-injury/a121652294.html","publisher":"Irish Independent","title":"Mack Hansen targets pre-season return after long-term foot injury","publishedAt":"2026-02-15T00:00:00Z","excerpt":"Earlier reporting recorded Hansen's target of returning for Connacht pre-season after foot surgery ruled him out of the remainder of 2025/26.","isPrimarySource":false}
+      ],
+      "facts": [
+        "Mack Hansen is named to start on the left wing against RC Vannes on 28 August.",
+        "Byron Ralston is named at inside centre in the same Connacht starting XV.",
+        "Hansen's foot problem required surgery and kept him out of the second half of Connacht's previous season and Ireland's 2026 Six Nations and summer programme.",
+        "Connacht also named Sam Gilbert, Shane Jennings, John Devine, Josh Ioane and Colm Reilly in the starting backline against Vannes.",
+        "New signings Jerry Cahir and Thomas Connolly are among the extended replacements.",
+        "Connacht begin their URC season at home to the Stormers on 25 September."
+      ]
+    },
+    {
+      "id": "auto004-live-leinster-coach-search-20260827",
+      "title": "Leinster's coach search is really a timing problem as much as a name game",
+      "summary": "Shane Nolan says Leinster will not rush Leo Cullen's succession and will not rule out coaches involved at the 2027 World Cup. That turns the search into a question of transition timing, not simply which big name gets linked next.",
+      "suggestedCategory": "Leinster",
+      "sourceRecords": [
+        {"id":"rte-leinster-search-20260826","url":"https://www.rte.ie/sport/rugby/2026/0826/1589341-leinster-ceo-coy-on-potential-ogara-appointment/","publisher":"RTÉ Sport","title":"Leinster CEO coy on potential Ronan O'Gara appointment but process underway","publishedAt":"2026-08-26T17:00:00Z","excerpt":"Leinster CEO Shane Nolan said the process is underway, there is no fixed timeline and World Cup involvement would not automatically rule out a candidate.","isPrimarySource":false},
+        {"id":"the42-leinster-search-20260826","url":"https://www.the42.ie/leinster-shane-nolan-leo-cullen-7142931-Aug2026/","publisher":"The42","title":"Leinster won't rule out hiring a coach involved at 2027 World Cup","publishedAt":"2026-08-26T00:00:00Z","excerpt":"The42 reported Nolan was impressed by the level of interest and that Leinster are defining criteria before discussing individual candidates.","isPrimarySource":false},
+        {"id":"examiner-leinster-search-20260826","url":"https://www.irishexaminer.com/sport/rugby/arid-41902297.html","publisher":"Irish Examiner","title":"Leinster won't rush appointing Leo Cullen's successor","publishedAt":"2026-08-26T17:00:00Z","excerpt":"The Irish Examiner independently reported there is no fixed deadline and the 2027 World Cup calendar will not dictate the appointment.","isPrimarySource":false}
+      ],
+      "facts": [
+        "Leo Cullen will leave the Leinster head coach role at the end of the 2026/27 season.",
+        "Leinster CEO Shane Nolan says the recruitment process is already underway.",
+        "Nolan says Leinster are intentionally not setting a fixed appointment timeline.",
+        "A candidate involved at the 2027 Rugby World Cup is not automatically ruled out.",
+        "Nolan declined to comment on individual candidates including Ronan O'Gara.",
+        "Leinster are defining the skills, expertise, attributes and experience they want before narrowing the field."
+      ]
+    },
+    {
+      "id": "auto004-live-womens-final-20260827",
+      "title": "Why the Munster-Leinster final is about more than revenge",
+      "summary": "Munster arrive in Galway on a seven-game winning run while Leinster have rebuilt after a heavy opening-round defeat. With WXV selection close, Saturday's final also doubles as a high-pressure audition for Ireland places.",
+      "suggestedCategory": "Ireland",
+      "sourceRecords": [
+        {"id":"rte-leinster-final-preview-20260826","url":"https://www.rte.ie/sport/rugby/2026/0825/1589203-leinster-have-point-to-prove-after-munster-mauling/","publisher":"RTÉ Sport","title":"Leinster have point to prove after Munster mauling","publishedAt":"2026-08-26T07:08:00Z","excerpt":"Leinster head coach Sana Govender said her side learned from the 39-19 opening-round defeat before wins over Connacht and Ulster took them back to the final.","isPrimarySource":false},
+        {"id":"rte-wxv-final-preview-20260825","url":"https://www.rte.ie/sport/rugby/2026/0825/1589195-wxv-selection-fight-adds-extra-intrigue-to-interpro-final/","publisher":"RTÉ Sport","title":"WXV selection fight adds extra intrigue to Interpro final","publishedAt":"2026-08-25T17:59:00Z","excerpt":"Munster coach Matt Brown highlighted the added WXV selection pressure around the final and Munster's seven-game winning run.","isPrimarySource":false},
+        {"id":"times-interpro-final-20260822","url":"https://www.irishtimes.com/sport/rugby/2026/08/22/leinster-and-munster-to-meet-again-in-womens-interpro-decider/","publisher":"The Irish Times","title":"Leinster and Munster to meet again in women's interpro decider","publishedAt":"2026-08-22T18:39:00Z","excerpt":"The Irish Times confirmed both finalists after Leinster's 75-5 win over Ulster and Munster's unbeaten run through the league phase.","isPrimarySource":false}
+      ],
+      "facts": [
+        "Munster and Leinster meet in the 2026 Women's Interprovincial Championship final at Dexcom Stadium on 29 August.",
+        "Munster beat Leinster 39-19 in the opening round of this year's competition.",
+        "Munster also beat Leinster 50-15 in the 2025 final.",
+        "Leinster recovered this year with wins over Connacht and Ulster, including a 75-5 win in Belfast.",
+        "Munster entered finals week on a seven-game winning run across the last two Interprovincial campaigns.",
+        "Ireland's WXV Global Series follows the Interprovincial competition, increasing the selection significance of the final."
+      ]
+    },
+    {
+      "id": "auto004-live-munster-larochelle-20260827",
+      "title": "Munster's two-team La Rochelle plan shows what pre-season is really for",
+      "summary": "Clayton McMillan has effectively named one Munster team for each half against La Rochelle. With academy players and senior returnees mixed together, the useful story is how the province is distributing minutes rather than chasing a friendly result.",
+      "suggestedCategory": "Munster",
+      "sourceRecords": [
+        {"id":"munster-larochelle-team-20260827","url":"https://www.munsterrugby.ie/2026/08/27/pre-season-team-news-munster-side-to-face-la-rochelle/","publisher":"Munster Rugby","title":"Pre-Season Team News | Munster Side To Face La Rochelle","publishedAt":"2026-08-27T00:00:00Z","excerpt":"Munster named a 33-man squad split into two teams, one for each half, with academy lock Conor Kennelly in line for a first senior appearance.","isPrimarySource":true},
+        {"id":"munster-preseason-context-20260827","url":"https://www.munsterrugby.ie/2026/08/27/squad-update-pre-season-2026-27/","publisher":"Munster Rugby","title":"Squad Update | Pre-Season 2026/27","publishedAt":"2026-08-27T00:00:00Z","excerpt":"Munster described the French camp as week five of pre-season and the La Rochelle match as their first run-out before the URC opener.","isPrimarySource":true},
+        {"id":"rugbyrama-larochelle-20260827","url":"https://www.rugbyrama.fr/2026/08/27/top-14-ce-deuxieme-match-de-preparation-ressemblera-plus-a-notre-1re-journee-romain-sazy-annonce-la-couleur-pour-le-match-amical-face-au-munster-13525764.php","publisher":"Rugbyrama","title":"La Rochelle treat second warm-up as dress rehearsal for Top 14 opener","publishedAt":"2026-08-27T00:00:00Z","excerpt":"Rugbyrama reported La Rochelle expect a more first-choice side and have focused on defence and precision before their Top 14 opener.","isPrimarySource":false}
+      ],
+      "facts": [
+        "Munster named a 33-man squad for the 28 August pre-season match away to La Rochelle.",
+        "Clayton McMillan named two separate Munster teams, one intended for each half.",
+        "Academy lock Conor Kennelly is in line for his first senior Munster appearance.",
+        "The La Rochelle game is Munster's first pre-season fixture of 2026/27.",
+        "Munster's only home pre-season game is against Leicester Tigers in September.",
+        "La Rochelle are using the match as their final warm-up before the Top 14 campaign begins."
+      ]
+    }
+  ]
+}
