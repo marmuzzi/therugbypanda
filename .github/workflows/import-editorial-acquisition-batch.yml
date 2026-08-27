@@ -7,9 +7,6 @@ on:
         description: Repository path to the reviewed acquisition batch JSON
         required: true
         default: data/editorial-acquisition/auto004-2026-08-24-fresh.json
-  schedule:
-    - cron: '30 6 * * *'
-      timezone: Europe/Dublin
   push:
     branches:
       - main
