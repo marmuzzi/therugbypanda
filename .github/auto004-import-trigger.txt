@@ -1,6 +1,6 @@
 AUTO-004 controlled production import trigger
 Batch: data/editorial-acquisition/auto004-2026-08-27-live.json
-Reuse:
-Purpose: generate five genuinely fresh current positions from the 27 August live evidence pack after PR #284 disabled stale scheduled replay; preserve all deterministic quality, originality, publication-review and image gates.
-Date: 2026-08-27
-Trigger attempt: fresh-recovery-1
+Reuse: auto004-live-munster-crowley-20260827,auto004-live-connacht-hansen-return-20260827,auto004-live-leinster-coach-search-20260827,auto004-live-womens-final-20260827
+Purpose: recover only the missing Munster-La Rochelle position after four fresh 27 August positions completed all production gates and persisted to Sanity; preserve the four accepted drafts and rerun normal deterministic quality, originality, publication-review and image gates only for the failed fifth position.
+Date: 2026-08-28
+Trigger attempt: fresh-recovery-2
