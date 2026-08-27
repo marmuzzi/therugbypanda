@@ -1,0 +1,3 @@
+# Terminal end state
+
+Ready.
