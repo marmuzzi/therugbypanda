@@ -1,0 +1,41 @@
+name: Discover launch-gap editorial images
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/discover-launch-gap-images.yml'
+      - 'scripts/discover-launch-gap-images.mjs'
+
+permissions:
+  contents: write
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Discover exact-subject launch-gap candidates
+        env:
+          WIKIMEDIA_RESULTS_PER_QUERY: '30'
+          WIKIMEDIA_OUTPUT: data/editorial-images/launch-gap-candidates.json
+        run: node scripts/discover-launch-gap-images.mjs
+      - name: Upload measured candidate set
+        uses: actions/upload-artifact@v4
+        with:
+          name: launch-gap-editorial-image-candidates
+          path: data/editorial-images/launch-gap-candidates.json
+          if-no-files-found: error
+          retention-days: 3
+      - name: Persist measured candidate set
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/editorial-images/launch-gap-candidates.json
+          git commit -m "Media: measure launch-gap image candidates [skip ci]"
+          git push --force origin HEAD:refs/heads/media/launch-gap-discovery-output
