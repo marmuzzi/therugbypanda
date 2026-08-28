@@ -1,0 +1,28 @@
+{
+  "generatedAt": "2026-08-28T12:05:38.500Z",
+  "sourceGeneratedAt": "2026-08-28T12:05:38.448Z",
+  "totalCandidates": 155,
+  "counts": {
+    "reject": 109,
+    "approve": 46
+  },
+  "approvedCoverage": {
+    "Connacht": 8,
+    "Munster": 34,
+    "Leinster": 4
+  },
+  "recentApprovalRate": 0.5,
+  "ownerReviewRate": 0,
+  "maxScopeShare": 0.7391304347826086,
+  "configuredMinimumApproved": 3,
+  "configuredMaximumScopeShare": 0.8,
+  "configuredRequiredScopes": [],
+  "missingRequiredScopes": [],
+  "policyChecks": {
+    "majorityRecent": true,
+    "ownerReviewAtOrBelowFivePercent": true,
+    "scopeWithinConfiguredCeiling": true,
+    "minimumApprovedReached": true,
+    "requiredScopesCovered": true
+  }
+}

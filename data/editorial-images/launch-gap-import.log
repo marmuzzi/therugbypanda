@@ -1,0 +1,12 @@
+{
+  "approvedInput": 46,
+  "imported": 28,
+  "skippedExisting": 18,
+  "failed": 0,
+  "coverage": {
+    "Munster": 22,
+    "Connacht": 2,
+    "Leinster": 4
+  },
+  "recentRate": 0.32142857142857145
+}
