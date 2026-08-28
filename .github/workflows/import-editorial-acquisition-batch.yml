@@ -26,6 +26,7 @@ jobs:
       NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       AUTO004_DRAFT_CUTOFF: 2026-08-24T20:24:00Z
+      RECENT_EDITORIAL_POSITIONS_PATH: data/editorial-acquisition/recent-editorial-positions.json
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -72,6 +73,9 @@ jobs:
           fi
           echo "batch_path=$batch_path" >> "$GITHUB_OUTPUT"
           echo "reuse_ids=$reuse_ids" >> "$GITHUB_OUTPUT"
+
+      - name: Export recent production editorial positions
+        run: node scripts/export-recent-editorial-positions.mjs
 
       - name: Delete superseded generated drafts
         run: node scripts/cleanup-old-auto004-drafts.mjs
