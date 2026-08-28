@@ -38,10 +38,32 @@ function decisionFor(item) {
   return { decision: "approve", reason: item.recent ? "clear relevant rights-safe recent candidate" : "clear relevant rights-safe contextual/historical candidate" };
 }
 
-const reviewed = candidates.map((item) => {
+let reviewed = candidates.map((item) => {
   const { decision, reason } = decisionFor(item);
   return { ...item, assistantDecision: decision, assistantDecisionReason: reason };
 });
+
+// Keep useful contextual/history photography, but never let it outnumber recent
+// photography in an acquisition wave. Previously the script approved every safe
+// contextual candidate and then failed the whole job when the aggregate recent
+// share fell below 50%, which prevented even the recent assets from importing.
+// Demote only the excess contextual approvals so the same policy is enforced
+// before import rather than turning a good mixed wave into an all-or-nothing failure.
+const recentApprovedCount = reviewed.filter((item) => item.assistantDecision === "approve" && item.recent).length;
+const contextualApproved = reviewed.filter((item) => item.assistantDecision === "approve" && !item.recent);
+const excessContextual = Math.max(0, contextualApproved.length - recentApprovedCount);
+if (excessContextual > 0) {
+  const demoted = new Set(contextualApproved.slice(-excessContextual).map((item) => item.imageUrl ?? item.sourcePage ?? item.title));
+  reviewed = reviewed.map((item) => {
+    const key = item.imageUrl ?? item.sourcePage ?? item.title;
+    if (item.assistantDecision !== "approve" || item.recent || !demoted.has(key)) return item;
+    return {
+      ...item,
+      assistantDecision: "reject",
+      assistantDecisionReason: "contextual/historical candidate capped to preserve majority-recent acquisition policy",
+    };
+  });
+}
 
 const counts = reviewed.reduce((acc, item) => {
   acc[item.assistantDecision] = (acc[item.assistantDecision] ?? 0) + 1;
