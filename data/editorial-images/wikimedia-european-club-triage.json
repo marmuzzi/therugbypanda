@@ -1,0 +1,34 @@
+{
+  "generatedAt": "2026-08-28T12:05:51.369Z",
+  "sourceGeneratedAt": "2026-08-28T12:05:51.316Z",
+  "totalCandidates": 89,
+  "counts": {
+    "reject": 76,
+    "approve": 13
+  },
+  "approvedCoverage": {
+    "Gloucester Rugby": 1,
+    "Northampton Saints": 2,
+    "Stade Toulousain": 1,
+    "Stade Rochelais": 2,
+    "RC Toulon": 2,
+    "Montpellier Hérault Rugby": 2,
+    "Union Bordeaux Bègles": 1,
+    "Bath Rugby": 1,
+    "ASM Clermont Auvergne": 1
+  },
+  "recentApprovalRate": 1,
+  "ownerReviewRate": 0,
+  "maxScopeShare": 0.15384615384615385,
+  "configuredMinimumApproved": 12,
+  "configuredMaximumScopeShare": 0.17,
+  "configuredRequiredScopes": [],
+  "missingRequiredScopes": [],
+  "policyChecks": {
+    "majorityRecent": true,
+    "ownerReviewAtOrBelowFivePercent": true,
+    "scopeWithinConfiguredCeiling": true,
+    "minimumApprovedReached": true,
+    "requiredScopesCovered": true
+  }
+}
