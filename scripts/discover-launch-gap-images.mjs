@@ -7,13 +7,17 @@ const perQuery = Math.min(Number.parseInt(process.env.WIKIMEDIA_RESULTS_PER_QUER
 const allowedLicences = /^(CC BY(?:-SA)?(?: [234]\.0)?|CC0|Public domain)/i;
 const blocked = /\b(logo|crest|flag|kit template|shirt template|svg|diagram|line-?up)\b/i;
 
+// P0 targets are the exact subjects/venues in the current fresh five, not legacy launch stories.
+// Keep this list deliberately narrow: a candidate only counts when its metadata proves the subject.
 const targets = [
-  { article: "Joey Carbery / Leinster", subject: "Joey Carbery", queries: ["Joey Carbery rugby", "Joey Carbery Bordeaux rugby", "Joey Carbery Munster rugby", "Joey Carbery Leinster rugby"] },
-  { article: "Joey Carbery / Leinster", subject: "Sam Prendergast", queries: ["Sam Prendergast rugby", "Sam Prendergast Leinster rugby"] },
-  { article: "Connacht front-row depth", subject: "Francois van Wyk", queries: ["Francois van Wyk rugby", "Francois van Wyk Bath rugby", "Francois van Wyk Northampton rugby"] },
-  { article: "Connacht front-row depth", subject: "Thomas Connolly", queries: ["Thomas Connolly rugby Connacht", "Thomas Connolly Cornish Pirates rugby"] },
-  { article: "Connacht front-row depth", subject: "Finlay Bealham", queries: ["Finlay Bealham rugby", "Finlay Bealham Connacht rugby", "Finlay Bealham Ireland rugby 2025"] },
-  { article: "Iain Henderson / Ulster", subject: "Iain Henderson", queries: ["Iain Henderson rugby 2025", "Iain Henderson Ireland rugby 2025", "Iain Henderson Ulster rugby"] },
+  { article: "Mack Hansen / Connacht return", subject: "Mack Hansen", queries: ["Mack Hansen rugby 2025", "Mack Hansen Ireland rugby 2025", "Mack Hansen Connacht rugby"] },
+  { article: "Jack Crowley / Munster depth", subject: "Jack Crowley", queries: ["Jack Crowley rugby 2025", "Jack Crowley Ireland rugby", "Jack Crowley Munster rugby"] },
+  { article: "Leinster coaching succession", subject: "Leo Cullen", queries: ["Leo Cullen rugby", "Leo Cullen Leinster coach"] },
+  { article: "Leinster coaching succession", subject: "Leinster Rugby", queries: ["Leinster Rugby 2025", "Leinster Rugby RDS"] },
+  { article: "Munster v La Rochelle", subject: "Thomond Park", queries: ["Thomond Park 2025", "Thomond Park 2024", "Thomond Park rugby stadium"] },
+  { article: "Women's Interprovincial final", subject: "Dexcom Stadium", queries: ["Dexcom Stadium rugby 2026", "Dexcom Stadium Galway", "Galway Sportsgrounds rugby"] },
+  { article: "Women's Interprovincial final", subject: "Munster Women", queries: ["Munster Women rugby", "Munster women's rugby"] },
+  { article: "Women's Interprovincial final", subject: "Leinster Women", queries: ["Leinster Women rugby", "Leinster women's rugby"] },
 ];
 
 function stripHtml(value = "") { return String(value).replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim(); }
@@ -52,7 +56,7 @@ deduped.sort((a,b) => Number(b.year ?? 0) - Number(a.year ?? 0) || Number(b.widt
 const counts = deduped.reduce((acc, x) => { acc[x.decision] = (acc[x.decision] ?? 0) + 1; return acc; }, {});
 const bySubject = {};
 for (const x of deduped.filter((x) => x.decision === "approve-candidate")) bySubject[x.subject] = (bySubject[x.subject] ?? 0) + 1;
-const output = { generatedAt: new Date().toISOString(), purpose: "Close measured launch visual-depth gaps without generic filler", targets, counts, bySubject, candidates: deduped };
+const output = { generatedAt: new Date().toISOString(), purpose: "Close current fresh-five visual gaps with exact-subject rights evidence; no generic filler", targets, counts, bySubject, candidates: deduped };
 await fs.mkdir(path.dirname(outputPath), { recursive: true });
 await fs.writeFile(outputPath, JSON.stringify(output, null, 2));
 console.log(JSON.stringify({ total: deduped.length, counts, bySubject, outputPath }, null, 2));
