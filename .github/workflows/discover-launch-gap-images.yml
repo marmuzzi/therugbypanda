@@ -1,4 +1,4 @@
-name: Discover launch-gap editorial images
+name: Discover and import launch-gap editorial images
 
 on:
   workflow_dispatch:
@@ -7,35 +7,73 @@ on:
     paths:
       - '.github/workflows/discover-launch-gap-images.yml'
       - 'scripts/discover-launch-gap-images.mjs'
+      - 'scripts/triage-wikimedia-candidates.mjs'
+      - 'scripts/import-reviewed-wikimedia-images.mjs'
+      - 'scripts/reconcile-approved-editorial-readiness.mjs'
 
 permissions:
   contents: write
 
+concurrency:
+  group: launch-gap-editorial-image-import
+  cancel-in-progress: false
+
 jobs:
-  discover:
+  discover-triage-import:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      WIKIMEDIA_RESULTS_PER_QUERY: '30'
+      WIKIMEDIA_OUTPUT: data/editorial-images/launch-gap-candidates.json
+      WIKIMEDIA_CANDIDATE_FILE: data/editorial-images/launch-gap-candidates.json
+      WIKIMEDIA_REVIEW_FILE: data/editorial-images/launch-gap-reviewed.json
+      WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/launch-gap-triage.json
+      WIKIMEDIA_MIN_APPROVED: '3'
+      WIKIMEDIA_MAX_SCOPE_SHARE: '0.80'
+      EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - uses: actions/setup-node@v4
         with:
           node-version: '22'
+      - run: npm install
       - name: Discover exact-subject launch-gap candidates
-        env:
-          WIKIMEDIA_RESULTS_PER_QUERY: '30'
-          WIKIMEDIA_OUTPUT: data/editorial-images/launch-gap-candidates.json
         run: node scripts/discover-launch-gap-images.mjs
-      - name: Upload measured candidate set
+      - name: Strict assistant triage
+        run: node scripts/triage-wikimedia-candidates.mjs
+      - name: Import approved images locally into Sanity
+        run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/launch-gap-import.log
+      - name: Reconcile approved publication metadata
+        run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/launch-gap-reconcile.log
+      - name: Audit publication readiness
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/launch-gap-readiness.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/launch-gap-readiness.json
+      - name: Upload measured evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: launch-gap-editorial-image-candidates
-          path: data/editorial-images/launch-gap-candidates.json
-          if-no-files-found: error
+          name: launch-gap-editorial-image-evidence
+          path: |
+            data/editorial-images/launch-gap-*.json
+            data/editorial-images/launch-gap-*.log
+          if-no-files-found: warn
           retention-days: 3
-      - name: Persist measured candidate set
+      - name: Persist measured evidence
+        if: always()
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add data/editorial-images/launch-gap-candidates.json
-          git commit -m "Media: measure launch-gap image candidates [skip ci]"
+          git add data/editorial-images/launch-gap-*.json data/editorial-images/launch-gap-*.log || true
+          if git diff --cached --quiet; then
+            echo "No evidence changed."
+            exit 0
+          fi
+          git commit -m "Media: persist current-five gap evidence [skip ci]"
           git push --force origin HEAD:refs/heads/media/launch-gap-discovery-output
