@@ -10,14 +10,14 @@ const blocked = /\b(logo|crest|flag|kit template|shirt template|svg|diagram|line
 // P0 targets are the exact subjects/venues in the current fresh five, not legacy launch stories.
 // Keep this list deliberately narrow: a candidate only counts when its metadata proves the subject.
 const targets = [
-  { article: "Mack Hansen / Connacht return", subject: "Mack Hansen", queries: ["Mack Hansen rugby 2025", "Mack Hansen Ireland rugby 2025", "Mack Hansen Connacht rugby"] },
-  { article: "Jack Crowley / Munster depth", subject: "Jack Crowley", queries: ["Jack Crowley rugby 2025", "Jack Crowley Ireland rugby", "Jack Crowley Munster rugby"] },
-  { article: "Leinster coaching succession", subject: "Leo Cullen", queries: ["Leo Cullen rugby", "Leo Cullen Leinster coach"] },
-  { article: "Leinster coaching succession", subject: "Leinster Rugby", queries: ["Leinster Rugby 2025", "Leinster Rugby RDS"] },
-  { article: "Munster v La Rochelle", subject: "Thomond Park", queries: ["Thomond Park 2025", "Thomond Park 2024", "Thomond Park rugby stadium"] },
-  { article: "Women's Interprovincial final", subject: "Dexcom Stadium", queries: ["Dexcom Stadium rugby 2026", "Dexcom Stadium Galway", "Galway Sportsgrounds rugby"] },
-  { article: "Women's Interprovincial final", subject: "Munster Women", queries: ["Munster Women rugby", "Munster women's rugby"] },
-  { article: "Women's Interprovincial final", subject: "Leinster Women", queries: ["Leinster Women rugby", "Leinster women's rugby"] },
+  { article: "Mack Hansen / Connacht return", subject: "Mack Hansen", scope: "Connacht", queries: ["Mack Hansen rugby 2025", "Mack Hansen Ireland rugby 2025", "Mack Hansen Connacht rugby"] },
+  { article: "Jack Crowley / Munster depth", subject: "Jack Crowley", scope: "Munster", queries: ["Jack Crowley rugby 2025", "Jack Crowley Ireland rugby", "Jack Crowley Munster rugby"] },
+  { article: "Leinster coaching succession", subject: "Leo Cullen", scope: "Leinster", queries: ["Leo Cullen rugby", "Leo Cullen Leinster coach"] },
+  { article: "Leinster coaching succession", subject: "Leinster Rugby", scope: "Leinster", queries: ["Leinster Rugby 2025", "Leinster Rugby RDS"] },
+  { article: "Munster v La Rochelle", subject: "Thomond Park", scope: "Munster", queries: ["Thomond Park 2025", "Thomond Park 2024", "Thomond Park rugby stadium"] },
+  { article: "Women's Interprovincial final", subject: "Dexcom Stadium", scope: "Connacht", queries: ["Dexcom Stadium rugby 2026", "Dexcom Stadium Galway", "Galway Sportsgrounds rugby"] },
+  { article: "Women's Interprovincial final", subject: "Munster Women", scope: "Munster Women", queries: ["Munster Women rugby", "Munster women's rugby"] },
+  { article: "Women's Interprovincial final", subject: "Leinster Women", scope: "Leinster Women", queries: ["Leinster Women rugby", "Leinster women's rugby"] },
 ];
 
 function stripHtml(value = "") { return String(value).replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim(); }
@@ -42,10 +42,37 @@ async function search(target, query) {
     const year = yearFrom(dateText, title, description);
     const evidenceText = `${title} ${description} ${categories}`;
     const exactSubject = subjectPresent(evidenceText, target.subject);
-    const usableRaster = /^image\/(jpeg|png|webp)$/i.test(info.mime ?? "") && Number(info.width ?? 0) >= 1200;
+    const usableRaster = /^image\/(jpeg|png|webp)$/i.test(info.mime ?? "") && Number(info.width ?? 0) >= 1200 && Number(info.height ?? 0) >= 600;
     const rightsClear = allowedLicences.test(licence) && Boolean(meta.LicenseUrl?.value || /CC0|Public domain/i.test(licence));
-    const decision = blocked.test(evidenceText) || !usableRaster || !exactSubject ? "reject" : rightsClear ? "approve-candidate" : "owner-review";
-    return { article: target.article, subject: target.subject, query, source: "Wikimedia Commons", title, description, categories, sourcePage: info.descriptionurl, imageUrl: info.url, width: info.width, height: info.height, mime: info.mime, creator: stripHtml(meta.Artist?.value), credit: stripHtml(meta.Credit?.value), licence, licenceUrl: meta.LicenseUrl?.value ?? null, dateText: dateText || null, year, exactSubject, rightsClear, decision };
+    const autoDecision = blocked.test(evidenceText) || !usableRaster || !exactSubject ? "reject" : rightsClear ? "approve-candidate" : "owner-review";
+    const recent = Number(year ?? 0) >= 2024;
+    return {
+      article: target.article,
+      subject: target.subject,
+      scope: target.scope,
+      query,
+      source: "Wikimedia Commons",
+      title,
+      description,
+      categories,
+      sourcePage: info.descriptionurl,
+      imageUrl: info.url,
+      width: info.width,
+      height: info.height,
+      mime: info.mime,
+      creator: stripHtml(meta.Artist?.value),
+      credit: stripHtml(meta.Credit?.value),
+      licence,
+      licenceUrl: meta.LicenseUrl?.value ?? null,
+      dateText: dateText || null,
+      year,
+      recent,
+      exactSubject,
+      subjectEvidence: exactSubject ? [target.subject] : [],
+      rightsClear,
+      autoDecision,
+      decision: autoDecision,
+    };
   });
 }
 
@@ -53,9 +80,9 @@ const all = [];
 for (const target of targets) for (const query of target.queries) all.push(...await search(target, query));
 const deduped = [...new Map(all.filter((x) => x.imageUrl).map((x) => [x.imageUrl, x])).values()];
 deduped.sort((a,b) => Number(b.year ?? 0) - Number(a.year ?? 0) || Number(b.width ?? 0) - Number(a.width ?? 0));
-const counts = deduped.reduce((acc, x) => { acc[x.decision] = (acc[x.decision] ?? 0) + 1; return acc; }, {});
+const counts = deduped.reduce((acc, x) => { acc[x.autoDecision] = (acc[x.autoDecision] ?? 0) + 1; return acc; }, {});
 const bySubject = {};
-for (const x of deduped.filter((x) => x.decision === "approve-candidate")) bySubject[x.subject] = (bySubject[x.subject] ?? 0) + 1;
+for (const x of deduped.filter((x) => x.autoDecision === "approve-candidate")) bySubject[x.subject] = (bySubject[x.subject] ?? 0) + 1;
 const output = { generatedAt: new Date().toISOString(), purpose: "Close current fresh-five visual gaps with exact-subject rights evidence; no generic filler", targets, counts, bySubject, candidates: deduped };
 await fs.mkdir(path.dirname(outputPath), { recursive: true });
 await fs.writeFile(outputPath, JSON.stringify(output, null, 2));
