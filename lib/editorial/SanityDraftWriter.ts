@@ -225,11 +225,13 @@ function meaningfulStoryTerms(storyText: string): string[] {
 }
 
 function subjectPhrases(pkg: EditorialDraftPackage): string[] {
+  // Exact-subject privilege is intentionally limited to the editorial identity
+  // of the story. Proper nouns mentioned only in body copy are context, not
+  // permission to use an otherwise unrelated image as the hero/primary visual.
   const text = [
     pkg.article.title,
     pkg.article.standfirst,
     pkg.editorial.brief.angle,
-    ...pkg.article.body.flatMap((section) => [section.heading ?? "", ...section.paragraphs]),
   ].join(" ");
   const matches = text.match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
   return [...new Set(matches.map((match) => match.trim()).filter((match) => match.length >= 6))];
@@ -275,7 +277,13 @@ function hasRequiredSubjectEvidence(image: ApprovedEditorialImage, storyText: st
   const descriptive = descriptiveImageText(image);
   const lowerStory = storyText.toLowerCase();
   const storyProvince = PROVINCE_TERMS.find((province) => lowerStory.includes(province));
-  if (storyProvince) return descriptive.includes(storyProvince);
+  if (storyProvince) {
+    if (!descriptive.includes(storyProvince)) return false;
+    const contextualTerms = meaningfulStoryTerms(storyText)
+      .filter((term) => term !== storyProvince)
+      .filter((term) => descriptive.includes(term));
+    return contextualTerms.length >= 1;
+  }
 
   if (lowerStory.includes("ireland")) {
     if (!descriptive.includes("ireland")) return false;
