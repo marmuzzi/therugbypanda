@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { selectFreshPositions } from "../lib/editorial/StoryFreshness.ts";
 
 const [inputPath] = process.argv.slice(2);
 if (!inputPath) {
@@ -11,12 +12,7 @@ const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "not
 const baseUrl = (process.env.EDITORIAL_API_BASE_URL || "https://therugbypanda.ie").replace(/\/$/, "");
 const secret = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
 const dryRun = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
-const reuseExistingIds = new Set(
-  (process.env.REUSE_EXISTING_IDS || "")
-    .split(",")
-    .map((value) => value.trim())
-    .filter(Boolean),
-);
+const reuseExistingIds = new Set((process.env.REUSE_EXISTING_IDS || "").split(",").map((value) => value.trim()).filter(Boolean));
 
 if (!secret && !dryRun) throw new Error("EDITORIAL_AUTOMATION_SECRET is required unless DRY_RUN=1.");
 
@@ -26,11 +22,51 @@ if (batch?.schemaVersion !== "1.0" || !Array.isArray(batch?.candidates) || batch
   throw new Error("Invalid editorial acquisition batch.");
 }
 
+function positionForCandidate(candidate) {
+  const position = candidate.editorialPosition || {};
+  return {
+    id: candidate.id,
+    subject: position.subject || candidate.subject || candidate.title || "",
+    development: position.development || candidate.development || candidate.summary || "",
+    angle: position.angle || candidate.editorialAngle || candidate.summary || "",
+    occurredAt: position.occurredAt || candidate.occurredAt,
+  };
+}
+
+async function loadRecentPositions() {
+  const configured = process.env.RECENT_EDITORIAL_POSITIONS_PATH?.trim();
+  const candidates = [configured, "data/editorial-acquisition/recent-editorial-positions.json"].filter(Boolean);
+  for (const candidatePath of candidates) {
+    try {
+      const parsed = JSON.parse(await fs.readFile(path.resolve(candidatePath), "utf8"));
+      const positions = Array.isArray(parsed) ? parsed : parsed.positions;
+      if (Array.isArray(positions)) return positions;
+    } catch (error) {
+      if (configured && candidatePath === configured) throw error;
+    }
+  }
+  throw new Error("Freshness fail-closed: no recent editorial-position history is available before generation.");
+}
+
+const recentPositions = await loadRecentPositions();
+const candidatePositions = batch.candidates.map(positionForCandidate);
+const freshness = selectFreshPositions(candidatePositions, recentPositions, 5);
+const selectedIds = new Set(freshness.selected.map((position) => position.id));
+if (freshness.selected.length !== 5) {
+  console.error(JSON.stringify({
+    freshnessGate: "failed",
+    required: 5,
+    selected: freshness.selected,
+    rejected: freshness.rejected,
+  }, null, 2));
+  throw new Error(`Freshness fail-closed: selected ${freshness.selected.length}/5 genuinely distinct positions.`);
+}
+const selectedCandidates = batch.candidates.filter((candidate) => selectedIds.has(candidate.id));
+console.log(JSON.stringify({ freshnessGate: "passed", selectedIds: [...selectedIds], rejected: freshness.rejected }, null, 2));
+
 function styleForCandidate(candidate, index) {
   const styleProfileId = candidate.styleProfileId || PACKAGE_STYLE_PROFILES[index % PACKAGE_STYLE_PROFILES.length];
-  if (!PACKAGE_STYLE_PROFILES.includes(styleProfileId)) {
-    throw new Error(`Invalid styleProfileId ${styleProfileId} for candidate ${candidate.id}.`);
-  }
+  if (!PACKAGE_STYLE_PROFILES.includes(styleProfileId)) throw new Error(`Invalid styleProfileId ${styleProfileId} for candidate ${candidate.id}.`);
   return styleProfileId;
 }
 
@@ -39,26 +75,8 @@ function buildRequest(candidate, index) {
   const sourceRecords = candidate.sourceRecords.map((source) => ({ ...source, retrievedAt }));
   const sourceIds = sourceRecords.map((source) => source.id);
   return {
-    story: {
-      id: candidate.id,
-      title: candidate.title,
-      summary: candidate.summary,
-      sourceRecords,
-      discoveredAt: retrievedAt,
-      suggestedCategory: candidate.suggestedCategory,
-    },
-    factLedger: {
-      facts: candidate.facts.map((claim, factIndex) => ({
-        id: `${candidate.id}-fact-${factIndex + 1}`,
-        claim,
-        status: "confirmed",
-        confidence: 98,
-        sourceIds,
-        usableInDraft: true,
-      })),
-      unsupportedClaims: [],
-      conflicts: [],
-    },
+    story: { id: candidate.id, title: candidate.title, summary: candidate.summary, sourceRecords, discoveredAt: retrievedAt, suggestedCategory: candidate.suggestedCategory },
+    factLedger: { facts: candidate.facts.map((claim, factIndex) => ({ id: `${candidate.id}-fact-${factIndex + 1}`, claim, status: "confirmed", confidence: 98, sourceIds, usableInDraft: true })), unsupportedClaims: [], conflicts: [] },
     createSanityDraft: true,
     qaMode: false,
     notificationMode: "package",
@@ -67,46 +85,27 @@ function buildRequest(candidate, index) {
 }
 
 const results = [];
-for (const [index, candidate] of batch.candidates.entries()) {
+for (const [index, candidate] of selectedCandidates.entries()) {
   const styleProfileId = styleForCandidate(candidate, index);
   const shouldReuse = candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id);
-
   if (shouldReuse) {
-    results.push({
-      id: candidate.id,
-      styleProfileId,
-      status: "reused-existing",
-      ok: true,
-      body: { message: "Generation deliberately skipped; final package validation must confirm the existing production draft." },
-    });
+    results.push({ id: candidate.id, styleProfileId, status: "reused-existing", ok: true, body: { message: "Generation deliberately skipped; final package validation must confirm the existing production draft." } });
     continue;
   }
-
   const payload = buildRequest(candidate, index);
   if (dryRun) {
     results.push({ id: candidate.id, status: "dry-run", styleProfileId: payload.styleProfileId, payload });
     continue;
   }
-
   try {
-    const response = await fetch(`${baseUrl}/api/editorial/draft`, {
-      method: "POST",
-      headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
+    const response = await fetch(`${baseUrl}/api/editorial/draft`, { method: "POST", headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" }, body: JSON.stringify(payload) });
     const body = await response.json().catch(() => ({ error: "Non-JSON response" }));
     results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: response.status, ok: response.ok, body });
   } catch (error) {
-    results.push({
-      id: candidate.id,
-      styleProfileId: payload.styleProfileId,
-      status: "request-error",
-      ok: false,
-      body: { error: error instanceof Error ? error.message : "Request failed" },
-    });
+    results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: "request-error", ok: false, body: { error: error instanceof Error ? error.message : "Request failed" } });
   }
 }
 
 const failed = results.filter((result) => result.ok === false);
-console.log(JSON.stringify({ batchId: batch.batchId, results, failedCount: failed.length }, null, 2));
+console.log(JSON.stringify({ batchId: batch.batchId, freshnessGate: { selectedIds: [...selectedIds], rejected: freshness.rejected }, results, failedCount: failed.length }, null, 2));
 if (failed.length > 0) process.exitCode = 2;
