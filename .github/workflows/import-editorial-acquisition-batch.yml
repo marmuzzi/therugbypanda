@@ -4,9 +4,8 @@ on:
   workflow_dispatch:
     inputs:
       batch_path:
-        description: Repository path to the reviewed acquisition batch JSON
+        description: Repository path to the explicitly reviewed acquisition batch JSON
         required: true
-        default: data/editorial-acquisition/auto004-2026-08-24-fresh.json
   push:
     branches:
       - main
@@ -62,7 +61,10 @@ jobs:
             fi
             reuse_ids=$(sed -n 's/^Reuse:[[:space:]]*//p' .github/auto004-import-trigger.txt | head -n 1)
           fi
-          batch_path="${batch_path:-data/editorial-acquisition/auto004-2026-08-24-fresh.json}"
+          if [ -z "$batch_path" ]; then
+            echo "Freshness fail-closed: no explicit acquisition batch was supplied. Static/default batch replay is forbidden."
+            exit 1
+          fi
           if [ ! -f "$batch_path" ]; then
             echo "Resolved batch does not exist: $batch_path"
             exit 1
