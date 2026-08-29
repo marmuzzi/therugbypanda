@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-26 August 2026 launch night, after production deployment/verification of the mobile Editorial Review fix, contextual-card/inline-image enrichment, targeted media expansion, safer paragraph-level visual matching, and protected SOCIAL-001 production configuration health evidence.
+29 August 2026 Sunday-recovery window, after production deployment of the pre-generation freshness history/gate and fail-closed removal of the stale acquisition-batch fallback.
 
 ## Source of truth
 
@@ -16,16 +16,16 @@ Read first in future sessions:
 2. `docs/08_Issue_Log.md`
 3. `docs/09_Publishing_Workflow.md`
 4. newest numbered handoff/evidence documents relevant to the task
-5. `docs/52_2026-08-25_Article_Visual_Enrichment.md`
-6. `docs/51_2026-08-25_Go_Live_Production_Verification.md`
-7. `docs/44_2026-08-20_Owner_Priorities.md`
+5. `docs/56_2026-08-29_AUTO004_Normal_Scheduler_Gap.md`
+6. `docs/54_2026-08-28_Sunday_Recovery_Media_and_Source_Evidence.md`
+7. `docs/52_2026-08-25_Article_Visual_Enrichment.md`
 
 Where older documents conflict with later measured evidence, newer production evidence wins. Do not use chat history as project truth.
 
 ## Operating targets
 
 - Timezone: Europe/Dublin.
-- Meaningful go-live target: 27 August 2026.
+- Current recovery target: Sunday launch readiness.
 - Daily contract: five review-ready production drafts plus exactly one consolidated editorial notification before 08:00.
 - Sanity is the canonical CMS and mandatory human publication boundary.
 - GitHub is the versioned project source of truth.
@@ -38,17 +38,16 @@ Articles are original multi-source Rugby Panda synthesis, not rewrites. Original
 
 Generated article strings are structured content, not Markdown. Package generation allocates one each of `news-desk`, `analysis-led`, `feature-led`, `notebook`, `explainer`. Publication Review remains mandatory before a draft becomes production-eligible. Human Sanity publication remains mandatory.
 
-## Editorial automation — verified state
+## Editorial automation — current verified state
 
 ### Morning package / AUTO-003 / AUTO-004
 
-- Genuine five-position production package verified.
-- Accepted positions are reused during bounded recovery instead of regenerating the whole package.
-- #261 deployed the direct Zoho package route and persistent schedules.
-- Acquisition/generation schedule: **06:30 Europe/Dublin**.
-- Consolidated package delivery schedule: **07:45 Europe/Dublin**.
-- #263 returned HTTP 200 with `articleCount: 5` and Zoho SMTP `250 Message received`.
-- #265 re-trigger returned `already-sent`; no duplicate SMTP delivery.
+- 27 August recovery proved a genuine fresh five-position package with normal editorial gates intact, but it was not proof of a normal autonomous scheduled acquisition day.
+- PRs #293-#295 deployed the permanent freshness foundation: recent production Sanity positions are loaded before generation; candidate identity compares subject + development/event + editorial angle; same-story rewrites and within-package duplicates are rejected before model spend; exactly five survivors are required or the path fails closed.
+- PR #297 removed the stale default repository-batch fallback. An invocation without an explicit acquisition batch now fails closed instead of silently replaying old stories.
+- **Launch-critical scheduler gap:** there is currently no autonomous 06:30 current-source discovery/acquisition schedule feeding the protected importer. `import-editorial-acquisition-batch.yml` is not a normal newsroom scheduler. Do not claim 06:30 acquisition as production-verified until a real current-source worker is implemented and run.
+- Correct P0 boundary: scheduled current-source discovery must consume the source registry, construct evidence-backed candidate identities, run the production-history freshness selector before generation, require exactly five survivors, then invoke the existing evidence/fact-ledger/generation/review path.
+- Consolidated package delivery remains scheduled for 07:45 Europe/Dublin through the exactly-once Zoho path.
 - Gmail is not part of the Rugby Panda editorial path.
 
 ### Resilience / AUTO-005
@@ -70,11 +69,16 @@ Automatic image assignment is relevance-first and fail-closed. Prefer current ex
 Third-party assets require rights metadata and **local Sanity storage**. External URLs do not count toward the usable library.
 
 - 25 August certification: 200 local / 200 strict publication-ready / zero duplicate asset groups.
-- 26 August targeted launch acquisition: production library increased to **212 strict local publication-ready images**, with 12 genuinely new imports and zero failed imports/duplicate asset groups.
+- 26 August targeted acquisition: 212 strict local publication-ready images.
+- **28 August production certification supersedes both older figures: 241 strict publication-ready local Sanity Editorial Images from 490 audited records.** The run imported 28 genuinely new local assets, reconciled readiness metadata, had zero failed imports and zero duplicate local-asset groups. Do not use 212 as the current baseline.
 - Wrong-player Henderson/Paddy Jackson defect was permanently fixed by #273 and the existing draft repaired by #274.
-- Targeted acquisition now prioritises exact launch-story players, coaches, teams and venues rather than vanity image counts.
+- Targeted acquisition prioritises exact launch-story players, coaches, teams and venues rather than vanity image counts.
 
-## Article visual enrichment
+## Current-five media boundary
+
+MEDIA-009 remains open. The current recovery five must be audited by production Sanity readback, with exact/relevant heroes and meaningful inline alternatives only where evidence supports them. Fewer/no images is correct when no strong candidate passes. MEDIA-011 remains open until article-triggered acquisition automatically provides at least three strong relevant candidates where possible without forcing placements.
+
+## Article visual enrichment / mobile CMS
 
 - #229 content-led article treatments: merged/deployed.
 - #230 homepage editorial hierarchy: merged/deployed.
@@ -82,40 +86,22 @@ Third-party assets require rights metadata and **local Sanity storage**. Externa
 - #276 deterministic evidence-backed contextual-card population plus up-to-three inline images: merged/deployed.
 - #278 mobile Editorial Review readability: merged and production READY.
 - #279 safer paragraph-level inline-image depth: merged, production READY and production-Sanity verified. It preserves named-person conflict rejection, team/province conflict rejection, women-specific evidence, package/body dedupe and the three-inline-image cap.
-
-### Current five production drafts — measured 26 August after #279
-
-| Story | Context card | Inline images |
-| --- | --- | ---: |
-| Connacht front-row depth | Connacht team, 4 rows | 0 |
-| Ireland Women / Finn | Ireland team, 4 rows | 3 |
-| Joey Carbery / Leinster | Joey Carbery player, 4 rows + portrait | 1 |
-| Munster Academy | Munster team, 4 rows | 3 |
-| Iain Henderson / Ulster | Iain Henderson player, 2 rows | 2 |
-
-This is a material improvement but **MEDIA-009 is not closed**. Connacht and Carbery remain below the desired visual depth, and Henderson’s available team-context images are older than preferred. Continue targeted acquisition for recent exact-subject depth rather than weakening relevance rules.
+- Representative public article/homepage rendering and final authenticated phone interaction remain verification boundaries; do not publish solely to manufacture evidence.
 
 ## Social distribution / SOCIAL-001
 
 The controlled publication path and payload contract are implemented: a successful human publication can emit `editorial.article.published` with stable event ID, article URL, featured image, Facebook teaser and Instagram caption/hashtags. Sanity stores opt-out/status/event metadata.
 
-PR #280 added a protected no-side-effect production configuration diagnostic. Production verification at 22:38 UTC on 26 August returned:
+PR #280 added a protected no-side-effect production configuration diagnostic. Production verification on 26 August returned `socialWebhookConfigured:false` and `socialWebhookSecretConfigured:false`. The application has a safe site URL default, so the launch blocker is the missing downstream social webhook/orchestrator connection. No Meta post has been claimed. If the existing authorized integrations cannot configure it, the only owner action should be the smallest required Meta/provider authorization; all other work continues autonomously.
 
-- `socialWebhookConfigured: false`
-- `socialWebhookSecretConfigured: false`
-- `siteUrlConfigured: false`
+## Remaining launch P0 priorities
 
-`NEXT_PUBLIC_SITE_URL` has a safe application default of `https://therugbypanda.ie`, so the launch blocker is specifically the missing production `SOCIAL_PUBLISHING_WEBHOOK_URL` (and optional secret) / downstream social orchestrator connection. No Meta post was attempted, and no credentials were exposed. Facebook/Instagram provider verification remains open until the webhook/orchestrator is configured and one controlled publication proves both platform post IDs plus safe retry/idempotency.
+1. Implement the real autonomous current-source discovery/acquisition worker and schedule it upstream of the #293-#295 freshness gate; then production-prove consecutive normal scheduled 5/5 days.
+2. Continue targeted rights-approved local media expansion from the certified 241 baseline toward 200-500 useful assets, emphasizing exact/recent Irish/provincial subjects and recurring opponents; verify current-five assignments by production Sanity readback.
+3. Verify mobile Editorial Review interaction and representative public article/homepage rendering without weakening the human publication boundary.
+4. Configure/verify SOCIAL-001 downstream webhook/orchestrator if existing authorization permits; otherwise record only the minimal owner-only provider authorization blocker.
 
-## Remaining launch priorities
-
-1. Continue targeted current/recent image acquisition for Connacht, Carbery and other shallow subjects; verify actual article assignments and public rendering, not library counts.
-2. Configure/verify the SOCIAL-001 downstream webhook/orchestrator, then perform one controlled Facebook + Instagram publication and record both provider IDs plus duplicate/retry proof.
-3. Implement/verify NEWS-001 14:00 major-announcement conditional path with no model/article spend when no qualifying event exists.
-4. Finish/verify secure phone-first image upload.
-5. Production-prove AUTO-002 rejection -> genuinely different replacement once its downstream webhook/orchestrator is configured.
-6. Complete authenticated Sanity edit/save/reload and representative public desktop/mobile checks where owner session is genuinely required.
-7. Complete remaining security, backup/recovery, accreditation/provider checks and final go-live acceptance.
+Secondary launch paths remain AUTO-002 replacement E2E, NEWS-001, secure phone-first upload, security/backup/recovery and accreditation/provider checks, but they must not displace the two dominant P0s above during Sunday recovery.
 
 ## Owner-help boundary
 
