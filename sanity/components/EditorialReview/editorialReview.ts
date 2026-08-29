@@ -34,6 +34,7 @@ export function createEditorialReview(
     shortFormTypes.has((article.editorialStoryType ?? "").trim().toLowerCase()) ||
     article.useBrandImage === true;
   const minimumSuggestedWords = isShortForm ? 100 : 150;
+  const inlineImageCount = (article.body ?? []).filter((member) => member?._type === "image").length;
 
   if (!headline)
     addIssue("missing-headline", "blocking", "content", "Add a headline before publication.");
@@ -75,9 +76,27 @@ export function createEditorialReview(
   if (!article.featuredImageUrl)
     addIssue(
       "missing-featured-image",
-      "warning",
+      isShortForm ? "warning" : "blocking",
       "content",
-      "Assign an approved featured image.",
+      isShortForm
+        ? "Assign an approved featured image where a strong relevant asset exists."
+        : "Normal articles require an approved relevant featured image before publication.",
+    );
+  if (inlineImageCount < 1)
+    addIssue(
+      "missing-inline-image",
+      isShortForm ? "warning" : "blocking",
+      "content",
+      isShortForm
+        ? "Add a relevant inline image where the short-form article supports one."
+        : "Normal articles require at least one relevant inline image before publication; never use filler to satisfy this gate.",
+    );
+  if (inlineImageCount === 1 && !isShortForm)
+    addIssue(
+      "limited-inline-image-depth",
+      "info",
+      "content",
+      "Visual minimum is met. Prefer a second or third relevant inline image for longer articles when the story genuinely supports it.",
     );
   if (headline.length > 70)
     addIssue("headline-too-long", "warning", "content", "Headline exceeds 70 characters.");
