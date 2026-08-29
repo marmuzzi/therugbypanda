@@ -1,4 +1,4 @@
-name: Plan daily article images
+name: Plan and acquire daily article images
 
 on:
   workflow_dispatch:
@@ -15,7 +15,7 @@ jobs:
   plan-daily-images:
     if: ${{ github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success' }}
     runs-on: ubuntu-latest
-    timeout-minutes: 8
+    timeout-minutes: 15
     environment: production
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
@@ -24,6 +24,16 @@ jobs:
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       IMAGE_CANDIDATE_TARGET: 3
       IMAGE_ARTICLE_LOOKBACK_HOURS: 18
+      IMAGE_PLAN_PATH: daily-article-image-plan.json
+      WIKIMEDIA_RESULTS_PER_QUERY: 20
+      IMAGE_MAX_QUERIES_PER_ARTICLE: 5
+      WIKIMEDIA_OUTPUT: data/editorial-images/daily-deficit-candidates.json
+      WIKIMEDIA_CANDIDATE_FILE: data/editorial-images/daily-deficit-candidates.json
+      WIKIMEDIA_REVIEW_FILE: data/editorial-images/daily-deficit-reviewed.json
+      WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/daily-deficit-triage.json
+      WIKIMEDIA_MIN_APPROVED: '1'
+      WIKIMEDIA_MAX_SCOPE_SHARE: '1.0'
+      EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
     steps:
       - name: Checkout main after successful morning generation
         uses: actions/checkout@v4
@@ -35,13 +45,43 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install dependencies
+        run: npm install
+
       - name: Build fail-closed local candidate and acquisition-deficit plan
         run: node scripts/plan-daily-article-images.mjs
 
+      - name: Discover only article-specific deficits
+        run: node scripts/discover-daily-article-image-deficits.mjs
+
+      - name: Strict rights and relevance triage
+        run: node scripts/triage-wikimedia-candidates.mjs
+
+      - name: Import approved deficit images locally into Sanity
+        run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/daily-deficit-import.log
+
+      - name: Reconcile publication-readiness metadata
+        run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/daily-deficit-reconcile.log
+
+      - name: Audit strict local publication readiness
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/daily-deficit-readiness.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/daily-deficit-readiness.json
+
+      - name: Re-plan after acquisition
+        run: |
+          cp daily-article-image-plan.json daily-article-image-plan-before-acquisition.json
+          node scripts/plan-daily-article-images.mjs
+          cp daily-article-image-plan.json daily-article-image-plan-after-acquisition.json
+
       - name: Upload daily MEDIA-011 evidence
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: daily-article-image-plan
-          path: daily-article-image-plan.json
+          name: daily-article-image-evidence
+          path: |
+            daily-article-image-plan*.json
+            data/editorial-images/daily-deficit-*.json
+            data/editorial-images/daily-deficit-*.log
           if-no-files-found: error
           retention-days: 14
