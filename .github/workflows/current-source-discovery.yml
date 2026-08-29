@@ -1,0 +1,31 @@
+name: Current editorial source discovery
+
+on:
+  workflow_dispatch:
+  schedule:
+    # 06:30 Europe/Dublin during Irish summer time. The worker itself is
+    # discovery-only and cannot publish or spend model credit.
+    - cron: "30 5 * * *"
+
+permissions:
+  contents: read
+
+jobs:
+  discover:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Discover current registry sources
+        run: node scripts/discover-current-editorial-sources.mjs
+      - name: Upload machine-readable discovery evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: current-source-discovery-${{ github.run_id }}
+          path: data/editorial-acquisition/current-source-discovery.json
+          if-no-files-found: error
+          retention-days: 14
