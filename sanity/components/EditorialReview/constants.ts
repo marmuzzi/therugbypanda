@@ -60,6 +60,13 @@ export const actionMap: Record<string, EditorialAction[]> = {
   archived: ["restore", "discard"],
 };
 
+// Editorial Review deliberately uses a light editing surface even when the
+// surrounding Sanity Studio follows the device dark theme. Every light surface
+// therefore sets its foreground explicitly: inheriting Studio's dark-theme
+// foreground produced white-on-white text on real Android devices.
+export const reviewForeground = "#171717";
+export const reviewMutedForeground = "#595959";
+
 export const inputStyle: React.CSSProperties = {
   display: "block",
   width: "100%",
@@ -69,6 +76,8 @@ export const inputStyle: React.CSSProperties = {
   borderRadius: 6,
   boxSizing: "border-box",
   font: "inherit",
+  background: "#fff",
+  color: reviewForeground,
 };
 
 export const cardStyle: React.CSSProperties = {
@@ -76,4 +85,5 @@ export const cardStyle: React.CSSProperties = {
   borderRadius: 10,
   padding: "1rem",
   background: "#fff",
+  color: reviewForeground,
 };
