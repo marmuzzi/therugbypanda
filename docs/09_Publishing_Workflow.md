@@ -10,10 +10,15 @@ Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, this file and the newes
 
 Always distinguish implemented, committed, PR opened, merged, deployed, production verified, authenticated Sanity verified, orchestration verified, Meta verified and documentation updated. Batch related changes and minimise unnecessary Vercel deployments.
 
-## Editorial flow
+## Editorial flow — required normal contract
 
 ```text
-06:30 Europe/Dublin scheduled acquisition/generation
+scheduled current-source discovery/acquisition
+→ versioned source registry + current developments
+→ evidence sufficient to identify subject + event/development + editorial angle
+→ recent production Sanity editorial-position history
+→ pre-generation freshness selector
+→ exactly five genuinely new distinct positions or fail closed
 → multi-source evidence pack
 → Editorial Brain / fact ledger
 → original structured generation
@@ -33,6 +38,18 @@ Always distinguish implemented, committed, PR opened, merged, deployed, producti
 
 Generated content and acquired images are never automatically published.
 
+## AUTO-004 freshness gate
+
+The permanent freshness identity is **subject + event/development + editorial angle**. Recent production Sanity drafts/published articles are loaded before generation. Candidate positions that collide with recent history or with another candidate in the same package are rejected before model spend. Exactly five fresh survivors are required; otherwise the morning acquisition path fails closed.
+
+PRs #293-#295 implemented and deployed that protection. PR #297 additionally removed the old default repository-batch fallback, so the importer cannot silently replay a stale five-pack when no explicit batch is supplied.
+
+### Launch-critical scheduler boundary
+
+The repository does **not** currently contain a normal autonomous 06:30 current-source discovery/acquisition schedule. The existing `import-editorial-acquisition-batch.yml` is an importer, not a current-news discovery worker. Earlier documentation that described 06:30 acquisition/generation as production-verified is superseded by `docs/56_2026-08-29_AUTO004_Normal_Scheduler_Gap.md`.
+
+Do not add a cron around the importer alone. The correct scheduled worker must consume the source registry, discover current developments, build evidence-backed candidate identities, run the production-history freshness selector before generation, require exactly five survivors, and only then invoke the existing generation/review/import path. Consecutive normal-day AUTO-004 proof cannot begin until that worker is implemented, merged, deployed and actually scheduled.
+
 ## Draft Ready, originality and cost-efficient recovery
 
 Generation uses validated evidence/fact-ledger material rather than source prose. Originality remains fail-closed.
@@ -47,13 +64,13 @@ Recovery rules:
 4. split overlong paragraphs deterministically rather than regenerate an otherwise valid article;
 5. after bounded Publication Review correction, rerun normalization + Draft Ready + originality;
 6. never weaken editorial or image gates to obtain 5/5;
-7. diagnose measured failures instead of blind retry loops.
+7. diagnose measured failures instead of blind retry loops;
+8. perform freshness/source selection before generation to avoid wasteful model spend.
 
 The five-story package allocates one each of `news-desk`, `analysis-led`, `feature-led`, `notebook`, `explainer`.
 
-## Morning package — production verified
+## Morning delivery — production verified portion
 
-- Acquisition/generation: **06:30 Europe/Dublin**.
 - Consolidated delivery: **07:45 Europe/Dublin**.
 - Five distinct eligible drafts are required; incomplete packages fail closed.
 - Individual morning notifications are suppressed.
@@ -61,6 +78,8 @@ The five-story package allocates one each of `news-desk`, `analysis-led`, `featu
 - A Sanity lock keyed to operational date + package fingerprint prevents duplicate delivery.
 - Production evidence: one 5/5 trigger returned Zoho SMTP `250 Message received`; identical re-trigger returned `already-sent` with no second SMTP send.
 - Gmail is not part of the editorial path.
+
+The 07:45 delivery proof must not be conflated with proof of autonomous 06:30 acquisition; the latter remains absent as described above.
 
 ## Rejection and replacement
 
@@ -76,35 +95,29 @@ Priority is current exact-subject photography → relevant recent team/event/ven
 
 The same asset must not be reused across the current five-story package. Never use a photograph whose metadata names a person absent from the article. Reject conflicting team/province context. Ireland Women material requires women-specific evidence when an Ireland image is selected.
 
-A story may contain up to three automatic inline images when its text genuinely supports them. Selection may use:
-
-- an exact player/coach/subject match in the paragraph;
-- a same-team/venue/context image when that team/context is materially discussed in the paragraph;
-- strong paragraph-level semantic overlap with no conflicting named person/team.
-
-Inline images are placed immediately after a materially relevant paragraph. Package/body asset dedupe and the hard three-image cap remain. If no strong candidate passes, use fewer images rather than filler.
+A story may contain up to three automatic inline images when its text genuinely supports them. Inline images are placed immediately after a materially relevant paragraph. Package/body asset dedupe and the hard three-image cap remain. If no strong candidate passes, use fewer images rather than filler.
 
 Contextual cards are deterministic post-Publication-Review visual breaks built from sourced fact-ledger facts. A card needs at least two supported rows. Player-card portraits remain exact-subject only.
 
-### Measured launch-night visual state — 26 August
+### Certified media baseline
 
-After #279 production deployment and Sanity readback:
+The 28 August production audit supersedes the earlier 212 figure:
 
-- Connacht front-row story: 0 inline; team card 4 rows.
-- Ireland Women / Finn: 3 inline; Ireland card 4 rows.
-- Joey Carbery / Leinster: 1 inline; Carbery card 4 rows + portrait.
-- Munster Academy: 3 inline; Munster card 4 rows.
-- Iain Henderson / Ulster: 2 inline; Henderson card 2 rows.
+- **241 strict publication-ready local Sanity Editorial Images**;
+- 490 total records audited;
+- 28 genuinely new local imports in the targeted run;
+- zero failed imports;
+- zero duplicate local-asset groups.
 
-This is an improvement, not completion. Connacht and Carbery remain visually shallow, and Henderson’s additional team-context material is older than preferred. Continue targeted current/recent acquisition rather than lowering relevance rules.
+Continue expansion toward 200-500 genuinely useful assets by coverage depth, not raw count. Classify subject/team/event/date/rights before counting an asset usable. For each real new article, MEDIA-011 targets at least three strong relevant candidates where possible; this is a candidate-depth target, never a requirement to force three placements.
 
-The strict local media library reached 212 publication-ready Sanity assets after a targeted 26 August acquisition/import, with 12 new assets, zero failed imports and zero duplicate asset groups in that import.
+For the current five drafts, audit hero and inline assignments through production Sanity readback. Exact/relevant images are preferred; no image is correct when no strong candidate passes.
 
 ## Public presentation and mobile review
 
-#229 provides content-led article treatments, #230 homepage hierarchy, #241 reusable contextual cards, #276 card population/inline visual enrichment, #278 responsive mobile Editorial Review, and #279 safer paragraph-level image depth. All are merged; current runtime through #280 is Vercel production READY.
+#229 provides content-led article treatments, #230 homepage hierarchy, #241 reusable contextual cards, #276 card population/inline visual enrichment, #278 responsive mobile Editorial Review, and #279 safer paragraph-level image depth. These runtime foundations are merged/deployed.
 
-Representative public article/homepage desktop/mobile rendering still needs human-approved published-content verification. Do not publish a draft solely to manufacture evidence.
+Representative public article/homepage desktop/mobile rendering still needs human-approved published-content verification. Final authenticated phone interaction in Editorial Review remains pending. Do not publish a draft solely to manufacture evidence.
 
 ## Social distribution
 
@@ -112,24 +125,17 @@ Only a successful controlled human `publish` action may emit `editorial.article.
 
 The downstream social orchestrator must deduplicate by event ID, respect opt-out, post to the connected Facebook Page and Instagram professional account, store both platform post IDs, retry only failed platforms and never roll back website publication.
 
-PR #280 added a protected production configuration diagnostic. Production evidence on 26 August returned `socialWebhookConfigured:false` and `socialWebhookSecretConfigured:false`. Therefore SOCIAL-001 is blocked before provider delivery: configure the production `SOCIAL_PUBLISHING_WEBHOOK_URL` (and secret if the orchestrator requires it), then run one controlled article publication and verify Facebook + Instagram post IDs plus duplicate/retry behaviour. No Meta post has yet been claimed.
-
-## Other launch paths
-
-- MEDIA-004: secure phone-first image upload remains open.
-- NEWS-001: implement/verify a conditional 14:00 Europe/Dublin major-announcement check that creates an extra article only when a genuinely significant event warrants it; no qualifying event means no model/article spend.
-- AUTO-002: complete rejection → different replacement after its webhook/orchestrator is configured.
-- Authenticated Sanity edit/save/reload and final public presentation proofs remain where owner session is genuinely required.
+PR #280 added a protected production configuration diagnostic. Production evidence on 26 August returned `socialWebhookConfigured:false` and `socialWebhookSecretConfigured:false`. Therefore SOCIAL-001 is blocked before provider delivery. Use existing authorized integrations if they permit configuration; if provider/Meta authorization is genuinely owner-only, record only the smallest required owner action and continue all other work.
 
 ## AI FinOps
 
 - Existing prepaid OpenAI balance is the ceiling; do not add credit to brute-force retries.
 - Production remains GPT-5 while cheaper alternatives fail to prove equivalent editorial quality.
-- GPT-5-mini completed a controlled 5/5 benchmark but needed correction/polish; no production switch.
-- Gemini must not be claimed as tested until a real integration/credential and controlled run exist.
+- Freshness and source selection must happen before generation.
+- Do not use blind retries to manufacture five accepted positions.
 
-## Current verification boundary — 26 August 2026 launch night
+## Current verification boundary — 29 August 2026
 
-Production-verified: strict local media floor expanded to 212; five-story package; exactly-once direct Zoho delivery; contextual cards on all five current drafts; richer inline-image assignments with wrong-person fail-close safety; mobile Editorial Review runtime deployment; protected SOCIAL-001 configuration check.
+Production-verified foundations: pre-generation production-history freshness protection; stale default-batch fallback removed; 241 strict local media baseline; exactly-once Zoho delivery; contextual-card/image safety foundations; mobile Editorial Review runtime deployment; protected SOCIAL-001 configuration check.
 
-Still open: Connacht/Carbery/fresh-Henderson image depth and representative public rendering; social webhook/orchestrator + real Meta provider proof; rejection replacement E2E; secure phone upload; 14:00 conditional check; authenticated Sanity interaction proofs; remaining security/backup/accreditation checks; final editorial/go-live acceptance.
+Still open at P0: real scheduled current-source acquisition worker and consecutive normal 5/5 proof; current-five exact/relevant media depth and Sanity readback; final mobile/public rendering verification; social downstream/provider connection or sole minimal owner-authorized exception.
