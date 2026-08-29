@@ -41,11 +41,16 @@ jobs:
       - name: Discover current registry sources
         if: steps.window.outputs.active == 'true'
         run: node scripts/discover-current-editorial-sources.mjs
-      - name: Upload machine-readable discovery evidence
+      - name: Build corroborated acquisition evidence
+        if: steps.window.outputs.active == 'true'
+        run: node scripts/build-current-editorial-acquisition-batch.mjs
+      - name: Upload machine-readable discovery and acquisition evidence
         if: steps.window.outputs.active == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: current-source-discovery-${{ github.run_id }}
-          path: data/editorial-acquisition/current-source-discovery.json
+          path: |
+            data/editorial-acquisition/current-source-discovery.json
+            data/editorial-acquisition/current-editorial-acquisition-batch.json
           if-no-files-found: error
           retention-days: 14
