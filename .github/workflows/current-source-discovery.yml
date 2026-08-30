@@ -3,10 +3,10 @@ name: Current editorial source discovery
 on:
   workflow_dispatch:
   schedule:
-    # GitHub cron is UTC. Run at both possible UTC equivalents of 06:30
-    # Europe/Dublin and let the timezone guard execute only the matching one.
+    # One deterministic UTC slot. This is 06:30 in Dublin during Irish Summer
+    # Time and 05:30 during winter, safely ahead of the 08:00 newsroom deadline.
+    # A single slot avoids duplicate schedule events and guard-based false-success skips.
     - cron: "30 5 * * *"
-    - cron: "30 6 * * *"
 
 permissions:
   contents: read
@@ -23,45 +23,17 @@ jobs:
       AUTO004_DRAFT_CUTOFF: 2026-08-24T20:24:00Z
       RECENT_EDITORIAL_POSITIONS_PATH: data/editorial-acquisition/recent-editorial-positions.json
     steps:
-      - name: Check Europe/Dublin discovery window
-        id: window
-        shell: bash
-        run: |
-          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
-            echo "active=true" >> "$GITHUB_OUTPUT"
-            exit 0
-          fi
-
-          # GitHub scheduled workflows can start several minutes after their nominal
-          # cron time. Never compare the runner's current HHMM with 06:30: a delayed
-          # but valid run would self-skip. Instead, identify which UTC cron fired and
-          # select it using Dublin's current UTC offset.
-          DUBLIN_OFFSET="$(TZ=Europe/Dublin date +%z)"
-          SCHEDULE="${{ github.event.schedule }}"
-
-          if [[ "$DUBLIN_OFFSET" == "+0100" && "$SCHEDULE" == "30 5 * * *" ]]; then
-            echo "active=true" >> "$GITHUB_OUTPUT"
-          elif [[ "$DUBLIN_OFFSET" == "+0000" && "$SCHEDULE" == "30 6 * * *" ]]; then
-            echo "active=true" >> "$GITHUB_OUTPUT"
-          else
-            echo "active=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping duplicate UTC slot; Dublin offset is $DUBLIN_OFFSET and schedule is $SCHEDULE."
-          fi
       - name: Checkout
-        if: steps.window.outputs.active == 'true'
         uses: actions/checkout@v4
       - name: Setup Node
-        if: steps.window.outputs.active == 'true'
         uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Install dependencies
-        if: steps.window.outputs.active == 'true'
         # This repository intentionally has no npm lockfile. setup-node's npm cache
         # and npm ci both require one, so use a normal install on the ephemeral runner.
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Verify production secrets
-        if: steps.window.outputs.active == 'true'
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
         run: |
@@ -74,26 +46,21 @@ jobs:
             exit 1
           fi
       - name: Discover current registry sources
-        if: steps.window.outputs.active == 'true'
         run: node scripts/discover-current-editorial-sources.mjs
       - name: Build corroborated acquisition evidence
-        if: steps.window.outputs.active == 'true'
         run: node scripts/build-current-editorial-acquisition-batch.mjs
       - name: Export recent production editorial positions
-        if: steps.window.outputs.active == 'true'
         run: node scripts/export-recent-editorial-positions.mjs
       - name: Delete superseded generated drafts
-        if: steps.window.outputs.active == 'true'
         run: node scripts/cleanup-old-auto004-drafts.mjs
       - name: Import exactly five fresh production-eligible drafts
-        if: steps.window.outputs.active == 'true'
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
       - name: Send consolidated Zoho package only after successful fresh import
-        if: steps.window.outputs.active == 'true' && success()
+        if: success()
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
         run: |
@@ -115,7 +82,7 @@ jobs:
             exit 1
           fi
       - name: Upload machine-readable discovery and acquisition evidence
-        if: always() && steps.window.outputs.active == 'true'
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: current-source-discovery-${{ github.run_id }}
