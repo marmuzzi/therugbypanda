@@ -31,12 +31,21 @@ jobs:
             echo "active=true" >> "$GITHUB_OUTPUT"
             exit 0
           fi
-          DUBLIN_TIME="$(TZ=Europe/Dublin date +%H%M)"
-          if [[ "$DUBLIN_TIME" == "0630" ]]; then
+
+          # GitHub scheduled workflows can start several minutes after their nominal
+          # cron time. Never compare the runner's current HHMM with 06:30: a delayed
+          # but valid run would self-skip. Instead, identify which UTC cron fired and
+          # select it using Dublin's current UTC offset.
+          DUBLIN_OFFSET="$(TZ=Europe/Dublin date +%z)"
+          SCHEDULE="${{ github.event.schedule }}"
+
+          if [[ "$DUBLIN_OFFSET" == "+0100" && "$SCHEDULE" == "30 5 * * *" ]]; then
+            echo "active=true" >> "$GITHUB_OUTPUT"
+          elif [[ "$DUBLIN_OFFSET" == "+0000" && "$SCHEDULE" == "30 6 * * *" ]]; then
             echo "active=true" >> "$GITHUB_OUTPUT"
           else
             echo "active=false" >> "$GITHUB_OUTPUT"
-            echo "Skipping duplicate UTC slot; Europe/Dublin time is $DUBLIN_TIME."
+            echo "Skipping duplicate UTC slot; Dublin offset is $DUBLIN_OFFSET and schedule is $SCHEDULE."
           fi
       - name: Checkout
         if: steps.window.outputs.active == 'true'
