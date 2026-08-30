@@ -1,15 +1,11 @@
 name: Send editorial daily package
 
+# Manual diagnostic/recovery entry point only.
+# Normal production delivery is coupled to a successful fresh acquisition/import
+# in current-source-discovery.yml so yesterday's eligible drafts can never be
+# silently re-sent by an independent clock-driven workflow.
 on:
   workflow_dispatch:
-  schedule:
-    - cron: '45 7 * * *'
-      timezone: Europe/Dublin
-  push:
-    branches:
-      - main
-    paths:
-      - .github/daily-package-delivery-trigger.txt
 
 permissions:
   contents: read
