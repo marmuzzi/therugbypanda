@@ -92,6 +92,28 @@ jobs:
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
+      - name: Send consolidated Zoho package only after successful fresh import
+        if: steps.window.outputs.active == 'true' && success()
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          response_file=$(mktemp)
+          status=$(curl --silent --show-error \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --request POST \
+            --header "Authorization: Bearer $EDITORIAL_AUTOMATION_SECRET" \
+            https://therugbypanda.ie/api/editorial/daily-package)
+          cat "$response_file"
+          echo
+          if [ "$status" != "200" ]; then
+            echo "Daily package delivery returned HTTP $status after fresh import."
+            exit 1
+          fi
+          if ! grep -Eq '"status":"(sent|already-sent)"' "$response_file"; then
+            echo "Daily package response did not confirm a sent package after fresh import."
+            exit 1
+          fi
       - name: Upload machine-readable discovery and acquisition evidence
         if: always() && steps.window.outputs.active == 'true'
         uses: actions/upload-artifact@v4
