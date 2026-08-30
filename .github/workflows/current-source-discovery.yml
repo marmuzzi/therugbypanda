@@ -14,6 +14,14 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
+    environment: production
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      AUTO004_DRAFT_CUTOFF: 2026-08-24T20:24:00Z
+      RECENT_EDITORIAL_POSITIONS_PATH: data/editorial-acquisition/recent-editorial-positions.json
     steps:
       - name: Check Europe/Dublin discovery window
         id: window
@@ -38,19 +46,46 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+      - name: Verify production secrets
+        if: steps.window.outputs.active == 'true'
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          if [ -z "$EDITORIAL_AUTOMATION_SECRET" ]; then
+            echo "EDITORIAL_AUTOMATION_SECRET is not available to this workflow."
+            exit 1
+          fi
+          if [ -z "$SANITY_API_TOKEN" ]; then
+            echo "SANITY_API_TOKEN is not available to this workflow."
+            exit 1
+          fi
       - name: Discover current registry sources
         if: steps.window.outputs.active == 'true'
         run: node scripts/discover-current-editorial-sources.mjs
       - name: Build corroborated acquisition evidence
         if: steps.window.outputs.active == 'true'
         run: node scripts/build-current-editorial-acquisition-batch.mjs
-      - name: Upload machine-readable discovery and acquisition evidence
+      - name: Export recent production editorial positions
         if: steps.window.outputs.active == 'true'
+        run: node scripts/export-recent-editorial-positions.mjs
+      - name: Delete superseded generated drafts
+        if: steps.window.outputs.active == 'true'
+        run: node scripts/cleanup-old-auto004-drafts.mjs
+      - name: Import exactly five fresh production-eligible drafts
+        if: steps.window.outputs.active == 'true'
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+          EDITORIAL_API_BASE_URL: https://therugbypanda.ie
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+        run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
+      - name: Upload machine-readable discovery and acquisition evidence
+        if: always() && steps.window.outputs.active == 'true'
         uses: actions/upload-artifact@v4
         with:
           name: current-source-discovery-${{ github.run_id }}
           path: |
             data/editorial-acquisition/current-source-discovery.json
             data/editorial-acquisition/current-editorial-acquisition-batch.json
-          if-no-files-found: error
+            data/editorial-acquisition/recent-editorial-positions.json
+          if-no-files-found: warn
           retention-days: 14
