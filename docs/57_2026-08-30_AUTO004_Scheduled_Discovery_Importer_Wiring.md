@@ -23,16 +23,20 @@ PR #309 wires the scheduled worker to the existing protected AUTO-004 path witho
 
 No static/default acquisition batch fallback is reintroduced. Freshness/source selection still happens before model generation.
 
+## PR #310 preflight repair
+
+A clean GitHub-hosted runner also needed repository dependencies before the production-history exporter could import `next-sanity`. PR #310 adds deterministic `npm ci --ignore-scripts` plus npm caching immediately after Node setup. Without this, the first scheduled run could fail before the freshness gate with a missing-module error.
+
 ## Status
 
 - Implemented: yes.
 - Committed: yes.
-- PR: #309.
-- Merged: pending at document creation time.
-- Deployed: pending merge; workflow-only change does not require a Vercel deployment.
-- Production verified: no. The next genuine 06:30 Europe/Dublin scheduled run is the required first normal-run proof.
+- PRs: #309 and #310.
+- Merged: yes; #309 merged before #310, with `main` at `9ecaaffb36675ed5cab12b79cd85ab51f8513a7a` after #310.
+- Deployed: workflow changes are live from `main`; no Vercel deployment is required for this GitHub Actions-only path.
+- Production verified: no. The genuine 06:30 Europe/Dublin scheduled run remains the required first normal-run proof.
 - Consecutive-day AUTO-004 proof: pending at least two successful normal scheduled days.
 
 ## Acceptance boundary
 
-Do not close AUTO-004 merely because #309 merges. Close only after normal scheduled runs prove exactly five current, corroborated, production-history-fresh positions reach the normal gated draft path on consecutive days, with the normal 07:45 Zoho package downstream.
+Do not close AUTO-004 because the wiring is merged. Close only after normal scheduled runs prove exactly five current, corroborated, production-history-fresh positions reach the normal gated draft path on consecutive days, with the normal 07:45 Zoho package downstream.
