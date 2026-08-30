@@ -55,10 +55,11 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Install dependencies
         if: steps.window.outputs.active == 'true'
-        run: npm ci --ignore-scripts
+        # This repository intentionally has no npm lockfile. setup-node's npm cache
+        # and npm ci both require one, so use a normal install on the ephemeral runner.
+        run: npm install --ignore-scripts --no-audit --no-fund
       - name: Verify production secrets
         if: steps.window.outputs.active == 'true'
         env:
