@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
 
@@ -24,6 +25,15 @@ function similarity(a,b) { const A=tokens(a), B=tokens(b); if(!A.size||!B.size) 
 function sharedTokenCount(a,b) { const A=tokens(a), B=tokens(b); return [...A].filter((x)=>B.has(x)).length; }
 function canonicalUrl(value="") { try { const u=new URL(value); ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","gclid","fbclid"].forEach((k)=>u.searchParams.delete(k)); return u.toString(); } catch { return value; } }
 function clean(value="") { return String(value ?? "").replace(/\s+/g," ").trim(); }
+function normaliseIdentity(value="") { return clean(value).toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g," ").trim(); }
+function stableCandidateId(candidate) {
+  const date = new Date(candidate.primaryPublishedAt).toISOString().slice(0,10);
+  const material = [candidate.editorialPosition.subject, candidate.editorialPosition.development]
+    .map(normaliseIdentity)
+    .join("|");
+  const fingerprint = createHash("sha256").update(material).digest("hex").slice(0,12);
+  return `current-${date}-${fingerprint}`;
+}
 function isGenericLead(lead) {
   const title=clean(lead.title);
   const link=clean(lead.link);
@@ -86,10 +96,6 @@ const leads = discovery.leads.filter((lead)=>lead.title&&lead.link&&lead.publish
 const rugbySeeds = leads.filter(isRugbyRelevant);
 const rejectedNonRugby = leads.length-rugbySeeds.length;
 
-// Build each corroborated development independently. Secondary evidence is deliberately reusable
-// across seed evaluation: globally marking a corroborating lead as "used" caused an early broad
-// cluster to consume evidence needed by later distinct developments. Freshness/deduplication belongs
-// after candidate construction where subject + development + angle can be judged explicitly.
 const clusters=[];
 for (const seed of rugbySeeds) {
   const corroborators = leads
@@ -129,8 +135,6 @@ const candidateDrafts=clusters.map((members)=>{
   };
 }).filter((candidate)=>candidate.sourceRecords.length>=2&&candidate.facts.length>=2);
 
-// Remove only near-identical candidate identities here. Deliberately keep closely related but distinct
-// developments for the production-history freshness selector rather than collapsing them via shared evidence.
 const deduped=[];
 for (const candidate of candidateDrafts) {
   const duplicate=deduped.some((existing)=>
@@ -140,8 +144,8 @@ for (const candidate of candidateDrafts) {
   if(!duplicate) deduped.push(candidate);
 }
 
-const candidates=deduped.map((candidate,index)=>({
-  id:`current-${new Date(candidate.primaryPublishedAt).toISOString().slice(0,10)}-${index+1}`,
+const candidates=deduped.map((candidate)=>({
+  id:stableCandidateId(candidate),
   title:candidate.title,
   summary:candidate.summary,
   suggestedCategory:candidate.suggestedCategory,
@@ -151,7 +155,7 @@ const candidates=deduped.map((candidate,index)=>({
 }));
 
 if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} corroborated rugby candidates after rejecting ${rejectedNonRugby} non-rugby/generic leads; recovery requires a broad candidate pool before freshness.`);
-const output={ schemaVersion:"1.0", batchId:`current-${new Date(discovery.discoveredAt||Date.now()).toISOString().slice(0,10)}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+independent-seed-cross-domain-corroboration-v4", preDedupedClusters:clusters.length }, candidates };
+const output={ schemaVersion:"1.0", batchId:`current-${new Date(discovery.discoveredAt||Date.now()).toISOString().slice(0,10)}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+independent-seed-cross-domain-corroboration-v5-stable-id", preDedupedClusters:clusters.length }, candidates };
 await fs.mkdir(path.dirname(path.resolve(outputPath)),{recursive:true});
 await fs.writeFile(path.resolve(outputPath),`${JSON.stringify(output,null,2)}\n`);
-console.log(JSON.stringify({currentAcquisitionBridge:"passed",rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,outputPath},null,2));
+console.log(JSON.stringify({currentAcquisitionBridge:"passed",rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,stableCandidateIds:true,outputPath},null,2));
