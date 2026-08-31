@@ -12,6 +12,7 @@ const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "not
 const baseUrl = (process.env.EDITORIAL_API_BASE_URL || "https://therugbypanda.ie").replace(/\/$/, "");
 const secret = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
 const dryRun = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
+const requireAllSelectedCreated = process.env.REQUIRE_ALL_SELECTED_CREATED === "1" || process.env.REQUIRE_ALL_SELECTED_CREATED === "true";
 const reuseExistingIds = new Set((process.env.REUSE_EXISTING_IDS || "").split(",").map((value) => value.trim()).filter(Boolean));
 
 if (!secret && !dryRun) throw new Error("EDITORIAL_AUTOMATION_SECRET is required unless DRY_RUN=1.");
@@ -89,6 +90,10 @@ for (const [index, candidate] of selectedCandidates.entries()) {
   const styleProfileId = styleForCandidate(candidate, index);
   const shouldReuse = candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id);
   if (shouldReuse) {
+    if (requireAllSelectedCreated && !dryRun) {
+      results.push({ id: candidate.id, styleProfileId, status: "reuse-disallowed", ok: false, body: { error: "Normal scheduled packages require every selected position to create a new eligible Sanity draft in this run." } });
+      continue;
+    }
     results.push({ id: candidate.id, styleProfileId, status: "reused-existing", ok: true, body: { message: "Generation deliberately skipped; final package validation must confirm the existing production draft." } });
     continue;
   }
@@ -115,13 +120,16 @@ for (const [index, candidate] of selectedCandidates.entries()) {
 }
 
 const failed = results.filter((result) => result.ok !== true);
-const generatedResults = results.filter((result) => result.status !== "reused-existing" && result.status !== "dry-run");
+const generatedResults = results.filter((result) => result.status !== "reused-existing" && result.status !== "dry-run" && result.status !== "reuse-disallowed");
 const createdDrafts = generatedResults.filter((result) => result.ok === true && result.status === "draft-created");
-const expectedGenerated = selectedCandidates.filter((candidate) => !(candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id))).length;
+const expectedGenerated = requireAllSelectedCreated
+  ? selectedCandidates.length
+  : selectedCandidates.filter((candidate) => !(candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id))).length;
 
 if (!dryRun && createdDrafts.length !== expectedGenerated) {
   console.error(JSON.stringify({
     packageCreationGate: "failed",
+    requireAllSelectedCreated,
     expectedGenerated,
     createdDrafts: createdDrafts.length,
     failed,
@@ -133,6 +141,7 @@ console.log(JSON.stringify({
   batchId: batch.batchId,
   freshnessGate: { selectedIds: [...selectedIds], rejected: freshness.rejected },
   packageCreationGate: dryRun ? "dry-run" : "passed",
+  requireAllSelectedCreated,
   expectedGenerated,
   createdDrafts: createdDrafts.length,
   results,

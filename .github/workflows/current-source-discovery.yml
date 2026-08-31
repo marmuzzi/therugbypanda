@@ -58,6 +58,7 @@ jobs:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+          REQUIRE_ALL_SELECTED_CREATED: "1"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
       - name: Send consolidated Zoho package only after successful fresh import
         if: success()
