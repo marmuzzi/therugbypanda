@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createClient } from "next-sanity";
 import { selectFreshPositions } from "../lib/editorial/StoryFreshness.ts";
 
 const [inputPath] = process.argv.slice(2);
@@ -8,13 +9,17 @@ if (!inputPath) {
   process.exit(1);
 }
 
+const PACKAGE_SIZE = 5;
 const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "notebook", "explainer"];
 const ALLOWED_CATEGORIES = new Set(["Ireland", "Leinster", "Munster", "Ulster", "Connacht", "URC", "Europe", "Opinion"]);
+const NON_RUGBY_EVIDENCE = /\b(football daily|premier league|soccer|boxing|golf|cycling|athletics|\b5k\b|gaelic football|hurling|sailing|ilca|world championship in d[uú]n laoghaire|protest)\b/i;
+const GENERIC_SOURCE_TITLE = /^\s*(?:-|the 42|rugby football union|united rugby championship|untitled design)?\s*$/i;
 const baseUrl = (process.env.EDITORIAL_API_BASE_URL || "https://therugbypanda.ie").replace(/\/$/, "");
 const secret = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
 const dryRun = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
 const requireAllSelectedCreated = process.env.REQUIRE_ALL_SELECTED_CREATED === "1" || process.env.REQUIRE_ALL_SELECTED_CREATED === "true";
-const reuseExistingIds = new Set((process.env.REUSE_EXISTING_IDS || "").split(",").map((value) => value.trim()).filter(Boolean));
+const maxReplacementCandidates = Math.max(0, Number.parseInt(process.env.MAX_REPLACEMENT_CANDIDATES || "2", 10) || 2);
+const concurrency = Math.min(2, Math.max(1, Number.parseInt(process.env.EDITORIAL_GENERATION_CONCURRENCY || "2", 10) || 2));
 
 if (!secret && !dryRun) throw new Error("EDITORIAL_AUTOMATION_SECRET is required unless DRY_RUN=1.");
 
@@ -22,6 +27,15 @@ const raw = await fs.readFile(path.resolve(inputPath), "utf8");
 const batch = JSON.parse(raw);
 if (batch?.schemaVersion !== "1.0" || !Array.isArray(batch?.candidates) || batch.candidates.length === 0) {
   throw new Error("Invalid editorial acquisition batch.");
+}
+
+function operationalDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Dublin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
 function positionForCandidate(candidate) {
@@ -33,6 +47,23 @@ function positionForCandidate(candidate) {
     angle: position.angle || candidate.editorialAngle || candidate.summary || "",
     occurredAt: position.occurredAt || candidate.occurredAt,
   };
+}
+
+function substantiveSource(source) {
+  const title = String(source?.title || "").replace(/&nbsp;/g, " ").trim();
+  const detail = [title, source?.excerpt, source?.bodyText].filter(Boolean).join(" ").replace(/&nbsp;/g, " ").trim();
+  return title.length >= 20 && detail.length >= 40 && !GENERIC_SOURCE_TITLE.test(title) && !NON_RUGBY_EVIDENCE.test(detail);
+}
+
+function evidenceAssessment(candidate) {
+  const sourceRecords = Array.isArray(candidate.sourceRecords) ? candidate.sourceRecords : [];
+  const substantive = sourceRecords.filter(substantiveSource);
+  const publishers = new Set(substantive.map((source) => String(source.publisher || source.name || "").trim().toLowerCase()).filter(Boolean));
+  const facts = (Array.isArray(candidate.facts) ? candidate.facts : [])
+    .map((fact) => String(fact || "").replace(/&nbsp;/g, " ").trim())
+    .filter((fact) => fact.length >= 25 && !GENERIC_SOURCE_TITLE.test(fact) && !NON_RUGBY_EVIDENCE.test(fact));
+  const passed = substantive.length >= 2 && publishers.size >= 2 && facts.length >= 2;
+  return { passed, substantiveSourceCount: substantive.length, distinctPublisherCount: publishers.size, substantiveFactCount: facts.length };
 }
 
 async function loadRecentPositions() {
@@ -50,24 +81,34 @@ async function loadRecentPositions() {
   throw new Error("Freshness fail-closed: no recent editorial-position history is available before generation.");
 }
 
-const recentPositions = await loadRecentPositions();
-const candidatePositions = batch.candidates.map(positionForCandidate);
-const freshness = selectFreshPositions(candidatePositions, recentPositions, 5);
-const selectedIds = new Set(freshness.selected.map((position) => position.id));
-if (freshness.selected.length !== 5) {
-  console.error(JSON.stringify({ freshnessGate: "failed", required: 5, selected: freshness.selected, rejected: freshness.rejected }, null, 2));
-  throw new Error(`Freshness fail-closed: selected ${freshness.selected.length}/5 genuinely distinct positions.`);
+async function loadRetainedDrafts() {
+  if (dryRun) return [];
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
+  const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-01-01";
+  const token = process.env.SANITY_API_TOKEN;
+  if (!projectId || !token) throw new Error("Same-day recovery requires Sanity project ID and token.");
+  const packageDate = operationalDate();
+  const prefix = `current-${packageDate}-*`;
+  const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
+  const drafts = await client.fetch(`*[
+    _type == "article" &&
+    _id in path("drafts.**") &&
+    morningPackageEligible == true &&
+    coalesce(automationContentClass, "production") == "production" &&
+    editorialInputId match $prefix &&
+    (!defined(workflowStatus) || workflowStatus in ["draft", "submitted", "in-review", "review", "under-review", "approved"])
+  ] | order(coalesce(editorialGeneratedAt, _createdAt) asc) {
+    _id,title,editorialInputId,editorialGeneratedAt,_createdAt,workflowStatus
+  }`, { prefix });
+  return Array.isArray(drafts) ? drafts.slice(0, PACKAGE_SIZE) : [];
 }
-const selectedCandidates = batch.candidates.filter((candidate) => selectedIds.has(candidate.id));
-console.log(JSON.stringify({ freshnessGate: "passed", selectedIds: [...selectedIds], rejected: freshness.rejected }, null, 2));
 
-function styleForCandidate(candidate, index) {
-  const styleProfileId = candidate.styleProfileId || PACKAGE_STYLE_PROFILES[index % PACKAGE_STYLE_PROFILES.length];
-  if (!PACKAGE_STYLE_PROFILES.includes(styleProfileId)) throw new Error(`Invalid styleProfileId ${styleProfileId} for candidate ${candidate.id}.`);
-  return styleProfileId;
+function styleForSlot(slotIndex) {
+  return PACKAGE_STYLE_PROFILES[slotIndex % PACKAGE_STYLE_PROFILES.length];
 }
 
-function buildRequest(candidate, index) {
+function buildRequest(candidate, slotIndex) {
   const retrievedAt = batch.acquiredAt || new Date().toISOString();
   if (!Array.isArray(candidate.sourceRecords) || candidate.sourceRecords.length < 2) {
     throw new Error(`Candidate ${candidate.id} does not contain at least two source records.`);
@@ -118,70 +159,98 @@ function buildRequest(candidate, index) {
     createSanityDraft: true,
     qaMode: false,
     notificationMode: "package",
-    styleProfileId: styleForCandidate(candidate, index),
+    styleProfileId: styleForSlot(slotIndex),
   };
 }
 
-const results = [];
-for (const [index, candidate] of selectedCandidates.entries()) {
-  const styleProfileId = styleForCandidate(candidate, index);
-  const shouldReuse = candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id);
-  if (shouldReuse) {
-    if (requireAllSelectedCreated && !dryRun) {
-      results.push({ id: candidate.id, styleProfileId, status: "reuse-disallowed", ok: false, body: { error: "Normal scheduled packages require every selected position to create a new eligible Sanity draft in this run." } });
-      continue;
-    }
-    results.push({ id: candidate.id, styleProfileId, status: "reused-existing", ok: true, body: { message: "Generation deliberately skipped; final package validation must confirm the existing production draft." } });
-    continue;
-  }
-
+async function generateCandidate(candidate, slotIndex) {
+  const styleProfileId = styleForSlot(slotIndex);
   let payload;
   try {
-    payload = buildRequest(candidate, index);
+    payload = buildRequest(candidate, slotIndex);
   } catch (error) {
-    results.push({ id: candidate.id, styleProfileId, status: "request-shape-error", ok: false, body: { error: error instanceof Error ? error.message : "Invalid request shape" } });
-    continue;
+    return { id: candidate.id, styleProfileId, status: "request-shape-error", ok: false, body: { error: error instanceof Error ? error.message : "Invalid request shape" } };
   }
+  if (dryRun) return { id: candidate.id, styleProfileId, status: "dry-run", ok: true, payload };
 
-  if (dryRun) {
-    results.push({ id: candidate.id, status: "dry-run", styleProfileId: payload.styleProfileId, ok: true, payload });
-    continue;
-  }
+  const call = async () => {
+    try {
+      const response = await fetch(`${baseUrl}/api/editorial/draft`, {
+        method: "POST",
+        headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+      const body = await response.json().catch(() => ({ error: "Non-JSON response" }));
+      const draftCreated = response.ok && body?.status === "draft-created" && Boolean(body?.sanityDraft?.id) && body?.sanityDraft?.morningPackageEligible === true;
+      return { id: candidate.id, styleProfileId, status: body?.status || response.status, httpStatus: response.status, ok: draftCreated, body };
+    } catch (error) {
+      return { id: candidate.id, styleProfileId, status: "request-error", ok: false, body: { error: error instanceof Error ? error.message : "Request failed" } };
+    }
+  };
 
-  try {
-    const response = await fetch(`${baseUrl}/api/editorial/draft`, {
-      method: "POST",
-      headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
-      body: JSON.stringify(payload),
-    });
-    const body = await response.json().catch(() => ({ error: "Non-JSON response" }));
-    const draftCreated = response.ok && body?.status === "draft-created" && Boolean(body?.sanityDraft?.id) && body?.sanityDraft?.morningPackageEligible === true;
-    results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: body?.status || response.status, httpStatus: response.status, ok: draftCreated, body });
-  } catch (error) {
-    results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: "request-error", ok: false, body: { error: error instanceof Error ? error.message : "Request failed" } });
-  }
+  const first = await call();
+  const message = String(first?.body?.error || "");
+  if (first.ok || !/(timeout|timed out|aborted|request failed)/i.test(message)) return first;
+  const second = await call();
+  return { ...second, retryOf: first.status };
+}
+
+const recentPositions = await loadRecentPositions();
+const retainedDrafts = await loadRetainedDrafts();
+const retainedCount = retainedDrafts.length;
+const missingSlots = Math.max(0, PACKAGE_SIZE - retainedCount);
+console.log(JSON.stringify({ sameDayRecovery: "loaded", packageDate: operationalDate(), retainedCount, retainedDrafts, missingSlots }, null, 2));
+
+if (retainedCount >= PACKAGE_SIZE) {
+  console.log(JSON.stringify({ packageCreationGate: "passed", retainedCount, createdDrafts: 0, totalEligible: retainedCount, reason: "same-day-package-already-complete" }, null, 2));
+  process.exit(0);
+}
+
+const assessed = batch.candidates.map((candidate) => ({ candidate, assessment: evidenceAssessment(candidate) }));
+const evidenceRejected = assessed.filter(({ assessment }) => !assessment.passed).map(({ candidate, assessment }) => ({ id: candidate.id, title: candidate.title, ...assessment }));
+const eligibleCandidates = assessed.filter(({ assessment }) => assessment.passed).map(({ candidate }) => candidate);
+console.log(JSON.stringify({ evidenceSufficiencyGate: "completed", eligible: eligibleCandidates.length, rejected: evidenceRejected }, null, 2));
+
+const candidatePositions = eligibleCandidates.map(positionForCandidate);
+const freshness = selectFreshPositions(candidatePositions, recentPositions, Math.min(candidatePositions.length, missingSlots + maxReplacementCandidates));
+const freshIds = new Set(freshness.selected.map((position) => position.id));
+const freshQueue = eligibleCandidates.filter((candidate) => freshIds.has(candidate.id));
+if (freshQueue.length < missingSlots) {
+  console.error(JSON.stringify({ freshnessGate: "failed", requiredMissing: missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected }, null, 2));
+  throw new Error(`Recovery fail-closed before model spend: only ${freshQueue.length}/${missingSlots} fresh evidence-sufficient candidates are available.`);
+}
+console.log(JSON.stringify({ freshnessGate: "passed", retainedCount, requiredMissing: missingSlots, freshCandidateIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected }, null, 2));
+
+const results = [];
+let createdDrafts = 0;
+let queueIndex = 0;
+while (createdDrafts < missingSlots && queueIndex < freshQueue.length) {
+  const remainingSlots = missingSlots - createdDrafts;
+  const roundSize = Math.min(concurrency, remainingSlots, freshQueue.length - queueIndex);
+  const round = freshQueue.slice(queueIndex, queueIndex + roundSize);
+  queueIndex += roundSize;
+  const roundResults = await Promise.all(round.map((candidate, offset) => generateCandidate(candidate, retainedCount + createdDrafts + offset)));
+  results.push(...roundResults);
+  createdDrafts += roundResults.filter((result) => result.ok === true && result.status === "draft-created").length;
 }
 
 const failed = results.filter((result) => result.ok !== true);
-const generatedResults = results.filter((result) => result.status !== "reused-existing" && result.status !== "dry-run" && result.status !== "reuse-disallowed");
-const createdDrafts = generatedResults.filter((result) => result.ok === true && result.status === "draft-created");
-const expectedGenerated = requireAllSelectedCreated
-  ? selectedCandidates.length
-  : selectedCandidates.filter((candidate) => !(candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id))).length;
-
-if (!dryRun && createdDrafts.length !== expectedGenerated) {
-  console.error(JSON.stringify({ packageCreationGate: "failed", requireAllSelectedCreated, expectedGenerated, createdDrafts: createdDrafts.length, failed }, null, 2));
-  throw new Error(`Package creation fail-closed: only ${createdDrafts.length}/${expectedGenerated} selected positions created eligible Sanity drafts.`);
+const totalEligible = retainedCount + createdDrafts;
+if (!dryRun && requireAllSelectedCreated && totalEligible !== PACKAGE_SIZE) {
+  console.error(JSON.stringify({ packageCreationGate: "failed", retainedCount, createdDrafts, totalEligible, required: PACKAGE_SIZE, failed, attemptedCandidates: results.length }, null, 2));
+  throw new Error(`Package creation fail-closed: ${totalEligible}/${PACKAGE_SIZE} same-day eligible drafts available after bounded recovery.`);
 }
 
 console.log(JSON.stringify({
   batchId: batch.batchId,
-  freshnessGate: { selectedIds: [...selectedIds], rejected: freshness.rejected },
+  sameDayRecovery: { retainedCount, missingSlots, retainedDraftIds: retainedDrafts.map((draft) => draft._id) },
+  evidenceSufficiencyGate: { eligible: eligibleCandidates.length, rejected: evidenceRejected },
+  freshnessGate: { selectedIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected },
   packageCreationGate: dryRun ? "dry-run" : "passed",
-  requireAllSelectedCreated,
-  expectedGenerated,
-  createdDrafts: createdDrafts.length,
+  createdDrafts,
+  totalEligible,
+  attemptedCandidates: results.length,
   results,
   failedCount: failed.length,
 }, null, 2));
-if (failed.length > 0) process.exitCode = 2;
+if (failed.length > 0 && totalEligible < PACKAGE_SIZE) process.exitCode = 2;
