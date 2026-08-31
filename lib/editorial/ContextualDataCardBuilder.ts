@@ -15,8 +15,10 @@ type EditorialLike = {
 };
 
 const NON_PERSON_TERMS = new Set([
-  "Ireland", "Leinster", "Munster", "Ulster", "Connacht", "Rugby", "URC", "United Rugby",
+  "Ireland", "Ireland Women", "Leinster", "Munster", "Ulster", "Connacht", "Rugby", "URC", "United Rugby",
   "Champions Cup", "Challenge Cup", "Six Nations", "World Cup", "Global Series", "Academy",
+  "All Blacks", "New Zealand", "Springboks", "South Africa", "Wallabies", "Australia", "England", "Scotland",
+  "Wales", "France", "Italy", "Argentina", "Pumas", "Fiji", "Japan", "Samoa", "Tonga",
 ]);
 const LEADING_CONTEXT_WORDS = /^(?:With|After|Before|While|As|For|From|By|Against|At|On|The)\s+/i;
 const SURNAME_PARTICLE_ONLY = /^(?:van|de|der|von|di|da)\b/i;
