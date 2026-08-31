@@ -52,7 +52,8 @@ const BANNED_GENERIC_HEADINGS = new Set([
 const BANNED_GENERIC_HEADING_PATTERNS = [
   /^why (?:this|it) matters(?:\b|\s+for\b)/i,
   /^what (?:happened|happens next|comes next|to (?:watch|look for|expect) next)\b/i,
-  /^what (?:supporters|fans|you) (?:should )?(?:watch|look for|expect) next\b/i,
+  /^what to (?:watch|look for|expect)(?:\b|\s+(?:in|for|from|against|during|at|this|the)\b)/i,
+  /^what (?:supporters|fans|you) (?:should )?(?:watch|look for|expect)(?:\b|\s+(?:next|in|for|from|against|during|at|this|the)\b)/i,
   /^what you need to know\b/i,
   /^the (?:bigger picture|bottom line)\b/i,
 ];
