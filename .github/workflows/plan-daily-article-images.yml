@@ -5,7 +5,6 @@ on:
   workflow_run:
     workflows:
       - Import editorial acquisition batch
-      - Current editorial source discovery
     types:
       - completed
 
@@ -24,7 +23,6 @@ jobs:
       NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       IMAGE_CANDIDATE_TARGET: 3
-      IMAGE_ARTICLE_LOOKBACK_HOURS: 18
       IMAGE_PLAN_PATH: daily-article-image-plan.json
       WIKIMEDIA_RESULTS_PER_QUERY: 20
       IMAGE_MAX_QUERIES_PER_ARTICLE: 5
@@ -36,7 +34,7 @@ jobs:
       WIKIMEDIA_MAX_SCOPE_SHARE: '1.0'
       EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
     steps:
-      - name: Checkout main after successful morning generation
+      - name: Checkout main after successful acquisition import
         uses: actions/checkout@v4
         with:
           ref: main
@@ -47,7 +45,7 @@ jobs:
           node-version: 22
 
       - name: Install dependencies
-        run: npm install
+        run: npm install --ignore-scripts --no-audit --no-fund
 
       - name: Build fail-closed local candidate and acquisition-deficit plan
         run: node scripts/plan-daily-article-images.mjs
