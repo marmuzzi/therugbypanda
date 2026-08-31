@@ -9,6 +9,7 @@ if (!inputPath) {
 }
 
 const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "notebook", "explainer"];
+const ALLOWED_CATEGORIES = new Set(["Ireland", "Leinster", "Munster", "Ulster", "Connacht", "URC", "Europe", "Opinion"]);
 const baseUrl = (process.env.EDITORIAL_API_BASE_URL || "https://therugbypanda.ie").replace(/\/$/, "");
 const secret = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
 const dryRun = process.env.DRY_RUN === "1" || process.env.DRY_RUN === "true";
@@ -54,12 +55,7 @@ const candidatePositions = batch.candidates.map(positionForCandidate);
 const freshness = selectFreshPositions(candidatePositions, recentPositions, 5);
 const selectedIds = new Set(freshness.selected.map((position) => position.id));
 if (freshness.selected.length !== 5) {
-  console.error(JSON.stringify({
-    freshnessGate: "failed",
-    required: 5,
-    selected: freshness.selected,
-    rejected: freshness.rejected,
-  }, null, 2));
+  console.error(JSON.stringify({ freshnessGate: "failed", required: 5, selected: freshness.selected, rejected: freshness.rejected }, null, 2));
   throw new Error(`Freshness fail-closed: selected ${freshness.selected.length}/5 genuinely distinct positions.`);
 }
 const selectedCandidates = batch.candidates.filter((candidate) => selectedIds.has(candidate.id));
@@ -73,11 +69,52 @@ function styleForCandidate(candidate, index) {
 
 function buildRequest(candidate, index) {
   const retrievedAt = batch.acquiredAt || new Date().toISOString();
-  const sourceRecords = candidate.sourceRecords.map((source) => ({ ...source, retrievedAt }));
+  if (!Array.isArray(candidate.sourceRecords) || candidate.sourceRecords.length < 2) {
+    throw new Error(`Candidate ${candidate.id} does not contain at least two source records.`);
+  }
+  const sourceRecords = candidate.sourceRecords.map((source, sourceIndex) => {
+    const publisher = String(source.publisher || source.name || "").trim();
+    const title = String(source.title || "").trim();
+    const url = String(source.url || "").trim();
+    if (!publisher || !title || !url) {
+      throw new Error(`Candidate ${candidate.id} source ${sourceIndex + 1} is missing publisher, title or url.`);
+    }
+    return {
+      id: String(source.id || `${candidate.id}-source-${sourceIndex + 1}`),
+      url,
+      publisher,
+      title,
+      publishedAt: source.publishedAt,
+      retrievedAt,
+      excerpt: source.excerpt,
+      bodyText: source.bodyText,
+      author: source.author,
+      isPrimarySource: source.isPrimarySource === true,
+    };
+  });
   const sourceIds = sourceRecords.map((source) => source.id);
+  const suggestedCategory = ALLOWED_CATEGORIES.has(candidate.suggestedCategory) ? candidate.suggestedCategory : undefined;
   return {
-    story: { id: candidate.id, title: candidate.title, summary: candidate.summary, sourceRecords, discoveredAt: retrievedAt, suggestedCategory: candidate.suggestedCategory },
-    factLedger: { facts: candidate.facts.map((claim, factIndex) => ({ id: `${candidate.id}-fact-${factIndex + 1}`, claim, status: "confirmed", confidence: 98, sourceIds, usableInDraft: true })), unsupportedClaims: [], conflicts: [] },
+    story: {
+      id: candidate.id,
+      title: candidate.title,
+      summary: candidate.summary,
+      sourceRecords,
+      discoveredAt: retrievedAt,
+      suggestedCategory,
+    },
+    factLedger: {
+      facts: candidate.facts.map((claim, factIndex) => ({
+        id: `${candidate.id}-fact-${factIndex + 1}`,
+        claim,
+        status: "confirmed",
+        confidence: 98,
+        sourceIds,
+        usableInDraft: true,
+      })),
+      unsupportedClaims: [],
+      conflicts: [],
+    },
     createSanityDraft: true,
     qaMode: false,
     notificationMode: "package",
@@ -97,23 +134,29 @@ for (const [index, candidate] of selectedCandidates.entries()) {
     results.push({ id: candidate.id, styleProfileId, status: "reused-existing", ok: true, body: { message: "Generation deliberately skipped; final package validation must confirm the existing production draft." } });
     continue;
   }
-  const payload = buildRequest(candidate, index);
+
+  let payload;
+  try {
+    payload = buildRequest(candidate, index);
+  } catch (error) {
+    results.push({ id: candidate.id, styleProfileId, status: "request-shape-error", ok: false, body: { error: error instanceof Error ? error.message : "Invalid request shape" } });
+    continue;
+  }
+
   if (dryRun) {
     results.push({ id: candidate.id, status: "dry-run", styleProfileId: payload.styleProfileId, ok: true, payload });
     continue;
   }
+
   try {
-    const response = await fetch(`${baseUrl}/api/editorial/draft`, { method: "POST", headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" }, body: JSON.stringify(payload) });
+    const response = await fetch(`${baseUrl}/api/editorial/draft`, {
+      method: "POST",
+      headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" },
+      body: JSON.stringify(payload),
+    });
     const body = await response.json().catch(() => ({ error: "Non-JSON response" }));
     const draftCreated = response.ok && body?.status === "draft-created" && Boolean(body?.sanityDraft?.id) && body?.sanityDraft?.morningPackageEligible === true;
-    results.push({
-      id: candidate.id,
-      styleProfileId: payload.styleProfileId,
-      status: body?.status || response.status,
-      httpStatus: response.status,
-      ok: draftCreated,
-      body,
-    });
+    results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: body?.status || response.status, httpStatus: response.status, ok: draftCreated, body });
   } catch (error) {
     results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: "request-error", ok: false, body: { error: error instanceof Error ? error.message : "Request failed" } });
   }
@@ -127,13 +170,7 @@ const expectedGenerated = requireAllSelectedCreated
   : selectedCandidates.filter((candidate) => !(candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id))).length;
 
 if (!dryRun && createdDrafts.length !== expectedGenerated) {
-  console.error(JSON.stringify({
-    packageCreationGate: "failed",
-    requireAllSelectedCreated,
-    expectedGenerated,
-    createdDrafts: createdDrafts.length,
-    failed,
-  }, null, 2));
+  console.error(JSON.stringify({ packageCreationGate: "failed", requireAllSelectedCreated, expectedGenerated, createdDrafts: createdDrafts.length, failed }, null, 2));
   throw new Error(`Package creation fail-closed: only ${createdDrafts.length}/${expectedGenerated} selected positions created eligible Sanity drafts.`);
 }
 
