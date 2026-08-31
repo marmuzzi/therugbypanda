@@ -26,13 +26,21 @@ function sharedTokenCount(a,b) { const A=tokens(a), B=tokens(b); return [...A].f
 function canonicalUrl(value="") { try { const u=new URL(value); ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","gclid","fbclid"].forEach((k)=>u.searchParams.delete(k)); return u.toString(); } catch { return value; } }
 function clean(value="") { return String(value ?? "").replace(/\s+/g," ").trim(); }
 function normaliseIdentity(value="") { return clean(value).toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g," ").trim(); }
+function operationalDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Dublin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+const packageDate = operationalDate();
 function stableCandidateId(candidate) {
-  const date = new Date(candidate.primaryPublishedAt).toISOString().slice(0,10);
   const material = [candidate.editorialPosition.subject, candidate.editorialPosition.development]
     .map(normaliseIdentity)
     .join("|");
   const fingerprint = createHash("sha256").update(material).digest("hex").slice(0,12);
-  return `current-${date}-${fingerprint}`;
+  return `current-${packageDate}-${fingerprint}`;
 }
 function isGenericLead(lead) {
   const title=clean(lead.title);
@@ -155,7 +163,7 @@ const candidates=deduped.map((candidate)=>({
 }));
 
 if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} corroborated rugby candidates after rejecting ${rejectedNonRugby} non-rugby/generic leads; recovery requires a broad candidate pool before freshness.`);
-const output={ schemaVersion:"1.0", batchId:`current-${new Date(discovery.discoveredAt||Date.now()).toISOString().slice(0,10)}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+independent-seed-cross-domain-corroboration-v5-stable-id", preDedupedClusters:clusters.length }, candidates };
+const output={ schemaVersion:"1.0", batchId:`current-${packageDate}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), packageDate, provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+independent-seed-cross-domain-corroboration-v6-dublin-package-date", preDedupedClusters:clusters.length }, candidates };
 await fs.mkdir(path.dirname(path.resolve(outputPath)),{recursive:true});
 await fs.writeFile(path.resolve(outputPath),`${JSON.stringify(output,null,2)}\n`);
-console.log(JSON.stringify({currentAcquisitionBridge:"passed",rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,stableCandidateIds:true,outputPath},null,2));
+console.log(JSON.stringify({currentAcquisitionBridge:"passed",packageDate,rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,stableCandidateIds:true,outputPath},null,2));
