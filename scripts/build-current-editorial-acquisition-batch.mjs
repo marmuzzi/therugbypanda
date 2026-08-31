@@ -13,7 +13,31 @@ function similarity(a,b) { const A=tokens(a), B=tokens(b); if(!A.size||!B.size) 
 function sharedTokenCount(a,b) { const A=tokens(a), B=tokens(b); return [...A].filter((x)=>B.has(x)).length; }
 function canonicalUrl(value="") { try { const u=new URL(value); ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","gclid","fbclid"].forEach((k)=>u.searchParams.delete(k)); return u.toString(); } catch { return value; } }
 function clean(value="") { return value.replace(/\s+/g," ").trim(); }
-function sourceRecord(lead,index) { return { id:`source-${index+1}`, name:lead.source?.name||lead.source?.domain||"Unknown source", url:canonicalUrl(lead.link), title:clean(lead.title), publishedAt:lead.publishedAt, evidenceRole:lead.source?.defaultEvidenceRole||"corroboration" }; }
+function sourceRecord(lead,index) {
+  const publisher = clean(lead.source?.name || lead.source?.domain || "Unknown source");
+  const title = clean(lead.title);
+  const description = clean(lead.description || "");
+  return {
+    id:`source-${index+1}`,
+    publisher,
+    url:canonicalUrl(lead.link),
+    title,
+    publishedAt:lead.publishedAt,
+    excerpt:description || undefined,
+    bodyText:description || undefined,
+    isPrimarySource:lead.source?.defaultEvidenceRole === "primary"
+  };
+}
+function suggestedCategoryFor(value="") {
+  if (/\bleinster\b/i.test(value)) return "Leinster";
+  if (/\bmunster\b/i.test(value)) return "Munster";
+  if (/\bulster\b/i.test(value)) return "Ulster";
+  if (/\bconnacht\b/i.test(value)) return "Connacht";
+  if (/\b(ireland|irish|six nations|andy farrell)\b/i.test(value)) return "Ireland";
+  if (/\b(urc|united rugby championship)\b/i.test(value)) return "URC";
+  if (/\b(champions cup|challenge cup|epcr|europe)\b/i.test(value)) return "Europe";
+  return undefined;
+}
 function hoursApart(a,b) { const delta=Math.abs(Date.parse(a)-Date.parse(b)); return Number.isFinite(delta)?delta/3600000:Number.POSITIVE_INFINITY; }
 function sameStory(seed,candidate) {
   const titleScore=similarity(seed.title,candidate.title);
@@ -48,9 +72,12 @@ const candidates=clusters.map((members,index)=>{
   const development=clean(primary.editorialPosition?.development||primary.description||primary.title);
   return {
     id:`current-${new Date(primary.publishedAt).toISOString().slice(0,10)}-${index+1}`,
-    title:clean(primary.title), summary:development, suggestedCategory:"Rugby",
+    title:clean(primary.title),
+    summary:development,
+    suggestedCategory:suggestedCategoryFor(`${subject} ${development} ${primary.title}`),
     editorialPosition:{ subject, development, angle:`Independent multi-source update on ${subject}`, occurredAt:primary.editorialPosition?.occurredAt||primary.publishedAt },
-    sourceRecords, facts
+    sourceRecords,
+    facts
   };
 }).filter((candidate)=>candidate.sourceRecords.length>=2&&candidate.facts.length>=2);
 
