@@ -29,7 +29,9 @@ jobs:
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       AUTO004_DRAFT_CUTOFF: 2026-08-24T20:24:00Z
       RECENT_EDITORIAL_POSITIONS_PATH: data/editorial-acquisition/recent-editorial-positions.json
-      DISCOVERY_MAX_AGE_HOURS: "24"
+      # Use enough current material to obtain five independently corroborated rugby positions.
+      # The 14-day production-history gate still rejects yesterday's/same-story rewrites before model spend.
+      DISCOVERY_MAX_AGE_HOURS: "36"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
