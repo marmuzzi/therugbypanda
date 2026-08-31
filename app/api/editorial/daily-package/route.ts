@@ -29,6 +29,7 @@ type PackageArticle = {
   title?: string;
   standfirst?: string;
   workflowStatus?: string;
+  editorialInputId?: string;
   editorialGeneratedAt?: string;
   updatedAt?: string;
   category?: string;
@@ -61,6 +62,15 @@ function getClient() {
   return createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
 }
 
+function operationalDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Dublin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 function reviewUrl(articleId: string) {
   const id = articleId.replace(/^drafts\./, "");
   return `${studioBaseUrl}/intent/edit/id=${encodeURIComponent(id)};type=article`;
@@ -69,8 +79,13 @@ function reviewUrl(articleId: string) {
 function normalisedTokens(article: PackageArticle): Set<string> {
   return new Set(
     [article.title, article.editorialAngle, article.sourceStoryTitle]
-      .filter(Boolean).join(" ").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "")
-      .split(/[^a-z0-9]+/).filter((token) => token.length >= 3 && !STOP_WORDS.has(token)),
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase()
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .split(/[^a-z0-9]+/)
+      .filter((token) => token.length >= 3 && !STOP_WORDS.has(token)),
   );
 }
 
@@ -102,7 +117,9 @@ function sharesSource(left: PackageArticle, right: PackageArticle): boolean {
 }
 
 function isDistinctEnough(candidate: PackageArticle, selected: PackageArticle[]): boolean {
-  return selected.every((existing) => !sharesSource(candidate, existing) && tokenSimilarity(candidate, existing) < DIVERSITY_SIMILARITY_LIMIT);
+  return selected.every(
+    (existing) => !sharesSource(candidate, existing) && tokenSimilarity(candidate, existing) < DIVERSITY_SIMILARITY_LIMIT,
+  );
 }
 
 function selectDiversePackage(candidates: PackageArticle[]): PackageArticle[] {
@@ -114,12 +131,11 @@ function selectDiversePackage(candidates: PackageArticle[]): PackageArticle[] {
   return selected;
 }
 
-function operationalDate() {
-  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Dublin", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-}
-
 function packageFingerprint(articles: PackageArticle[]) {
-  const canonicalPackage = articles.map((article) => `${article._id.replace(/^drafts\./, "")}|${article.updatedAt ?? ""}`).sort().join("\n");
+  const canonicalPackage = articles
+    .map((article) => `${article._id.replace(/^drafts\./, "")}|${article.updatedAt ?? ""}`)
+    .sort()
+    .join("\n");
   return createHash("sha256").update(canonicalPackage).digest("hex").slice(0, 12);
 }
 
@@ -147,8 +163,10 @@ function emailText(packageDate: string, articles: PackageArticle[]) {
     "",
   ]);
   return [
-    `The Rugby Panda morning editorial package for ${packageDate}.`, "",
-    "Five production-eligible, editorially distinct articles are ready for review in Sanity.", "",
+    `The Rugby Panda morning editorial package for ${packageDate}.`,
+    "",
+    "Five production-eligible, editorially distinct articles from today's protected package are ready for review in Sanity.",
+    "",
     ...articleSections,
     "Open each Review link to edit, approve or reject the article.",
   ].join("\n");
@@ -191,7 +209,7 @@ function emailHtml(packageDate: string, articles: PackageArticle[]) {
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;border-collapse:collapse;background:#ffffff;color:#111827;border-radius:16px;">
       <tr><td style="padding:24px 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#2e7d32;">The Rugby Panda</td></tr>
       <tr><td style="padding:0 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.2;font-weight:700;color:#111827;">Five articles ready for review</td></tr>
-      <tr><td style="padding:0 22px 22px 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#4b5563;">Morning editorial package for ${escapeHtml(packageDate)}. Open each article in Sanity to review, edit, approve or reject it.</td></tr>
+      <tr><td style="padding:0 22px 22px 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#4b5563;">Protected editorial package for ${escapeHtml(packageDate)}. Open each article in Sanity to review, edit, approve or reject it.</td></tr>
       <tr><td style="padding:0 22px 8px 22px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">${cards}</table></td></tr>
       <tr><td style="padding:4px 22px 24px 22px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6b7280;">This message also contains a plain-text fallback for mail clients that do not render HTML.</td></tr>
     </table>
@@ -208,7 +226,7 @@ async function sendTechnicalAlert(failureCode: string, message: string, details:
       headers: {
         "content-type": "application/json",
         ...(process.env.EDITORIAL_TECHNICAL_ALERT_WEBHOOK_SECRET?.trim()
-          ? { authorization: `Bearer ${process.env.EDITORIAL_TECHNICAL_ALERT_WEBHOOK_SECRET?.trim()}` }
+          ? { authorization: `Bearer ${process.env.EDITORIAL_TECHNICAL_ALERT_WEBHOOK_SECRET.trim()}` }
           : {}),
       },
       body: JSON.stringify({
@@ -228,7 +246,13 @@ async function sendTechnicalAlert(failureCode: string, message: string, details:
 }
 
 export async function GET() {
-  return NextResponse.json({ status: "ready", deliveryMode: "direct-zoho-smtp", requiredArticleCount: PACKAGE_SIZE, destination });
+  return NextResponse.json({
+    status: "ready",
+    deliveryMode: "direct-zoho-smtp",
+    requiredArticleCount: PACKAGE_SIZE,
+    packageIdentity: "current-dublin-operational-date",
+    destination,
+  });
 }
 
 export async function POST(request: NextRequest) {
@@ -236,50 +260,85 @@ export async function POST(request: NextRequest) {
 
   try {
     const client = getClient();
+    const packageDate = operationalDate();
+    const packageInputPrefix = `current-${packageDate}-*`;
     const candidates = await client.fetch<PackageArticle[]>(
       `*[
-        _type == "article" && _id in path("drafts.**") && morningPackageEligible == true && automationContentClass == "production" &&
+        _type == "article" &&
+        _id in path("drafts.**") &&
+        morningPackageEligible == true &&
+        automationContentClass == "production" &&
+        editorialInputId match $packageInputPrefix &&
         (!defined(workflowStatus) || workflowStatus in ["draft", "submitted", "in-review", "review", "under-review", "approved"])
       ] | order(coalesce(editorialGeneratedAt, _updatedAt) desc)[0...$limit] {
-        _id,title,standfirst,workflowStatus,editorialGeneratedAt,"updatedAt":_updatedAt,
+        _id,title,standfirst,workflowStatus,editorialInputId,editorialGeneratedAt,"updatedAt":_updatedAt,
         "category":category->title,"competition":competition->title,needsHumanFactCheck,
         "featuredImageUrl":featuredImage.asset->url,editorialAngle,sourceStoryTitle,sourceRecords[]{id,url}
       }`,
-      { limit: CANDIDATE_POOL_SIZE },
+      { limit: CANDIDATE_POOL_SIZE, packageInputPrefix },
     );
     const articles = selectDiversePackage(candidates);
-    const packageDate = operationalDate();
     const incompleteEventId = `editorial-daily-package:${packageDate}`;
 
     if (articles.length < PACKAGE_SIZE) {
       const technicalAlertStatus = await sendTechnicalAlert(
-        "insufficient-production-eligible-diverse-content",
-        `Only ${articles.length} of ${PACKAGE_SIZE} required production-eligible, editorially distinct articles are ready for the 08:00 package.`,
-        { eventId: incompleteEventId, packageDate, eligibleCandidates: candidates.length, distinctArticles: articles.length, requiredArticles: PACKAGE_SIZE,
-          eligibilityRule: "morningPackageEligible=true and automationContentClass=production", diversitySimilarityLimit: DIVERSITY_SIMILARITY_LIMIT },
+        "insufficient-current-package-content",
+        `Only ${articles.length} of ${PACKAGE_SIZE} current-date production-eligible, editorially distinct articles are ready for the package.`,
+        {
+          eventId: incompleteEventId,
+          packageDate,
+          packageInputPrefix,
+          eligibleCandidates: candidates.length,
+          distinctArticles: articles.length,
+          requiredArticles: PACKAGE_SIZE,
+          eligibilityRule: "current Dublin editorialInputId + morningPackageEligible=true + automationContentClass=production",
+          diversitySimilarityLimit: DIVERSITY_SIMILARITY_LIMIT,
+        },
       );
-      return NextResponse.json({ status: "incomplete", eventId: incompleteEventId, articleCount: articles.length,
-        eligibleCandidateCount: candidates.length, requiredArticleCount: PACKAGE_SIZE,
-        reason: "insufficient-production-eligible-diverse-content", technicalAlertStatus }, { status: 409 });
+      return NextResponse.json({
+        status: "incomplete",
+        eventId: incompleteEventId,
+        packageDate,
+        packageInputPrefix,
+        articleCount: articles.length,
+        eligibleCandidateCount: candidates.length,
+        requiredArticleCount: PACKAGE_SIZE,
+        reason: "insufficient-current-package-content",
+        technicalAlertStatus,
+      }, { status: 409 });
     }
 
     const eventId = packageEventId(packageDate, articles);
     const lockId = packageLockId(packageDate, articles);
     try {
       await client.create({
-        _id: lockId, _type: "editorialAutomationEvidence", kind: "daily-package-direct-zoho", status: "sending",
-        eventId, packageDate, destination,
+        _id: lockId,
+        _type: "editorialAutomationEvidence",
+        kind: "daily-package-direct-zoho",
+        status: "sending",
+        eventId,
+        packageDate,
+        packageInputPrefix,
+        destination,
         articleIds: articles.map((article) => article._id.replace(/^drafts\./, "")),
+        editorialInputIds: articles.map((article) => article.editorialInputId).filter(Boolean),
         createdAt: new Date().toISOString(),
       });
     } catch (error) {
       const message = error instanceof Error ? error.message : String(error);
       if (/already exists|document.*exists|conflict/i.test(message)) {
-        const evidence = await client.fetch<DeliveryEvidence | null>(`*[_id == $lockId][0]{_id,status,accepted,smtpResponse,completedAt}`, { lockId });
+        const evidence = await client.fetch<DeliveryEvidence | null>(
+          `*[_id == $lockId][0]{_id,status,accepted,smtpResponse,completedAt}`,
+          { lockId },
+        );
         return NextResponse.json({
           status: evidence?.status === "accepted" ? "already-sent" : "delivery-in-progress",
-          eventId, articleCount: articles.length, destination, accepted: evidence?.accepted,
-          smtpResponse: evidence?.smtpResponse, completedAt: evidence?.completedAt,
+          eventId,
+          articleCount: articles.length,
+          destination,
+          accepted: evidence?.accepted,
+          smtpResponse: evidence?.smtpResponse,
+          completedAt: evidence?.completedAt,
         }, { status: evidence?.status === "accepted" ? 200 : 409 });
       }
       throw error;
@@ -296,22 +355,40 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       await client.delete(lockId).catch(() => undefined);
       const message = error instanceof Error ? error.message : "Direct Zoho SMTP delivery failed.";
-      const technicalAlertStatus = await sendTechnicalAlert("direct-zoho-smtp-failed", message, { eventId, articleCount: articles.length });
+      const technicalAlertStatus = await sendTechnicalAlert(
+        "direct-zoho-smtp-failed",
+        message,
+        { eventId, packageDate, articleCount: articles.length },
+      );
       return NextResponse.json({ status: "failed", eventId, error: message, technicalAlertStatus }, { status: 502 });
     }
 
     let evidenceStatus: "recorded" | "record-failed" = "recorded";
     try {
-      await client.patch(lockId).set({ status: "accepted", accepted: smtpResult.accepted,
-        smtpResponse: smtpResult.response, completedAt: new Date().toISOString() }).commit();
+      await client.patch(lockId).set({
+        status: "accepted",
+        accepted: smtpResult.accepted,
+        smtpResponse: smtpResult.response,
+        completedAt: new Date().toISOString(),
+      }).commit();
     } catch (error) {
       evidenceStatus = "record-failed";
       console.error("Daily package SMTP was accepted but evidence update failed", error);
     }
 
     return NextResponse.json({
-      status: "sent", eventId, articleCount: articles.length, eligibleCandidateCount: candidates.length,
-      destination, accepted: smtpResult.accepted, smtpResponse: smtpResult.response, evidenceStatus,
+      status: "sent",
+      eventId,
+      packageDate,
+      packageInputPrefix,
+      articleCount: articles.length,
+      eligibleCandidateCount: candidates.length,
+      articleIds: articles.map((article) => article._id.replace(/^drafts\./, "")),
+      editorialInputIds: articles.map((article) => article.editorialInputId).filter(Boolean),
+      destination,
+      accepted: smtpResult.accepted,
+      smtpResponse: smtpResult.response,
+      evidenceStatus,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Daily editorial package failed.";
