@@ -94,18 +94,48 @@ for (const [index, candidate] of selectedCandidates.entries()) {
   }
   const payload = buildRequest(candidate, index);
   if (dryRun) {
-    results.push({ id: candidate.id, status: "dry-run", styleProfileId: payload.styleProfileId, payload });
+    results.push({ id: candidate.id, status: "dry-run", styleProfileId: payload.styleProfileId, ok: true, payload });
     continue;
   }
   try {
     const response = await fetch(`${baseUrl}/api/editorial/draft`, { method: "POST", headers: { authorization: `Bearer ${secret}`, "content-type": "application/json" }, body: JSON.stringify(payload) });
     const body = await response.json().catch(() => ({ error: "Non-JSON response" }));
-    results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: response.status, ok: response.ok, body });
+    const draftCreated = response.ok && body?.status === "draft-created" && Boolean(body?.sanityDraft?.id) && body?.sanityDraft?.morningPackageEligible === true;
+    results.push({
+      id: candidate.id,
+      styleProfileId: payload.styleProfileId,
+      status: body?.status || response.status,
+      httpStatus: response.status,
+      ok: draftCreated,
+      body,
+    });
   } catch (error) {
     results.push({ id: candidate.id, styleProfileId: payload.styleProfileId, status: "request-error", ok: false, body: { error: error instanceof Error ? error.message : "Request failed" } });
   }
 }
 
-const failed = results.filter((result) => result.ok === false);
-console.log(JSON.stringify({ batchId: batch.batchId, freshnessGate: { selectedIds: [...selectedIds], rejected: freshness.rejected }, results, failedCount: failed.length }, null, 2));
+const failed = results.filter((result) => result.ok !== true);
+const generatedResults = results.filter((result) => result.status !== "reused-existing" && result.status !== "dry-run");
+const createdDrafts = generatedResults.filter((result) => result.ok === true && result.status === "draft-created");
+const expectedGenerated = selectedCandidates.filter((candidate) => !(candidate.reuseExistingDraft === true || reuseExistingIds.has(candidate.id))).length;
+
+if (!dryRun && createdDrafts.length !== expectedGenerated) {
+  console.error(JSON.stringify({
+    packageCreationGate: "failed",
+    expectedGenerated,
+    createdDrafts: createdDrafts.length,
+    failed,
+  }, null, 2));
+  throw new Error(`Package creation fail-closed: only ${createdDrafts.length}/${expectedGenerated} selected positions created eligible Sanity drafts.`);
+}
+
+console.log(JSON.stringify({
+  batchId: batch.batchId,
+  freshnessGate: { selectedIds: [...selectedIds], rejected: freshness.rejected },
+  packageCreationGate: dryRun ? "dry-run" : "passed",
+  expectedGenerated,
+  createdDrafts: createdDrafts.length,
+  results,
+  failedCount: failed.length,
+}, null, 2));
 if (failed.length > 0) process.exitCode = 2;
