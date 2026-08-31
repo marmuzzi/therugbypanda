@@ -2,14 +2,6 @@ name: Enrich Current Morning Visuals
 
 on:
   workflow_dispatch:
-  push:
-    branches:
-      - feat/article-visual-enrichment
-      - main
-    paths:
-      - lib/editorial/ContextualDataCardBuilder.ts
-      - scripts/enrich-current-morning-visuals.mjs
-      - .github/workflows/enrich-current-morning-visuals.yml
 
 jobs:
   enrich-current-morning-visuals:
