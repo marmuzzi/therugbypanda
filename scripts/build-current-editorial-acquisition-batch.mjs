@@ -31,7 +31,6 @@ function isGenericLead(lead) {
   return genericTitlePatterns.some((pattern)=>pattern.test(title));
 }
 function relevanceText(lead) {
-  // "Rugby Park" is a football stadium name and must not by itself make a football story rugby-relevant.
   return `${clean(lead.title)} ${clean(lead.description)}`.replace(/\bRugby Park\b/gi," ");
 }
 function isRugbyRelevant(lead) {
@@ -39,12 +38,6 @@ function isRugbyRelevant(lead) {
   const text=relevanceText(lead);
   if(explicitNonRugby.test(text)) return false;
   return rugbySignals.test(text);
-}
-function isSafeContextCorroboration(seed,lead) {
-  if(isGenericLead(lead) || explicitNonRugby.test(relevanceText(lead))) return false;
-  // A secondary headline may omit the word rugby (for example an airline story around a Springboks-All Blacks Test).
-  // It can support a rugby-relevant seed only when the story similarity is independently strong.
-  return sameStory(seed,lead) && (similarity(seed.title,lead.title)>=0.38 || sharedTokenCount(seed.title,lead.title)>=3);
 }
 function sourceRecord(lead,index) {
   const publisher = clean(lead.source?.name || lead.source?.domain || "Unknown source");
@@ -79,38 +72,54 @@ function sameStory(seed,candidate) {
   const nearInTime=hoursApart(seed.publishedAt,candidate.publishedAt)<=36;
   return Math.max(titleScore,developmentScore)>=0.42 || (nearInTime && sharedTitle>=2 && Math.max(titleScore,developmentScore)>=0.30);
 }
+function isSafeContextCorroboration(seed,lead) {
+  if(isGenericLead(lead) || explicitNonRugby.test(relevanceText(lead))) return false;
+  return sameStory(seed,lead) && (similarity(seed.title,lead.title)>=0.38 || sharedTokenCount(seed.title,lead.title)>=3);
+}
+function sourcePriority(lead) {
+  const tier = Number(lead.source?.tier ?? 99);
+  const ownerPriority = Number(lead.source?.ownerPriority ?? 0);
+  return (100 - Math.min(tier,99)) * 100 + ownerPriority;
+}
 
 const leads = discovery.leads.filter((lead)=>lead.title&&lead.link&&lead.publishedAt);
 const rugbySeeds = leads.filter(isRugbyRelevant);
 const rejectedNonRugby = leads.length-rugbySeeds.length;
-const used = new Set();
+
+// Build each corroborated development independently. Secondary evidence is deliberately reusable
+// across seed evaluation: globally marking a corroborating lead as "used" caused an early broad
+// cluster to consume evidence needed by later distinct developments. Freshness/deduplication belongs
+// after candidate construction where subject + development + angle can be judged explicitly.
 const clusters=[];
-for(let i=0;i<rugbySeeds.length;i++) {
-  const seed=rugbySeeds[i];
-  const seedKey=seed.id||seed.link;
-  if(used.has(seedKey)) continue;
-  const members=[seed]; used.add(seedKey);
-  for(const candidate of leads) {
-    const candidateKey=candidate.id||candidate.link;
-    if(used.has(candidateKey)) continue;
-    const sameDomain=seed.source?.domain&&seed.source.domain===candidate.source?.domain;
-    if(sameDomain) continue;
-    if(sameStory(seed,candidate) && (isRugbyRelevant(candidate)||isSafeContextCorroboration(seed,candidate))) {
-      members.push(candidate); used.add(candidateKey);
-    }
+for (const seed of rugbySeeds) {
+  const corroborators = leads
+    .filter((candidate) => {
+      if ((candidate.id||candidate.link)===(seed.id||seed.link)) return false;
+      if (seed.source?.domain && seed.source.domain===candidate.source?.domain) return false;
+      return sameStory(seed,candidate) && (isRugbyRelevant(candidate)||isSafeContextCorroboration(seed,candidate));
+    })
+    .sort((a,b) => sourcePriority(b)-sourcePriority(a));
+
+  const chosen=[seed];
+  const domains=new Set([seed.source?.domain].filter(Boolean));
+  for (const corroborator of corroborators) {
+    const domain=corroborator.source?.domain;
+    if (!domain || domains.has(domain)) continue;
+    chosen.push(corroborator);
+    domains.add(domain);
+    if (chosen.length>=4) break;
   }
-  const domains=new Set(members.map((m)=>m.source?.domain).filter(Boolean));
-  if(domains.size>=2) clusters.push(members);
+  if(domains.size>=2) clusters.push(chosen);
 }
 
-const candidates=clusters.map((members,index)=>{
-  const primary=members.find(isRugbyRelevant) || members[0];
+const candidateDrafts=clusters.map((members)=>{
+  const primary=[...members].sort((a,b)=>sourcePriority(b)-sourcePriority(a))[0] || members[0];
   const sourceRecords=members.map(sourceRecord);
   const facts=[...new Set(members.flatMap((lead)=>[clean(lead.title),clean(lead.description||"")]).filter((v)=>v.length>=20))].slice(0,8);
   const subject=clean(primary.editorialPosition?.subject||primary.title);
   const development=clean(primary.editorialPosition?.development||primary.description||primary.title);
   return {
-    id:`current-${new Date(primary.publishedAt).toISOString().slice(0,10)}-${index+1}`,
+    primaryPublishedAt: primary.publishedAt,
     title:clean(primary.title),
     summary:development,
     suggestedCategory:suggestedCategoryFor(`${subject} ${development} ${primary.title}`),
@@ -120,8 +129,29 @@ const candidates=clusters.map((members,index)=>{
   };
 }).filter((candidate)=>candidate.sourceRecords.length>=2&&candidate.facts.length>=2);
 
-if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} corroborated rugby candidates after rejecting ${rejectedNonRugby} non-rugby/generic leads; exactly five fresh survivors require at least five candidates.`);
-const output={ schemaVersion:"1.0", batchId:`current-${new Date(discovery.discoveredAt||Date.now()).toISOString().slice(0,10)}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+cross-domain+time-bounded-token-corroboration-v3" }, candidates };
+// Remove only near-identical candidate identities here. Deliberately keep closely related but distinct
+// developments for the production-history freshness selector rather than collapsing them via shared evidence.
+const deduped=[];
+for (const candidate of candidateDrafts) {
+  const duplicate=deduped.some((existing)=>
+    similarity(existing.editorialPosition.subject,candidate.editorialPosition.subject)>=0.90 &&
+    similarity(existing.editorialPosition.development,candidate.editorialPosition.development)>=0.90
+  );
+  if(!duplicate) deduped.push(candidate);
+}
+
+const candidates=deduped.map((candidate,index)=>({
+  id:`current-${new Date(candidate.primaryPublishedAt).toISOString().slice(0,10)}-${index+1}`,
+  title:candidate.title,
+  summary:candidate.summary,
+  suggestedCategory:candidate.suggestedCategory,
+  editorialPosition:candidate.editorialPosition,
+  sourceRecords:candidate.sourceRecords,
+  facts:candidate.facts
+}));
+
+if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} corroborated rugby candidates after rejecting ${rejectedNonRugby} non-rugby/generic leads; recovery requires a broad candidate pool before freshness.`);
+const output={ schemaVersion:"1.0", batchId:`current-${new Date(discovery.discoveredAt||Date.now()).toISOString().slice(0,10)}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+independent-seed-cross-domain-corroboration-v4", preDedupedClusters:clusters.length }, candidates };
 await fs.mkdir(path.dirname(path.resolve(outputPath)),{recursive:true});
 await fs.writeFile(path.resolve(outputPath),`${JSON.stringify(output,null,2)}\n`);
-console.log(JSON.stringify({currentAcquisitionBridge:"passed",rugbySeedCount:rugbySeeds.length,rejectedNonRugby,corroboratedCandidates:candidates.length,outputPath},null,2));
+console.log(JSON.stringify({currentAcquisitionBridge:"passed",rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,outputPath},null,2));
