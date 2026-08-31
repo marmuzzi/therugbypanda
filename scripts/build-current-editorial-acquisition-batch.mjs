@@ -7,11 +7,21 @@ const discovery = JSON.parse(await fs.readFile(path.resolve(inputPath), "utf8"))
 if (discovery?.schemaVersion !== "1.0" || !Array.isArray(discovery.leads)) throw new Error("Current acquisition bridge fail-closed: invalid discovery evidence.");
 
 const stop = new Set(["rugby","the","a","an","and","or","of","to","for","in","on","at","with","from","as","is","are","was","were","be","been","being","this","that","these","those","after","before","over","under","into","out","up","down","new","latest","says","say"]);
-function tokens(value="") { return new Set(value.toLowerCase().replace(/[^a-z0-9\s'-]/g," ").split(/\s+/).filter((v)=>v.length>2&&!stop.has(v))); }
+function tokenList(value="") { return value.toLowerCase().replace(/[^a-z0-9\s'-]/g," ").split(/\s+/).filter((v)=>v.length>2&&!stop.has(v)); }
+function tokens(value="") { return new Set(tokenList(value)); }
 function similarity(a,b) { const A=tokens(a), B=tokens(b); if(!A.size||!B.size) return 0; const shared=[...A].filter((x)=>B.has(x)).length; return shared/Math.min(A.size,B.size); }
+function sharedTokenCount(a,b) { const A=tokens(a), B=tokens(b); return [...A].filter((x)=>B.has(x)).length; }
 function canonicalUrl(value="") { try { const u=new URL(value); ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","gclid","fbclid"].forEach((k)=>u.searchParams.delete(k)); return u.toString(); } catch { return value; } }
 function clean(value="") { return value.replace(/\s+/g," ").trim(); }
 function sourceRecord(lead,index) { return { id:`source-${index+1}`, name:lead.source?.name||lead.source?.domain||"Unknown source", url:canonicalUrl(lead.link), title:clean(lead.title), publishedAt:lead.publishedAt, evidenceRole:lead.source?.defaultEvidenceRole||"corroboration" }; }
+function hoursApart(a,b) { const delta=Math.abs(Date.parse(a)-Date.parse(b)); return Number.isFinite(delta)?delta/3600000:Number.POSITIVE_INFINITY; }
+function sameStory(seed,candidate) {
+  const titleScore=similarity(seed.title,candidate.title);
+  const developmentScore=similarity(seed.editorialPosition?.development||seed.description||"",candidate.editorialPosition?.development||candidate.description||"");
+  const sharedTitle=sharedTokenCount(seed.title,candidate.title);
+  const nearInTime=hoursApart(seed.publishedAt,candidate.publishedAt)<=24;
+  return Math.max(titleScore,developmentScore)>=0.42 || (nearInTime && sharedTitle>=2 && Math.max(titleScore,developmentScore)>=0.30);
+}
 
 const leads = discovery.leads.filter((lead)=>lead.title&&lead.link&&lead.publishedAt);
 const used = new Set();
@@ -24,8 +34,7 @@ for(let i=0;i<leads.length;i++) {
     if(used.has(j)) continue;
     const candidate=leads[j];
     const sameDomain=seed.source?.domain&&seed.source.domain===candidate.source?.domain;
-    const score=Math.max(similarity(seed.title,candidate.title), similarity(seed.editorialPosition?.development||seed.description||"",candidate.editorialPosition?.development||candidate.description||""));
-    if(!sameDomain&&score>=0.48) { members.push(candidate); used.add(j); }
+    if(!sameDomain&&sameStory(seed,candidate)) { members.push(candidate); used.add(j); }
   }
   const domains=new Set(members.map((m)=>m.source?.domain).filter(Boolean));
   if(domains.size>=2) clusters.push(members);
@@ -46,7 +55,7 @@ const candidates=clusters.map((members,index)=>{
 }).filter((candidate)=>candidate.sourceRecords.length>=2&&candidate.facts.length>=2);
 
 if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} corroborated multi-source candidates; exactly five fresh survivors require at least five candidates.`);
-const output={ schemaVersion:"1.0", batchId:`current-${new Date(discovery.discoveredAt||Date.now()).toISOString().slice(0,10)}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, successfulSources:discovery.successfulSources }, candidates };
+const output={ schemaVersion:"1.0", batchId:`current-${new Date(discovery.discoveredAt||Date.now()).toISOString().slice(0,10)}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, successfulSources:discovery.successfulSources, clustering:"cross-domain+time-bounded-token-corroboration-v2" }, candidates };
 await fs.mkdir(path.dirname(path.resolve(outputPath)),{recursive:true});
 await fs.writeFile(path.resolve(outputPath),`${JSON.stringify(output,null,2)}\n`);
 console.log(JSON.stringify({currentAcquisitionBridge:"passed",corroboratedCandidates:candidates.length,outputPath},null,2));
