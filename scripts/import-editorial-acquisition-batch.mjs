@@ -198,6 +198,7 @@ async function generateCandidate(candidate, slotIndex) {
 const recentPositions = await loadRecentPositions();
 const retainedDrafts = await loadRetainedDrafts();
 const retainedCount = retainedDrafts.length;
+const retainedInputIds = new Set(retainedDrafts.map((draft) => draft.editorialInputId).filter(Boolean));
 const missingSlots = Math.max(0, PACKAGE_SIZE - retainedCount);
 console.log(JSON.stringify({ sameDayRecovery: "loaded", packageDate: operationalDate(), retainedCount, retainedDrafts, missingSlots }, null, 2));
 
@@ -206,17 +207,25 @@ if (retainedCount >= PACKAGE_SIZE) {
   process.exit(0);
 }
 
-const assessed = batch.candidates.map((candidate) => ({ candidate, assessment: evidenceAssessment(candidate) }));
+const retainedIdConflicts = batch.candidates
+  .filter((candidate) => retainedInputIds.has(candidate.id))
+  .map((candidate) => ({ id: candidate.id, title: candidate.title }));
+if (retainedIdConflicts.length > 0) {
+  console.warn(JSON.stringify({ retainedIdCollisionGuard: "blocked", conflicts: retainedIdConflicts }, null, 2));
+}
+
+const unreservedCandidates = batch.candidates.filter((candidate) => !retainedInputIds.has(candidate.id));
+const assessed = unreservedCandidates.map((candidate) => ({ candidate, assessment: evidenceAssessment(candidate) }));
 const evidenceRejected = assessed.filter(({ assessment }) => !assessment.passed).map(({ candidate, assessment }) => ({ id: candidate.id, title: candidate.title, ...assessment }));
 const eligibleCandidates = assessed.filter(({ assessment }) => assessment.passed).map(({ candidate }) => candidate);
-console.log(JSON.stringify({ evidenceSufficiencyGate: "completed", eligible: eligibleCandidates.length, rejected: evidenceRejected }, null, 2));
+console.log(JSON.stringify({ evidenceSufficiencyGate: "completed", eligible: eligibleCandidates.length, rejected: evidenceRejected, retainedIdConflicts }, null, 2));
 
 const candidatePositions = eligibleCandidates.map(positionForCandidate);
 const freshness = selectFreshPositions(candidatePositions, recentPositions, Math.min(candidatePositions.length, missingSlots + maxReplacementCandidates));
 const freshIds = new Set(freshness.selected.map((position) => position.id));
 const freshQueue = eligibleCandidates.filter((candidate) => freshIds.has(candidate.id));
 if (freshQueue.length < missingSlots) {
-  console.error(JSON.stringify({ freshnessGate: "failed", requiredMissing: missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected }, null, 2));
+  console.error(JSON.stringify({ freshnessGate: "failed", requiredMissing: missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected, retainedIdConflicts }, null, 2));
   throw new Error(`Recovery fail-closed before model spend: only ${freshQueue.length}/${missingSlots} fresh evidence-sufficient candidates are available.`);
 }
 console.log(JSON.stringify({ freshnessGate: "passed", retainedCount, requiredMissing: missingSlots, freshCandidateIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected }, null, 2));
@@ -244,6 +253,7 @@ if (!dryRun && requireAllSelectedCreated && totalEligible !== PACKAGE_SIZE) {
 console.log(JSON.stringify({
   batchId: batch.batchId,
   sameDayRecovery: { retainedCount, missingSlots, retainedDraftIds: retainedDrafts.map((draft) => draft._id) },
+  retainedIdCollisionGuard: { conflicts: retainedIdConflicts },
   evidenceSufficiencyGate: { eligible: eligibleCandidates.length, rejected: evidenceRejected },
   freshnessGate: { selectedIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected },
   packageCreationGate: dryRun ? "dry-run" : "passed",
