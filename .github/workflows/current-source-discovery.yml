@@ -8,8 +8,12 @@ on:
     paths:
       - ".github/recovery-trigger-2026-08-31"
   schedule:
-    # Primary scheduled newsroom run.
+    # Primary 06:30 Dublin run during Irish Summer Time.
     - cron: "30 5 * * *"
+    # Recovery slot: if GitHub misses or the primary run fails before delivery,
+    # retry at 07:00 Dublin during Irish Summer Time. A Sanity delivery-evidence
+    # preflight makes this idempotent when the primary package already succeeded.
+    - cron: "0 6 * * *"
 
 permissions:
   contents: read
@@ -25,6 +29,7 @@ jobs:
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       AUTO004_DRAFT_CUTOFF: 2026-08-24T20:24:00Z
       RECENT_EDITORIAL_POSITIONS_PATH: data/editorial-acquisition/recent-editorial-positions.json
+      DISCOVERY_MAX_AGE_HOURS: "24"
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -46,15 +51,23 @@ jobs:
             echo "SANITY_API_TOKEN is not available to this workflow."
             exit 1
           fi
+      - name: Check whether today's Zoho package already completed
+        id: package_state
+        run: node scripts/check-daily-package-complete.mjs
       - name: Discover current registry sources
+        if: steps.package_state.outputs.skip != 'true'
         run: node scripts/discover-current-editorial-sources.mjs
       - name: Build corroborated acquisition evidence
+        if: steps.package_state.outputs.skip != 'true'
         run: node scripts/build-current-editorial-acquisition-batch.mjs
       - name: Export recent production editorial positions
+        if: steps.package_state.outputs.skip != 'true'
         run: node scripts/export-recent-editorial-positions.mjs
       - name: Delete superseded generated drafts
+        if: steps.package_state.outputs.skip != 'true'
         run: node scripts/cleanup-old-auto004-drafts.mjs
       - name: Import exactly five fresh production-eligible drafts
+        if: steps.package_state.outputs.skip != 'true'
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
@@ -62,7 +75,7 @@ jobs:
           REQUIRE_ALL_SELECTED_CREATED: "1"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
       - name: Send consolidated Zoho package only after successful fresh import
-        if: success()
+        if: success() && steps.package_state.outputs.skip != 'true'
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
         run: |
