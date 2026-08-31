@@ -8,11 +8,7 @@ on:
     paths:
       - ".github/recovery-trigger-2026-08-31"
   schedule:
-    # Primary 06:30 Dublin run during Irish Summer Time.
     - cron: "30 5 * * *"
-    # Recovery slot: if GitHub misses or the primary run fails before delivery,
-    # retry at 07:00 Dublin during Irish Summer Time. A Sanity delivery-evidence
-    # preflight makes this idempotent when the primary package already succeeded.
     - cron: "0 6 * * *"
 
 permissions:
@@ -72,6 +68,9 @@ jobs:
       - name: Build corroborated acquisition evidence
         if: steps.package_state.outputs.skip != 'true'
         run: node scripts/build-current-editorial-acquisition-batch.mjs
+      - name: Reject under-specified evidence before model spend
+        if: steps.package_state.outputs.skip != 'true'
+        run: node scripts/filter-current-acquisition-evidence.mjs
       - name: Export recent production editorial positions
         if: steps.package_state.outputs.skip != 'true'
         run: node scripts/export-recent-editorial-positions.mjs
@@ -86,9 +85,6 @@ jobs:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
           REQUIRE_ALL_SELECTED_CREATED: "1"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
-
-      # MEDIA-011 is part of the protected package transaction. Zoho must never
-      # run before these exact five current-package drafts have verified visuals.
       - name: Build current-package image candidate and deficit plan
         if: steps.package_state.outputs.skip != 'true'
         env:
@@ -126,7 +122,6 @@ jobs:
         env:
           IMAGE_PLAN_PATH: daily-article-image-plan-after-acquisition.json
         run: node scripts/enrich-current-morning-visuals.mjs
-
       - name: Send consolidated Zoho package only after fresh import and image verification
         if: success() && steps.package_state.outputs.skip != 'true'
         env:
@@ -157,6 +152,7 @@ jobs:
           path: |
             data/editorial-acquisition/current-source-discovery.json
             data/editorial-acquisition/current-editorial-acquisition-batch.json
+            data/editorial-acquisition/current-evidence-sufficiency.json
             data/editorial-acquisition/recent-editorial-positions.json
             daily-article-image-plan*.json
             visual-enrichment-summary.json
