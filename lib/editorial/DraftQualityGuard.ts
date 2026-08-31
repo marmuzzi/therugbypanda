@@ -41,15 +41,18 @@ const BANNED_GENERIC_HEADINGS = new Set([
   "what comes next",
   "what to watch next",
   "what to look for next",
+  "what to expect next",
   "what supporters should watch next",
   "what supporters should look for next",
+  "what supporters should expect next",
+  "what fans should expect next",
   "the bottom line",
 ]);
 
 const BANNED_GENERIC_HEADING_PATTERNS = [
   /^why (?:this|it) matters(?:\b|\s+for\b)/i,
-  /^what (?:happened|happens next|comes next|to (?:watch|look for) next)\b/i,
-  /^what (?:supporters|fans|you) (?:should )?(?:watch|look for) next\b/i,
+  /^what (?:happened|happens next|comes next|to (?:watch|look for|expect) next)\b/i,
+  /^what (?:supporters|fans|you) (?:should )?(?:watch|look for|expect) next\b/i,
   /^what you need to know\b/i,
   /^the (?:bigger picture|bottom line)\b/i,
 ];
