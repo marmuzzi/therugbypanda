@@ -2,10 +2,13 @@ name: Current editorial source discovery
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - main
+    paths:
+      - ".github/recovery-trigger-2026-08-31"
   schedule:
-    # One deterministic UTC slot. This is 06:30 in Dublin during Irish Summer
-    # Time and 05:30 during winter, safely ahead of the 08:00 newsroom deadline.
-    # A single slot avoids duplicate schedule events and guard-based false-success skips.
+    # Primary scheduled newsroom run.
     - cron: "30 5 * * *"
 
 permissions:
@@ -30,8 +33,6 @@ jobs:
         with:
           node-version: 22
       - name: Install dependencies
-        # This repository intentionally has no npm lockfile. setup-node's npm cache
-        # and npm ci both require one, so use a normal install on the ephemeral runner.
         run: npm install --ignore-scripts --no-audit --no-fund
       - name: Verify production secrets
         env:
