@@ -21,6 +21,7 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
+    timeout-minutes: 35
     environment: production
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
@@ -29,9 +30,18 @@ jobs:
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       AUTO004_DRAFT_CUTOFF: 2026-08-24T20:24:00Z
       RECENT_EDITORIAL_POSITIONS_PATH: data/editorial-acquisition/recent-editorial-positions.json
-      # Use enough current material to obtain five independently corroborated rugby positions.
-      # The 14-day production-history gate still rejects yesterday's/same-story rewrites before model spend.
       DISCOVERY_MAX_AGE_HOURS: "36"
+      IMAGE_CANDIDATE_TARGET: "3"
+      IMAGE_PLAN_PATH: daily-article-image-plan-after-acquisition.json
+      WIKIMEDIA_RESULTS_PER_QUERY: "20"
+      IMAGE_MAX_QUERIES_PER_ARTICLE: "5"
+      WIKIMEDIA_OUTPUT: data/editorial-images/daily-deficit-candidates.json
+      WIKIMEDIA_CANDIDATE_FILE: data/editorial-images/daily-deficit-candidates.json
+      WIKIMEDIA_REVIEW_FILE: data/editorial-images/daily-deficit-reviewed.json
+      WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/daily-deficit-triage.json
+      WIKIMEDIA_MIN_APPROVED: "1"
+      WIKIMEDIA_MAX_SCOPE_SHARE: "1.0"
+      EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -76,7 +86,48 @@ jobs:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
           REQUIRE_ALL_SELECTED_CREATED: "1"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
-      - name: Send consolidated Zoho package only after successful fresh import
+
+      # MEDIA-011 is part of the protected package transaction. Zoho must never
+      # run before these exact five current-package drafts have verified visuals.
+      - name: Build current-package image candidate and deficit plan
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan.json
+        run: node scripts/plan-daily-article-images.mjs
+      - name: Discover only current-package image deficits
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan.json
+        run: node scripts/discover-daily-article-image-deficits.mjs
+      - name: Strict rights and relevance triage
+        if: steps.package_state.outputs.skip != 'true'
+        run: node scripts/triage-wikimedia-candidates.mjs
+      - name: Import approved deficit images locally into Sanity
+        if: steps.package_state.outputs.skip != 'true'
+        run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/daily-deficit-import.log
+      - name: Reconcile publication-readiness metadata
+        if: steps.package_state.outputs.skip != 'true'
+        run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/daily-deficit-reconcile.log
+      - name: Audit strict local publication readiness
+        if: steps.package_state.outputs.skip != 'true'
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/daily-deficit-readiness.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/daily-deficit-readiness.json
+      - name: Re-plan exact current package after acquisition
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan.json
+        run: |
+          cp daily-article-image-plan.json daily-article-image-plan-before-acquisition.json
+          node scripts/plan-daily-article-images.mjs
+          cp daily-article-image-plan.json daily-article-image-plan-after-acquisition.json
+      - name: Assign and verify relevant hero and inline images on exact five
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan-after-acquisition.json
+        run: node scripts/enrich-current-morning-visuals.mjs
+
+      - name: Send consolidated Zoho package only after fresh import and image verification
         if: success() && steps.package_state.outputs.skip != 'true'
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
@@ -91,14 +142,14 @@ jobs:
           cat "$response_file"
           echo
           if [ "$status" != "200" ]; then
-            echo "Daily package delivery returned HTTP $status after fresh import."
+            echo "Daily package delivery returned HTTP $status after image-verified fresh import."
             exit 1
           fi
           if ! grep -Eq '"status":"(sent|already-sent)"' "$response_file"; then
-            echo "Daily package response did not confirm a sent package after fresh import."
+            echo "Daily package response did not confirm a sent package after image verification."
             exit 1
           fi
-      - name: Upload machine-readable discovery and acquisition evidence
+      - name: Upload machine-readable newsroom evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
@@ -107,5 +158,9 @@ jobs:
             data/editorial-acquisition/current-source-discovery.json
             data/editorial-acquisition/current-editorial-acquisition-batch.json
             data/editorial-acquisition/recent-editorial-positions.json
+            daily-article-image-plan*.json
+            visual-enrichment-summary.json
+            data/editorial-images/daily-deficit-*.json
+            data/editorial-images/daily-deficit-*.log
           if-no-files-found: warn
           retention-days: 14
