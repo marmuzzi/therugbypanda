@@ -1,96 +1,24 @@
-import React, { useMemo, useState } from "react";
-import { displayStatus } from "./formatting";
-import { reviewForeground, reviewMutedForeground } from "./constants";
-
-import type { ReviewArticle } from "./types";
-
-type ReviewQueueProps = {
-  articles: ReviewArticle[];
-  selectedId: string | null;
-  isDirty: boolean;
-  isLoading: boolean;
-  isSaving: boolean;
-  onRefresh: () => void;
-  onSelect: (articleId: string) => void;
-};
-
-type QueueFilter = "all" | "drafts" | "ready" | "published" | "replacement" | "rejected";
-
-const filterLabels: Array<{ value: QueueFilter; label: string }> = [
-  { value: "all", label: "All" },
-  { value: "drafts", label: "Drafts" },
-  { value: "ready", label: "Ready to publish" },
-  { value: "published", label: "Published" },
-  { value: "replacement", label: "Replacement required" },
-  { value: "rejected", label: "Rejected" },
-];
-
-function readInitialFilter(): QueueFilter {
-  if (typeof window === "undefined") return "drafts";
-  const requested = new URLSearchParams(window.location.search).get("filter");
-  return filterLabels.some(({ value }) => value === requested) ? (requested as QueueFilter) : "drafts";
-}
-
-function matchesFilter(article: ReviewArticle, filter: QueueFilter): boolean {
-  if (filter === "all") return true;
-  if (filter === "ready") return article.workflowStatus === "approved";
-  if (filter === "published") return article.workflowStatus === "published";
-  if (filter === "replacement") return article.replacementRequired === true;
-  if (filter === "rejected") return article.workflowStatus === "rejected";
-  return !["approved", "published", "rejected"].includes(article.workflowStatus ?? "draft");
-}
-
-function formatUpdatedAt(value?: string): string | null {
-  if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat("en-IE", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit", timeZone: "Europe/Dublin" }).format(date);
-}
-
-export function ReviewQueue({ articles, selectedId, isDirty, isLoading, isSaving, onRefresh, onSelect }: ReviewQueueProps): React.JSX.Element {
-  const [filter, setFilter] = useState<QueueFilter>(readInitialFilter);
-  const [searchTerm, setSearchTerm] = useState("");
-  const counts = useMemo(() => Object.fromEntries(filterLabels.map(({ value }) => [value, articles.filter((article) => matchesFilter(article, value)).length])) as Record<QueueFilter, number>, [articles]);
-  const visibleArticles = useMemo(() => {
-    const query = searchTerm.trim().toLowerCase();
-    return articles.filter((article) => {
-      if (!matchesFilter(article, filter)) return false;
-      if (!query) return true;
-      return [article.title, article.standfirst, displayStatus(article.workflowStatus)].filter(Boolean).some((value) => value?.toLowerCase().includes(query));
-    });
-  }, [articles, filter, searchTerm]);
-
-  return (
-    <aside style={{ border: "1px solid #ddd", borderRadius: 10, overflow: "hidden", background: "#fff", color: reviewForeground }}>
-      <div style={{ padding: "0.75rem", borderBottom: "1px solid #ddd", display: "flex", justifyContent: "space-between", gap: "0.5rem", alignItems: "center" }}>
-        <strong>Articles ({articles.length})</strong>
-        <button type="button" onClick={onRefresh} disabled={isLoading || isSaving}>Refresh</button>
-      </div>
-      <div style={{ display: "grid", gap: "0.65rem", padding: "0.75rem", borderBottom: "1px solid #ddd", background: "#fafafa", color: reviewForeground }}>
-        <label style={{ display: "grid", gap: "0.3rem" }}>
-          <span style={{ fontSize: "0.75rem", fontWeight: 700 }}>Search articles</span>
-          <input type="search" value={searchTerm} onChange={(event) => setSearchTerm(event.currentTarget.value)} placeholder="Title, standfirst or status" aria-label="Search editorial articles" style={{ width: "100%", border: "1px solid #ccc", borderRadius: 6, padding: "0.55rem 0.65rem", background: "#fff", color: reviewForeground }} />
-        </label>
-        <div aria-label="Filter editorial articles" style={{ display: "flex", flexWrap: "wrap", gap: "0.4rem" }}>
-          {filterLabels.map(({ value, label }) => {
-            const active = filter === value;
-            return <button type="button" key={value} aria-pressed={active} onClick={() => setFilter(value)} style={{ border: active ? "1px solid #227a3b" : "1px solid #ccc", borderRadius: 999, padding: "0.35rem 0.6rem", background: active ? "#e8f5eb" : "#fff", color: active ? "#155c2b" : reviewForeground, fontSize: "0.75rem", fontWeight: active ? 700 : 500, cursor: "pointer" }}>{label} ({counts[value]})</button>;
-          })}
-        </div>
-      </div>
-      {isLoading ? <p style={{ padding: "0.75rem" }}>Loading…</p> : null}
-      {!isLoading && articles.length === 0 ? <p style={{ padding: "0.75rem" }}>No articles are currently available.</p> : null}
-      {!isLoading && articles.length > 0 && visibleArticles.length === 0 ? <p style={{ padding: "0.75rem" }}>No articles match the current search and filter.</p> : null}
-      {visibleArticles.map((article) => {
-        const updatedAt = formatUpdatedAt(article.workflowUpdatedAt);
-        return (
-          <button type="button" key={article._id} onClick={() => { if (isDirty && !window.confirm("Discard unsaved changes and open another article?")) return; onSelect(article._id); }} style={{ width: "100%", textAlign: "left", padding: "0.8rem", border: 0, borderBottom: "1px solid #eee", background: selectedId === article._id ? "#f0f0f0" : "#fff", color: reviewForeground, cursor: "pointer", display: "grid", gap: "0.25rem" }}>
-            <strong>{article.title ?? "Untitled article"}</strong>
-            <small style={{ textTransform: "capitalize", color: reviewForeground }}>{displayStatus(article.workflowStatus)}</small>
-            {updatedAt ? <small style={{ color: reviewMutedForeground }}>Updated {updatedAt}</small> : null}
-          </button>
-        );
-      })}
-    </aside>
-  );
+import React,{useEffect,useMemo,useState}from"react";
+import{displayStatus}from"./formatting";
+import{reviewForeground,reviewMutedForeground}from"./constants";
+import type{ReviewArticle}from"./types";
+type Props={articles:ReviewArticle[];selectedId:string|null;isDirty:boolean;isLoading:boolean;isSaving:boolean;onRefresh:()=>void;onSelect:(id:string)=>void};
+type QueueFilter="today"|"all"|"drafts"|"ready"|"published"|"replacement"|"rejected";
+const labels:Array<{value:QueueFilter;label:string}>=[{value:"today",label:"Today's package"},{value:"drafts",label:"Other drafts"},{value:"ready",label:"Ready to publish"},{value:"published",label:"Published"},{value:"replacement",label:"Replacement required"},{value:"rejected",label:"Rejected"},{value:"all",label:"All"}];
+function dublinDate(){return new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Dublin",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());}
+export function isTodaysPackage(a:ReviewArticle){return a.morningPackageEligible===true&&a.automationContentClass==="production"&&a.editorialInputId?.startsWith(`current-${dublinDate()}-`)===true;}
+function initial():QueueFilter{if(typeof window==="undefined")return"today";const q=new URLSearchParams(window.location.search).get("filter");return labels.some(x=>x.value===q)?q as QueueFilter:"today";}
+function match(a:ReviewArticle,f:QueueFilter){if(f==="today")return isTodaysPackage(a);if(f==="all")return true;if(f==="ready")return a.workflowStatus==="approved";if(f==="published")return a.workflowStatus==="published";if(f==="replacement")return a.replacementRequired===true;if(f==="rejected")return a.workflowStatus==="rejected";return !isTodaysPackage(a)&&!["approved","published","rejected"].includes(a.workflowStatus??"draft");}
+function fmt(v?:string){if(!v)return null;const d=new Date(v);if(Number.isNaN(d.getTime()))return null;return new Intl.DateTimeFormat("en-IE",{day:"numeric",month:"short",hour:"2-digit",minute:"2-digit",timeZone:"Europe/Dublin"}).format(d);}
+export function ReviewQueue({articles,selectedId,isDirty,isLoading,isSaving,onRefresh,onSelect}:Props):React.JSX.Element{
+ const[filter,setFilter]=useState<QueueFilter>(initial);const[search,setSearch]=useState("");
+ const counts=useMemo(()=>Object.fromEntries(labels.map(x=>[x.value,articles.filter(a=>match(a,x.value)).length]))as Record<QueueFilter,number>,[articles]);
+ const visible=useMemo(()=>{const q=search.trim().toLowerCase();return articles.filter(a=>match(a,filter)&&(!q||[a.title,a.standfirst,displayStatus(a.workflowStatus)].filter(Boolean).some(v=>v?.toLowerCase().includes(q))));},[articles,filter,search]);
+ useEffect(()=>{if(isLoading||isDirty||visible.length===0)return;if(!selectedId||!visible.some(a=>a._id===selectedId))onSelect(visible[0]._id);},[filter,isLoading,visible,selectedId,isDirty,onSelect]);
+ return <aside style={{border:"1px solid #ddd",borderRadius:10,overflow:"hidden",background:"#fff",color:reviewForeground}}>
+  <div style={{padding:".75rem",borderBottom:"1px solid #ddd",display:"flex",justifyContent:"space-between",gap:".5rem",alignItems:"center"}}><strong>{filter==="today"?`Today's package (${counts.today})`:`Articles (${articles.length})`}</strong><button type="button" onClick={onRefresh} disabled={isLoading||isSaving}>Refresh</button></div>
+  <div style={{display:"grid",gap:".65rem",padding:".75rem",borderBottom:"1px solid #ddd",background:"#fafafa",color:reviewForeground}}><label style={{display:"grid",gap:".3rem"}}><span style={{fontSize:".75rem",fontWeight:700}}>Search articles</span><input type="search" value={search} onChange={e=>setSearch(e.currentTarget.value)} placeholder="Title, standfirst or status" aria-label="Search editorial articles" style={{width:"100%",border:"1px solid #ccc",borderRadius:6,padding:".55rem .65rem",background:"#fff",color:reviewForeground}}/></label><div aria-label="Filter editorial articles" style={{display:"flex",flexWrap:"wrap",gap:".4rem"}}>{labels.map(({value,label})=>{const active=filter===value;return <button type="button" key={value} aria-pressed={active} onClick={()=>setFilter(value)} style={{border:active?"1px solid #227a3b":"1px solid #ccc",borderRadius:999,padding:".35rem .6rem",background:active?"#e8f5eb":"#fff",color:active?"#155c2b":reviewForeground,fontSize:".75rem",fontWeight:active?700:500,cursor:"pointer"}}>{label} ({counts[value]})</button>})}</div></div>
+  {isLoading?<p style={{padding:".75rem"}}>Loading…</p>:null}{!isLoading&&visible.length===0?<p style={{padding:".75rem"}}>{filter==="today"?"No eligible articles are in today's package.":"No articles match the current search and filter."}</p>:null}
+  {visible.map(a=>{const u=fmt(a.workflowUpdatedAt);return <button type="button" key={a._id} onClick={()=>{if(isDirty&&!window.confirm("Discard unsaved changes and open another article?"))return;onSelect(a._id)}} style={{width:"100%",textAlign:"left",padding:".8rem",border:0,borderBottom:"1px solid #eee",background:selectedId===a._id?"#f0f0f0":"#fff",color:reviewForeground,cursor:"pointer",display:"grid",gap:".25rem"}}><strong>{a.title??"Untitled article"}</strong><small style={{textTransform:"capitalize",color:reviewForeground}}>{displayStatus(a.workflowStatus)}</small>{u?<small style={{color:reviewMutedForeground}}>Updated {u}</small>:null}</button>})}
+ </aside>;
 }
