@@ -1,0 +1,1776 @@
+{
+  "generatedAt": "2026-09-01T22:16:00.523Z",
+  "summary": {
+    "approved": 24,
+    "alreadyLocal": 17,
+    "strongCandidate": 0,
+    "manualSourceResolutionNeeded": 7
+  },
+  "records": [
+    {
+      "_id": "brandAsset-candidate-connacht-rugby",
+      "brandType": "team",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "ico-fallback",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://www.connachtrugby.ie/favicon.ico"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://www.connachtrugby.ie/favicon.ico",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": null,
+      "rightsHolder": "Connacht Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Connacht",
+      "sourceUrl": "https://www.connachtrugby.ie/",
+      "title": "Connacht Rugby",
+      "usageNotes": "Official Connacht Rugby homepage confirmed. No reliable direct full-size logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "localReady": false,
+      "candidates": [
+        {
+          "url": "https://www.connachtrugby.ie/favicon.ico",
+          "notes": "externalLogoUrl",
+          "candidateHost": "connachtrugby.ie",
+          "sourceHost": "connachtrugby.ie",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://www.connachtrugby.ie/favicon.ico",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "ico-fallback",
+          "candidateHost": "connachtrugby.ie",
+          "sourceHost": "connachtrugby.ie",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "manual-source-resolution-needed"
+    },
+    {
+      "_id": "brandAsset-candidate-epcr-challenge-cup",
+      "brandType": "competition",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/2e7354fd-d641-4170-8d65-4ba31590ce27.svg?format=webp&width=200"
+        },
+        {
+          "_key": "candidateLogo1",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/96d27751-bc48-42e6-890e-a389508ab133.svg?format=webp&width=1920"
+        },
+        {
+          "_key": "candidateLogo2",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/43e4a7e3-bb43-4b3e-ac00-7921debba4a6.svg?format=webp&width=1920"
+        },
+        {
+          "_key": "candidateLogo3",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/5209c70a-71ec-4df9-a197-b4150b69f314.svg?format=webp&width=1920"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media-cdn.incrowdsports.com/2e7354fd-d641-4170-8d65-4ba31590ce27.svg?format=webp&width=200",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-5bfd40f2b4b494838073e4dbc2c556a2a03fc182-200x37-webp",
+      "rightsHolder": "European Professional Club Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Challenge Cup",
+      "sourceUrl": "https://www.epcrugby.com/challenge-cup/content/itll-be-a-big-atmosphere-itll-be-loud-itll-be-noisy-gloucester-rugbys-lewis-ludlow-relishing-montpellier-epcr-challenge-cup-clash",
+      "title": "EPCR Challenge Cup",
+      "usageNotes": "Official EPCR Challenge Cup page exposes logo candidates. Candidate only; verify source and usage restrictions before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media-cdn.incrowdsports.com/2e7354fd-d641-4170-8d65-4ba31590ce27.svg?format=webp&width=200",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/2e7354fd-d641-4170-8d65-4ba31590ce27.svg?format=webp&width=200",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/96d27751-bc48-42e6-890e-a389508ab133.svg?format=webp&width=1920",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/43e4a7e3-bb43-4b3e-ac00-7921debba4a6.svg?format=webp&width=1920",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/5209c70a-71ec-4df9-a197-b4150b69f314.svg?format=webp&width=1920",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-european-professional-club-rugby",
+      "brandType": "competition",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/1d77a993-3a66-4ef5-a36b-66788229dca0.svg?format=webp&width=200"
+        },
+        {
+          "_key": "candidateLogo1",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/39fdce74-2703-4bc4-8f6b-22f958168a78.svg?format=webp&width=1920"
+        },
+        {
+          "_key": "candidateLogo2",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/d5dac4eb-15fb-4e27-ba6a-b40d566561da.svg?format=webp&width=1920"
+        },
+        {
+          "_key": "candidateLogo3",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/253f1e28-4d1d-4876-9fbb-88a8f45957b5.svg?format=webp&width=1920"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media-cdn.incrowdsports.com/1d77a993-3a66-4ef5-a36b-66788229dca0.svg?format=webp&width=200",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-fb5b913e8ca4e70c3a10e7ff7ab36c9ea33482db-200x62-webp",
+      "rightsHolder": "European Professional Club Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "EPCR",
+      "sourceUrl": "https://www.epcrugby.com/european-professional-club-rugby/about-epcr",
+      "title": "European Professional Club Rugby",
+      "usageNotes": "Official EPCR pages expose EPCR logo variants through Incrowd media CDN. Candidate only; verify source and usage restrictions before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media-cdn.incrowdsports.com/1d77a993-3a66-4ef5-a36b-66788229dca0.svg?format=webp&width=200",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/1d77a993-3a66-4ef5-a36b-66788229dca0.svg?format=webp&width=200",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/39fdce74-2703-4bc4-8f6b-22f958168a78.svg?format=webp&width=1920",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/d5dac4eb-15fb-4e27-ba6a-b40d566561da.svg?format=webp&width=1920",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/253f1e28-4d1d-4876-9fbb-88a8f45957b5.svg?format=webp&width=1920",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-european-rugby-champions-cup",
+      "brandType": "competition",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg source served with webp transform query",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media-cdn.incrowdsports.com/20f46ca2-f360-49fd-a056-12344a2d19b6.svg?format=webp&width=200"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media-cdn.incrowdsports.com/20f46ca2-f360-49fd-a056-12344a2d19b6.svg?format=webp&width=200",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-3cb3364d0b120d77166138a80c37fae415f3ebfe-200x39-webp",
+      "rightsHolder": "European Professional Club Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Champions Cup",
+      "sourceUrl": "https://www.epcrugby.com/european-professional-club-rugby/about-epcr",
+      "title": "European Rugby Champions Cup",
+      "usageNotes": "Official EPCR pages expose Champions Cup logo candidate. Candidate only; verify source and usage restrictions before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media-cdn.incrowdsports.com/20f46ca2-f360-49fd-a056-12344a2d19b6.svg?format=webp&width=200",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://media-cdn.incrowdsports.com/20f46ca2-f360-49fd-a056-12344a2d19b6.svg?format=webp&width=200",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg source served with webp transform query",
+          "candidateHost": "media-cdn.incrowdsports.com",
+          "sourceHost": "epcrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-federazione-italiana-rugby",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Italy_-_Dark.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Italy_-_Dark.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-25a519f712ed1290da86c4d0dc1854e204c5f05f-500x500-svg",
+      "rightsHolder": "Federazione Italiana Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Italy Rugby",
+      "sourceUrl": "https://media.sixnationsrugby.com/#italy",
+      "title": "Federazione Italiana Rugby",
+      "usageNotes": "Official Six Nations media page exposes Italy dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Italy_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Italy_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Italy_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Italy_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-fiji-rugby-union",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "ico-fallback",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://fijirugby.com/favicon.ico"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://fijirugby.com/favicon.ico",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": null,
+      "rightsHolder": "Fiji Rugby Union",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Fiji Rugby",
+      "sourceUrl": "https://fijirugby.com/",
+      "title": "Fiji Rugby Union",
+      "usageNotes": "Official Fiji Rugby source retained. No reliable direct full-size logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "localReady": false,
+      "candidates": [
+        {
+          "url": "https://fijirugby.com/favicon.ico",
+          "notes": "externalLogoUrl",
+          "candidateHost": "fijirugby.com",
+          "sourceHost": "fijirugby.com",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://fijirugby.com/favicon.ico",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "ico-fallback",
+          "candidateHost": "fijirugby.com",
+          "sourceHost": "fijirugby.com",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "manual-source-resolution-needed"
+    },
+    {
+      "_id": "brandAsset-candidate-federation-francaise-de-rugby",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/France_-_Dark.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/France_-_Dark.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-90cece3e973120ddb657f22ba29631dc178533c5-500x500-svg",
+      "rightsHolder": "Fédération Française de Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "France Rugby",
+      "sourceUrl": "https://media.sixnationsrugby.com/#france",
+      "title": "Fédération Française de Rugby",
+      "usageNotes": "Official Six Nations media page exposes France dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/France_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/France_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/France_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/France_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-irish-rugby-football-union",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Ireland_-_Dark.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Ireland_-_Dark.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-37a40dc3655c9fde9616296717e2e24c2c6f8e0a-500x500-svg",
+      "rightsHolder": "Irish Rugby Football Union",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Ireland Rugby",
+      "sourceUrl": "https://media.sixnationsrugby.com/#ireland",
+      "title": "Irish Rugby Football Union",
+      "usageNotes": "Official Six Nations media page exposes Ireland dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Ireland_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Ireland_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Ireland_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Ireland_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-japan-rugby-football-union",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "ico-fallback",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://www.rugby-japan.jp/favicon.ico"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://www.rugby-japan.jp/favicon.ico",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": null,
+      "rightsHolder": "Japan Rugby Football Union",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Japan Rugby",
+      "sourceUrl": "https://www.rugby-japan.jp/",
+      "title": "Japan Rugby Football Union",
+      "usageNotes": "Official JRFU homepage confirmed. No reliable direct full-size logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "localReady": false,
+      "candidates": [
+        {
+          "url": "https://www.rugby-japan.jp/favicon.ico",
+          "notes": "externalLogoUrl",
+          "candidateHost": "rugby-japan.jp",
+          "sourceHost": "rugby-japan.jp",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://www.rugby-japan.jp/favicon.ico",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "ico-fallback",
+          "candidateHost": "rugby-japan.jp",
+          "sourceHost": "rugby-japan.jp",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "manual-source-resolution-needed"
+    },
+    {
+      "_id": "brandAsset-candidate-leinster-rugby",
+      "brandType": "team",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-f7c57c4b2d869b82b5b9711878cceec806707cfa-108x103-svg",
+      "rightsHolder": "Leinster Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Leinster",
+      "sourceUrl": "https://www.leinsterrugby.ie/",
+      "title": "Leinster Rugby",
+      "usageNotes": "Official Leinster Rugby homepage image reference resolved to this Leinster Rugby logo SVG. Candidate reference only; verify rights and upload approved asset into Sanity before public use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "d2tqzbbf1n6xva.cloudfront.net",
+          "sourceHost": "leinsterrugby.ie",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": true,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "d2tqzbbf1n6xva.cloudfront.net",
+          "sourceHost": "leinsterrugby.ie",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": true,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "d2tqzbbf1n6xva.cloudfront.net",
+          "sourceHost": "leinsterrugby.ie",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": true,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "d2tqzbbf1n6xva.cloudfront.net",
+          "sourceHost": "leinsterrugby.ie",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": true,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-men-s-rugby-world-cup-2027",
+      "brandType": "tournament",
+      "candidateLogoUrls": [],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": null,
+      "lightLogoAsset": null,
+      "primaryLogoAsset": null,
+      "rightsHolder": "World Rugby / Rugby World Cup Limited",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "RWC 2027",
+      "sourceUrl": "https://www.world.rugby/news/976853/australia-ready-to-welcome-a-new-era-of-rugby-as-mens-rugby-world-cup-2027-visual-identity-unveiled",
+      "title": "Men's Rugby World Cup 2027",
+      "usageNotes": "Official World Rugby result confirms the Men's Rugby World Cup 2027 visual identity source page. Candidate only; logo URLs and colours still need source-page extraction before import.",
+      "localReady": false,
+      "candidates": [],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "manual-source-resolution-needed"
+    },
+    {
+      "_id": "brandAsset-candidate-munster-rugby",
+      "brandType": "team",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://cdn.soticservers.net/tools/images/teams/logos/RUGBY969513/d/MUNS1976.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://cdn.soticservers.net/tools/images/teams/logos/RUGBY969513/d/MUNS1976.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-9a695f45671b2383cd1e234600c65b2160a686e4-1000x1000-svg",
+      "rightsHolder": "Munster Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Munster",
+      "sourceUrl": "https://www.munsterrugby.ie/preview/team-named-munster-side-to-visit-scarlets/",
+      "title": "Munster Rugby",
+      "usageNotes": "Official Munster Rugby page exposed a team logo SVG through Sotic CDN. Candidate reference only; verify rights and upload approved asset into Sanity before public use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://cdn.soticservers.net/tools/images/teams/logos/RUGBY969513/d/MUNS1976.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "cdn.soticservers.net",
+          "sourceHost": "munsterrugby.ie",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://cdn.soticservers.net/tools/images/teams/logos/RUGBY969513/d/MUNS1976.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "cdn.soticservers.net",
+          "sourceHost": "munsterrugby.ie",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": false,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-new-zealand-rugby",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "png",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png"
+        },
+        {
+          "_key": "candidateLogo1",
+          "_type": "object",
+          "format": "png",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://images.allblacks.com/image/private/t_q_good/v1780998991/prd/assets/teams/logos_darkmode/BF.png"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-e976d450646c44b937ed77db0509f925b83a37ed-283x200-png",
+      "rightsHolder": "New Zealand Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "New Zealand Rugby",
+      "sourceUrl": "https://www.allblacks.com/",
+      "title": "New Zealand Rugby",
+      "usageNotes": "Official All Blacks homepage exposed All Blacks and Black Ferns logo references. Candidate only; verify whether NZ Rugby, All Blacks and Black Ferns should be separate reviewed Brand Asset records before approval.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png",
+          "notes": "externalLogoUrl",
+          "candidateHost": "images.allblacks.com",
+          "sourceHost": "allblacks.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "png",
+          "candidateHost": "images.allblacks.com",
+          "sourceHost": "allblacks.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://images.allblacks.com/image/private/t_q_good/v1780998991/prd/assets/teams/logos_darkmode/BF.png",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "png",
+          "candidateHost": "images.allblacks.com",
+          "sourceHost": "allblacks.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png",
+          "notes": "externalLogoUrl",
+          "candidateHost": "images.allblacks.com",
+          "sourceHost": "allblacks.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://images.allblacks.com/image/private/t_q_good/v1780998849/prd/assets/teams/logos_darkmode/AB.png",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "png",
+          "candidateHost": "images.allblacks.com",
+          "sourceHost": "allblacks.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://images.allblacks.com/image/private/t_q_good/v1780998991/prd/assets/teams/logos_darkmode/BF.png",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "png",
+          "candidateHost": "images.allblacks.com",
+          "sourceHost": "allblacks.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-rugby-australia",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "ico-fallback",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://www.rugby.com.au/favicon.ico"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://www.rugby.com.au/favicon.ico",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": null,
+      "rightsHolder": "Rugby Australia",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Australia Rugby",
+      "sourceUrl": "https://www.rugby.com.au/",
+      "title": "Rugby Australia",
+      "usageNotes": "Official Rugby Australia homepage confirmed. No reliable direct full-size Rugby Australia logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "localReady": false,
+      "candidates": [
+        {
+          "url": "https://www.rugby.com.au/favicon.ico",
+          "notes": "externalLogoUrl",
+          "candidateHost": "rugby.com.au",
+          "sourceHost": "rugby.com.au",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://www.rugby.com.au/favicon.ico",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "ico-fallback",
+          "candidateHost": "rugby.com.au",
+          "sourceHost": "rugby.com.au",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "manual-source-resolution-needed"
+    },
+    {
+      "_id": "brandAsset-candidate-rugby-football-union",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/England_-_Dark.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/England_-_Dark.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-ec38c500d9b25851a46993a86e97f49f6d8a823f-500x500-svg",
+      "rightsHolder": "Rugby Football Union",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "England Rugby",
+      "sourceUrl": "https://media.sixnationsrugby.com/#england",
+      "title": "Rugby Football Union",
+      "usageNotes": "Official Six Nations media page exposes England dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/England_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/England_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/England_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/England_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-rugby-world-cup",
+      "brandType": "competition",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "ico-fallback",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://www.rugbyworldcup.com/favicon.ico"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://www.rugbyworldcup.com/favicon.ico",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": null,
+      "rightsHolder": "Rugby World Cup Limited / World Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Rugby World Cup",
+      "sourceUrl": "https://www.rugbyworldcup.com/en",
+      "title": "Rugby World Cup",
+      "usageNotes": "Official Rugby World Cup homepage confirmed. No reliable direct full-size logo URL was exposed by previous extraction. This official-domain favicon is a temporary review preview fallback only, not an approval-ready logo asset. Replace with a direct official logo file before approval or public use.",
+      "localReady": false,
+      "candidates": [
+        {
+          "url": "https://www.rugbyworldcup.com/favicon.ico",
+          "notes": "externalLogoUrl",
+          "candidateHost": "rugbyworldcup.com",
+          "sourceHost": "rugbyworldcup.com",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        },
+        {
+          "url": "https://www.rugbyworldcup.com/favicon.ico",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "ico-fallback",
+          "candidateHost": "rugbyworldcup.com",
+          "sourceHost": "rugbyworldcup.com",
+          "explicitImageExtension": false,
+          "faviconLike": true,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": false
+        }
+      ],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "manual-source-resolution-needed"
+    },
+    {
+      "_id": "brandAsset-candidate-scottish-rugby-union",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Scottish_Rugby_-_Dark.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Scottish_Rugby_-_Dark.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-f7d171937d6cf6f985a699fabf6eb97a942ac188-500x500-svg",
+      "rightsHolder": "Scottish Rugby Union",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Scottish Rugby",
+      "sourceUrl": "https://media.sixnationsrugby.com/#scotland",
+      "title": "Scottish Rugby Union",
+      "usageNotes": "Official Six Nations media page exposes Scotland dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Scottish_Rugby_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Scottish_Rugby_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Scottish_Rugby_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Scottish_Rugby_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-six-nations-rugby",
+      "brandType": "competition",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2025/10/Frame-3.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media.sixnationsrugby.com/wp-content/uploads/2025/10/Frame-3.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-582890aa672c670ab25fffeacad96871ff69e27e-81x91-svg",
+      "rightsHolder": "Six Nations Rugby Limited / Six Nations Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Six Nations",
+      "sourceUrl": "https://media.sixnationsrugby.com/",
+      "title": "Six Nations Rugby",
+      "usageNotes": "Official Six Nations media/corporate site includes brand assets and locked download access. Treat as editorial/trademark-use only until reviewed.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2025/10/Frame-3.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2025/10/Frame-3.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2025/10/Frame-3.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2025/10/Frame-3.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-south-african-rugby-union",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://springboks.rugby/assets/svg/springbok.svg"
+        },
+        {
+          "_key": "candidateLogo1",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://springboks.rugby/assets/images/Springboks-logo.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://springboks.rugby/assets/svg/springbok.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-46a09858293a7dd91466d07b9343467dff350780-277x91-svg",
+      "rightsHolder": "South African Rugby Union",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "South Africa Rugby",
+      "sourceUrl": "https://springboks.rugby/",
+      "title": "South African Rugby Union",
+      "usageNotes": "sarugby.co.za redirected to springboks.rugby. Previous Apify output exposed Next.js image wrapper URLs for these Springboks/SARU asset paths; this update records the underlying official-domain SVG paths as candidate references only. Verify rights and whether SARU/Springboks should be split before approval.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://springboks.rugby/assets/svg/springbok.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "springboks.rugby",
+          "sourceHost": "springboks.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://springboks.rugby/assets/svg/springbok.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "springboks.rugby",
+          "sourceHost": "springboks.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://springboks.rugby/assets/images/Springboks-logo.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "springboks.rugby",
+          "sourceHost": "springboks.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://springboks.rugby/assets/svg/springbok.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "springboks.rugby",
+          "sourceHost": "springboks.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://springboks.rugby/assets/svg/springbok.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "springboks.rugby",
+          "sourceHost": "springboks.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://springboks.rugby/assets/images/Springboks-logo.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "springboks.rugby",
+          "sourceHost": "springboks.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-ulster-rugby",
+      "brandType": "team",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "png",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-2783d0fcb25d81bfa9854b522af9e7d986936732-100x100-png",
+      "rightsHolder": "Ulster Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Ulster",
+      "sourceUrl": "https://ulster.rugby/",
+      "title": "Ulster Rugby",
+      "usageNotes": "Official Ulster Rugby homepage exposes Ulster Rugby image references for fixture/team contexts, and the clicked image target resolved to an Ulster-hosted team icon PNG. Candidate reference only; verify rights and upload approved asset to Sanity before public use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301",
+          "notes": "externalLogoUrl",
+          "candidateHost": "cdn.ulster.rugby",
+          "sourceHost": "ulster.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "png",
+          "candidateHost": "cdn.ulster.rugby",
+          "sourceHost": "ulster.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301",
+          "notes": "externalLogoUrl",
+          "candidateHost": "cdn.ulster.rugby",
+          "sourceHost": "ulster.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://cdn.ulster.rugby/icons/team/light/1x/id/2.png?version=2026060301",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "png",
+          "candidateHost": "cdn.ulster.rugby",
+          "sourceHost": "ulster.rugby",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-united-rugby-championship",
+      "brandType": "league",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://www.unitedrugby.com/wp-content/themes/sp-starter-theme/public/images/app-banner-logo.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://www.unitedrugby.com/wp-content/themes/sp-starter-theme/public/images/app-banner-logo.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-a43cd7f0ea6a1d27c31c1b54cb1d8e6bac8dafa4-39x40-svg",
+      "rightsHolder": "United Rugby Championship",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "URC",
+      "sourceUrl": "https://www.unitedrugby.com/media/",
+      "title": "United Rugby Championship",
+      "usageNotes": "Official URC media page points to the URC Media Centre and exposes an app/banner logo. Candidate only; verify media-centre access and usage terms before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://www.unitedrugby.com/wp-content/themes/sp-starter-theme/public/images/app-banner-logo.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "unitedrugby.com",
+          "sourceHost": "unitedrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://www.unitedrugby.com/wp-content/themes/sp-starter-theme/public/images/app-banner-logo.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "unitedrugby.com",
+          "sourceHost": "unitedrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://www.unitedrugby.com/wp-content/themes/sp-starter-theme/public/images/app-banner-logo.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "unitedrugby.com",
+          "sourceHost": "unitedrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://www.unitedrugby.com/wp-content/themes/sp-starter-theme/public/images/app-banner-logo.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "unitedrugby.com",
+          "sourceHost": "unitedrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-union-argentina-de-rugby",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg"
+        },
+        {
+          "_key": "candidateLogo1",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR_iso.svg"
+        },
+        {
+          "_key": "candidateLogo2",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://uar.com.ar/wp-content/uploads/LosPumas_negativo.svg"
+        },
+        {
+          "_key": "candidateLogo3",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://uar.com.ar/wp-content/uploads/LosPumas_positivo.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-7609dd51b765de98edb5e2c87d8d0f1d2c1b30fb-800x212-svg",
+      "rightsHolder": "Unión Argentina de Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Argentina Rugby",
+      "sourceUrl": "https://uar.com.ar/",
+      "title": "Unión Argentina de Rugby",
+      "usageNotes": "Official UAR homepage exposed UAR and Los Pumas SVG marks. Candidate only; verify whether UAR and Los Pumas should be separate Brand Asset records before approval.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR_iso.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/LosPumas_negativo.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/LosPumas_positivo.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR-horizontal.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/MarcaUAR_iso.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/LosPumas_negativo.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://uar.com.ar/wp-content/uploads/LosPumas_positivo.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "uar.com.ar",
+          "sourceHost": "uar.com.ar",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-welsh-rugby-union",
+      "brandType": "union",
+      "candidateLogoUrls": [
+        {
+          "_key": "candidateLogo0",
+          "_type": "object",
+          "format": "svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Welsh_Rugby_-_Dark.svg"
+        }
+      ],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Welsh_Rugby_-_Dark.svg",
+      "lightLogoAsset": null,
+      "primaryLogoAsset": "image-4ba14bcb8b212fce41be28429fcdde95c169f963-500x500-svg",
+      "rightsHolder": "Welsh Rugby Union",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "Wales Rugby",
+      "sourceUrl": "https://media.sixnationsrugby.com/#wales",
+      "title": "Welsh Rugby Union",
+      "usageNotes": "Official Six Nations media page exposes Wales dark logo candidate. Candidate only; verify rights holder/source before use.",
+      "localReady": true,
+      "candidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Welsh_Rugby_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Welsh_Rugby_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "strongLocalizationCandidates": [
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Welsh_Rugby_-_Dark.svg",
+          "notes": "externalLogoUrl",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        },
+        {
+          "url": "https://media.sixnationsrugby.com/wp-content/uploads/2026/01/Welsh_Rugby_-_Dark.svg",
+          "notes": "External candidate reference only. Do not hotlink publicly.",
+          "format": "svg",
+          "candidateHost": "media.sixnationsrugby.com",
+          "sourceHost": "media.sixnationsrugby.com",
+          "explicitImageExtension": true,
+          "faviconLike": false,
+          "likelyOfficialHost": true,
+          "trustedMediaHost": false,
+          "localizationCandidate": true
+        }
+      ],
+      "localizationStatus": "already-local"
+    },
+    {
+      "_id": "brandAsset-candidate-world-rugby",
+      "brandType": "union",
+      "candidateLogoUrls": [],
+      "country": null,
+      "darkLogoAsset": null,
+      "externalLogoUrl": null,
+      "lightLogoAsset": null,
+      "primaryLogoAsset": null,
+      "rightsHolder": "World Rugby",
+      "rightsStatus": "editorial-trademark-use-only",
+      "shortName": "World Rugby",
+      "sourceUrl": "https://www.world.rugby/",
+      "title": "World Rugby",
+      "usageNotes": "Official World Rugby homepage and metadata confirmed. No logo URL stored because this pass did not isolate a reliable World Rugby-owned mark from sponsor logos and navigation text.",
+      "localReady": false,
+      "candidates": [],
+      "strongLocalizationCandidates": [],
+      "localizationStatus": "manual-source-resolution-needed"
+    }
+  ]
+}

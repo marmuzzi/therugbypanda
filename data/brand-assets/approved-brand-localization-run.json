@@ -1,0 +1,88 @@
+{
+  "approvedMissingLocal": 12,
+  "localized": 5,
+  "noStrongCandidate": 7,
+  "failed": 0,
+  "results": [
+    {
+      "id": "brandAsset-candidate-connacht-rugby",
+      "title": "Connacht Rugby",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-epcr-challenge-cup",
+      "title": "EPCR Challenge Cup",
+      "status": "localized",
+      "url": "https://media-cdn.incrowdsports.com/2e7354fd-d641-4170-8d65-4ba31590ce27.svg?format=webp&width=200",
+      "contentType": "image/webp",
+      "bytes": 3826,
+      "assetId": "image-5bfd40f2b4b494838073e4dbc2c556a2a03fc182-200x37-webp"
+    },
+    {
+      "id": "brandAsset-candidate-european-professional-club-rugby",
+      "title": "European Professional Club Rugby",
+      "status": "localized",
+      "url": "https://media-cdn.incrowdsports.com/1d77a993-3a66-4ef5-a36b-66788229dca0.svg?format=webp&width=200",
+      "contentType": "image/webp",
+      "bytes": 5838,
+      "assetId": "image-fb5b913e8ca4e70c3a10e7ff7ab36c9ea33482db-200x62-webp"
+    },
+    {
+      "id": "brandAsset-candidate-european-rugby-champions-cup",
+      "title": "European Rugby Champions Cup",
+      "status": "localized",
+      "url": "https://media-cdn.incrowdsports.com/20f46ca2-f360-49fd-a056-12344a2d19b6.svg?format=webp&width=200",
+      "contentType": "image/webp",
+      "bytes": 5660,
+      "assetId": "image-3cb3364d0b120d77166138a80c37fae415f3ebfe-200x39-webp"
+    },
+    {
+      "id": "brandAsset-candidate-fiji-rugby-union",
+      "title": "Fiji Rugby Union",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-japan-rugby-football-union",
+      "title": "Japan Rugby Football Union",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-leinster-rugby",
+      "title": "Leinster Rugby",
+      "status": "localized",
+      "url": "https://d2tqzbbf1n6xva.cloudfront.net/leinster2023/wp-content/uploads/2023/08/31143344/Leinster-Logo-Light.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 8873,
+      "assetId": "image-f7c57c4b2d869b82b5b9711878cceec806707cfa-108x103-svg"
+    },
+    {
+      "id": "brandAsset-candidate-men-s-rugby-world-cup-2027",
+      "title": "Men's Rugby World Cup 2027",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-munster-rugby",
+      "title": "Munster Rugby",
+      "status": "localized",
+      "url": "https://cdn.soticservers.net/tools/images/teams/logos/RUGBY969513/d/MUNS1976.svg",
+      "contentType": "image/svg+xml",
+      "bytes": 16108,
+      "assetId": "image-9a695f45671b2383cd1e234600c65b2160a686e4-1000x1000-svg"
+    },
+    {
+      "id": "brandAsset-candidate-rugby-australia",
+      "title": "Rugby Australia",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-rugby-world-cup",
+      "title": "Rugby World Cup",
+      "status": "no-strong-candidate"
+    },
+    {
+      "id": "brandAsset-candidate-world-rugby",
+      "title": "World Rugby",
+      "status": "no-strong-candidate"
+    }
+  ]
+}
