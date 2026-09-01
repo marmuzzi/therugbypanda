@@ -1,8 +1,7 @@
-import React,{useMemo,useState}from"react";
+import React,{useEffect,useMemo,useState}from"react";
 import{displayStatus}from"./formatting";
 import{reviewForeground,reviewMutedForeground}from"./constants";
 import type{ReviewArticle}from"./types";
-
 type Props={articles:ReviewArticle[];selectedId:string|null;isDirty:boolean;isLoading:boolean;isSaving:boolean;onRefresh:()=>void;onSelect:(id:string)=>void};
 type QueueFilter="today"|"all"|"drafts"|"ready"|"published"|"replacement"|"rejected";
 const labels:Array<{value:QueueFilter;label:string}>=[{value:"today",label:"Today's package"},{value:"drafts",label:"Other drafts"},{value:"ready",label:"Ready to publish"},{value:"published",label:"Published"},{value:"replacement",label:"Replacement required"},{value:"rejected",label:"Rejected"},{value:"all",label:"All"}];
@@ -15,6 +14,7 @@ export function ReviewQueue({articles,selectedId,isDirty,isLoading,isSaving,onRe
  const[filter,setFilter]=useState<QueueFilter>(initial);const[search,setSearch]=useState("");
  const counts=useMemo(()=>Object.fromEntries(labels.map(x=>[x.value,articles.filter(a=>match(a,x.value)).length]))as Record<QueueFilter,number>,[articles]);
  const visible=useMemo(()=>{const q=search.trim().toLowerCase();return articles.filter(a=>match(a,filter)&&(!q||[a.title,a.standfirst,displayStatus(a.workflowStatus)].filter(Boolean).some(v=>v?.toLowerCase().includes(q))));},[articles,filter,search]);
+ useEffect(()=>{if(isLoading||isDirty||visible.length===0)return;if(!selectedId||!visible.some(a=>a._id===selectedId))onSelect(visible[0]._id);},[filter,isLoading,visible,selectedId,isDirty,onSelect]);
  return <aside style={{border:"1px solid #ddd",borderRadius:10,overflow:"hidden",background:"#fff",color:reviewForeground}}>
   <div style={{padding:".75rem",borderBottom:"1px solid #ddd",display:"flex",justifyContent:"space-between",gap:".5rem",alignItems:"center"}}><strong>{filter==="today"?`Today's package (${counts.today})`:`Articles (${articles.length})`}</strong><button type="button" onClick={onRefresh} disabled={isLoading||isSaving}>Refresh</button></div>
   <div style={{display:"grid",gap:".65rem",padding:".75rem",borderBottom:"1px solid #ddd",background:"#fafafa",color:reviewForeground}}><label style={{display:"grid",gap:".3rem"}}><span style={{fontSize:".75rem",fontWeight:700}}>Search articles</span><input type="search" value={search} onChange={e=>setSearch(e.currentTarget.value)} placeholder="Title, standfirst or status" aria-label="Search editorial articles" style={{width:"100%",border:"1px solid #ccc",borderRadius:6,padding:".55rem .65rem",background:"#fff",color:reviewForeground}}/></label><div aria-label="Filter editorial articles" style={{display:"flex",flexWrap:"wrap",gap:".4rem"}}>{labels.map(({value,label})=>{const active=filter===value;return <button type="button" key={value} aria-pressed={active} onClick={()=>setFilter(value)} style={{border:active?"1px solid #227a3b":"1px solid #ccc",borderRadius:999,padding:".35rem .6rem",background:active?"#e8f5eb":"#fff",color:active?"#155c2b":reviewForeground,fontSize:".75rem",fontWeight:active?700:500,cursor:"pointer"}}>{label} ({counts[value]})</button>})}</div></div>
