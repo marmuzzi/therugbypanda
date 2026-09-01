@@ -35,11 +35,14 @@ async function mutate(mutations) {
   if (!response.ok) throw new Error(`Sanity mutation failed ${response.status}: ${await response.text()}`);
 }
 function blockText(block) { return (block?.children ?? []).map((child) => child?.text ?? "").join("").trim(); }
-function imageText(image) { return [image.title,image.altText,image.caption,image.subject,image.team,image.event].filter(Boolean).join(" "); }
+function imageText(image) { return [image.title,image.altText,image.alt,image.caption,image.subject,image.team,image.event].filter(Boolean).join(" "); }
 function groupsIn(value) { const lower = String(value ?? "").toLowerCase(); return TEAM_GROUPS.filter((group) => group.terms.some((term) => lower.includes(term))).map((group) => group.id); }
 function words(value) { return [...new Set(String(value ?? "").toLowerCase().split(/[^a-z0-9à-öø-ÿ]+/).filter((word) => word.length >= 5 && !GENERIC.has(word)))]; }
 function namedPeople(value) { const matches = String(value ?? "").match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+\b/g) ?? []; return [...new Set(matches.filter((name) => !TEAM_GROUPS.some((group) => group.terms.includes(name.toLowerCase()))))]; }
-function portableImage(image) { return { _type: "image", _key: crypto.randomUUID().replaceAll("-", "").slice(0, 12), asset: { _type: "reference", _ref: image.assetRef }, alt: image.altText ?? image.title ?? "Rugby editorial image", caption: image.caption, photographer: image.publicCredit ?? image.creditLine ?? image.photographer, source: image.source ?? image.sourceName, rights: [image.copyrightLine ?? image.copyright, image.rightsNotes].filter(Boolean).join(" — ") || undefined }; }
+function portableImage(image) {
+  const derivedRights = [image.copyrightLine ?? image.copyright, image.rightsNotes].filter(Boolean).join(" — ") || undefined;
+  return { _type: "image", _key: crypto.randomUUID().replaceAll("-", "").slice(0, 12), asset: { _type: "reference", _ref: image.assetRef }, alt: image.altText ?? image.alt ?? image.title ?? "Rugby editorial image", caption: image.caption, photographer: image.publicCredit ?? image.creditLine ?? image.photographer, source: image.source ?? image.sourceName, rights: image.rights ?? derivedRights };
+}
 function negativeConflict(article, image) {
   const header = `${article.title ?? ""} ${article.standfirst ?? ""}`; const story = `${header} ${(article.body ?? []).filter((b) => b?._type === "block").map(blockText).join(" ")}`; const meta = imageText(image);
   if (!image.assetRef || NON_RUGBY.test(meta)) return true;
@@ -59,16 +62,23 @@ function relevance(article, image, paragraph = null) {
   if (!exactPeople.length && !teamMatches.length && shared.length < 2) return -Infinity;
   return exactPeople.length * 100 + teamMatches.length * 45 + Math.min(shared.length, 8) * 5;
 }
+function currentHeroIsRetainable(article) {
+  const hero = article.currentHero;
+  if (!hero?.assetRef || negativeConflict(article, hero)) return false;
+  // Existing package heroes were assigned through the rights-approved local pipeline. Require embedded provenance
+  // before retaining one that no longer has a matching editorialImage library record.
+  return Boolean(String(hero.source ?? "").trim() && String(hero.rights ?? "").trim());
+}
 
 const date = dublinDate(); const prefix = `current-${date}-*`;
-const articles = await query(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && automationContentClass == "production" && editorialInputId match $prefix] | order(_updatedAt desc)[0...5]{_id,title,standfirst,body,editorialInputId,"currentHero":featuredImage.asset._ref}`, { prefix });
+const articles = await query(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && automationContentClass == "production" && editorialInputId match $prefix] | order(_updatedAt desc)[0...5]{_id,title,standfirst,body,editorialInputId,"currentHero":{ "assetRef": featuredImage.asset._ref, "alt": featuredImage.alt, "caption": featuredImage.caption, "photographer": featuredImage.photographer, "source": featuredImage.source, "rights": featuredImage.rights }}`, { prefix });
 if (articles.length !== 5 || new Set(articles.map((a) => a.editorialInputId)).size !== 5) throw new Error(`Expected exact current package of five for ${date}.`);
 const images = await query(`*[_type == "editorialImage" && !(_id in path("drafts.**")) && usageApproved == true && lifecycleStatus in ["approved","published"] && defined(image.asset._ref)] | order(_updatedAt desc)[0...1000]{_id,title,altText,caption,subject,team,event,source,sourceName,rightsNotes,publicCredit,creditLine,photographer,copyrightLine,copyright,"assetRef":image.asset._ref}`);
-const byAsset = new Map(images.map((image) => [image.assetRef, image])); const globallyUsed = new Set(); const summary = [];
+const globallyUsed = new Set(); const summary = [];
 for (const article of articles) {
   const rankedHero = images.map((image) => ({ image, score: relevance(article, image) })).filter(({ image, score }) => !globallyUsed.has(image.assetRef) && Number.isFinite(score) && score >= 45).sort((a,b) => b.score - a.score);
   let hero = rankedHero[0];
-  if (!hero && article.currentHero) { const current = byAsset.get(article.currentHero); if (current && !globallyUsed.has(current.assetRef) && !negativeConflict(article, current)) hero = { image: current, score: 1, retained: true }; }
+  if (!hero && currentHeroIsRetainable(article) && !globallyUsed.has(article.currentHero.assetRef)) hero = { image: article.currentHero, score: 1, retained: true };
   if (!hero) throw new Error(`No defensible rights-approved hero for ${article.title}.`); globallyUsed.add(hero.image.assetRef);
   const cleanBody = (article.body ?? []).filter((block) => block?._type !== "image"); const selections = [];
   for (const block of cleanBody) {
@@ -78,8 +88,12 @@ for (const article of articles) {
   }
   const body = []; for (const block of cleanBody) { body.push(block); const selected = selections.find((item) => item.afterKey === block?._key); if (selected) body.push(portableImage(selected.image)); }
   const featuredImage = portableImage(hero.image); delete featuredImage._key; await mutate([{ patch: { id: article._id, set: { featuredImage, body } } }]);
-  summary.push({ editorialInputId: article.editorialInputId, title: article.title, hero: { title: hero.image.title, team: hero.image.team, score: hero.score, retained: Boolean(hero.retained) }, inline: selections.map((x) => ({ title: x.image.title, team: x.image.team, score: x.score })), inlineCount: selections.length });
+  summary.push({ editorialInputId: article.editorialInputId, title: article.title, hero: { alt: hero.image.alt ?? hero.image.altText, title: hero.image.title, team: hero.image.team, assetRef: hero.image.assetRef, score: hero.score, retained: Boolean(hero.retained) }, inline: selections.map((x) => ({ title: x.image.title, team: x.image.team, assetRef: x.image.assetRef, score: x.score })), inlineCount: selections.length });
 }
-const verify = await query(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && automationContentClass == "production" && editorialInputId match $prefix] | order(_updatedAt desc)[0...5]{editorialInputId,title,"hero":featuredImage.asset._ref,"inline":body[_type == "image"].asset._ref}`, { prefix });
-for (const article of verify) if (!article.hero) throw new Error(`Hero readback failed for ${article.title}.`);
+const verify = await query(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && automationContentClass == "production" && editorialInputId match $prefix] | order(_updatedAt desc)[0...5]{editorialInputId,title,"hero":{ "assetRef":featuredImage.asset._ref,"alt":featuredImage.alt,"caption":featuredImage.caption,"source":featuredImage.source,"rights":featuredImage.rights },"inline":body[_type == "image"]{ "assetRef":asset._ref,"alt":alt,"caption":caption,"source":source,"rights":rights }}`, { prefix });
+for (const article of verify) {
+  if (!article.hero?.assetRef) throw new Error(`Hero readback failed for ${article.title}.`);
+  const sourceArticle = articles.find((candidate) => candidate.editorialInputId === article.editorialInputId);
+  if (!sourceArticle || negativeConflict(sourceArticle, article.hero)) throw new Error(`Hero conflict readback failed for ${article.title}.`);
+}
 writeFileSync("current-package-visual-repair.json", `${JSON.stringify({ date, status: "verified", articles: summary, readback: verify }, null, 2)}\n`); console.log(JSON.stringify({ date, status: "verified", articleCount: summary.length, articles: summary }, null, 2));
