@@ -12,7 +12,7 @@ if (!inputPath) {
 const PACKAGE_SIZE = 5;
 const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "notebook", "explainer"];
 const ALLOWED_CATEGORIES = new Set(["Ireland", "Leinster", "Munster", "Ulster", "Connacht", "URC", "Europe", "Opinion"]);
-const NON_RUGBY_EVIDENCE = /\b(football daily|premier league|soccer|boxing|golf|cycling|athletics|\b5k\b|gaelic football|hurling|sailing|ilca|world championship in d[uú]n laoghaire|protest)\b/i;
+const NON_RUGBY_EVIDENCE = /\b(football daily|premier league|soccer|boxing|golf|cycling|athletics|\b5k\b|gaelic football|hurling|sailing|ilca|world championship in d[uú]n laoghaire|protest|manchester united|man united|ipswich)\b/i;
 const GENERIC_SOURCE_TITLE = /^\s*(?:-|the 42|rugby football union|united rugby championship|untitled design)?\s*$/i;
 const baseUrl = (process.env.EDITORIAL_API_BASE_URL || "https://therugbypanda.ie").replace(/\/$/, "");
 const secret = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
@@ -81,16 +81,20 @@ async function loadRecentPositions() {
   throw new Error("Freshness fail-closed: no recent editorial-position history is available before generation.");
 }
 
-async function loadRetainedDrafts() {
-  if (dryRun) return [];
+function sanityClient() {
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
   const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
   const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-01-01";
   const token = process.env.SANITY_API_TOKEN;
   if (!projectId || !token) throw new Error("Same-day recovery requires Sanity project ID and token.");
+  return createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
+}
+
+async function loadAndRevalidateRetainedDrafts() {
+  if (dryRun) return { retained: [], invalidated: [] };
+  const client = sanityClient();
   const packageDate = operationalDate();
   const prefix = `current-${packageDate}-*`;
-  const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
   const drafts = await client.fetch(`*[
     _type == "article" &&
     _id in path("drafts.**") &&
@@ -101,7 +105,32 @@ async function loadRetainedDrafts() {
   ] | order(coalesce(editorialGeneratedAt, _createdAt) asc) {
     _id,title,editorialInputId,editorialGeneratedAt,_createdAt,workflowStatus
   }`, { prefix });
-  return Array.isArray(drafts) ? drafts.slice(0, PACKAGE_SIZE) : [];
+
+  const candidateById = new Map(batch.candidates.map((candidate) => [candidate.id, candidate]));
+  const retained = [];
+  const invalidated = [];
+  for (const draft of Array.isArray(drafts) ? drafts : []) {
+    const candidate = candidateById.get(draft.editorialInputId);
+    const assessment = candidate ? evidenceAssessment(candidate) : null;
+    if (candidate && assessment?.passed) {
+      retained.push(draft);
+      if (retained.length >= PACKAGE_SIZE) break;
+      continue;
+    }
+
+    const reason = !candidate
+      ? "retained-input-no-longer-valid-in-current-clean-acquisition-batch"
+      : "retained-input-no-longer-passes-current-evidence-integrity-gate";
+    await client.patch(draft._id).set({ morningPackageEligible: false }).commit({ visibility: "sync" });
+    invalidated.push({
+      _id: draft._id,
+      editorialInputId: draft.editorialInputId,
+      title: draft.title,
+      reason,
+      assessment,
+    });
+  }
+  return { retained, invalidated };
 }
 
 function styleForSlot(slotIndex) {
@@ -196,14 +225,14 @@ async function generateCandidate(candidate, slotIndex) {
 }
 
 const recentPositions = await loadRecentPositions();
-const retainedDrafts = await loadRetainedDrafts();
+const { retained: retainedDrafts, invalidated: invalidatedRetainedDrafts } = await loadAndRevalidateRetainedDrafts();
 const retainedCount = retainedDrafts.length;
 const retainedInputIds = new Set(retainedDrafts.map((draft) => draft.editorialInputId).filter(Boolean));
 const missingSlots = Math.max(0, PACKAGE_SIZE - retainedCount);
-console.log(JSON.stringify({ sameDayRecovery: "loaded", packageDate: operationalDate(), retainedCount, retainedDrafts, missingSlots }, null, 2));
+console.log(JSON.stringify({ sameDayRecovery: "loaded-and-revalidated", packageDate: operationalDate(), retainedCount, retainedDrafts, invalidatedRetainedDrafts, missingSlots }, null, 2));
 
 if (retainedCount >= PACKAGE_SIZE) {
-  console.log(JSON.stringify({ packageCreationGate: "passed", retainedCount, createdDrafts: 0, totalEligible: retainedCount, reason: "same-day-package-already-complete" }, null, 2));
+  console.log(JSON.stringify({ packageCreationGate: "passed", retainedCount, createdDrafts: 0, totalEligible: retainedCount, invalidatedRetainedDrafts, reason: "same-day-package-already-complete-and-current-batch-valid" }, null, 2));
   process.exit(0);
 }
 
@@ -218,14 +247,14 @@ const unreservedCandidates = batch.candidates.filter((candidate) => !retainedInp
 const assessed = unreservedCandidates.map((candidate) => ({ candidate, assessment: evidenceAssessment(candidate) }));
 const evidenceRejected = assessed.filter(({ assessment }) => !assessment.passed).map(({ candidate, assessment }) => ({ id: candidate.id, title: candidate.title, ...assessment }));
 const eligibleCandidates = assessed.filter(({ assessment }) => assessment.passed).map(({ candidate }) => candidate);
-console.log(JSON.stringify({ evidenceSufficiencyGate: "completed", eligible: eligibleCandidates.length, rejected: evidenceRejected, retainedIdConflicts }, null, 2));
+console.log(JSON.stringify({ evidenceSufficiencyGate: "completed", eligible: eligibleCandidates.length, rejected: evidenceRejected, retainedIdConflicts, invalidatedRetainedDrafts }, null, 2));
 
 const candidatePositions = eligibleCandidates.map(positionForCandidate);
 const freshness = selectFreshPositions(candidatePositions, recentPositions, Math.min(candidatePositions.length, missingSlots + maxReplacementCandidates));
 const freshIds = new Set(freshness.selected.map((position) => position.id));
 const freshQueue = eligibleCandidates.filter((candidate) => freshIds.has(candidate.id));
 if (freshQueue.length < missingSlots) {
-  console.error(JSON.stringify({ freshnessGate: "failed", requiredMissing: missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected, retainedIdConflicts }, null, 2));
+  console.error(JSON.stringify({ freshnessGate: "failed", requiredMissing: missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected, retainedIdConflicts, invalidatedRetainedDrafts }, null, 2));
   throw new Error(`Recovery fail-closed before model spend: only ${freshQueue.length}/${missingSlots} fresh evidence-sufficient candidates are available.`);
 }
 console.log(JSON.stringify({ freshnessGate: "passed", retainedCount, requiredMissing: missingSlots, freshCandidateIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected }, null, 2));
@@ -246,13 +275,13 @@ while (createdDrafts < missingSlots && queueIndex < freshQueue.length) {
 const failed = results.filter((result) => result.ok !== true);
 const totalEligible = retainedCount + createdDrafts;
 if (!dryRun && requireAllSelectedCreated && totalEligible !== PACKAGE_SIZE) {
-  console.error(JSON.stringify({ packageCreationGate: "failed", retainedCount, createdDrafts, totalEligible, required: PACKAGE_SIZE, failed, attemptedCandidates: results.length }, null, 2));
+  console.error(JSON.stringify({ packageCreationGate: "failed", retainedCount, createdDrafts, totalEligible, required: PACKAGE_SIZE, failed, attemptedCandidates: results.length, invalidatedRetainedDrafts }, null, 2));
   throw new Error(`Package creation fail-closed: ${totalEligible}/${PACKAGE_SIZE} same-day eligible drafts available after bounded recovery.`);
 }
 
 console.log(JSON.stringify({
   batchId: batch.batchId,
-  sameDayRecovery: { retainedCount, missingSlots, retainedDraftIds: retainedDrafts.map((draft) => draft._id) },
+  sameDayRecovery: { retainedCount, missingSlots, retainedDraftIds: retainedDrafts.map((draft) => draft._id), invalidatedRetainedDrafts },
   retainedIdCollisionGuard: { conflicts: retainedIdConflicts },
   evidenceSufficiencyGate: { eligible: eligibleCandidates.length, rejected: evidenceRejected },
   freshnessGate: { selectedIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected },
