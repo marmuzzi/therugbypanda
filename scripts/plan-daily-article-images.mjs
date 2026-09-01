@@ -12,6 +12,14 @@ if (!Number.isFinite(targetDepth) || targetDepth < 1) throw new Error("IMAGE_CAN
 
 const TEAMS = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland", "New Zealand", "All Blacks", "South Africa", "Springboks", "England", "Scotland", "Wales", "France", "Italy", "Australia", "Wallabies", "Argentina", "Pumas", "Fiji", "Japan", "Samoa", "Tonga"];
 const GENERIC = new Set(["rugby","article","season","team","teams","player","players","coach","coaching","return","preview","final","depth","women","womens","irish"]);
+const GENERIC_INLINE = new Set(["rugby","match","game","team","teams","player","players","season","squad","coach","coaching","article","news","preview","depth","fresh","live","makes","gives","could","change","return","academy","front","row"]);
+const CONTEXT_GROUPS = [
+  { team: "Leinster", terms: ["leinster", "rds", "donnybrook"] },
+  { team: "Munster", terms: ["munster", "thomond park", "limerick"] },
+  { team: "Ulster", terms: ["ulster", "kingspan stadium", "belfast"] },
+  { team: "Connacht", terms: ["connacht", "dexcom stadium", "sportsground", "galway"] },
+];
+const NON_RUGBY_VISUAL = /\b(derelict building|left me all alone|house|residential|street scene)\b/i;
 
 async function query(groq, params = {}) {
   const url = new URL(`https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}`);
@@ -32,25 +40,40 @@ function operationalDate() {
 }
 function text(value = "") { return String(value ?? "").replace(/\s+/g, " ").trim(); }
 function lower(value = "") { return text(value).toLowerCase(); }
+function blockText(block) { return (block?.children ?? []).map((child) => child?.text ?? "").join("").trim(); }
+function articleParagraphs(article) { return (article.body ?? []).filter((block) => block?._type === "block" && block.style !== "h2").map(blockText).filter(Boolean); }
 function tokens(value = "") {
   return [...new Set(lower(value).split(/[^a-z0-9à-öø-ÿ'’.-]+/).filter((x) => x.length >= 5 && !GENERIC.has(x)))];
+}
+function inlineTerms(value = "") {
+  return [...new Set(lower(value).split(/[^a-z0-9à-öø-ÿ]+/).filter((x) => x.length >= 5 && !GENERIC_INLINE.has(x)))];
 }
 function namedPhrases(value = "") {
   const matches = text(value).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
   return [...new Set(matches.map(text).filter((x) => !TEAMS.includes(x)))];
 }
-function storyWomenSpecific(value = "") { return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b/i.test(value); }
+function storyWomenSpecific(value = "") { return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(value); }
 function imageText(image) { return [image.title,image.altText,image.caption,image.subject,image.team,image.event].filter(Boolean).join(" "); }
 
-function scoreCandidate(article, image) {
+function contextConflict(storyLower, imageMeta) {
+  const storyGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => storyLower.includes(term)));
+  const imageGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => imageMeta.includes(term)));
+  if (!imageGroups.length) return false;
+  if (!storyGroups.length) return true;
+  return !storyGroups.some((storyGroup) => imageGroups.some((imageGroup) => imageGroup.team === storyGroup.team));
+}
+
+function baseRelevance(article, image) {
   if (!image.assetRef) return Number.NEGATIVE_INFINITY;
-  const story = [article.title, article.standfirst].filter(Boolean).join(" ");
+  const story = [article.title, article.standfirst, ...articleParagraphs(article)].filter(Boolean).join(" ");
   const storyLower = lower(story);
   const meta = lower(imageText(image));
+  if (NON_RUGBY_VISUAL.test(meta)) return Number.NEGATIVE_INFINITY;
+  if (contextConflict(storyLower, meta)) return Number.NEGATIVE_INFINITY;
   const storyTeams = TEAMS.filter((team) => storyLower.includes(team.toLowerCase()));
   const imageTeams = TEAMS.filter((team) => meta.includes(team.toLowerCase()));
   if (storyTeams.length && imageTeams.length && !storyTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
-  if (storyWomenSpecific(story) && meta.includes("ireland") && !storyWomenSpecific(meta)) return Number.NEGATIVE_INFINITY;
+  if (storyWomenSpecific(story) && !storyWomenSpecific(meta)) return Number.NEGATIVE_INFINITY;
 
   const people = namedPhrases(story);
   const exactPeople = people.filter((person) => meta.includes(person.toLowerCase()));
@@ -58,6 +81,31 @@ function scoreCandidate(article, image) {
   const teamMatch = storyTeams.some((team) => meta.includes(team.toLowerCase()));
   if (!exactPeople.length && !teamMatch && shared.length < 2) return Number.NEGATIVE_INFINITY;
   return exactPeople.length * 100 + (teamMatch ? 35 : 0) + Math.min(shared.length, 8) * 5;
+}
+
+function inlineRelevance(article, image) {
+  const meta = lower(imageText(image));
+  const paragraphs = articleParagraphs(article);
+  let best = Number.NEGATIVE_INFINITY;
+  for (const paragraph of paragraphs) {
+    const paragraphLower = lower(paragraph);
+    const paragraphTeams = TEAMS.filter((team) => paragraphLower.includes(team.toLowerCase()));
+    const teamMatch = paragraphTeams.some((team) => meta.includes(team.toLowerCase()));
+    const shared = inlineTerms(paragraph).filter((term) => meta.includes(term));
+    const people = namedPhrases(paragraph);
+    const personMatch = people.some((person) => meta.includes(person.toLowerCase()));
+    if (!personMatch && !teamMatch && shared.length < 2) continue;
+    best = Math.max(best, (personMatch ? 50 : 0) + (teamMatch ? 24 : 0) + Math.min(shared.length, 5) * 4);
+  }
+  return best;
+}
+
+function scoreCandidate(article, image) {
+  const base = baseRelevance(article, image);
+  if (!Number.isFinite(base)) return Number.NEGATIVE_INFINITY;
+  const inline = inlineRelevance(article, image);
+  if (!Number.isFinite(inline) || inline < 20) return Number.NEGATIVE_INFINITY;
+  return base + Math.min(inline, 40);
 }
 
 function acquisitionQueries(article) {
@@ -68,14 +116,18 @@ function acquisitionQueries(article) {
   for (const person of people) {
     queries.push(`${person} rugby 2026`, `${person} ${team ?? "rugby"}`, `${person} rugby 2025`);
   }
-  if (team) queries.push(`${team} rugby 2026`, `${team} rugby stadium 2026`);
+  if (storyWomenSpecific(story)) {
+    if (team) queries.push(`${team} women rugby 2026`, `${team} girls rugby 2026`);
+  } else if (team) {
+    queries.push(`${team} rugby 2026`, `${team} rugby stadium 2026`);
+  }
   return [...new Set(queries)].slice(0, 8);
 }
 
 const packageDate = operationalDate();
 const packageInputPrefix = `current-${packageDate}-*`;
 const articles = await query(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && automationContentClass == "production" && editorialInputId match $packageInputPrefix] | order(_updatedAt desc)[0...5]{
-  _id,title,standfirst,editorialInputId,_updatedAt,
+  _id,title,standfirst,body,editorialInputId,_updatedAt,
   "featuredAsset":featuredImage.asset._ref,
   "inlineAssets":body[_type == "image"].asset._ref
 }`, { packageInputPrefix });
@@ -94,7 +146,7 @@ const plans = articles.map((article) => {
   const ranked = images
     .filter((image) => !packageUsed.has(image.assetRef))
     .map((image) => ({ image, score: scoreCandidate(article, image) }))
-    .filter(({ score }) => Number.isFinite(score) && score >= 35)
+    .filter(({ score }) => Number.isFinite(score) && score >= 55)
     .sort((a,b) => b.score - a.score);
 
   const candidates = ranked.slice(0, targetDepth).map(({ image, score }) => ({
