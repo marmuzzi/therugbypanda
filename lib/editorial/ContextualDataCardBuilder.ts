@@ -24,11 +24,8 @@ const LEADING_CONTEXT_WORDS = /^(?:With|After|Before|While|As|For|From|By|Agains
 const SURNAME_PARTICLE_ONLY = /^(?:van|de|der|von|di|da)\b/i;
 
 function articleText(article: GeneratedArticleDraft) {
-  return [
-    article.title,
-    article.standfirst,
-    ...article.body.flatMap((section) => [section.heading ?? "", ...section.paragraphs]),
-  ].filter(Boolean).join(" ");
+  return [article.title, article.standfirst, ...article.body.flatMap((section) => [section.heading ?? "", ...section.paragraphs])]
+    .filter(Boolean).join(" ");
 }
 
 function properNameCandidates(text: string) {
@@ -59,17 +56,14 @@ function choosePrimarySubject(article: GeneratedArticleDraft, facts: FactLike[])
   const factText = facts.map((fact) => fact.claim).join(" ");
   const corpus = `${article.title} ${article.standfirst} ${factText}`;
   const candidates = [...new Set(properNameCandidates(corpus).map((candidate) => canonicalCandidate(candidate, corpus)))];
-
   const ranked = candidates.map((candidate) => {
     const terms = normalized(candidate).split(" ").filter(Boolean);
     const surname = terms.at(-1) ?? "";
     const titleMatch = titleText.includes(candidate.toLowerCase()) || (surname.length >= 5 && titleText.includes(surname));
     const articleMentions = normalized(text).split(normalized(candidate)).length - 1;
     const factMentions = facts.filter((fact) => normalized(fact.claim).includes(normalized(candidate)) || (surname.length >= 5 && normalized(fact.claim).includes(surname))).length;
-    const completenessBonus = terms.length >= 2 ? terms.length * 3 : 0;
-    return { candidate, score: 30 + articleMentions * 3 + factMentions * 8 + completenessBonus, factMentions, titleMatch };
+    return { candidate, score: 30 + articleMentions * 3 + factMentions * 8 + terms.length * 3, factMentions, titleMatch };
   }).filter((item) => item.titleMatch && item.factMentions > 0).sort((a, b) => b.score - a.score);
-
   const subject = ranked[0]?.candidate;
   if (!subject || SURNAME_PARTICLE_ONLY.test(subject)) return undefined;
   return subject;
@@ -85,7 +79,7 @@ function rowLabel(claim: string) {
   if (/signed|contract|joined|arrives?|leaves?|returned|transfer/.test(lower)) return "Club move";
   if (/captain|leader|lineout|organiser|leadership/.test(lower)) return "Leadership";
   if (/squad|selected|selection|training|called up|named/.test(lower)) return "Selection";
-  return "Key fact";
+  return "In focus";
 }
 
 function conciseClaim(claim: string, subject?: string) {
@@ -106,68 +100,47 @@ function conciseClaim(claim: string, subject?: string) {
 function rankedFacts(facts: FactLike[], subject?: string) {
   const subjectNorm = subject ? normalized(subject) : "";
   const surname = subjectNorm.split(" ").at(-1) ?? "";
-  return facts
-    .map((fact) => {
-      const claimNorm = normalized(fact.claim);
-      const subjectMatch = subject
-        ? claimNorm.includes(subjectNorm) || (surname.length >= 5 && claimNorm.includes(surname))
-        : true;
-      const specificity = /\d|injur|surgery|academy|squad|captain|signed|contract|fixture|scored|appearances?|caps?|position|return|selected|training/i.test(fact.claim) ? 10 : 0;
-      return { fact, subjectMatch, score: (subjectMatch ? 30 : 0) + specificity + Math.min(10, Math.floor((fact.confidence ?? 100) / 10)) };
-    })
-    .filter((item) => !subject || item.subjectMatch)
-    .sort((a, b) => b.score - a.score);
+  return facts.map((fact) => {
+    const claimNorm = normalized(fact.claim);
+    const subjectMatch = subject ? claimNorm.includes(subjectNorm) || (surname.length >= 5 && claimNorm.includes(surname)) : true;
+    const specificity = /\d|injur|surgery|academy|squad|captain|signed|contract|fixture|scored|appearances?|caps?|position|return|selected|training/i.test(fact.claim) ? 10 : 0;
+    return { fact, subjectMatch, score: (subjectMatch ? 30 : 0) + specificity + Math.min(10, Math.floor((fact.confidence ?? 100) / 10)) };
+  }).filter((item) => !subject || item.subjectMatch).sort((a, b) => b.score - a.score);
 }
 
 function buildRows(facts: Array<{ fact: FactLike }>, subject?: string): ContextualDataCard["rows"] {
   const rows: ContextualDataCard["rows"] = [];
   const seenClaims = new Set<string>();
-  const usedLabels = new Map<string, number>();
+  const usedLabels = new Set<string>();
   for (const { fact } of facts) {
     const key = normalized(fact.claim);
     if (!key || seenClaims.has(key)) continue;
+    const label = rowLabel(fact.claim);
+    // A card should scan like an editor-built fact box. Never emit synthetic labels
+    // such as "Key fact 2" or "Next up 2" merely to fill four rows.
+    if (usedLabels.has(label)) continue;
+    const value = conciseClaim(fact.claim, subject);
+    if (!value || rows.some((row) => normalized(row.value) === normalized(value))) continue;
     seenClaims.add(key);
-    const baseLabel = rowLabel(fact.claim);
-    const count = usedLabels.get(baseLabel) ?? 0;
-    usedLabels.set(baseLabel, count + 1);
-    rows.push({
-      label: count === 0 ? baseLabel : `${baseLabel} ${count + 1}`,
-      value: conciseClaim(fact.claim, subject),
-      sourceIds: [...new Set(fact.sourceIds ?? [])],
-    });
+    usedLabels.add(label);
+    rows.push({ label, value, sourceIds: [...new Set(fact.sourceIds ?? [])] });
     if (rows.length >= 4) break;
   }
   return rows;
 }
 
 export function buildContextualDataCard(article: GeneratedArticleDraft, editorial: EditorialLike): ContextualDataCard | null {
-  const facts = (editorial.factLedger?.facts ?? []).filter((fact) =>
-    fact.usableInDraft !== false
+  const facts = (editorial.factLedger?.facts ?? []).filter((fact) => fact.usableInDraft !== false
     && ["confirmed", "strongly-reported"].includes(fact.status ?? "confirmed")
-    && (fact.confidence ?? 100) >= 70
-    && fact.claim?.trim().length >= 18
-    && (fact.sourceIds?.length ?? 0) > 0,
-  );
+    && (fact.confidence ?? 100) >= 70 && fact.claim?.trim().length >= 18 && (fact.sourceIds?.length ?? 0) > 0);
   if (facts.length < 2) return null;
 
   const subject = choosePrimarySubject(article, facts);
   if (subject) {
     const subjectRows = buildRows(rankedFacts(facts, subject), subject);
-    if (subjectRows.length >= 2) {
-      return {
-        kind: "player",
-        title: subject,
-        subtitle: editorial.category,
-        rows: subjectRows,
-      };
-    }
+    if (subjectRows.length >= 2) return { kind: "player", title: subject, subtitle: editorial.category, rows: subjectRows };
   }
-
   const teamRows = buildRows(rankedFacts(facts));
   if (teamRows.length < 2) return null;
-  return {
-    kind: "team",
-    title: editorial.category,
-    rows: teamRows,
-  };
+  return { kind: "team", title: editorial.category, rows: teamRows };
 }
