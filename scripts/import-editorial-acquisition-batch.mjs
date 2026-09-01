@@ -66,6 +66,23 @@ function evidenceAssessment(candidate) {
   return { passed, substantiveSourceCount: substantive.length, distinctPublisherCount: publishers.size, substantiveFactCount: facts.length };
 }
 
+function retainedDraftIntegrity(draft) {
+  const sourceText = (Array.isArray(draft?.sourceNotes) ? draft.sourceNotes : [])
+    .map((note) => [note?.publisher, note?.usage].filter(Boolean).join(" "))
+    .join(" ");
+  const cardText = [
+    draft?.contextualDataCard?.title,
+    draft?.contextualDataCard?.subtitle,
+    ...(Array.isArray(draft?.contextualDataCard?.rows) ? draft.contextualDataCard.rows.flatMap((row) => [row?.label, row?.value]) : []),
+  ].filter(Boolean).join(" ");
+  const combined = [draft?.title, sourceText, cardText].filter(Boolean).join(" ").replace(/&nbsp;/g, " ");
+  const contaminated = NON_RUGBY_EVIDENCE.test(combined);
+  return {
+    passed: !contaminated,
+    reason: contaminated ? "retained draft contains non-rugby source/card provenance" : null,
+  };
+}
+
 async function loadRecentPositions() {
   const configured = process.env.RECENT_EDITORIAL_POSITIONS_PATH?.trim();
   const candidates = [configured, "data/editorial-acquisition/recent-editorial-positions.json"].filter(Boolean);
@@ -82,7 +99,7 @@ async function loadRecentPositions() {
 }
 
 async function loadRetainedDrafts() {
-  if (dryRun) return [];
+  if (dryRun) return { retained: [], evicted: [] };
   const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
   const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
   const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-01-01";
@@ -99,9 +116,25 @@ async function loadRetainedDrafts() {
     editorialInputId match $prefix &&
     (!defined(workflowStatus) || workflowStatus in ["draft", "submitted", "in-review", "review", "under-review", "approved"])
   ] | order(coalesce(editorialGeneratedAt, _createdAt) asc) {
-    _id,title,editorialInputId,editorialGeneratedAt,_createdAt,workflowStatus
+    _id,title,editorialInputId,editorialGeneratedAt,_createdAt,workflowStatus,sourceNotes,contextualDataCard
   }`, { prefix });
-  return Array.isArray(drafts) ? drafts.slice(0, PACKAGE_SIZE) : [];
+  const retained = [];
+  const evicted = [];
+  for (const draft of (Array.isArray(drafts) ? drafts : [])) {
+    const integrity = retainedDraftIntegrity(draft);
+    if (integrity.passed && retained.length < PACKAGE_SIZE) {
+      retained.push(draft);
+      continue;
+    }
+    if (!integrity.passed) {
+      await client.patch(draft._id).set({
+        morningPackageEligible: false,
+        automationContentClass: "production",
+      }).commit();
+      evicted.push({ _id: draft._id, editorialInputId: draft.editorialInputId, title: draft.title, reason: integrity.reason });
+    }
+  }
+  return { retained, evicted };
 }
 
 function styleForSlot(slotIndex) {
@@ -196,14 +229,16 @@ async function generateCandidate(candidate, slotIndex) {
 }
 
 const recentPositions = await loadRecentPositions();
-const retainedDrafts = await loadRetainedDrafts();
+const retainedState = await loadRetainedDrafts();
+const retainedDrafts = retainedState.retained;
+const evictedDrafts = retainedState.evicted;
 const retainedCount = retainedDrafts.length;
 const retainedInputIds = new Set(retainedDrafts.map((draft) => draft.editorialInputId).filter(Boolean));
 const missingSlots = Math.max(0, PACKAGE_SIZE - retainedCount);
-console.log(JSON.stringify({ sameDayRecovery: "loaded", packageDate: operationalDate(), retainedCount, retainedDrafts, missingSlots }, null, 2));
+console.log(JSON.stringify({ sameDayRecovery: "loaded", packageDate: operationalDate(), retainedCount, retainedDrafts, evictedDrafts, missingSlots }, null, 2));
 
 if (retainedCount >= PACKAGE_SIZE) {
-  console.log(JSON.stringify({ packageCreationGate: "passed", retainedCount, createdDrafts: 0, totalEligible: retainedCount, reason: "same-day-package-already-complete" }, null, 2));
+  console.log(JSON.stringify({ packageCreationGate: "passed", retainedCount, createdDrafts: 0, totalEligible: retainedCount, evictedDrafts, reason: "same-day-package-already-complete" }, null, 2));
   process.exit(0);
 }
 
@@ -225,7 +260,7 @@ const freshness = selectFreshPositions(candidatePositions, recentPositions, Math
 const freshIds = new Set(freshness.selected.map((position) => position.id));
 const freshQueue = eligibleCandidates.filter((candidate) => freshIds.has(candidate.id));
 if (freshQueue.length < missingSlots) {
-  console.error(JSON.stringify({ freshnessGate: "failed", requiredMissing: missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected, retainedIdConflicts }, null, 2));
+  console.error(JSON.stringify({ freshnessGate: "failed", requiredMissing: missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected, retainedIdConflicts, evictedDrafts }, null, 2));
   throw new Error(`Recovery fail-closed before model spend: only ${freshQueue.length}/${missingSlots} fresh evidence-sufficient candidates are available.`);
 }
 console.log(JSON.stringify({ freshnessGate: "passed", retainedCount, requiredMissing: missingSlots, freshCandidateIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected }, null, 2));
@@ -246,13 +281,13 @@ while (createdDrafts < missingSlots && queueIndex < freshQueue.length) {
 const failed = results.filter((result) => result.ok !== true);
 const totalEligible = retainedCount + createdDrafts;
 if (!dryRun && requireAllSelectedCreated && totalEligible !== PACKAGE_SIZE) {
-  console.error(JSON.stringify({ packageCreationGate: "failed", retainedCount, createdDrafts, totalEligible, required: PACKAGE_SIZE, failed, attemptedCandidates: results.length }, null, 2));
+  console.error(JSON.stringify({ packageCreationGate: "failed", retainedCount, createdDrafts, totalEligible, required: PACKAGE_SIZE, failed, attemptedCandidates: results.length, evictedDrafts }, null, 2));
   throw new Error(`Package creation fail-closed: ${totalEligible}/${PACKAGE_SIZE} same-day eligible drafts available after bounded recovery.`);
 }
 
 console.log(JSON.stringify({
   batchId: batch.batchId,
-  sameDayRecovery: { retainedCount, missingSlots, retainedDraftIds: retainedDrafts.map((draft) => draft._id) },
+  sameDayRecovery: { retainedCount, missingSlots, retainedDraftIds: retainedDrafts.map((draft) => draft._id), evictedDrafts },
   retainedIdCollisionGuard: { conflicts: retainedIdConflicts },
   evidenceSufficiencyGate: { eligible: eligibleCandidates.length, rejected: evidenceRejected },
   freshnessGate: { selectedIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected },
