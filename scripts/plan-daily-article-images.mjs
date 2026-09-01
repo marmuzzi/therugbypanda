@@ -11,7 +11,7 @@ if (!token) throw new Error("SANITY_API_TOKEN is required.");
 if (!Number.isFinite(targetDepth) || targetDepth < 1) throw new Error("IMAGE_CANDIDATE_TARGET must be >= 1.");
 
 const TEAMS = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland", "New Zealand", "All Blacks", "South Africa", "Springboks", "England", "Scotland", "Wales", "France", "Italy", "Australia", "Wallabies", "Argentina", "Pumas", "Fiji", "Japan", "Samoa", "Tonga"];
-const GENERIC = new Set(["rugby","article","season","team","teams","player","players","coach","coaching","return","preview","final","depth","women","womens","irish"]);
+const GENERIC = new Set(["rugby","article","season","team","teams","player","players","coach","coaching","return","preview","final","depth","women","womens","girls","irish"]);
 const GENERIC_INLINE = new Set(["rugby","match","game","team","teams","player","players","season","squad","coach","coaching","article","news","preview","depth","fresh","live","makes","gives","could","change","return","academy","front","row"]);
 const CONTEXT_GROUPS = [
   { team: "Leinster", terms: ["leinster", "rds", "donnybrook"] },
@@ -42,6 +42,7 @@ function text(value = "") { return String(value ?? "").replace(/\s+/g, " ").trim
 function lower(value = "") { return text(value).toLowerCase(); }
 function blockText(block) { return (block?.children ?? []).map((child) => child?.text ?? "").join("").trim(); }
 function articleParagraphs(article) { return (article.body ?? []).filter((block) => block?._type === "block" && block.style !== "h2").map(blockText).filter(Boolean); }
+function articleHeader(article) { return [article.title, article.standfirst].filter(Boolean).join(" "); }
 function tokens(value = "") {
   return [...new Set(lower(value).split(/[^a-z0-9à-öø-ÿ'’.-]+/).filter((x) => x.length >= 5 && !GENERIC.has(x)))];
 }
@@ -55,8 +56,8 @@ function namedPhrases(value = "") {
 function storyWomenSpecific(value = "") { return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(value); }
 function imageText(image) { return [image.title,image.altText,image.caption,image.subject,image.team,image.event].filter(Boolean).join(" "); }
 
-function contextConflict(storyLower, imageMeta) {
-  const storyGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => storyLower.includes(term)));
+function contextConflict(primaryStoryLower, imageMeta) {
+  const storyGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => primaryStoryLower.includes(term)));
   const imageGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => imageMeta.includes(term)));
   if (!imageGroups.length) return false;
   if (!storyGroups.length) return true;
@@ -65,20 +66,26 @@ function contextConflict(storyLower, imageMeta) {
 
 function baseRelevance(article, image) {
   if (!image.assetRef) return Number.NEGATIVE_INFINITY;
-  const story = [article.title, article.standfirst, ...articleParagraphs(article)].filter(Boolean).join(" ");
+  const header = articleHeader(article);
+  const story = [header, ...articleParagraphs(article)].filter(Boolean).join(" ");
+  const headerLower = lower(header);
   const storyLower = lower(story);
   const meta = lower(imageText(image));
   if (NON_RUGBY_VISUAL.test(meta)) return Number.NEGATIVE_INFINITY;
-  if (contextConflict(storyLower, meta)) return Number.NEGATIVE_INFINITY;
-  const storyTeams = TEAMS.filter((team) => storyLower.includes(team.toLowerCase()));
+  if (contextConflict(headerLower, meta)) return Number.NEGATIVE_INFINITY;
+
+  const primaryTeams = TEAMS.filter((team) => headerLower.includes(team.toLowerCase()));
   const imageTeams = TEAMS.filter((team) => meta.includes(team.toLowerCase()));
-  if (storyTeams.length && imageTeams.length && !storyTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
-  if (storyWomenSpecific(story) && !storyWomenSpecific(meta)) return Number.NEGATIVE_INFINITY;
+  if (primaryTeams.length && imageTeams.length && !primaryTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
+
+  const storyIsWomen = storyWomenSpecific(header);
+  const imageIsWomen = storyWomenSpecific(meta);
+  if (storyIsWomen !== imageIsWomen) return Number.NEGATIVE_INFINITY;
 
   const people = namedPhrases(story);
   const exactPeople = people.filter((person) => meta.includes(person.toLowerCase()));
   const shared = tokens(story).filter((term) => meta.includes(term));
-  const teamMatch = storyTeams.some((team) => meta.includes(team.toLowerCase()));
+  const teamMatch = primaryTeams.some((team) => meta.includes(team.toLowerCase()));
   if (!exactPeople.length && !teamMatch && shared.length < 2) return Number.NEGATIVE_INFINITY;
   return exactPeople.length * 100 + (teamMatch ? 35 : 0) + Math.min(shared.length, 8) * 5;
 }
@@ -109,18 +116,32 @@ function scoreCandidate(article, image) {
 }
 
 function acquisitionQueries(article) {
-  const story = [article.title, article.standfirst].filter(Boolean).join(" ");
-  const people = namedPhrases(story).slice(0, 3);
-  const team = TEAMS.find((x) => lower(story).includes(x.toLowerCase()));
+  const header = articleHeader(article);
+  const headerLower = lower(header);
+  const team = TEAMS.find((x) => headerLower.includes(x.toLowerCase()));
   const queries = [];
+
+  if (storyWomenSpecific(header)) {
+    const ageGrade = /\bu[- ]?18\b/i.test(header) ? "U18" : null;
+    if (team && ageGrade) {
+      queries.push(
+        `${team} ${ageGrade} Girls rugby`,
+        `${team} ${ageGrade} Women rugby`,
+        `${team} Girls Interprovincial rugby`,
+        `${team} Under 18 Girls rugby`,
+      );
+    }
+    if (team) queries.push(`${team} women rugby`, `${team} girls rugby`);
+    return [...new Set(queries)].slice(0, 8);
+  }
+
+  const people = namedPhrases(header)
+    .filter((phrase) => !/\b(?:U-?\d+|Girls|Women|Rugby|Leinster|Munster|Ulster|Connacht|Ireland)\b/i.test(phrase))
+    .slice(0, 3);
   for (const person of people) {
     queries.push(`${person} rugby 2026`, `${person} ${team ?? "rugby"}`, `${person} rugby 2025`);
   }
-  if (storyWomenSpecific(story)) {
-    if (team) queries.push(`${team} women rugby 2026`, `${team} girls rugby 2026`);
-  } else if (team) {
-    queries.push(`${team} rugby 2026`, `${team} rugby stadium 2026`);
-  }
+  if (team) queries.push(`${team} rugby 2026`, `${team} rugby stadium 2026`);
   return [...new Set(queries)].slice(0, 8);
 }
 
