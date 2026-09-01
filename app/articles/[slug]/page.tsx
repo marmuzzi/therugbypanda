@@ -38,15 +38,16 @@ function presentationFor(article: CmsArticle): Presentation {
 export async function generateMetadata({ params }: ArticlePageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = await getArticleBySlug(slug);
-  if (!article) return { title: "Article not found | The Rugby Panda" };
+  if (!article) return { title: "Article not found" };
   const featuredImage = getFeaturedImage(article);
-  const title = `${article.title} | The Rugby Panda`;
+  const pageTitle = article.title;
+  const socialTitle = `${article.title} | The Rugby Panda`;
   const description = article.standfirst ?? "Independent Irish and European rugby coverage from The Rugby Panda.";
   const url = article.slug ? articleUrl(article.slug) : siteUrl("/");
   return {
-    title, description, alternates: { canonical: url },
-    openGraph: { title, description, url, siteName: "The Rugby Panda", type: "article", publishedTime: article.publishedAt, modifiedTime: article.updatedAt ?? article.publishedAt, section: articleLabel(article), images: featuredImage ? [{ url: featuredImage.src, alt: featuredImage.alt || article.title }] : undefined },
-    twitter: { card: featuredImage ? "summary_large_image" : "summary", title, description, images: featuredImage ? [featuredImage.src] : undefined },
+    title: pageTitle, description, alternates: { canonical: url },
+    openGraph: { title: socialTitle, description, url, siteName: "The Rugby Panda", type: "article", publishedTime: article.publishedAt, modifiedTime: article.updatedAt ?? article.publishedAt, section: articleLabel(article), images: featuredImage ? [{ url: featuredImage.src, alt: featuredImage.alt || article.title }] : undefined },
+    twitter: { card: featuredImage ? "summary_large_image" : "summary", title: socialTitle, description, images: featuredImage ? [featuredImage.src] : undefined },
   };
 }
 
