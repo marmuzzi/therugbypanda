@@ -71,6 +71,12 @@ jobs:
       - name: Reject under-specified evidence before model spend
         if: steps.package_state.outputs.skip != 'true'
         run: node scripts/filter-current-acquisition-evidence.mjs
+      - name: Enforce same-package diversity before model spend
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+          MAX_PACKAGE_MATCHUP_STORIES: "2"
+        run: node scripts/enforce-current-package-diversity.mjs
       - name: Export recent production editorial positions
         if: steps.package_state.outputs.skip != 'true'
         run: node scripts/export-recent-editorial-positions.mjs
