@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 
 import ArticleBody from "@/components/ArticleBody";
+import ArticleBrandMarks from "@/components/ArticleBrandMarks";
 import ArticleHeader from "@/components/ArticleHeader";
 import ContextualDataCard from "@/components/ContextualDataCard";
 import ContinueReading from "@/components/ContinueReading";
@@ -10,6 +11,7 @@ import ReaderSupport from "@/components/ReaderSupport";
 import SiteFooter from "@/components/SiteFooter";
 import SiteHeader from "@/components/SiteHeader";
 import TagList from "@/components/TagList";
+import { getArticleBrandMarks } from "@/lib/brandAssets";
 import {
   articleDateLabel,
   articleLabel,
@@ -55,6 +57,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const { slug } = await params;
   const [cmsArticle, continueReading] = await Promise.all([getArticleBySlug(slug), getContinueReading(slug)]);
   if (!cmsArticle) notFound();
+  const brandMarks = await getArticleBrandMarks(cmsArticle);
 
   const category = [cmsArticle.category, cmsArticle.province ?? cmsArticle.competition].filter(Boolean).join(" • ");
   const featuredImage = getFeaturedImage(cmsArticle);
@@ -87,6 +90,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} />
       <ArticleHeader category={category || "News"} title={cmsArticle.title} subtitle={cmsArticle.standfirst ?? ""} published={articleDateLabel(cmsArticle.publishedAt)} updated={articleDateLabel(cmsArticle.updatedAt ?? cmsArticle.publishedAt)} readingTime={cmsArticle.readingTime ?? "Read"} />
       <div className={`mx-auto px-5 pb-20 md:px-6 ${shellClassName}`}>
+        <ArticleBrandMarks marks={brandMarks} />
         {presentation !== "notebook" ? imageFigure : null}
         <div className={bodyClassName}>
           {beforeBody && cmsArticle.keyPoints?.length ? <KeyPoints points={cmsArticle.keyPoints} /> : null}
