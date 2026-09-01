@@ -10,19 +10,8 @@ export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const PACKAGE_SIZE = 5;
-const CANDIDATE_POOL_SIZE = 30;
 const destination = "editor@therugbypanda.ie";
 const studioBaseUrl = "https://therugbypanda.sanity.studio";
-const DIVERSITY_SIMILARITY_LIMIT = 0.55;
-
-const STOP_WORDS = new Set([
-  "a", "about", "after", "all", "an", "and", "are", "as", "at", "be", "been", "before", "but", "by",
-  "for", "from", "has", "have", "here", "how", "in", "into", "is", "it", "its", "more", "new", "of",
-  "on", "or", "our", "rugby", "says", "that", "the", "their", "this", "to", "union", "what", "when",
-  "why", "will", "with", "you",
-]);
-
-type SourceRecord = { id?: string; url?: string };
 
 type PackageArticle = {
   _id: string;
@@ -36,9 +25,6 @@ type PackageArticle = {
   competition?: string;
   needsHumanFactCheck?: boolean;
   featuredImageUrl?: string;
-  editorialAngle?: string;
-  sourceStoryTitle?: string;
-  sourceRecords?: SourceRecord[];
 };
 
 type DeliveryEvidence = {
@@ -76,61 +62,6 @@ function reviewUrl(articleId: string) {
   return `${studioBaseUrl}/intent/edit/id=${encodeURIComponent(id)};type=article`;
 }
 
-function normalisedTokens(article: PackageArticle): Set<string> {
-  return new Set(
-    [article.title, article.editorialAngle, article.sourceStoryTitle]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase()
-      .normalize("NFKD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .split(/[^a-z0-9]+/)
-      .filter((token) => token.length >= 3 && !STOP_WORDS.has(token)),
-  );
-}
-
-function tokenSimilarity(left: PackageArticle, right: PackageArticle): number {
-  const leftTokens = normalisedTokens(left);
-  const rightTokens = normalisedTokens(right);
-  if (leftTokens.size === 0 || rightTokens.size === 0) return 0;
-  let intersection = 0;
-  for (const token of leftTokens) if (rightTokens.has(token)) intersection += 1;
-  const union = new Set([...leftTokens, ...rightTokens]).size;
-  return union === 0 ? 0 : intersection / union;
-}
-
-function canonicalSourceUrls(article: PackageArticle): Set<string> {
-  const urls = new Set<string>();
-  for (const source of article.sourceRecords ?? []) {
-    const url = source.url?.trim().toLowerCase();
-    if (url) urls.add(url);
-  }
-  return urls;
-}
-
-function sharesSource(left: PackageArticle, right: PackageArticle): boolean {
-  const leftUrls = canonicalSourceUrls(left);
-  if (leftUrls.size === 0) return false;
-  const rightUrls = canonicalSourceUrls(right);
-  for (const url of leftUrls) if (rightUrls.has(url)) return true;
-  return false;
-}
-
-function isDistinctEnough(candidate: PackageArticle, selected: PackageArticle[]): boolean {
-  return selected.every(
-    (existing) => !sharesSource(candidate, existing) && tokenSimilarity(candidate, existing) < DIVERSITY_SIMILARITY_LIMIT,
-  );
-}
-
-function selectDiversePackage(candidates: PackageArticle[]): PackageArticle[] {
-  const selected: PackageArticle[] = [];
-  for (const candidate of candidates) {
-    if (isDistinctEnough(candidate, selected)) selected.push(candidate);
-    if (selected.length === PACKAGE_SIZE) break;
-  }
-  return selected;
-}
-
 function packageFingerprint(articles: PackageArticle[]) {
   const canonicalPackage = articles
     .map((article) => `${article._id.replace(/^drafts\./, "")}|${article.updatedAt ?? ""}`)
@@ -165,7 +96,7 @@ function emailText(packageDate: string, articles: PackageArticle[]) {
   return [
     `The Rugby Panda morning editorial package for ${packageDate}.`,
     "",
-    "Five production-eligible, editorially distinct articles from today's protected package are ready for review in Sanity.",
+    "Five production-eligible articles from today's protected exact package are ready for review in Sanity.",
     "",
     ...articleSections,
     "Open each Review link to edit, approve or reject the article.",
@@ -250,7 +181,7 @@ export async function GET() {
     status: "ready",
     deliveryMode: "direct-zoho-smtp",
     requiredArticleCount: PACKAGE_SIZE,
-    packageIdentity: "current-dublin-operational-date",
+    packageIdentity: "exact-current-dublin-operational-date",
     destination,
   });
 }
@@ -262,7 +193,7 @@ export async function POST(request: NextRequest) {
     const client = getClient();
     const packageDate = operationalDate();
     const packageInputPrefix = `current-${packageDate}-*`;
-    const candidates = await client.fetch<PackageArticle[]>(
+    const articles = await client.fetch<PackageArticle[]>(
       `*[
         _type == "article" &&
         _id in path("drafts.**") &&
@@ -270,29 +201,40 @@ export async function POST(request: NextRequest) {
         automationContentClass == "production" &&
         editorialInputId match $packageInputPrefix &&
         (!defined(workflowStatus) || workflowStatus in ["draft", "submitted", "in-review", "review", "under-review", "approved"])
-      ] | order(coalesce(editorialGeneratedAt, _updatedAt) desc)[0...$limit] {
+      ] | order(coalesce(editorialGeneratedAt, _updatedAt) desc) {
         _id,title,standfirst,workflowStatus,editorialInputId,editorialGeneratedAt,"updatedAt":_updatedAt,
         "category":category->title,"competition":competition->title,needsHumanFactCheck,
-        "featuredImageUrl":featuredImage.asset->url,editorialAngle,sourceStoryTitle,sourceRecords[]{id,url}
+        "featuredImageUrl":featuredImage.asset->url
       }`,
-      { limit: CANDIDATE_POOL_SIZE, packageInputPrefix },
+      { packageInputPrefix },
     );
-    const articles = selectDiversePackage(candidates);
-    const incompleteEventId = `editorial-daily-package:${packageDate}`;
 
-    if (articles.length < PACKAGE_SIZE) {
+    const incompleteEventId = `editorial-daily-package:${packageDate}`;
+    const uniqueArticleIds = new Set(articles.map((article) => article._id.replace(/^drafts\./, "")));
+    const inputIds = articles.map((article) => article.editorialInputId?.trim()).filter((value): value is string => Boolean(value));
+    const uniqueInputIds = new Set(inputIds);
+    const allHaveVerifiedHeroBoundary = articles.every((article) => Boolean(article.featuredImageUrl));
+    const exactPackage = articles.length === PACKAGE_SIZE
+      && uniqueArticleIds.size === PACKAGE_SIZE
+      && inputIds.length === PACKAGE_SIZE
+      && uniqueInputIds.size === PACKAGE_SIZE
+      && allHaveVerifiedHeroBoundary;
+
+    if (!exactPackage) {
       const technicalAlertStatus = await sendTechnicalAlert(
-        "insufficient-current-package-content",
-        `Only ${articles.length} of ${PACKAGE_SIZE} current-date production-eligible, editorially distinct articles are ready for the package.`,
+        "invalid-current-package-cardinality",
+        `Current package is not exactly ${PACKAGE_SIZE} unique image-ready production-eligible drafts.`,
         {
           eventId: incompleteEventId,
           packageDate,
           packageInputPrefix,
-          eligibleCandidates: candidates.length,
-          distinctArticles: articles.length,
+          eligibleArticles: articles.length,
+          uniqueArticleIds: uniqueArticleIds.size,
+          editorialInputIds: inputIds.length,
+          uniqueEditorialInputIds: uniqueInputIds.size,
+          imageReadyArticles: articles.filter((article) => Boolean(article.featuredImageUrl)).length,
           requiredArticles: PACKAGE_SIZE,
-          eligibilityRule: "current Dublin editorialInputId + morningPackageEligible=true + automationContentClass=production",
-          diversitySimilarityLimit: DIVERSITY_SIMILARITY_LIMIT,
+          eligibilityRule: "exact current Dublin editorialInputId + morningPackageEligible=true + automationContentClass=production; diversity/freshness/review resolved upstream",
         },
       );
       return NextResponse.json({
@@ -301,9 +243,9 @@ export async function POST(request: NextRequest) {
         packageDate,
         packageInputPrefix,
         articleCount: articles.length,
-        eligibleCandidateCount: candidates.length,
+        eligibleCandidateCount: articles.length,
         requiredArticleCount: PACKAGE_SIZE,
-        reason: "insufficient-current-package-content",
+        reason: "invalid-current-package-cardinality",
         technicalAlertStatus,
       }, { status: 409 });
     }
@@ -321,7 +263,7 @@ export async function POST(request: NextRequest) {
         packageInputPrefix,
         destination,
         articleIds: articles.map((article) => article._id.replace(/^drafts\./, "")),
-        editorialInputIds: articles.map((article) => article.editorialInputId).filter(Boolean),
+        editorialInputIds: inputIds,
         createdAt: new Date().toISOString(),
       });
     } catch (error) {
@@ -382,9 +324,9 @@ export async function POST(request: NextRequest) {
       packageDate,
       packageInputPrefix,
       articleCount: articles.length,
-      eligibleCandidateCount: candidates.length,
+      eligibleCandidateCount: articles.length,
       articleIds: articles.map((article) => article._id.replace(/^drafts\./, "")),
-      editorialInputIds: articles.map((article) => article.editorialInputId).filter(Boolean),
+      editorialInputIds: inputIds,
       destination,
       accepted: smtpResult.accepted,
       smtpResponse: smtpResult.response,
