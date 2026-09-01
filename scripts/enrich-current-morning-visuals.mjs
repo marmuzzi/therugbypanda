@@ -15,6 +15,13 @@ const TEAM_TERMS = [
   "Leinster", "Munster", "Ulster", "Connacht", "Ireland", "New Zealand", "All Blacks", "South Africa", "Springboks",
   "England", "Scotland", "Wales", "France", "Italy", "Australia", "Wallabies", "Argentina", "Pumas", "Fiji", "Japan", "Samoa", "Tonga",
 ];
+const CONTEXT_GROUPS = [
+  { team: "Leinster", terms: ["leinster", "rds", "donnybrook"] },
+  { team: "Munster", terms: ["munster", "thomond park", "limerick"] },
+  { team: "Ulster", terms: ["ulster", "kingspan stadium", "belfast"] },
+  { team: "Connacht", terms: ["connacht", "dexcom stadium", "sportsground", "galway"] },
+];
+const NON_RUGBY_VISUAL = /\b(derelict building|left me all alone|house|residential|street scene)\b/i;
 const NON_PERSON_TERMS = new Set([
   ...TEAM_TERMS,
   "Rugby", "URC", "United Rugby", "Champions Cup", "Challenge Cup", "Six Nations", "World Cup", "Global Series", "Academy",
@@ -79,6 +86,34 @@ function descriptiveImageText(image) {
   return [image.title, image.altText, image.caption, image.subject, image.team, image.event].filter(Boolean).join(" ");
 }
 
+function storyRequiresWomenEvidence(text) {
+  return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(text);
+}
+
+function imageHasWomenEvidence(text) {
+  return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(text);
+}
+
+function contextConflict(articleLower, imageLower) {
+  const articleGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => articleLower.includes(term)));
+  const imageGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => imageLower.includes(term)));
+  if (!imageGroups.length) return false;
+  if (!articleGroups.length) return true;
+  return !articleGroups.some((articleGroup) => imageGroups.some((imageGroup) => imageGroup.team === articleGroup.team));
+}
+
+function imagePassesHardContext(articleTextValue, image) {
+  const articleLower = articleTextValue.toLowerCase();
+  const imageLower = descriptiveImageText(image).toLowerCase();
+  if (NON_RUGBY_VISUAL.test(imageLower)) return false;
+  if (contextConflict(articleLower, imageLower)) return false;
+  const articleTeams = TEAM_TERMS.filter((team) => articleLower.includes(team.toLowerCase()));
+  const imageTeams = TEAM_TERMS.filter((team) => imageLower.includes(team.toLowerCase()));
+  if (articleTeams.length > 0 && imageTeams.length > 0 && !articleTeams.some((team) => imageTeams.includes(team))) return false;
+  if (storyRequiresWomenEvidence(articleTextValue) && !imageHasWomenEvidence(imageLower)) return false;
+  return true;
+}
+
 function namedPersonPhrasesFromImage(image) {
   const matches = descriptiveImageText(image).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
   return [...new Set(matches.map((match) => match.trim()).filter((match) => {
@@ -123,26 +158,14 @@ function meaningfulTerms(text) {
   return [...new Set(text.toLowerCase().split(/[^a-z0-9à-öø-ÿ]+/).filter((term) => term.length >= 5 && !GENERIC_WORDS.has(term)))];
 }
 
-function storyRequiresWomenEvidence(text) {
-  return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b/i.test(text);
-}
-
 function candidateScore(image, paragraph, fullArticleText, subjects) {
-  if (!image.assetRef) return Number.NEGATIVE_INFINITY;
+  if (!image.assetRef || !imagePassesHardContext(fullArticleText, image)) return Number.NEGATIVE_INFINITY;
   const imageText = descriptiveImageText(image).toLowerCase();
   const paragraphLower = paragraph.toLowerCase();
   const articleLower = fullArticleText.toLowerCase();
 
   const namedPeople = namedPersonPhrasesFromImage(image);
   if (namedPeople.some((person) => !articleLower.includes(person.toLowerCase()))) return Number.NEGATIVE_INFINITY;
-
-  const articleTeams = TEAM_TERMS.filter((team) => articleLower.includes(team.toLowerCase()));
-  const imageTeams = TEAM_TERMS.filter((team) => imageText.includes(team.toLowerCase()));
-  if (articleTeams.length > 0 && imageTeams.length > 0 && !articleTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
-
-  if (storyRequiresWomenEvidence(fullArticleText) && imageText.includes("ireland") && !/\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b/.test(imageText)) {
-    return Number.NEGATIVE_INFINITY;
-  }
 
   const exactSubjects = subjects.filter((subject) => paragraphLower.includes(subject.toLowerCase()) && imageText.includes(subject.toLowerCase()));
   const paragraphTeam = TEAM_TERMS.find((team) => paragraphLower.includes(team.toLowerCase()) && imageText.includes(team.toLowerCase()));
@@ -215,7 +238,11 @@ const summary = [];
 for (const article of articles) {
   const articlePlan = plan.plans.find((item) => item.editorialInputId === article.editorialInputId);
   if (!articlePlan) throw new Error(`No image plan for ${article.editorialInputId}.`);
-  const allowedImages = (articlePlan.candidates ?? []).map((item) => imageByAsset.get(item.assetRef)).filter(Boolean);
+  const fullArticleText = articleText(article);
+  const allowedImages = (articlePlan.candidates ?? [])
+    .map((item) => imageByAsset.get(item.assetRef))
+    .filter(Boolean)
+    .filter((image) => imagePassesHardContext(fullArticleText, image));
   const hero = allowedImages.find((image) => image.assetRef && !globallyUsedAssets.has(image.assetRef));
   if (!hero) throw new Error(`No verified relevant hero candidate for ${article.editorialInputId}. Fail closed before Zoho.`);
   globallyUsedAssets.add(hero.assetRef);
@@ -237,7 +264,7 @@ for (const article of articles) {
       && candidate.assetRef
       && !globallyUsedAssets.has(candidate.assetRef)
       && descriptiveImageText(candidate).toLowerCase().includes(subjectLower)
-      && !namedPersonPhrasesFromImage(candidate).some((person) => person.toLowerCase() !== subjectLower && !articleText(article).toLowerCase().includes(person.toLowerCase())),
+      && !namedPersonPhrasesFromImage(candidate).some((person) => person.toLowerCase() !== subjectLower && !fullArticleText.toLowerCase().includes(person.toLowerCase())),
     );
     if (portrait) {
       card = { ...card, imageUrl: portrait.assetUrl, imageAlt: portrait.altText ?? portrait.title ?? card.title };
