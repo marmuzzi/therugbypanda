@@ -39,7 +39,10 @@ function imageText(image) { return [image.title,image.altText,image.alt,image.ca
 function groupsIn(value) { const lower = String(value ?? "").toLowerCase(); return TEAM_GROUPS.filter((group) => group.terms.some((term) => lower.includes(term))).map((group) => group.id); }
 function words(value) { return [...new Set(String(value ?? "").toLowerCase().split(/[^a-z0-9à-öø-ÿ]+/).filter((word) => word.length >= 5 && !GENERIC.has(word)))]; }
 function namedPeople(value) { const matches = String(value ?? "").match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+\b/g) ?? []; return [...new Set(matches.filter((name) => !TEAM_GROUPS.some((group) => group.terms.includes(name.toLowerCase()))))]; }
-function portableImage(image) { return { _type: "image", _key: crypto.randomUUID().replaceAll("-", "").slice(0, 12), asset: { _type: "reference", _ref: image.assetRef }, alt: image.altText ?? image.alt ?? image.title ?? "Rugby editorial image", caption: image.caption, photographer: image.publicCredit ?? image.creditLine ?? image.photographer, source: image.source ?? image.sourceName, rights: image.rights ?? [image.copyrightLine ?? image.copyright, image.rightsNotes].filter(Boolean).join(" — ") || undefined }; }
+function portableImage(image) {
+  const derivedRights = [image.copyrightLine ?? image.copyright, image.rightsNotes].filter(Boolean).join(" — ") || undefined;
+  return { _type: "image", _key: crypto.randomUUID().replaceAll("-", "").slice(0, 12), asset: { _type: "reference", _ref: image.assetRef }, alt: image.altText ?? image.alt ?? image.title ?? "Rugby editorial image", caption: image.caption, photographer: image.publicCredit ?? image.creditLine ?? image.photographer, source: image.source ?? image.sourceName, rights: image.rights ?? derivedRights };
+}
 function negativeConflict(article, image) {
   const header = `${article.title ?? ""} ${article.standfirst ?? ""}`; const story = `${header} ${(article.body ?? []).filter((b) => b?._type === "block").map(blockText).join(" ")}`; const meta = imageText(image);
   if (!image.assetRef || NON_RUGBY.test(meta)) return true;
