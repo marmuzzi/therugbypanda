@@ -86,26 +86,29 @@ jobs:
           REQUIRE_ALL_SELECTED_CREATED: "1"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
       - name: Build current-package image candidate and deficit plan
+        id: image_plan
         if: steps.package_state.outputs.skip != 'true'
         env:
           IMAGE_PLAN_PATH: daily-article-image-plan.json
-        run: node scripts/plan-daily-article-images.mjs
+        run: |
+          node scripts/plan-daily-article-images.mjs
+          node -e 'const p=require("./daily-article-image-plan.json"); console.log(`total_deficit=${p.totalDeficit}`)' >> "$GITHUB_OUTPUT"
       - name: Discover only current-package image deficits
-        if: steps.package_state.outputs.skip != 'true'
+        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
         env:
           IMAGE_PLAN_PATH: daily-article-image-plan.json
         run: node scripts/discover-daily-article-image-deficits.mjs
       - name: Strict rights and relevance triage
-        if: steps.package_state.outputs.skip != 'true'
+        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
         run: node scripts/triage-wikimedia-candidates.mjs
       - name: Import approved deficit images locally into Sanity
-        if: steps.package_state.outputs.skip != 'true'
+        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
         run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/daily-deficit-import.log
       - name: Reconcile publication-readiness metadata
-        if: steps.package_state.outputs.skip != 'true'
+        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
         run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/daily-deficit-reconcile.log
       - name: Audit strict local publication readiness
-        if: steps.package_state.outputs.skip != 'true'
+        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
         run: |
           npm run media:audit-readiness | tee data/editorial-images/daily-deficit-readiness.log
           cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/daily-deficit-readiness.json

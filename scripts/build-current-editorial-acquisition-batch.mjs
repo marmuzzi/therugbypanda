@@ -7,12 +7,13 @@ const outputPath = process.env.CURRENT_ACQUISITION_BATCH_PATH || "data/editorial
 const discovery = JSON.parse(await fs.readFile(path.resolve(inputPath), "utf8"));
 if (discovery?.schemaVersion !== "1.0" || !Array.isArray(discovery.leads)) throw new Error("Current acquisition bridge fail-closed: invalid discovery evidence.");
 
-const stop = new Set(["rugby","the","a","an","and","or","of","to","for","in","on","at","with","from","as","is","are","was","were","be","been","being","this","that","these","those","after","before","over","under","into","out","up","down","new","latest","says","say"]);
+const stop = new Set(["rugby","the","a","an","and","or","of","to","for","in","on","at","with","from","as","is","are","was","were","be","been","being","this","that","these","those","after","before","over","under","into","out","up","down","new","latest","says","say","united","championship","match","live","stats"]);
 const rugbySignals = /\b(rugby|union|irfu|rfu|urc|united rugby championship|six nations|champions cup|challenge cup|epcr|leinster|munster|ulster|connacht|springboks?|all blacks?|wallabies|pumas|lions tour|test match|test series|rugby championship|fly[- ]?half|out[- ]?half|scrum[- ]?half|scrum|lineout|line-out|try|tries|conversion|prop|hooker|lock|flanker|back[- ]?row|centre|winger|full[- ]?back|rugby squad|rugby club|rugby internationals?)\b/i;
-const explicitNonRugby = /\b(boxing|boxer|fight week|ringwalk|golf|superbike|motorbike|cycling|cyclist|5k|athletics|hurling|camogie|gaa|gaelic football|soccer|premier league|dundee united|kilmarnock|goal drought|architecture|cost[- ]of[- ]living|chemtrails?|migrants? protest)\b/i;
+const explicitNonRugby = /\b(boxing|boxer|fight week|ringwalk|golf|superbike|motorbike|cycling|cyclist|5k|athletics|hurling|camogie|gaa|gaelic football|soccer|premier league|dundee united|kilmarnock|goal drought|architecture|cost[- ]of[- ]living|chemtrails?|migrants? protest|manchester united|man united|ipswich|sailing|ilca)\b/i;
 const genericTitlePatterns = [
   /^the\s*42(?:\s*-\s*the\s*42)?$/i,
   /^[-\s]*auth\.englandrugby\.com$/i,
+  /^[-\s]*united rugby championship$/i,
   /^untitled design\b/i,
   /^(?:jon newcombe|josh raisey)\s*-\s*rugbypass\.com$/i,
   /^(?:urc|rugby|news|home)\s*-\s*[^-]+$/i,
@@ -92,7 +93,8 @@ function sameStory(seed,candidate) {
 }
 function isSafeContextCorroboration(seed,lead) {
   if(isGenericLead(lead) || explicitNonRugby.test(relevanceText(lead))) return false;
-  return sameStory(seed,lead) && (similarity(seed.title,lead.title)>=0.38 || sharedTokenCount(seed.title,lead.title)>=3);
+  const sharedTitle=sharedTokenCount(seed.title,lead.title);
+  return sharedTitle>=2 && sameStory(seed,lead) && (similarity(seed.title,lead.title)>=0.38 || sharedTitle>=3);
 }
 function sourcePriority(lead) {
   const tier = Number(lead.source?.tier ?? 99);
@@ -163,7 +165,7 @@ const candidates=deduped.map((candidate)=>({
 }));
 
 if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} corroborated rugby candidates after rejecting ${rejectedNonRugby} non-rugby/generic leads; recovery requires a broad candidate pool before freshness.`);
-const output={ schemaVersion:"1.0", batchId:`current-${packageDate}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), packageDate, provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+independent-seed-cross-domain-corroboration-v6-dublin-package-date", preDedupedClusters:clusters.length }, candidates };
+const output={ schemaVersion:"1.0", batchId:`current-${packageDate}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), packageDate, provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+independent-seed-cross-domain-corroboration-v7-ambiguity-safe", preDedupedClusters:clusters.length }, candidates };
 await fs.mkdir(path.dirname(path.resolve(outputPath)),{recursive:true});
 await fs.writeFile(path.resolve(outputPath),`${JSON.stringify(output,null,2)}\n`);
 console.log(JSON.stringify({currentAcquisitionBridge:"passed",packageDate,rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,stableCandidateIds:true,outputPath},null,2));
