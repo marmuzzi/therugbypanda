@@ -99,20 +99,20 @@ function tokenSimilarity(left: PackageArticle, right: PackageArticle): number {
   return union === 0 ? 0 : intersection / union;
 }
 
-function sourceKeys(article: PackageArticle): Set<string> {
-  const keys = new Set<string>();
+function canonicalSourceUrls(article: PackageArticle): Set<string> {
+  const urls = new Set<string>();
   for (const source of article.sourceRecords ?? []) {
-    if (source.id?.trim()) keys.add(`id:${source.id.trim().toLowerCase()}`);
-    if (source.url?.trim()) keys.add(`url:${source.url.trim().toLowerCase()}`);
+    const url = source.url?.trim().toLowerCase();
+    if (url) urls.add(url);
   }
-  return keys;
+  return urls;
 }
 
 function sharesSource(left: PackageArticle, right: PackageArticle): boolean {
-  const leftKeys = sourceKeys(left);
-  if (leftKeys.size === 0) return false;
-  const rightKeys = sourceKeys(right);
-  for (const key of leftKeys) if (rightKeys.has(key)) return true;
+  const leftUrls = canonicalSourceUrls(left);
+  if (leftUrls.size === 0) return false;
+  const rightUrls = canonicalSourceUrls(right);
+  for (const url of leftUrls) if (rightUrls.has(url)) return true;
   return false;
 }
 
