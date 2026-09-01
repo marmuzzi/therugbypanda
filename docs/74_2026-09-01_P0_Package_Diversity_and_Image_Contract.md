@@ -3,7 +3,7 @@
 Date: 1 September 2026
 Issues: AUTO-004-P13, MEDIA-009
 Priority: Critical
-Status: Implemented in PR #342; pending merge/deployment/production verification
+Status: Closed — implemented in PR #342, merged, deployed and production verified
 
 ## Measured production defects
 
@@ -29,15 +29,17 @@ PR #342:
 - preserves unaffected valid drafts and the bounded incremental recovery model;
 - leaves image assignment and Zoho fail-closed: exactly five fresh eligible drafts must still pass exact-package visual verification before one consolidated email can be sent.
 
-## Production acceptance
+## Production acceptance — passed
 
-After merge, the production recovery run must prove:
+Production recovery run `33505534217` proved the full acceptance boundary after #342 deployed:
 
-1. excess South Africa/New Zealand retained drafts are removed from morning eligibility while unaffected drafts remain preserved;
-2. only missing slots are generated from fresh, evidence-sufficient candidates outside the capped matchup cluster;
-3. the Dundalk article either obtains genuinely valid rights-approved visual candidates or is replaced through the existing bounded visual-substitution path;
-4. the final exact five pass hero/inline Sanity readback with no unrelated named-person imagery or duplicated package assets;
-5. Zoho sends only the exact verified five, with no stale or partial package;
-6. no unnecessary whole-package GPT regeneration occurs.
+1. excess South Africa/New Zealand retained drafts were removed from morning eligibility while unaffected drafts remained preserved;
+2. only missing slots were generated from fresh, evidence-sufficient candidates outside the capped matchup cluster;
+3. the Dundalk/Tommy Campbell article remained image-unfulfillable after targeted acquisition, was evicted, and only that slot was replaced;
+4. 21 rights-triaged local assets were imported with zero failures, raising the strict local publication-ready baseline from 241 to 262;
+5. the final exact five each had three strong local candidates and passed hero/inline Sanity readback with no unrelated named-person imagery or duplicate package assets;
+6. PR #344 then allowed Zoho to hand off those exact verified five without re-selecting them, and SMTP returned `250 Message received`;
+7. an immediate rerun detected accepted delivery evidence and skipped acquisition, generation, images and email, proving no duplicate resend;
+8. the final acceptance rerun retained all five and created zero drafts, so no unnecessary whole-package GPT regeneration occurred.
 
-Resolution date: pending production verification.
+Resolution date: 2026-09-01.
