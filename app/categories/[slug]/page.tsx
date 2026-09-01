@@ -15,20 +15,21 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
   const { category } = await getCategoryPage(slug);
 
   if (!category) {
-    return { title: "Category not found | The Rugby Panda" };
+    return { title: "Category not found" };
   }
 
-  const title = `${category.title} rugby news | The Rugby Panda`;
+  const pageTitle = `${category.title} rugby news`;
+  const socialTitle = `${pageTitle} | The Rugby Panda`;
   const description =
     category.description ?? `Independent rugby coverage, analysis and context for ${category.title}.`;
   const url = categoryUrl(category.slug);
 
   return {
-    title,
+    title: pageTitle,
     description,
     alternates: { canonical: url },
     openGraph: {
-      title,
+      title: socialTitle,
       description,
       url,
       siteName: "The Rugby Panda",
@@ -36,7 +37,7 @@ export async function generateMetadata({ params }: CategoryPageProps): Promise<M
     },
     twitter: {
       card: "summary",
-      title,
+      title: socialTitle,
       description,
     },
   };
