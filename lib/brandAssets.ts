@@ -20,9 +20,14 @@ const BRAND_ALIASES: Array<{ match: RegExp; asset: RegExp }> = [
   { match: /\bwales\b/i, asset: /Welsh Rugby Union/i },
   { match: /\bitaly\b/i, asset: /Federazione Italiana Rugby/i },
   { match: /\bargentina|los pumas\b/i, asset: /Unión Argentina de Rugby/i },
+  { match: /\bleinster\b/i, asset: /^Leinster Rugby$/i },
+  { match: /\bmunster\b/i, asset: /^Munster Rugby$/i },
   { match: /\bulster\b/i, asset: /^Ulster Rugby$/i },
+  { match: /\bconnacht\b/i, asset: /^Connacht Rugby$/i },
   { match: /\burc|united rugby championship\b/i, asset: /United Rugby Championship/i },
   { match: /\bsix nations\b/i, asset: /Six Nations Rugby/i },
+  { match: /\bchampions cup\b/i, asset: /European Rugby Champions Cup/i },
+  { match: /\bchallenge cup\b/i, asset: /EPCR Challenge Cup/i },
 ];
 
 function articleBrandText(article: CmsArticle) {
@@ -42,7 +47,7 @@ export async function getArticleBrandMarks(article: CmsArticle): Promise<Article
     if (!asset || !ref || used.has(ref)) continue;
     selected.push({
       name: asset.shortName ?? asset.title ?? "Rugby team",
-      image: urlForImage(asset.primaryLogo).width(180).fit("max").url(),
+      image: urlForImage(ref).width(180).fit("max").url(),
       alt: asset.primaryLogo?.alt ?? `${asset.shortName ?? asset.title ?? "Rugby team"} logo`,
     });
     used.add(ref);
