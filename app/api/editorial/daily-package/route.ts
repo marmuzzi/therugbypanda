@@ -14,6 +14,7 @@ const CANDIDATE_POOL_SIZE = 30;
 const destination = "editor@therugbypanda.ie";
 const studioBaseUrl = "https://therugbypanda.sanity.studio";
 const DIVERSITY_SIMILARITY_LIMIT = 0.55;
+const LOCAL_SOURCE_ID = /^source-\d+$/i;
 
 const STOP_WORDS = new Set([
   "a", "about", "after", "all", "an", "and", "are", "as", "at", "be", "been", "before", "but", "by",
@@ -102,8 +103,13 @@ function tokenSimilarity(left: PackageArticle, right: PackageArticle): number {
 function sourceKeys(article: PackageArticle): Set<string> {
   const keys = new Set<string>();
   for (const source of article.sourceRecords ?? []) {
-    if (source.id?.trim()) keys.add(`id:${source.id.trim().toLowerCase()}`);
-    if (source.url?.trim()) keys.add(`url:${source.url.trim().toLowerCase()}`);
+    const url = source.url?.trim().toLowerCase();
+    if (url) {
+      keys.add(`url:${url}`);
+      continue;
+    }
+    const id = source.id?.trim().toLowerCase();
+    if (id && !LOCAL_SOURCE_ID.test(id)) keys.add(`id:${id}`);
   }
   return keys;
 }
@@ -190,31 +196,10 @@ function emailHtml(packageDate: string, articles: PackageArticle[]) {
     const status = escapeHtml(`${article.workflowStatus ?? "draft"}${article.needsHumanFactCheck ? " · human fact-check flagged" : ""}`);
     const imageStatus = article.featuredImageUrl ? "Image assigned" : "No relevant image assigned";
     const url = escapeHtml(reviewUrl(article._id));
-    return `
-      <tr><td style="padding:0 0 16px 0;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate;border:1px solid #d1d5db;border-radius:14px;background:#ffffff;color:#111827;">
-          <tr><td style="padding:18px 18px 6px 18px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2e7d32;">Article ${index + 1}${metadata ? ` · ${metadata}` : ""}</td></tr>
-          <tr><td style="padding:0 18px 8px 18px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.25;font-weight:700;color:#111827;">${title}</td></tr>
-          ${standfirst ? `<tr><td style="padding:0 18px 12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.55;color:#374151;">${standfirst}</td></tr>` : ""}
-          <tr><td style="padding:0 18px 16px 18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#4b5563;">Status: ${status}<br>${imageStatus}</td></tr>
-          <tr><td style="padding:0 18px 18px 18px;"><a href="${url}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;padding:12px 18px;border-radius:10px;">Open in Sanity</a></td></tr>
-        </table>
-      </td></tr>`;
+    return `<tr><td style="padding:0 0 16px 0;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate;border:1px solid #d1d5db;border-radius:14px;background:#ffffff;color:#111827;"><tr><td style="padding:18px 18px 6px 18px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2e7d32;">Article ${index + 1}${metadata ? ` · ${metadata}` : ""}</td></tr><tr><td style="padding:0 18px 8px 18px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.25;font-weight:700;color:#111827;">${title}</td></tr>${standfirst ? `<tr><td style="padding:0 18px 12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.55;color:#374151;">${standfirst}</td></tr>` : ""}<tr><td style="padding:0 18px 16px 18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#4b5563;">Status: ${status}<br>${imageStatus}</td></tr><tr><td style="padding:0 18px 18px 18px;"><a href="${url}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;padding:12px 18px;border-radius:10px;">Open in Sanity</a></td></tr></table></td></tr>`;
   }).join("");
 
-  return `<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light"></head>
-<body style="margin:0;padding:0;background:#f3f4f6;color:#111827;color-scheme:light only;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#f3f4f6;"><tr><td align="center" style="padding:20px 12px;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;border-collapse:collapse;background:#ffffff;color:#111827;border-radius:16px;">
-      <tr><td style="padding:24px 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#2e7d32;">The Rugby Panda</td></tr>
-      <tr><td style="padding:0 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.2;font-weight:700;color:#111827;">Five articles ready for review</td></tr>
-      <tr><td style="padding:0 22px 22px 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#4b5563;">Protected editorial package for ${escapeHtml(packageDate)}. Open each article in Sanity to review, edit, approve or reject it.</td></tr>
-      <tr><td style="padding:0 22px 8px 22px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">${cards}</table></td></tr>
-      <tr><td style="padding:4px 22px 24px 22px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6b7280;">This message also contains a plain-text fallback for mail clients that do not render HTML.</td></tr>
-    </table>
-  </td></tr></table>
-</body></html>`;
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light"></head><body style="margin:0;padding:0;background:#f3f4f6;color:#111827;color-scheme:light only;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#f3f4f6;"><tr><td align="center" style="padding:20px 12px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;border-collapse:collapse;background:#ffffff;color:#111827;border-radius:16px;"><tr><td style="padding:24px 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#2e7d32;">The Rugby Panda</td></tr><tr><td style="padding:0 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.2;font-weight:700;color:#111827;">Five articles ready for review</td></tr><tr><td style="padding:0 22px 22px 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#4b5563;">Protected editorial package for ${escapeHtml(packageDate)}. Open each article in Sanity to review, edit, approve or reject it.</td></tr><tr><td style="padding:0 22px 8px 22px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">${cards}</table></td></tr><tr><td style="padding:4px 22px 24px 22px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6b7280;">This message also contains a plain-text fallback for mail clients that do not render HTML.</td></tr></table></td></tr></table></body></html>`;
 }
 
 async function sendTechnicalAlert(failureCode: string, message: string, details: Record<string, unknown>) {
@@ -251,6 +236,7 @@ export async function GET() {
     deliveryMode: "direct-zoho-smtp",
     requiredArticleCount: PACKAGE_SIZE,
     packageIdentity: "current-dublin-operational-date",
+    sourceIdentity: "canonical-url-or-global-id",
     destination,
   });
 }
@@ -293,6 +279,7 @@ export async function POST(request: NextRequest) {
           requiredArticles: PACKAGE_SIZE,
           eligibilityRule: "current Dublin editorialInputId + morningPackageEligible=true + automationContentClass=production",
           diversitySimilarityLimit: DIVERSITY_SIMILARITY_LIMIT,
+          sourceIdentityRule: "canonical source URL; globally stable source ID only when URL is unavailable; local source-N IDs ignored",
         },
       );
       return NextResponse.json({
