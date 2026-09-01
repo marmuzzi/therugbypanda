@@ -20,6 +20,17 @@ const CONTEXT_GROUPS = [
   { team: "Connacht", terms: ["connacht", "dexcom stadium", "sportsground", "galway"] },
 ];
 const NON_RUGBY_VISUAL = /\b(derelict building|left me all alone|house|residential|street scene)\b/i;
+const NON_PERSON_TERMS = new Set([
+  ...TEAMS,
+  "Rugby", "URC", "United Rugby", "Champions Cup", "Challenge Cup", "Six Nations", "World Cup", "Global Series", "Academy",
+  "Thomond Park", "Aviva Stadium", "Dexcom Stadium", "Kingspan Stadium", "Affidea Stadium",
+]);
+const NON_PERSON_WORDS = new Set([
+  "rugby", "stadium", "championship", "cup", "club", "football", "union", "province", "provinces", "ireland",
+  "leinster", "munster", "ulster", "connacht", "nations", "united", "champions", "challenge", "european", "aviva",
+  "kingspan", "affidea", "sportsground", "thomond", "dexcom", "rds", "urc", "world", "series", "league", "team", "academy",
+  "blacks", "springboks", "zealand", "africa", "wallabies", "england", "scotland", "wales", "france", "italy", "australia",
+]);
 
 async function query(groq, params = {}) {
   const url = new URL(`https://${projectId}.api.sanity.io/v${apiVersion}/data/query/${dataset}`);
@@ -55,6 +66,15 @@ function namedPhrases(value = "") {
 }
 function storyWomenSpecific(value = "") { return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(value); }
 function imageText(image) { return [image.title,image.altText,image.caption,image.subject,image.team,image.event].filter(Boolean).join(" "); }
+function namedPersonPhrasesFromImage(image) {
+  const matches = imageText(image).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
+  return [...new Set(matches.map(text).filter((match) => {
+    if (NON_PERSON_TERMS.has(match)) return false;
+    const terms = match.toLowerCase().split(/[^a-zà-öø-ÿ'’.-]+/).filter(Boolean);
+    if (terms.length < 2) return false;
+    return !terms.some((term) => NON_PERSON_WORDS.has(term));
+  }))];
+}
 
 function contextConflict(primaryStoryLower, imageMeta) {
   const storyGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => primaryStoryLower.includes(term)));
@@ -73,6 +93,9 @@ function baseRelevance(article, image) {
   const meta = lower(imageText(image));
   if (NON_RUGBY_VISUAL.test(meta)) return Number.NEGATIVE_INFINITY;
   if (contextConflict(headerLower, meta)) return Number.NEGATIVE_INFINITY;
+
+  const imagePeople = namedPersonPhrasesFromImage(image);
+  if (imagePeople.some((person) => !storyLower.includes(person.toLowerCase()))) return Number.NEGATIVE_INFINITY;
 
   const primaryTeams = TEAMS.filter((team) => headerLower.includes(team.toLowerCase()));
   const imageTeams = TEAMS.filter((team) => meta.includes(team.toLowerCase()));
