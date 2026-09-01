@@ -4,6 +4,7 @@ import { createClient } from "next-sanity";
 
 const packageSize = 5;
 const maxPerMatchup = Math.max(1, Number.parseInt(process.env.MAX_PACKAGE_MATCHUP_STORIES ?? "2", 10) || 2);
+const maxPerTeam = Math.max(1, Number.parseInt(process.env.MAX_PACKAGE_TEAM_STORIES ?? "2", 10) || 2);
 const batchPath = path.resolve(process.env.BATCH_PATH ?? "data/editorial-acquisition/current-editorial-acquisition-batch.json");
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
@@ -47,10 +48,15 @@ function normalize(value = "") {
   return String(value ?? "").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
 }
 
-function matchupPairs(value = "") {
+function teamIds(value = "") {
   const lower = normalize(value);
-  const entities = TEAM_GROUPS.filter((group) => group.terms.some((term) => lower.includes(term))).map((group) => group.id);
-  const unique = [...new Set(entities)].sort();
+  return TEAM_GROUPS
+    .filter((group) => group.terms.some((term) => lower.includes(term)))
+    .map((group) => group.id);
+}
+
+function matchupPairs(value = "") {
+  const unique = [...new Set(teamIds(value))].sort();
   const pairs = [];
   for (let i = 0; i < unique.length; i += 1) {
     for (let j = i + 1; j < unique.length; j += 1) pairs.push(`${unique[i]}::${unique[j]}`);
@@ -64,6 +70,10 @@ function draftText(draft) {
     draft?.standfirst,
     ...(Array.isArray(draft?.sourceNotes) ? draft.sourceNotes.flatMap((note) => [note?.publisher, note?.usage]) : []),
   ].filter(Boolean).join(" ");
+}
+
+function draftPrimaryText(draft) {
+  return [draft?.title, draft?.standfirst].filter(Boolean).join(" ");
 }
 
 function candidateText(candidate) {
@@ -80,12 +90,38 @@ function candidateText(candidate) {
   ].filter(Boolean).join(" ");
 }
 
-function canAdd(pairs, counts) {
-  return pairs.every((pair) => (counts.get(pair) ?? 0) < maxPerMatchup);
+function candidatePrimaryText(candidate) {
+  return [
+    candidate?.title,
+    candidate?.summary,
+    candidate?.subject,
+    candidate?.development,
+    candidate?.editorialAngle,
+    candidate?.editorialPosition?.subject,
+    candidate?.editorialPosition?.development,
+    candidate?.editorialPosition?.angle,
+  ].filter(Boolean).join(" ");
 }
 
-function addPairs(pairs, counts) {
-  for (const pair of pairs) counts.set(pair, (counts.get(pair) ?? 0) + 1);
+function canAdd(pairs, teams, matchupCounts, teamCounts) {
+  const matchupAllowed = pairs.every((pair) => (matchupCounts.get(pair) ?? 0) < maxPerMatchup);
+  const teamAllowed = teams.every((team) => (teamCounts.get(team) ?? 0) < maxPerTeam);
+  return matchupAllowed && teamAllowed;
+}
+
+function addConcentration(pairs, teams, matchupCounts, teamCounts) {
+  for (const pair of pairs) matchupCounts.set(pair, (matchupCounts.get(pair) ?? 0) + 1);
+  for (const team of teams) teamCounts.set(team, (teamCounts.get(team) ?? 0) + 1);
+}
+
+function concentrationReason(pairs, teams, matchupCounts, teamCounts) {
+  const blockedPairs = pairs.filter((pair) => (matchupCounts.get(pair) ?? 0) >= maxPerMatchup);
+  const blockedTeams = teams.filter((team) => (teamCounts.get(team) ?? 0) >= maxPerTeam);
+  if (blockedTeams.length > 0 && blockedPairs.length > 0) {
+    return `same-package team concentration exceeds ${maxPerTeam} and matchup concentration exceeds ${maxPerMatchup}`;
+  }
+  if (blockedTeams.length > 0) return `same-package team concentration exceeds ${maxPerTeam}`;
+  return `same-package matchup concentration exceeds ${maxPerMatchup}`;
 }
 
 const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
@@ -101,31 +137,35 @@ const drafts = await client.fetch(`*[
   _id,title,standfirst,editorialInputId,editorialGeneratedAt,_createdAt,sourceNotes
 }`, { prefix });
 
-const counts = new Map();
+const matchupCounts = new Map();
+const teamCounts = new Map();
 const retained = [];
 const evicted = [];
 for (const draft of (Array.isArray(drafts) ? drafts : [])) {
   const pairs = matchupPairs(draftText(draft));
-  if (pairs.length > 0 && !canAdd(pairs, counts)) {
+  const teams = [...new Set(teamIds(draftPrimaryText(draft)))];
+  if (!canAdd(pairs, teams, matchupCounts, teamCounts)) {
     await client.patch(draft._id).set({ morningPackageEligible: false, automationContentClass: "production" }).commit();
     evicted.push({
       articleId: draft._id,
       editorialInputId: draft.editorialInputId,
       title: draft.title,
       pairs,
-      reason: `same-package matchup concentration exceeds ${maxPerMatchup}`,
+      teams,
+      reason: concentrationReason(pairs, teams, matchupCounts, teamCounts),
     });
     continue;
   }
   retained.push(draft);
-  addPairs(pairs, counts);
+  addConcentration(pairs, teams, matchupCounts, teamCounts);
 }
 
 const batch = JSON.parse(await fs.readFile(batchPath, "utf8"));
 if (!Array.isArray(batch?.candidates)) throw new Error("Current acquisition batch does not contain candidates.");
 
 const retainedInputIds = new Set(retained.map((draft) => draft.editorialInputId).filter(Boolean));
-const candidateCounts = new Map(counts);
+const candidateMatchupCounts = new Map(matchupCounts);
+const candidateTeamCounts = new Map(teamCounts);
 const keptCandidates = [];
 const rejectedCandidates = [];
 for (const candidate of batch.candidates) {
@@ -134,12 +174,19 @@ for (const candidate of batch.candidates) {
     continue;
   }
   const pairs = matchupPairs(candidateText(candidate));
-  if (pairs.length > 0 && !canAdd(pairs, candidateCounts)) {
-    rejectedCandidates.push({ id: candidate?.id, title: candidate?.title, pairs, reason: `same-package matchup concentration exceeds ${maxPerMatchup}` });
+  const teams = [...new Set(teamIds(candidatePrimaryText(candidate)))];
+  if (!canAdd(pairs, teams, candidateMatchupCounts, candidateTeamCounts)) {
+    rejectedCandidates.push({
+      id: candidate?.id,
+      title: candidate?.title,
+      pairs,
+      teams,
+      reason: concentrationReason(pairs, teams, candidateMatchupCounts, candidateTeamCounts),
+    });
     continue;
   }
   keptCandidates.push(candidate);
-  addPairs(pairs, candidateCounts);
+  addConcentration(pairs, teams, candidateMatchupCounts, candidateTeamCounts);
 }
 
 batch.candidates = keptCandidates;
@@ -147,6 +194,7 @@ batch.packageDiversity = {
   checkedAt: new Date().toISOString(),
   packageDate,
   maxPerMatchup,
+  maxPerTeam,
   retainedCount: retained.length,
   evictedDrafts: evicted,
   rejectedCandidates,
@@ -163,11 +211,13 @@ console.log(JSON.stringify({
   packageDiversityGate: "passed",
   packageDate,
   maxPerMatchup,
+  maxPerTeam,
   retainedCount: retained.length,
   missingSlots,
   evictedDrafts: evicted,
   rejectedCandidateCount: rejectedCandidates.length,
   rejectedCandidates,
   remainingCandidateCount: keptCandidates.length,
-  matchupCounts: Object.fromEntries(counts),
+  matchupCounts: Object.fromEntries(matchupCounts),
+  teamCounts: Object.fromEntries(teamCounts),
 }, null, 2));
