@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-1 September 2026, after production verification of the autonomous current-source workflow, bounded same-day recovery, package-diversity enforcement, exact-five visual enrichment and exact-one Zoho delivery.
+1 September 2026, after production verification of the autonomous current-source workflow, bounded same-day recovery, package-diversity enforcement, exact-five visual enrichment, exact-one Zoho delivery and public metadata title composition.
 
 ## Source of truth
 
@@ -16,9 +16,10 @@ Read first in future sessions:
 2. `docs/08_Issue_Log.md`
 3. `docs/09_Publishing_Workflow.md`
 4. newest numbered handoff/evidence documents relevant to the task
-5. `docs/75_2026-09-01_AUTO003_Zoho_Source_Identity_Fix.md`
-6. `docs/74_2026-09-01_P0_Package_Diversity_and_Image_Contract.md`
-7. `docs/63_2026-08-31_P0_Incremental_Same_Day_Recovery.md`
+5. `docs/77_2026-09-01_WEB014_Metadata_Title_Composition.md`
+6. `docs/75_2026-09-01_AUTO003_Zoho_Source_Identity_Fix.md`
+7. `docs/74_2026-09-01_P0_Package_Diversity_and_Image_Contract.md`
+8. `docs/63_2026-08-31_P0_Incremental_Same_Day_Recovery.md`
 
 Where older documents conflict with later measured production evidence, newer evidence wins. Chat history is not project truth.
 
@@ -102,7 +103,8 @@ MEDIA-009 remains open for long-term wrong/duplicate-image prevention across fut
 - #276 deterministic contextual-card population plus inline images: merged/deployed.
 - #278 responsive mobile Editorial Review: merged/deployed.
 - #279 safer paragraph-level image depth: merged/deployed and production-Sanity verified.
-- Final authenticated owner-phone interaction and representative published article/homepage rendering remain verification boundaries; do not publish solely to manufacture evidence.
+- #348 public metadata title composition: merged/deployed/production verified. Published article and URC category browser titles now carry exactly one `| The Rugby Panda` suffix; OpenGraph/Twitter titles remain branded once; changed production routes show no error/fatal runtime logs.
+- Final authenticated owner-phone interaction and broader representative published article/homepage rendering remain verification boundaries; do not publish solely to manufacture evidence.
 
 ## Social distribution / SOCIAL-001
 
@@ -112,7 +114,7 @@ The controlled publication event contract is deployed, but the downstream produc
 
 1. Prove the autonomous morning path on subsequent normal scheduled days, not just recovery reruns, while preserving the 1 September exact-five/fail-closed contracts.
 2. Continue targeted rights-approved local media expansion from 262 toward 200-500 useful assets by coverage depth, not raw count.
-3. Verify final authenticated mobile Editorial Review interaction and representative public article/homepage rendering.
+3. Verify final authenticated mobile Editorial Review interaction and broader representative public article/homepage rendering; WEB-014 metadata composition is now production-verified and closed.
 4. Configure/verify SOCIAL-001 downstream provider orchestration if available authorization permits; otherwise record only the minimal owner-only authorization blocker.
 
 Secondary paths remain AUTO-002 rejection E2E, NEWS-001, secure phone-first upload, security/backup/recovery and accreditation/provider checks.
