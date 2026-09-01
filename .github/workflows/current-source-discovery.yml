@@ -85,6 +85,7 @@ jobs:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
           REQUIRE_ALL_SELECTED_CREATED: "1"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
+
       - name: Build current-package image candidate and deficit plan
         id: image_plan
         if: steps.package_state.outputs.skip != 'true'
@@ -94,25 +95,31 @@ jobs:
           node scripts/plan-daily-article-images.mjs
           node -e 'const p=require("./daily-article-image-plan.json"); console.log(`total_deficit=${p.totalDeficit}`)' >> "$GITHUB_OUTPUT"
       - name: Discover only current-package image deficits
+        id: image_discovery
         if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
         env:
           IMAGE_PLAN_PATH: daily-article-image-plan.json
-        run: node scripts/discover-daily-article-image-deficits.mjs
+        run: |
+          node scripts/discover-daily-article-image-deficits.mjs
+          node -e 'const p=require("./data/editorial-images/daily-deficit-candidates.json"); console.log(`approve_candidates=${p.counts?.["approve-candidate"]||0}`)' >> "$GITHUB_OUTPUT"
       - name: Strict rights and relevance triage
-        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
+        id: image_triage
+        continue-on-error: true
+        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0' && steps.image_discovery.outputs.approve_candidates != '0'
         run: node scripts/triage-wikimedia-candidates.mjs
       - name: Import approved deficit images locally into Sanity
-        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
+        if: steps.package_state.outputs.skip != 'true' && steps.image_triage.outcome == 'success'
         run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/daily-deficit-import.log
       - name: Reconcile publication-readiness metadata
-        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
+        if: steps.package_state.outputs.skip != 'true' && steps.image_triage.outcome == 'success'
         run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/daily-deficit-reconcile.log
       - name: Audit strict local publication readiness
-        if: steps.package_state.outputs.skip != 'true' && steps.image_plan.outputs.total_deficit != '0'
+        if: steps.package_state.outputs.skip != 'true' && steps.image_triage.outcome == 'success'
         run: |
           npm run media:audit-readiness | tee data/editorial-images/daily-deficit-readiness.log
           cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/daily-deficit-readiness.json
       - name: Re-plan exact current package after acquisition
+        id: image_replan
         if: steps.package_state.outputs.skip != 'true'
         env:
           IMAGE_PLAN_PATH: daily-article-image-plan.json
@@ -120,6 +127,68 @@ jobs:
           cp daily-article-image-plan.json daily-article-image-plan-before-acquisition.json
           node scripts/plan-daily-article-images.mjs
           cp daily-article-image-plan.json daily-article-image-plan-after-acquisition.json
+          node -e 'const p=require("./daily-article-image-plan-after-acquisition.json"); console.log(`total_deficit=${p.totalDeficit}`)' >> "$GITHUB_OUTPUT"
+
+      - name: Evict one image-unfulfillable current draft after acquisition exhaustion
+        id: visual_substitution
+        if: steps.package_state.outputs.skip != 'true' && steps.image_replan.outputs.total_deficit != '0'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan-after-acquisition.json
+        run: node scripts/evict-current-visual-deficit-draft.mjs
+      - name: Refill only the visual-deficit slot from fresh evidence
+        if: steps.package_state.outputs.skip != 'true' && steps.image_replan.outputs.total_deficit != '0'
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+          EDITORIAL_API_BASE_URL: https://therugbypanda.ie
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+          REQUIRE_ALL_SELECTED_CREATED: "1"
+        run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
+      - name: Build replacement-package image plan
+        id: replacement_plan
+        if: steps.package_state.outputs.skip != 'true' && steps.image_replan.outputs.total_deficit != '0'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan-replacement.json
+        run: |
+          node scripts/plan-daily-article-images.mjs
+          cp daily-article-image-plan.json daily-article-image-plan-replacement.json
+          node -e 'const p=require("./daily-article-image-plan-replacement.json"); console.log(`total_deficit=${p.totalDeficit}`)' >> "$GITHUB_OUTPUT"
+      - name: Discover replacement-only image deficits
+        id: replacement_discovery
+        if: steps.package_state.outputs.skip != 'true' && steps.image_replan.outputs.total_deficit != '0' && steps.replacement_plan.outputs.total_deficit != '0'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan-replacement.json
+          WIKIMEDIA_OUTPUT: data/editorial-images/daily-deficit-replacement-candidates.json
+        run: |
+          node scripts/discover-daily-article-image-deficits.mjs
+          node -e 'const p=require("./data/editorial-images/daily-deficit-replacement-candidates.json"); console.log(`approve_candidates=${p.counts?.["approve-candidate"]||0}`)' >> "$GITHUB_OUTPUT"
+      - name: Strict triage for replacement image deficits
+        id: replacement_triage
+        continue-on-error: true
+        if: steps.package_state.outputs.skip != 'true' && steps.replacement_discovery.outputs.approve_candidates != '0'
+        env:
+          WIKIMEDIA_CANDIDATE_FILE: data/editorial-images/daily-deficit-replacement-candidates.json
+          WIKIMEDIA_REVIEW_FILE: data/editorial-images/daily-deficit-replacement-reviewed.json
+          WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/daily-deficit-replacement-triage.json
+        run: node scripts/triage-wikimedia-candidates.mjs
+      - name: Import approved replacement deficit images
+        if: steps.package_state.outputs.skip != 'true' && steps.replacement_triage.outcome == 'success'
+        env:
+          WIKIMEDIA_REVIEW_FILE: data/editorial-images/daily-deficit-replacement-reviewed.json
+        run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/daily-deficit-replacement-import.log
+      - name: Reconcile replacement image readiness
+        if: steps.package_state.outputs.skip != 'true' && steps.replacement_triage.outcome == 'success'
+        run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/daily-deficit-replacement-reconcile.log
+      - name: Audit replacement strict local readiness
+        if: steps.package_state.outputs.skip != 'true' && steps.replacement_triage.outcome == 'success'
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/daily-deficit-replacement-readiness.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/daily-deficit-replacement-readiness.json
+      - name: Build final exact current-package image plan
+        if: steps.package_state.outputs.skip != 'true'
+        run: |
+          node scripts/plan-daily-article-images.mjs
+          cp daily-article-image-plan.json daily-article-image-plan-after-acquisition.json
+
       - name: Assign and verify relevant hero and inline images on exact five
         if: steps.package_state.outputs.skip != 'true'
         env:
@@ -161,5 +230,6 @@ jobs:
             visual-enrichment-summary.json
             data/editorial-images/daily-deficit-*.json
             data/editorial-images/daily-deficit-*.log
+            data/editorial-images/current-visual-deficit-eviction.json
           if-no-files-found: warn
           retention-days: 14

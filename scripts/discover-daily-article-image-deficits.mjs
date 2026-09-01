@@ -8,15 +8,34 @@ const perQuery = Math.min(Number.parseInt(process.env.WIKIMEDIA_RESULTS_PER_QUER
 const maxQueriesPerArticle = Math.max(1, Number.parseInt(process.env.IMAGE_MAX_QUERIES_PER_ARTICLE ?? "5", 10));
 const allowedLicences = /^(CC BY(?:-SA)?(?: [234]\.0)?|CC0|Public domain)/i;
 const blocked = /\b(logo|crest|flag|kit template|shirt template|svg|diagram|line-?up)\b/i;
+const teams = ["Leinster", "Munster", "Ulster", "Connacht", "Ireland", "New Zealand", "All Blacks", "South Africa", "Springboks", "England", "Scotland", "Wales", "France", "Italy", "Australia", "Wallabies", "Argentina", "Pumas", "Fiji", "Japan", "Samoa", "Tonga"];
 
 function stripHtml(value = "") { return String(value).replace(/<[^>]*>/g, " ").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim(); }
 function norm(value = "") { return stripHtml(value).normalize("NFKD").toLowerCase(); }
 function yearFrom(...values) { const m = values.filter(Boolean).join(" ").match(/\b(20\d{2})\b/); return m ? Number(m[1]) : null; }
-function querySubject(query = "") { return String(query).replace(/\brugby\b/gi, " ").replace(/\b20\d{2}\b/g, " ").replace(/\b(Ireland|Leinster|Munster|Ulster|Connacht)\b/gi, " ").replace(/\s+/g, " ").trim(); }
-function subjectEvidence(text, query) {
-  const subject = querySubject(query);
-  if (!subject || subject.length < 5) return false;
-  return norm(text).includes(norm(subject));
+function articleWomenSpecific(plan) { return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(`${plan.title ?? ""}`); }
+function primaryTeam(plan) { const value = norm(plan.title); return teams.find((team) => value.includes(team.toLowerCase())) ?? null; }
+function rugbyGenderEvidence(value) {
+  const text = norm(value);
+  return /(?:women|womens|girls|female).{0,45}rugby|rugby.{0,45}(?:women|womens|girls|female)/i.test(text);
+}
+function subjectEvidenceFor(plan, evidenceText) {
+  const text = norm(evidenceText);
+  const evidence = [];
+  const team = primaryTeam(plan);
+  if (team && text.includes(team.toLowerCase())) evidence.push(team);
+  const women = articleWomenSpecific(plan);
+  if (women && rugbyGenderEvidence(text)) evidence.push("women/girls rugby");
+  if (!women && /\brugby\b/i.test(text)) evidence.push("rugby");
+  const titlePeople = String(plan.title ?? "").match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+\b/g) ?? [];
+  for (const person of titlePeople) {
+    if (teams.includes(person)) continue;
+    if (text.includes(norm(person))) evidence.push(person);
+  }
+  if (team && !evidence.includes(team)) return [];
+  if (women && !evidence.includes("women/girls rugby")) return [];
+  if (!women && !/\brugby\b/i.test(text)) return [];
+  return [...new Set(evidence)];
 }
 
 async function search(plan, query) {
@@ -35,17 +54,19 @@ async function search(plan, query) {
     const licence = stripHtml(meta.LicenseShortName?.value);
     const dateText = stripHtml(meta.DateTimeOriginal?.value || meta.DateTime?.value);
     const year = yearFrom(dateText, title, description);
-    const exactSubject = subjectEvidence(evidenceText, query);
+    const subjectEvidence = subjectEvidenceFor(plan, evidenceText);
+    const exactSubject = subjectEvidence.length > 0;
     const usableRaster = /^image\/(jpeg|png|webp)$/i.test(info.mime ?? "") && Number(info.width ?? 0) >= 1200 && Number(info.height ?? 0) >= 600;
     const rightsClear = allowedLicences.test(licence) && Boolean(meta.LicenseUrl?.value || /CC0|Public domain/i.test(licence));
     const autoDecision = blocked.test(evidenceText) || !usableRaster || !exactSubject ? "reject" : rightsClear ? "approve-candidate" : "owner-review";
     return {
       articleId:plan.articleId, editorialInputId:plan.editorialInputId, article:plan.title,
-      query, querySubject:querySubject(query), source:"Wikimedia Commons", title, description, categories,
+      query, source:"Wikimedia Commons", title, description, categories,
       sourcePage:info.descriptionurl, imageUrl:info.url, width:info.width, height:info.height, mime:info.mime,
       creator:stripHtml(meta.Artist?.value), credit:stripHtml(meta.Credit?.value), licence,
       licenceUrl:meta.LicenseUrl?.value ?? null, dateText:dateText || null, year,
-      recent:Number(year ?? 0) >= 2024, exactSubject, rightsClear, autoDecision, decision:autoDecision,
+      recent:Number(year ?? 0) >= 2024, exactSubject, subjectEvidence, scope: primaryTeam(plan) ?? "Rugby",
+      rightsClear, autoDecision, decision:autoDecision,
     };
   });
 }
