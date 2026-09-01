@@ -12,7 +12,7 @@ if (!inputPath) {
 const PACKAGE_SIZE = 5;
 const PACKAGE_STYLE_PROFILES = ["news-desk", "analysis-led", "feature-led", "notebook", "explainer"];
 const ALLOWED_CATEGORIES = new Set(["Ireland", "Leinster", "Munster", "Ulster", "Connacht", "URC", "Europe", "Opinion"]);
-const NON_RUGBY_EVIDENCE = /\b(football daily|premier league|soccer|boxing|golf|cycling|athletics|\b5k\b|gaelic football|hurling|sailing|ilca|world championship in d[uú]n laoghaire|protest)\b/i;
+const NON_RUGBY_EVIDENCE = /\b(football daily|premier league|soccer|boxing|golf|cycling|athletics|\b5k\b|gaelic football|hurling|sailing|ilca|world championship in d[uú]n laoghaire|protest|manchester united|man united|ipswich)\b/i;
 const GENERIC_SOURCE_TITLE = /^\s*(?:-|the 42|rugby football union|united rugby championship|untitled design)?\s*$/i;
 const baseUrl = (process.env.EDITORIAL_API_BASE_URL || "https://therugbypanda.ie").replace(/\/$/, "");
 const secret = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
