@@ -3,7 +3,7 @@
 Date: 1 September 2026
 Issue: AUTO-005-P15
 Priority: High
-Status: Implemented; pending merge/deployment/production verification
+Status: Merged and deployed; pending behavioural production verification
 
 ## Production evidence
 
@@ -19,9 +19,9 @@ The generation safety budget had not been reconciled with the route's expanded 2
 
 ## Fix
 
-`app/api/editorial/draft/route.ts` raises only the GPT-5 generation safety budget from 120 seconds to 135 seconds.
+PR #346 raises only the GPT-5 generation safety budget in `app/api/editorial/draft/route.ts` from 120 seconds to 135 seconds.
 
-This is deliberately bounded:
+This remains deliberately bounded:
 
 - GPT-5 remains the production generation model;
 - target article length is unchanged;
@@ -30,8 +30,15 @@ This is deliberately bounded:
 - the route maximum duration remains 240 seconds;
 - the additional 15 seconds is intended to prevent borderline generation aborts, reducing end-to-end recovery wall-clock and wasted regeneration rather than permitting unbounded waiting.
 
+## Merge and deployment evidence
+
+- PR #346 merged on 1 September 2026.
+- Merge commit: `183a6fd668f448ac79b6ce789cc27de415c48215`.
+- Vercel production deployment: `dpl_656o6XfVv8FKeGUH8XjQQoWWJ5Hf`.
+- Deployment state: `READY`.
+
 ## Verification boundary
 
-Deployment readiness can be verified immediately after merge. Full production verification requires the next real missing-slot generation to complete through GPT-5 generation, Publication Review and Sanity without reproducing the 120-second false-timeout failure. Do not manufacture an unnecessary paid article solely to test this change.
+The code and deployment are verified as present in production. Full behavioural verification still requires the next real missing-slot generation to complete through GPT-5 generation, Publication Review and Sanity without reproducing the legacy 120-second false-timeout failure. Do not manufacture an unnecessary paid article solely to test this change.
 
-Resolution date: pending production verification.
+Resolution date: pending behavioural production verification.
