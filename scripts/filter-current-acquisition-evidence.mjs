@@ -20,7 +20,7 @@ const MATCHISH = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|b
 const CONCRETE_RUGBY = /\b(?:prop|hooker|lock|flanker|number ?8|scrum-?half|fly-?half|out-?half|centre|wing(?:er)?|full-?back|tighthead|loosehead|front row|back row|captain|coach|head coach|assistant coach|academy|debut|caps?|appearances?|tries?|points?|minutes?|weeks?|months?|years?)\b/i;
 const VENUE_WORDS = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork)\b/i;
 const SCORE_OR_NUMBER = /(?:\b\d{1,3}\s*[-–]\s*\d{1,3}\b|\b\d{1,3}\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\b)/i;
-const QUOTED = /[“”"'][^“”"']{5,}[“”"']/;
+const QUOTED = /[“”"'‘’][^“”"'‘’]{5,}[“”"'‘’]/;
 
 function clean(value = "") {
   return String(value ?? "").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
