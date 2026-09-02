@@ -8,8 +8,14 @@ on:
     paths:
       - ".github/recovery-trigger-2026-08-31"
   schedule:
+    # GitHub cron is UTC. 04:30 UTC is 05:30 Europe/Dublin during Irish summer time.
+    # The later run is a serialized safety retry; exact-package evidence makes it a no-op after success.
+    - cron: "30 4 * * *"
     - cron: "30 5 * * *"
-    - cron: "0 6 * * *"
+
+concurrency:
+  group: current-editorial-source-discovery-production
+  cancel-in-progress: false
 
 permissions:
   contents: read
@@ -47,6 +53,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Record workflow start time
+        run: echo "workflow_start_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
       - name: Verify production secrets
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
@@ -200,6 +208,9 @@ jobs:
         env:
           IMAGE_PLAN_PATH: daily-article-image-plan-after-acquisition.json
         run: node scripts/enrich-current-morning-visuals.mjs
+      - name: Record package-ready time
+        if: success() && steps.package_state.outputs.skip != 'true'
+        run: echo "package_ready_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
       - name: Send consolidated Zoho package only after fresh import and image verification
         if: success() && steps.package_state.outputs.skip != 'true'
         env:
@@ -214,6 +225,7 @@ jobs:
             https://therugbypanda.ie/api/editorial/daily-package)
           cat "$response_file"
           echo
+          echo "delivery_response_utc=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
           if [ "$status" != "200" ]; then
             echo "Daily package delivery returned HTTP $status after image-verified fresh import."
             exit 1
