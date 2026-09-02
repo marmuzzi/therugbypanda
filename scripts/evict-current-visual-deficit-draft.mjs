@@ -8,6 +8,7 @@ const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-01-01";
 const token = process.env.SANITY_API_TOKEN;
 const planPath = process.env.IMAGE_PLAN_PATH || "daily-article-image-plan-after-acquisition.json";
 const outputPath = process.env.VISUAL_EVICTION_OUTPUT || "data/editorial-images/current-visual-deficit-eviction.json";
+const acquisitionBatchPath = process.env.CURRENT_ACQUISITION_BATCH_PATH || "data/editorial-acquisition/current-editorial-acquisition-batch.json";
 const MIN_ASSIGNMENT_SAFE_IMAGES = 2; // one hero + at least one meaningful inline image
 
 if (!projectId || !token) throw new Error("Visual-deficit recovery requires Sanity project ID and token.");
@@ -19,6 +20,30 @@ function operationalDate() {
     month: "2-digit",
     day: "2-digit",
   }).format(new Date());
+}
+
+async function excludeEvictedCandidateFromRecoveryBatch(editorialInputId, packageDate) {
+  const resolved = path.resolve(acquisitionBatchPath);
+  const batch = JSON.parse(await fs.readFile(resolved, "utf8"));
+  if (batch?.schemaVersion !== "1.0" || batch?.packageDate !== packageDate || !Array.isArray(batch?.candidates)) {
+    throw new Error(`Visual recovery cannot safely mutate the acquisition batch for ${packageDate}.`);
+  }
+
+  const before = batch.candidates.length;
+  batch.candidates = batch.candidates.filter((candidate) => candidate?.id !== editorialInputId);
+  const removed = before - batch.candidates.length;
+  if (removed !== 1) {
+    throw new Error(`Visual recovery expected to exclude exactly one candidate ${editorialInputId}, removed ${removed}.`);
+  }
+
+  batch.provenance = {
+    ...(batch.provenance ?? {}),
+    visualEvictionExclusions: [
+      ...new Set([...(batch.provenance?.visualEvictionExclusions ?? []), editorialInputId]),
+    ],
+  };
+  await fs.writeFile(resolved, `${JSON.stringify(batch, null, 2)}\n`);
+  return { batchPath: acquisitionBatchPath, candidateCountBefore: before, candidateCountAfter: batch.candidates.length };
 }
 
 const plan = JSON.parse(await fs.readFile(path.resolve(planPath), "utf8"));
@@ -62,6 +87,7 @@ const draft = await client.fetch(`*[
 if (!draft) throw new Error(`Current visual-deficit draft ${target.editorialInputId} is not eligible in Sanity; refusing ambiguous recovery.`);
 
 await client.patch(draft._id).set({ morningPackageEligible: false, automationContentClass: "production" }).commit();
+const batchExclusion = await excludeEvictedCandidateFromRecoveryBatch(draft.editorialInputId, packageDate);
 
 const result = {
   status: "evicted-one-image-unfulfillable-draft",
@@ -74,6 +100,7 @@ const result = {
     deficit: Number(target.deficit || 0),
     reason: `targeted image acquisition exhausted with fewer than ${MIN_ASSIGNMENT_SAFE_IMAGES} assignment-safe local images`,
   }],
+  batchExclusion,
   minimumAssignmentSafeImages: MIN_ASSIGNMENT_SAFE_IMAGES,
   preservedSlots: 4,
   boundedReplacementLimit: 1,
