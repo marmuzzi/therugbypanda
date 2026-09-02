@@ -50,10 +50,13 @@ function subjectPhrases(text) {
 function descriptiveImageText(image) { return [image.title,image.altText,image.caption,image.subject,image.team,image.competitionEvent].filter(Boolean).join(" "); }
 function storyRequiresWomenEvidence(text) { return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(text); }
 function imageHasWomenEvidence(text) { return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(text); }
-function contextConflict(articleLower, imageLower) {
+function contextConflict(primaryTitleLower, articleLower, imageLower) {
+  const primaryGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => primaryTitleLower.includes(term)));
   const articleGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => articleLower.includes(term)));
   const imageGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => imageLower.includes(term)));
-  if (!imageGroups.length) return false; if (!articleGroups.length) return true;
+  if (!imageGroups.length) return false;
+  if (primaryGroups.length) return !primaryGroups.some((primaryGroup) => imageGroups.some((imageGroup) => imageGroup.team === primaryGroup.team));
+  if (!articleGroups.length) return true;
   return !articleGroups.some((articleGroup) => imageGroups.some((imageGroup) => imageGroup.team === articleGroup.team));
 }
 function namedPersonPhrasesFromImage(image) {
@@ -65,12 +68,13 @@ function namedPersonPhrasesFromImage(image) {
     return terms.length >= 2 && !terms.some((term) => NON_PERSON_WORDS.has(term));
   }))];
 }
-function imagePassesHardContext(articleTextValue, image) {
-  const articleLower = articleTextValue.toLowerCase(); const imageLower = descriptiveImageText(image).toLowerCase();
-  if (NON_RUGBY_VISUAL.test(imageLower) || contextConflict(articleLower, imageLower)) return false;
-  const articleTeams = groupsIn(articleTextValue); const imageTeams = groupsIn(descriptiveImageText(image));
+function imagePassesHardContext(articleTitleValue, articleTextValue, image) {
+  const articleLower = articleTextValue.toLowerCase(); const titleLower = String(articleTitleValue ?? "").toLowerCase(); const imageLower = descriptiveImageText(image).toLowerCase();
+  if (NON_RUGBY_VISUAL.test(imageLower) || contextConflict(titleLower, articleLower, imageLower)) return false;
+  const titleTeams = groupsIn(articleTitleValue); const articleTeams = groupsIn(articleTextValue); const imageTeams = groupsIn(descriptiveImageText(image));
   if (imageTeams.length && !articleTeams.length) return false;
-  if (imageTeams.some((team) => !articleTeams.includes(team))) return false;
+  if (titleTeams.length && imageTeams.some((team) => !titleTeams.includes(team))) return false;
+  if (!titleTeams.length && imageTeams.some((team) => !articleTeams.includes(team))) return false;
   if (namedPersonPhrasesFromImage(image).some((person) => !articleLower.includes(person.toLowerCase()))) return false;
   if (storyRequiresWomenEvidence(articleTextValue) && !imageHasWomenEvidence(imageLower)) return false;
   if (!storyRequiresWomenEvidence(articleTextValue) && imageHasWomenEvidence(imageLower)) return false;
@@ -82,8 +86,8 @@ function portableImage(image) {
 }
 function generatedArticleShape(article) { return { title: article.title ?? "", standfirst: article.standfirst ?? "", seoTitle: article.seoTitle ?? "", seoDescription: article.seoDescription ?? "", keyPoints: article.keyPoints ?? [], body: [{ heading: null, paragraphs: (article.body ?? []).filter((block) => block?._type === "block" && block.style !== "h2").map(blockText).filter(Boolean) }], disclosure: "", sourceNotes: article.sourceNotes ?? [] }; }
 function meaningfulTerms(text) { return [...new Set(text.toLowerCase().split(/[^a-z0-9à-öø-ÿ]+/).filter((term) => term.length >= 5 && !GENERIC_WORDS.has(term)))]; }
-function candidateScore(image, paragraph, fullArticleText, subjects) {
-  if (!image.assetRef || !imagePassesHardContext(fullArticleText, image)) return Number.NEGATIVE_INFINITY;
+function candidateScore(image, paragraph, articleTitle, fullArticleText, subjects) {
+  if (!image.assetRef || !imagePassesHardContext(articleTitle, fullArticleText, image)) return Number.NEGATIVE_INFINITY;
   const imageText = descriptiveImageText(image).toLowerCase(); const paragraphLower = paragraph.toLowerCase();
   const exactSubjects = subjects.filter((subject) => paragraphLower.includes(subject.toLowerCase()) && imageText.includes(subject.toLowerCase()));
   const paragraphTeams = groupsIn(paragraph); const imageTeams = groupsIn(imageText); const paragraphTeam = paragraphTeams.some((team) => imageTeams.includes(team));
@@ -96,7 +100,7 @@ function enrichBodyWithInlineImages(article, allowedImages, heroAssetRef) {
   const textBlocks = (article.body ?? []).filter((block) => block?._type !== "image"); const fullText = articleText({ ...article, body: textBlocks }); const subjects = subjectPhrases(fullText); const selected = []; const used = new Set([heroAssetRef].filter(Boolean));
   for (const block of textBlocks) {
     if (block?._type !== "block" || block.style === "h2") continue; const paragraph = blockText(block); if (!paragraph) continue;
-    const ranked = allowedImages.filter((candidate) => candidate.assetRef && !used.has(candidate.assetRef)).map((candidate) => ({ image: candidate, score: candidateScore(candidate, paragraph, fullText, subjects) })).filter(({ score }) => Number.isFinite(score) && score >= 20).sort((a, b) => b.score - a.score);
+    const ranked = allowedImages.filter((candidate) => candidate.assetRef && !used.has(candidate.assetRef)).map((candidate) => ({ image: candidate, score: candidateScore(candidate, paragraph, article.title, fullText, subjects) })).filter(({ score }) => Number.isFinite(score) && score >= 20).sort((a, b) => b.score - a.score);
     const best = ranked[0]; if (!best) continue; selected.push({ image: best.image, paragraphKey: block._key, score: best.score }); used.add(best.image.assetRef); if (selected.length >= MAX_INLINE_IMAGES) break;
   }
   const output = []; for (const block of textBlocks) { output.push(block); const match = selected.find((item) => item.paragraphKey === block?._key); if (match) output.push(portableImage(match.image)); }
@@ -109,15 +113,27 @@ const planIds = plan.plans.map((item) => item.editorialInputId);
 if (new Set(planIds).size !== 5 || planIds.some((id) => !String(id).startsWith(packagePrefix))) throw new Error("Image plan does not contain five distinct current-package editorialInputIds. Fail closed.");
 const articles = await query(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && automationContentClass == "production" && editorialInputId in $ids] | order(editorialInputId asc){_id,title,standfirst,seoTitle,seoDescription,keyPoints,body,sourceNotes,factLedger,editorialStoryType,editorialInputId,"categoryLabel":coalesce(province->title,category->title),"featuredAsset":featuredImage.asset._ref}`, { ids: planIds });
 if (articles.length !== 5) throw new Error(`Expected exactly five current-package morning drafts, found ${articles.length}. Fail closed.`);
-const candidateAssetRefs = [...new Set(plan.plans.flatMap((item) => item.candidates ?? []).map((item) => item.assetRef).filter(Boolean))];
+const candidateAssetRefs = [...new Set(plan.plans.flatMap((item) => [
+  ...(item.candidates ?? []).map((candidate) => candidate.assetRef),
+  item.existingFeaturedAsset,
+  ...(item.existingInlineAssets ?? []),
+]).filter(Boolean))];
 const images = candidateAssetRefs.length ? await query(`*[_type == "editorialImage" && !(_id in path("drafts.**")) && usageApproved == true && lifecycleStatus in ["approved","published"] && image.asset._ref in $assetRefs]{_id,title,altText,caption,subject,team,people,competitionEvent,publicCredit,creditLine,photographer,copyrightLine,copyright,source,sourceName,rightsNotes,"assetRef":image.asset._ref,"assetUrl":image.asset->url}`, { assetRefs: candidateAssetRefs }) : [];
 const imageByAsset = new Map(images.map((image) => [image.assetRef, image])); const globallyUsedAssets = new Set(); const summary = [];
 for (const article of articles) {
   const articlePlan = plan.plans.find((item) => item.editorialInputId === article.editorialInputId); if (!articlePlan) throw new Error(`No image plan for ${article.editorialInputId}.`);
-  const fullArticleText = articleText(article); const allowedImages = (articlePlan.candidates ?? []).map((item) => imageByAsset.get(item.assetRef)).filter(Boolean).filter((image) => imagePassesHardContext(fullArticleText, image));
+  const fullArticleText = articleText(article);
+  const articleAssetRefs = [...new Set([
+    ...(articlePlan.candidates ?? []).map((item) => item.assetRef),
+    articlePlan.existingFeaturedAsset,
+    ...(articlePlan.existingInlineAssets ?? []),
+  ].filter(Boolean))];
+  const allowedImages = articleAssetRefs.map((assetRef) => imageByAsset.get(assetRef)).filter(Boolean).filter((image) => imagePassesHardContext(article.title, fullArticleText, image));
   const heroSubjects = subjectPhrases(fullArticleText); const heroTarget = `${article.title ?? ""} ${article.standfirst ?? ""}`;
-  const rankedHeroes = allowedImages.filter((image) => image.assetRef && !globallyUsedAssets.has(image.assetRef)).map((image) => ({ image, score: candidateScore(image, heroTarget, fullArticleText, heroSubjects) })).sort((a,b) => b.score - a.score);
-  const hero = rankedHeroes.find(({ score }) => Number.isFinite(score))?.image ?? allowedImages.find((image) => image.assetRef && !globallyUsedAssets.has(image.assetRef));
+  const rankedHeroes = allowedImages.filter((image) => image.assetRef && !globallyUsedAssets.has(image.assetRef)).map((image) => ({ image, score: candidateScore(image, heroTarget, article.title, fullArticleText, heroSubjects) })).filter(({ score }) => Number.isFinite(score)).sort((a,b) => b.score - a.score);
+  const existingHero = imageByAsset.get(articlePlan.existingFeaturedAsset);
+  const existingHeroScore = existingHero && !globallyUsedAssets.has(existingHero.assetRef) ? candidateScore(existingHero, heroTarget, article.title, fullArticleText, heroSubjects) : Number.NEGATIVE_INFINITY;
+  const hero = Number.isFinite(existingHeroScore) ? existingHero : rankedHeroes[0]?.image;
   if (!hero) throw new Error(`No verified relevant hero candidate for ${article.editorialInputId}. Fail closed before Zoho.`); globallyUsedAssets.add(hero.assetRef);
   const inline = enrichBodyWithInlineImages(article, allowedImages.filter((image) => !globallyUsedAssets.has(image.assetRef)), hero.assetRef);
   if (inline.added.length < 1) throw new Error(`No meaningful inline image for ${article.editorialInputId}. Fail closed before Zoho.`); for (const item of inline.added) globallyUsedAssets.add(item.image.assetRef);
