@@ -1,7 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { createClient } from "next-sanity";
-import { selectFreshPositions } from "../lib/editorial/StoryFreshness.ts";
+import { assessPositionFreshness, selectFreshPositions } from "../lib/editorial/StoryFreshness.ts";
 
 const [inputPath] = process.argv.slice(2);
 if (!inputPath) {
@@ -29,6 +29,8 @@ if (batch?.schemaVersion !== "1.0" || !Array.isArray(batch?.candidates) || batch
   throw new Error("Invalid editorial acquisition batch.");
 }
 
+const batchCandidateById = new Map(batch.candidates.map((candidate) => [candidate.id, candidate]));
+
 function operationalDate() {
   return new Intl.DateTimeFormat("en-CA", {
     timeZone: "Europe/Dublin",
@@ -46,6 +48,22 @@ function positionForCandidate(candidate) {
     development: position.development || candidate.development || candidate.summary || "",
     angle: position.angle || candidate.editorialAngle || candidate.summary || "",
     occurredAt: position.occurredAt || candidate.occurredAt,
+  };
+}
+
+function positionForRetainedDraft(draft) {
+  const candidate = batchCandidateById.get(draft.editorialInputId);
+  if (candidate) return positionForCandidate(candidate);
+  const sourceUsage = (Array.isArray(draft?.sourceNotes) ? draft.sourceNotes : [])
+    .map((note) => note?.usage)
+    .filter(Boolean)
+    .join(" ");
+  return {
+    id: draft.editorialInputId || draft._id,
+    subject: draft.title || "",
+    development: sourceUsage || draft.title || "",
+    angle: draft.title || "",
+    occurredAt: draft.editorialGeneratedAt || draft._createdAt,
   };
 }
 
@@ -119,19 +137,27 @@ async function loadRetainedDrafts() {
     _id,title,editorialInputId,editorialGeneratedAt,_createdAt,workflowStatus,sourceNotes,contextualDataCard
   }`, { prefix });
   const retained = [];
+  const retainedPositions = [];
   const evicted = [];
   for (const draft of (Array.isArray(drafts) ? drafts : [])) {
     const integrity = retainedDraftIntegrity(draft);
-    if (integrity.passed && retained.length < PACKAGE_SIZE) {
+    const position = positionForRetainedDraft(draft);
+    const freshness = integrity.passed ? assessPositionFreshness(position, retainedPositions) : null;
+    const duplicate = integrity.passed && freshness && !freshness.fresh;
+    if (integrity.passed && !duplicate && retained.length < PACKAGE_SIZE) {
       retained.push(draft);
+      retainedPositions.push(position);
       continue;
     }
-    if (!integrity.passed) {
+    if (!integrity.passed || duplicate) {
+      const reason = !integrity.passed
+        ? integrity.reason
+        : `same-day retained editorial-position collision with ${freshness.conflictingPositionId}: ${freshness.reason}`;
       await client.patch(draft._id).set({
         morningPackageEligible: false,
         automationContentClass: "production",
       }).commit();
-      evicted.push({ _id: draft._id, editorialInputId: draft.editorialInputId, title: draft.title, reason: integrity.reason });
+      evicted.push({ _id: draft._id, editorialInputId: draft.editorialInputId, title: draft.title, reason });
     }
   }
   return { retained, evicted };
