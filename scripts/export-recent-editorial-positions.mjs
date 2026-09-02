@@ -11,13 +11,24 @@ const lookbackDays = Math.max(2, Number.parseInt(process.env.EDITORIAL_FRESHNESS
 
 if (!token) throw new Error("Missing SANITY_API_TOKEN; freshness history cannot be exported safely.");
 
+function operationalDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Dublin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
+}
+
 const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false });
 const since = new Date(Date.now() - lookbackDays * 24 * 60 * 60 * 1000).toISOString();
+const currentPrefix = `current-${operationalDate()}-*`;
 
 const rows = await client.fetch(`*[
   _type == "article" &&
   automationContentClass == "production" &&
-  coalesce(editorialGeneratedAt, _updatedAt) >= $since
+  coalesce(editorialGeneratedAt, _updatedAt) >= $since &&
+  !(editorialInputId match $currentPrefix && morningPackageEligible != true)
 ] | order(coalesce(editorialGeneratedAt, _updatedAt) desc) {
   _id,
   title,
@@ -27,7 +38,7 @@ const rows = await client.fetch(`*[
   sourceStoryDiscoveredAt,
   editorialGeneratedAt,
   _updatedAt
-}`, { since });
+}`, { since, currentPrefix });
 
 if (!Array.isArray(rows)) throw new Error("Sanity freshness-history query did not return an array.");
 
@@ -52,4 +63,4 @@ await fs.writeFile(path.resolve(outputPath), `${JSON.stringify({
   positions,
 }, null, 2)}\n`, "utf8");
 
-console.log(JSON.stringify({ outputPath, lookbackDays, positionCount: positions.length, source: "sanity-production" }, null, 2));
+console.log(JSON.stringify({ outputPath, lookbackDays, positionCount: positions.length, source: "sanity-production", excludedIneligibleCurrentDay: true }, null, 2));

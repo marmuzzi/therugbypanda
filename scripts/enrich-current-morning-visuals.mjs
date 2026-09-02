@@ -55,7 +55,7 @@ function contextConflict(primaryTitleLower, articleLower, imageLower) {
   const articleGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => articleLower.includes(term)));
   const imageGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => imageLower.includes(term)));
   if (!imageGroups.length) return false;
-  if (primaryGroups.length) return !primaryGroups.some((primaryGroup) => imageGroups.some((imageGroup) => imageGroup.team === primaryGroup.team));
+  if (primaryGroups.length) return imageGroups.some((imageGroup) => !primaryGroups.some((primaryGroup) => imageGroup.team === primaryGroup.team));
   if (!articleGroups.length) return true;
   return !articleGroups.some((articleGroup) => imageGroups.some((imageGroup) => imageGroup.team === articleGroup.team));
 }
