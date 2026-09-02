@@ -54,12 +54,8 @@ function lower(value = "") { return text(value).toLowerCase(); }
 function blockText(block) { return (block?.children ?? []).map((child) => child?.text ?? "").join("").trim(); }
 function articleParagraphs(article) { return (article.body ?? []).filter((block) => block?._type === "block" && block.style !== "h2").map(blockText).filter(Boolean); }
 function articleHeader(article) { return [article.title, article.standfirst].filter(Boolean).join(" "); }
-function tokens(value = "") {
-  return [...new Set(lower(value).split(/[^a-z0-9à-öø-ÿ'’.-]+/).filter((x) => x.length >= 5 && !GENERIC.has(x)))];
-}
-function inlineTerms(value = "") {
-  return [...new Set(lower(value).split(/[^a-z0-9à-öø-ÿ]+/).filter((x) => x.length >= 5 && !GENERIC_INLINE.has(x)))];
-}
+function tokens(value = "") { return [...new Set(lower(value).split(/[^a-z0-9à-öø-ÿ'’.-]+/).filter((x) => x.length >= 5 && !GENERIC.has(x)))]; }
+function inlineTerms(value = "") { return [...new Set(lower(value).split(/[^a-z0-9à-öø-ÿ]+/).filter((x) => x.length >= 5 && !GENERIC_INLINE.has(x)))]; }
 function namedPhrases(value = "") {
   const matches = text(value).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
   return [...new Set(matches.map(text).filter((x) => !TEAMS.includes(x)))];
@@ -81,7 +77,7 @@ function contextConflict(primaryTitleLower, storyLower, imageMeta) {
   const storyGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => storyLower.includes(term)));
   const imageGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => imageMeta.includes(term)));
   if (!imageGroups.length) return false;
-  if (primaryGroups.length) return !primaryGroups.some((primaryGroup) => imageGroups.some((imageGroup) => imageGroup.team === primaryGroup.team));
+  if (primaryGroups.length) return imageGroups.some((imageGroup) => !primaryGroups.some((primaryGroup) => imageGroup.team === primaryGroup.team));
   if (!storyGroups.length) return true;
   return !storyGroups.some((storyGroup) => imageGroups.some((imageGroup) => imageGroup.team === storyGroup.team));
 }
@@ -96,20 +92,16 @@ function baseRelevance(article, image) {
   const meta = lower(imageText(image));
   if (NON_RUGBY_VISUAL.test(meta)) return Number.NEGATIVE_INFINITY;
   if (contextConflict(titleLower, storyLower, meta)) return Number.NEGATIVE_INFINITY;
-
   const imagePeople = namedPersonPhrasesFromImage(image);
   if (imagePeople.some((person) => !storyLower.includes(person.toLowerCase()))) return Number.NEGATIVE_INFINITY;
-
   const titleTeams = TEAMS.filter((team) => titleLower.includes(team.toLowerCase()));
   const primaryTeams = TEAMS.filter((team) => headerLower.includes(team.toLowerCase()));
   const imageTeams = TEAMS.filter((team) => meta.includes(team.toLowerCase()));
-  if (titleTeams.length && imageTeams.length && !titleTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
+  if (titleTeams.length && imageTeams.length && imageTeams.some((team) => !titleTeams.includes(team))) return Number.NEGATIVE_INFINITY;
   if (!titleTeams.length && primaryTeams.length && imageTeams.length && !primaryTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
-
   const storyIsWomen = storyWomenSpecific(header);
   const imageIsWomen = storyWomenSpecific(meta);
   if (storyIsWomen !== imageIsWomen) return Number.NEGATIVE_INFINITY;
-
   const people = namedPhrases(story);
   const exactPeople = people.filter((person) => meta.includes(person.toLowerCase()));
   const shared = tokens(story).filter((term) => meta.includes(term));
@@ -142,33 +134,28 @@ function scoreCandidate(article, image) {
   if (!Number.isFinite(inline) || inline < 20) return Number.NEGATIVE_INFINITY;
   return base + Math.min(inline, 40);
 }
+function candidateShape(image, score, sourceRole = "library") {
+  return {
+    imageId:image._id, assetRef:image.assetRef, title:image.title ?? null, score, sourceRole,
+    subject:image.subject ?? null, team:image.team ?? null, event:image.event ?? null,
+    captureDate:image.captureDate ?? null, source:image.source ?? image.sourceName ?? null,
+    rights:image.rightsNotes ?? null, credit:image.publicCredit ?? image.creditLine ?? null,
+  };
+}
 
 function acquisitionQueries(article) {
   const header = articleHeader(article);
   const headerLower = lower(header);
   const team = TEAMS.find((x) => headerLower.includes(x.toLowerCase()));
   const queries = [];
-
   if (storyWomenSpecific(header)) {
     const ageGrade = /\bu[- ]?18\b/i.test(header) ? "U18" : null;
-    if (team && ageGrade) {
-      queries.push(
-        `${team} ${ageGrade} Girls rugby`,
-        `${team} ${ageGrade} Women rugby`,
-        `${team} Girls Interprovincial rugby`,
-        `${team} Under 18 Girls rugby`,
-      );
-    }
+    if (team && ageGrade) queries.push(`${team} ${ageGrade} Girls rugby`, `${team} ${ageGrade} Women rugby`, `${team} Girls Interprovincial rugby`, `${team} Under 18 Girls rugby`);
     if (team) queries.push(`${team} women rugby`, `${team} girls rugby`);
     return [...new Set(queries)].slice(0, 8);
   }
-
-  const people = namedPhrases(header)
-    .filter((phrase) => !/\b(?:U-?\d+|Girls|Women|Rugby|Leinster|Munster|Ulster|Connacht|Ireland)\b/i.test(phrase))
-    .slice(0, 3);
-  for (const person of people) {
-    queries.push(`${person} rugby 2026`, `${person} ${team ?? "rugby"}`, `${person} rugby 2025`);
-  }
+  const people = namedPhrases(header).filter((phrase) => !/\b(?:U-?\d+|Girls|Women|Rugby|Leinster|Munster|Ulster|Connacht|Ireland)\b/i.test(phrase)).slice(0, 3);
+  for (const person of people) queries.push(`${person} rugby 2026`, `${person} ${team ?? "rugby"}`, `${person} rugby 2025`);
   if (team) queries.push(`${team} rugby 2026`, `${team} rugby stadium 2026`);
   return [...new Set(queries)].slice(0, 8);
 }
@@ -180,7 +167,6 @@ const articles = await query(`*[_type == "article" && _id in path("drafts.**") &
   "featuredAsset":featuredImage.asset._ref,
   "inlineAssets":body[_type == "image"].asset._ref
 }`, { packageInputPrefix });
-
 if (articles.length !== 5) throw new Error(`Expected exactly five current-package drafts for ${packageDate}, found ${articles.length}. Fail closed.`);
 if (new Set(articles.map((x) => x.editorialInputId).filter(Boolean)).size !== 5) throw new Error("Current-package drafts do not have five distinct editorialInputId values. Fail closed.");
 
@@ -189,21 +175,29 @@ const images = await query(`*[_type == "editorialImage" && !(_id in path("drafts
   "assetRef":image.asset._ref,
   "assetUrl":image.asset->url
 }`);
-
+const imageByAsset = new Map(images.map((image) => [image.assetRef, image]));
 const packageUsed = new Set();
 const plans = articles.map((article) => {
+  const existingSafe = [];
+  const featured = imageByAsset.get(article.featuredAsset);
+  const featuredScore = featured ? baseRelevance(article, featured) : Number.NEGATIVE_INFINITY;
+  if (featured && Number.isFinite(featuredScore) && !packageUsed.has(featured.assetRef)) existingSafe.push(candidateShape(featured, featuredScore, "existing-featured"));
+  for (const assetRef of article.inlineAssets ?? []) {
+    if (existingSafe.length >= targetDepth) break;
+    const image = imageByAsset.get(assetRef);
+    if (!image || packageUsed.has(image.assetRef) || existingSafe.some((item) => item.assetRef === image.assetRef)) continue;
+    const base = baseRelevance(article, image);
+    const inline = inlineRelevance(article, image);
+    if (Number.isFinite(base) && Number.isFinite(inline) && inline >= 20) existingSafe.push(candidateShape(image, base + Math.min(inline, 40), "existing-inline"));
+  }
+
+  const reserved = new Set(existingSafe.map((item) => item.assetRef));
   const ranked = images
-    .filter((image) => !packageUsed.has(image.assetRef))
+    .filter((image) => !packageUsed.has(image.assetRef) && !reserved.has(image.assetRef))
     .map((image) => ({ image, score: scoreCandidate(article, image) }))
     .filter(({ score }) => Number.isFinite(score) && score >= 55)
     .sort((a,b) => b.score - a.score);
-
-  const candidates = ranked.slice(0, targetDepth).map(({ image, score }) => ({
-    imageId:image._id, assetRef:image.assetRef, title:image.title ?? null, score,
-    subject:image.subject ?? null, team:image.team ?? null, event:image.event ?? null,
-    captureDate:image.captureDate ?? null, source:image.source ?? image.sourceName ?? null,
-    rights:image.rightsNotes ?? null, credit:image.publicCredit ?? image.creditLine ?? null,
-  }));
+  const candidates = [...existingSafe, ...ranked.map(({ image, score }) => candidateShape(image, score))].slice(0, targetDepth);
   for (const candidate of candidates) packageUsed.add(candidate.assetRef);
   const deficit = Math.max(0, targetDepth - candidates.length);
   return {
@@ -223,17 +217,11 @@ const plans = articles.map((article) => {
 });
 
 const result = {
-  generatedAt:new Date().toISOString(),
-  packageDate,
-  packageInputPrefix,
-  contract:"MEDIA-011 daily reusable image-depth plan",
-  targetPerArticle:targetDepth,
-  articleCount:plans.length,
-  articlesMeetingTarget:plans.filter((x) => x.deficit === 0).length,
+  generatedAt:new Date().toISOString(), packageDate, packageInputPrefix,
+  contract:"MEDIA-011 daily reusable image-depth plan", targetPerArticle:targetDepth,
+  articleCount:plans.length, articlesMeetingTarget:plans.filter((x) => x.deficit === 0).length,
   totalLocalCandidates:plans.reduce((sum,x) => sum + x.localCandidateCount,0),
-  totalDeficit:plans.reduce((sum,x) => sum + x.deficit,0),
-  failClosed:true,
-  plans,
+  totalDeficit:plans.reduce((sum,x) => sum + x.deficit,0), failClosed:true, plans,
 };
 writeFileSync("daily-article-image-plan.json", `${JSON.stringify(result,null,2)}\n`, "utf8");
 console.log(JSON.stringify({packageDate,articleCount:result.articleCount,articlesMeetingTarget:result.articlesMeetingTarget,totalLocalCandidates:result.totalLocalCandidates,totalDeficit:result.totalDeficit},null,2));
