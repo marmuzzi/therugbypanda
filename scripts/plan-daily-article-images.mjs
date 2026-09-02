@@ -76,10 +76,12 @@ function namedPersonPhrasesFromImage(image) {
   }))];
 }
 
-function contextConflict(primaryStoryLower, imageMeta) {
-  const storyGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => primaryStoryLower.includes(term)));
+function contextConflict(primaryTitleLower, storyLower, imageMeta) {
+  const primaryGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => primaryTitleLower.includes(term)));
+  const storyGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => storyLower.includes(term)));
   const imageGroups = CONTEXT_GROUPS.filter((group) => group.terms.some((term) => imageMeta.includes(term)));
   if (!imageGroups.length) return false;
+  if (primaryGroups.length) return !primaryGroups.some((primaryGroup) => imageGroups.some((imageGroup) => imageGroup.team === primaryGroup.team));
   if (!storyGroups.length) return true;
   return !storyGroups.some((storyGroup) => imageGroups.some((imageGroup) => imageGroup.team === storyGroup.team));
 }
@@ -88,18 +90,21 @@ function baseRelevance(article, image) {
   if (!image.assetRef) return Number.NEGATIVE_INFINITY;
   const header = articleHeader(article);
   const story = [header, ...articleParagraphs(article)].filter(Boolean).join(" ");
+  const titleLower = lower(article.title);
   const headerLower = lower(header);
   const storyLower = lower(story);
   const meta = lower(imageText(image));
   if (NON_RUGBY_VISUAL.test(meta)) return Number.NEGATIVE_INFINITY;
-  if (contextConflict(headerLower, meta)) return Number.NEGATIVE_INFINITY;
+  if (contextConflict(titleLower, storyLower, meta)) return Number.NEGATIVE_INFINITY;
 
   const imagePeople = namedPersonPhrasesFromImage(image);
   if (imagePeople.some((person) => !storyLower.includes(person.toLowerCase()))) return Number.NEGATIVE_INFINITY;
 
+  const titleTeams = TEAMS.filter((team) => titleLower.includes(team.toLowerCase()));
   const primaryTeams = TEAMS.filter((team) => headerLower.includes(team.toLowerCase()));
   const imageTeams = TEAMS.filter((team) => meta.includes(team.toLowerCase()));
-  if (primaryTeams.length && imageTeams.length && !primaryTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
+  if (titleTeams.length && imageTeams.length && !titleTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
+  if (!titleTeams.length && primaryTeams.length && imageTeams.length && !primaryTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
 
   const storyIsWomen = storyWomenSpecific(header);
   const imageIsWomen = storyWomenSpecific(meta);
@@ -108,7 +113,7 @@ function baseRelevance(article, image) {
   const people = namedPhrases(story);
   const exactPeople = people.filter((person) => meta.includes(person.toLowerCase()));
   const shared = tokens(story).filter((term) => meta.includes(term));
-  const teamMatch = primaryTeams.some((team) => meta.includes(team.toLowerCase()));
+  const teamMatch = (titleTeams.length ? titleTeams : primaryTeams).some((team) => meta.includes(team.toLowerCase()));
   if (!exactPeople.length && !teamMatch && shared.length < 2) return Number.NEGATIVE_INFINITY;
   return exactPeople.length * 100 + (teamMatch ? 35 : 0) + Math.min(shared.length, 8) * 5;
 }
