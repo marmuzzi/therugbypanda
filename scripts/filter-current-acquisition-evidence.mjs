@@ -23,7 +23,9 @@ const NON_PERSON_NAMES = new Set([
 const MONTH = /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/i;
 // This gate is only for stories that actually depend on a match/selection event. Generic personnel words such as
 // coach, captain, return or contract must not force a date/score/venue requirement on otherwise concrete rugby news.
-const MATCHISH = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|beat|defeat|win|won|loss|lost|draw|score|kick-?off|team named|selection|selected|starts?|bench|line-up|lineup)\b/i;
+// Likewise, a recovery/injury story saying a player will "miss the start of the season" is a timeline update, not a
+// starting-XV claim. Match-context is required only when "start" is tied to an actual selection/position expression.
+const MATCHISH = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|beat|defeat|win|won|loss|lost|draw|score|kick-?off|team named|selection|selected|bench|line-up|lineup|starting (?:xv|line-up|lineup)|starts? (?:at|in the (?:team|side|xv)|on the bench))\b/i;
 const CONCRETE_RUGBY = /\b(?:prop|hooker|lock|flanker|number ?8|scrum-?half|fly-?half|out-?half|centre|wing(?:er)?|full-?back|tighthead|loosehead|front row|back row|captain|coach|head coach|assistant coach|academy|debut|caps?|appearances?|tries?|points?|minutes?|weeks?|months?|years?)\b/i;
 const VENUE_WORDS = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork|soweto)\b/i;
 const SCORE_OR_NUMBER = /(?:\b\d{1,3}\s*[-–]\s*\d{1,3}\b|\b\d{1,3}\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\b)/i;
