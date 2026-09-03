@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { spawnSync } from "node:child_process";
 import { createClient } from "next-sanity";
 
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
@@ -60,6 +61,25 @@ async function excludeEvictedCandidateFromRecoveryBatch(editorialInputId, packag
   };
 }
 
+function reapplyPackageDiversityBeforeReplacement() {
+  const result = spawnSync(process.execPath, ["scripts/enforce-current-package-diversity.mjs"], {
+    cwd: process.cwd(),
+    env: {
+      ...process.env,
+      BATCH_PATH: acquisitionBatchPath,
+      MAX_PACKAGE_MATCHUP_STORIES: process.env.MAX_PACKAGE_MATCHUP_STORIES || "2",
+      MAX_PACKAGE_TEAM_STORIES: process.env.MAX_PACKAGE_TEAM_STORIES || "2",
+    },
+    encoding: "utf8",
+  });
+  if (result.stdout) process.stdout.write(result.stdout);
+  if (result.stderr) process.stderr.write(result.stderr);
+  if (result.error || result.status !== 0) {
+    throw new Error(`Visual recovery diversity recheck failed before replacement generation (status ${result.status ?? "unknown"}).`);
+  }
+  return { status: "passed", maxPerMatchup: Number(process.env.MAX_PACKAGE_MATCHUP_STORIES || 2), maxPerTeam: Number(process.env.MAX_PACKAGE_TEAM_STORIES || 2) };
+}
+
 const plan = JSON.parse(await fs.readFile(path.resolve(planPath), "utf8"));
 const packageDate = operationalDate();
 if (plan?.packageDate !== packageDate || !Array.isArray(plan?.plans) || plan.plans.length !== 5) {
@@ -103,6 +123,12 @@ if (!draft) throw new Error(`Current visual-deficit draft ${target.editorialInpu
 await client.patch(draft._id).set({ morningPackageEligible: false, automationContentClass: "production" }).commit();
 const batchExclusion = await excludeEvictedCandidateFromRecoveryBatch(draft.editorialInputId, packageDate);
 
+// Visual recovery changes the retained four-story package after the original diversity gate.
+// Re-run the existing canonical diversity component against that live retained set and the
+// remaining recovery pool before model spend so the refill cannot introduce a third story
+// around one team/matchup.
+const diversityRecheck = reapplyPackageDiversityBeforeReplacement();
+
 const result = {
   status: "evicted-one-image-unfulfillable-draft",
   packageDate,
@@ -115,6 +141,7 @@ const result = {
     reason: `targeted image acquisition exhausted with fewer than ${MIN_ASSIGNMENT_SAFE_IMAGES} assignment-safe local images`,
   }],
   batchExclusion,
+  diversityRecheck,
   minimumAssignmentSafeImages: MIN_ASSIGNMENT_SAFE_IMAGES,
   preservedSlots: 4,
   boundedReplacementLimit: 1,
