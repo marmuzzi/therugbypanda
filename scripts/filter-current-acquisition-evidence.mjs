@@ -15,10 +15,17 @@ const TEAM_OR_COMPETITION = new Set([
   "Pumas", "Fiji", "Japan", "Samoa", "Tonga", "United Rugby Championship", "Six Nations", "Champions Cup",
   "Challenge Cup", "World Cup", "Rugby Championship",
 ]);
+const NON_PERSON_NAMES = new Set([
+  "Planet Rugby", "Irish Rugby", "Rugby Pass", "RugbyPass Ireland", "Business Post", "The Irish Times",
+  "United Rugby", "Rugby Football", "Football Union", "United Rugby Championship", "Irish Independent",
+  "Connacht Rugby", "Munster Rugby", "Leinster Rugby", "Ulster Rugby", "England Rugby",
+]);
 const MONTH = /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/i;
-const MATCHISH = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|beat|defeat|win|won|loss|lost|draw|score|kick-?off|squad|team named|selection|selected|starts?|bench|line-up|lineup|change|injury|return|available|unavailable|contract|signed|appointed|coach|captain)\b/i;
+// This gate is only for stories that actually depend on a match/selection event. Generic personnel words such as
+// coach, captain, return or contract must not force a date/score/venue requirement on otherwise concrete rugby news.
+const MATCHISH = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|beat|defeat|win|won|loss|lost|draw|score|kick-?off|team named|selection|selected|starts?|bench|line-up|lineup)\b/i;
 const CONCRETE_RUGBY = /\b(?:prop|hooker|lock|flanker|number ?8|scrum-?half|fly-?half|out-?half|centre|wing(?:er)?|full-?back|tighthead|loosehead|front row|back row|captain|coach|head coach|assistant coach|academy|debut|caps?|appearances?|tries?|points?|minutes?|weeks?|months?|years?)\b/i;
-const VENUE_WORDS = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork)\b/i;
+const VENUE_WORDS = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork|soweto)\b/i;
 const SCORE_OR_NUMBER = /(?:\b\d{1,3}\s*[-–]\s*\d{1,3}\b|\b\d{1,3}\b|\b(?:one|two|three|four|five|six|seven|eight|nine|ten)\b)/i;
 const QUOTED = /[“”"'‘’][^“”"'‘’]{5,}[“”"'‘’]/;
 
@@ -26,42 +33,63 @@ function clean(value = "") {
   return String(value ?? "").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
 }
 
+function normalise(value = "") {
+  return clean(value).toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
 function personNames(value = "") {
   const matches = clean(value).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}(?:\s+(?:van|de|der|von|di|da))?\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g) ?? [];
-  return [...new Set(matches.map(clean).filter((name) => !TEAM_OR_COMPETITION.has(name)))];
+  return [...new Set(matches.map(clean).filter((name) => !TEAM_OR_COMPETITION.has(name) && !NON_PERSON_NAMES.has(name)))];
 }
 
 function assess(candidate) {
   const sources = Array.isArray(candidate.sourceRecords) ? candidate.sourceRecords : [];
   const facts = Array.isArray(candidate.facts) ? candidate.facts.map(clean).filter(Boolean) : [];
+  const distinctFacts = [...new Map(facts.map((fact) => [normalise(fact), fact])).values()].filter(Boolean);
   const sourceText = sources.flatMap((source) => [source.title, source.excerpt, source.bodyText]).map(clean).filter(Boolean);
-  const evidence = [candidate.title, candidate.summary, candidate.editorialPosition?.subject, candidate.editorialPosition?.development, ...facts, ...sourceText].map(clean).filter(Boolean).join(" ");
+  const evidence = [candidate.title, candidate.summary, candidate.editorialPosition?.subject, candidate.editorialPosition?.development, ...distinctFacts, ...sourceText].map(clean).filter(Boolean).join(" ");
+  const titleEvidence = [candidate.title, candidate.editorialPosition?.subject, candidate.editorialPosition?.development].map(clean).filter(Boolean).join(" ");
   const names = personNames(evidence);
+  const directNames = personNames(titleEvidence);
   const distinctPublishers = new Set(sources.map((source) => clean(source.publisher || source.name).toLowerCase()).filter(Boolean));
   const hasConcreteMarker = SCORE_OR_NUMBER.test(evidence) || MONTH.test(evidence) || CONCRETE_RUGBY.test(evidence) || VENUE_WORDS.test(evidence) || QUOTED.test(evidence);
-  const matchLike = MATCHISH.test(evidence);
+  const matchLike = MATCHISH.test(titleEvidence);
   const hasMatchContext = !matchLike || SCORE_OR_NUMBER.test(evidence) || MONTH.test(evidence) || VENUE_WORDS.test(evidence) || /\b(?:first|second|third|fourth) test\b/i.test(evidence);
   const reasons = [];
   if (sources.length < 2 || distinctPublishers.size < 2) reasons.push("fewer-than-two-independent-sources");
-  if (facts.length < 2) reasons.push("fewer-than-two-substantive-facts");
+  if (distinctFacts.length < 2) reasons.push("fewer-than-two-distinct-substantive-facts");
   if (names.length < 1) reasons.push("no-named-person-in-evidence");
   if (!hasConcreteMarker) reasons.push("no-concrete-rugby-marker");
   if (!hasMatchContext) reasons.push("match-like-story-lacks-date-score-venue-or-test-context");
+  const evidenceScore =
+    Math.min(4, distinctPublishers.size) * 5 +
+    Math.min(8, distinctFacts.length) * 2 +
+    Math.min(4, directNames.length) * 4 +
+    (SCORE_OR_NUMBER.test(evidence) ? 3 : 0) +
+    (MONTH.test(evidence) ? 2 : 0) +
+    (VENUE_WORDS.test(evidence) ? 2 : 0) +
+    (CONCRETE_RUGBY.test(evidence) ? 3 : 0);
   return {
     passed: reasons.length === 0,
     reasons,
     namedPeople: names.slice(0, 8),
+    directNamedPeople: directNames.slice(0, 8),
     sourceCount: sources.length,
     distinctPublisherCount: distinctPublishers.size,
     factCount: facts.length,
+    distinctFactCount: distinctFacts.length,
     hasConcreteMarker,
     matchLike,
     hasMatchContext,
+    evidenceScore,
   };
 }
 
-const assessed = raw.candidates.map((candidate) => ({ candidate, assessment: assess(candidate) }));
-const accepted = assessed.filter(({ assessment }) => assessment.passed).map(({ candidate }) => candidate);
+const assessed = raw.candidates.map((candidate, index) => ({ candidate, index, assessment: assess(candidate) }));
+const acceptedAssessments = assessed
+  .filter(({ assessment }) => assessment.passed)
+  .sort((a, b) => b.assessment.evidenceScore - a.assessment.evidenceScore || a.index - b.index);
+const accepted = acceptedAssessments.map(({ candidate }) => candidate);
 const rejected = assessed.filter(({ assessment }) => !assessment.passed).map(({ candidate, assessment }) => ({ id: candidate.id, title: candidate.title, ...assessment }));
 
 const report = {
@@ -70,6 +98,7 @@ const report = {
   inputCandidates: raw.candidates.length,
   acceptedCandidates: accepted.length,
   rejectedCandidates: rejected.length,
+  acceptedPriority: acceptedAssessments.map(({ candidate, assessment }) => ({ id: candidate.id, title: candidate.title, evidenceScore: assessment.evidenceScore, directNamedPeople: assessment.directNamedPeople, distinctPublisherCount: assessment.distinctPublisherCount, distinctFactCount: assessment.distinctFactCount })),
   rejected,
   contract: "P0 concrete evidence before OpenAI generation",
   failClosed: true,
@@ -91,7 +120,8 @@ raw.provenance = {
     acceptedCandidates: accepted.length,
     rejectedCandidates: rejected.length,
     reportPath,
+    priority: "evidence-strength-desc",
   },
 };
 await fs.writeFile(path.resolve(batchPath), `${JSON.stringify(raw, null, 2)}\n`);
-console.log(JSON.stringify({ concreteEvidenceGate: "passed", inputCandidates: assessed.length, acceptedCandidates: accepted.length, rejectedCandidates: rejected.length, batchPath, reportPath }, null, 2));
+console.log(JSON.stringify({ concreteEvidenceGate: "passed", inputCandidates: assessed.length, acceptedCandidates: accepted.length, rejectedCandidates: rejected.length, priority: "evidence-strength-desc", batchPath, reportPath }, null, 2));
