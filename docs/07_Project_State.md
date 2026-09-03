@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-2 September 2026, after production verification of the exact-five visual repair, approved Brand Asset localization, current-package Editorial Review isolation and PR #358 production deployment.
+3 September 2026, after production recovery run `33706956178`, PR #385 production verification of the repaired visual planning/refill-diversity path, and measured fail-closed removal of weak legacy retained drafts before 3 September Zoho delivery.
 
 ## Source of truth
 
@@ -16,145 +16,148 @@ Read first in future sessions:
 2. `docs/08_Issue_Log.md`
 3. `docs/09_Publishing_Workflow.md`
 4. newest numbered handoff/evidence documents relevant to the task
-5. `docs/79_2026-09-02_Launch_Night_Visual_and_Brand_Verification.md`
-6. `docs/78_2026-09-01_Editorial_Diversity_and_Context_Card_Quality.md`
-7. `docs/77_2026-09-01_WEB014_Metadata_Title_Composition.md`
-8. `docs/75_2026-09-01_AUTO003_Zoho_Source_Identity_Fix.md`
-9. `docs/74_2026-09-01_P0_Package_Diversity_and_Image_Contract.md`
-10. `docs/63_2026-08-31_P0_Incremental_Same_Day_Recovery.md`
+5. `docs/87_2026-09-03_Retained_Draft_Evidence_Integrity.md`
+6. `docs/86_2026-09-03_Standfirst_Natural_Boundary_Repair.md`
+7. `docs/85_2026-09-03_Visual_Refill_Diversity_Recheck.md`
+8. `docs/84_2026-09-03_Image_Planner_Verifier_Parity.md`
+9. `docs/83_2026-09-03_Visual_Eviction_Current_Batch_Absence.md`
 
 Where older documents conflict with later measured production evidence, newer evidence wins. Chat history is not project truth.
 
 ## Operating targets
 
 - Timezone: Europe/Dublin.
-- Daily contract: exactly five fresh, review-ready production drafts plus exactly one consolidated Zoho editorial notification **delivered before 08:00 Europe/Dublin**.
-- Sanity is the canonical CMS and mandatory human publication boundary.
+- Daily contract: exactly five fresh, review-ready production drafts plus exactly one consolidated Zoho editorial notification.
+- Sanity is the canonical CMS and mandatory human publication boundary. Generated content remains draft-only until a human publishes it.
 - GitHub is the versioned project source of truth.
 - Batch related changes and minimise Vercel deployments.
-- OpenAI spend is capped to the existing prepaid balance; no top-up.
+- OpenAI spend is capped to the existing prepaid balance; do not brute-force retries.
+- Meta/social is not part of the current launch recovery.
+- Gmail and Google Drive are not part of the editorial path.
 
 ## Editorial contract
 
-Articles are original multi-source Rugby Panda synthesis, not rewrites. Freshness identity is subject + event/development + editorial angle. Originality and Draft Ready checks remain deterministic and fail closed. Current hard limits are headline <=70 characters, standfirst <=220, SEO title <=60, SEO description <=160 and paragraph <=120 words, plus filler/formulaic-writing/projection safeguards.
+Articles are original multi-source Rugby Panda synthesis, not rewrites. Freshness identity is **subject + event/development + editorial angle**. New acquisition candidates require coherent corroboration, at least two substantive sources from at least two publishers, concrete named rugby evidence and at least two substantive facts before model spend.
 
-Generated article strings are structured content, not Markdown. Package generation allocates one each of `news-desk`, `analysis-led`, `feature-led`, `notebook`, `explainer`. Style profiles already differ in opening, paragraph rhythm, heading count and presentation and explicitly forbid Markdown/bold markers. Owner review on 1 September found the copy acceptable but somewhat repetitive; future-package style variety remains an editorial-quality verification item rather than a reason to regenerate the accepted 1 September package.
+Same-day retained drafts must also meet the current evidence floor. They are not grandfathered merely because they were generated earlier. Retained production drafts must have at least two valid source notes from two distinct publishers and still pass rugby-contamination, freshness/position and package-diversity checks.
 
-Publication Review is mandatory before a draft becomes production-eligible. Human Sanity publication remains mandatory.
+Originality and Draft Ready checks remain deterministic and fail closed. Current hard limits are headline <=70 characters, standfirst <=220, SEO title <=60, SEO description <=160 and paragraph <=120 words, plus filler/formulaic-writing/projection safeguards.
 
-## Editorial automation — current verified state
+Publication Review is mandatory before a generated draft becomes production-eligible. Post-review normalization must preserve complete prose while enforcing metadata limits; a complete sentence inside the boundary is preferred over a longer arbitrary word-boundary fragment. Deterministic Draft Ready/originality gates run again after normalization.
+
+The package uses differentiated style profiles (`news-desk`, `analysis-led`, `feature-led`, `notebook`, `explainer`) and prohibits raw Markdown/bold-marker generation.
+
+## Editorial automation — current measured state
 
 ### Morning package / AUTO-003 / AUTO-004
 
-The scheduled current-source workflow consumes the source registry and runs the protected freshness/evidence/generation/review/image path.
+The scheduled current-source workflow consumes the source registry and runs the protected acquisition → evidence → freshness → package diversity → bounded generation → Publication Review → image planning/acquisition → visual verification → exact-package Zoho path.
 
-Production recovery run `33505534217` on 1 September proved the current foundations:
+Latest measured production recovery: GitHub Actions run `33706956178` on 3 September.
 
-- 24/24 current sources succeeded, 0 failed; 102 current leads.
-- 45 rugby seeds became 25 clusters and 23 corroborated candidates.
-- 19/23 candidates passed the concrete pre-generation evidence gate.
-- package diversity rejected excessive same-matchup concentration before generation.
-- the final verification retained five valid drafts and generated zero new drafts.
-- exact-five image planning found 15 strong local candidates, three per article.
-- PR #344 made Zoho an exact-package identity/cardinality handoff.
-- Zoho accepted the exact five with SMTP `250 Message received`; event `editorial-daily-package:2026-09-01:fede43938366` recorded the exact article/input IDs.
-- an immediate rerun found accepted evidence and skipped acquisition, generation, images and email, proving duplicate suppression.
+Evidence from that run:
 
-The exact five delivered were:
+- 24/24 configured current sources succeeded; 0 failed.
+- 116 current leads were discovered.
+- current acquisition produced 5 coherent corroborated candidates.
+- concrete-evidence classification accepted 5/5.
+- upstream package diversity passed with maximum two recognised same-team positions and maximum two same-matchup positions.
+- PR #385's stricter image planner exposed genuine deficits instead of counting context-conflicting images as safe: only 2/5 articles initially met image-depth target, with 7 real local deficits.
+- targeted acquisition/reconciliation imported additional rights-triaged Editorial Images.
+- image-unfulfillable Erasmus/referee content was evicted after acquisition exhaustion.
+- PR #385's post-visual-eviction diversity recheck executed in production before replacement generation: retainedCount 4, missingSlots 1, maxPerTeam 2, maxPerMatchup 2; South Africa and New Zealand were each at two.
+- exactly one fresh Itoje replacement was generated; Publication Review #2 had no critical/high blockers.
+- a separate retained article was then found with a visibly truncated standfirst ending `the margins around.`. It was deliberately made `morningPackageEligible=false` before final delivery.
+- because the package no longer contained exactly five eligible drafts, final image assignment and Zoho delivery were skipped. This was the required fail-closed behaviour.
 
-1. `current-2026-09-01-cb1f46c78399` — WXV / England Rugby / women's ball development.
-2. `current-2026-09-01-ac8539699e76` — Ryan Caldwell and Irish rugby.
-3. `current-2026-09-01-7545042164a1` — Frankie Sheahan / Munster.
-4. `current-2026-09-01-1df6f8baaaf3` — Kolbe / All Blacks selection pressure.
-5. `current-2026-09-01-930d0d48bc05` — Erasmus / Springboks-All Blacks scrum dispute.
+After the run, two additional legacy retained drafts were measured as below the current launch contract and were made ineligible in Sanity without publishing them:
 
-A later owner observation exposed that the package could still contain a misleading photo association even though the earlier mechanical readback passed. PRs #353-#355 and #358 hardened the repair and future assignment path. Production Actions run `33568855778` on #358 completed successfully with `status: verified`, `articleCount: 5` and Sanity readback for all five. The France-v-South-Africa hero previously visible on the Erasmus article is gone; that article now uses All Blacks-context imagery. Four current articles have two meaningful inline images and the Kolbe article has one rather than filler.
+1. `current-2026-09-03-ca83d5b17644` — one-source Jonah Lomu film article (Business Post Sport only).
+2. `current-2026-09-03-57772ccaa5cf` — incoherent legacy fusion of the IRFU Resource Library, Caelan Doris injury, Jonah Lomu film and Mack Hansen return.
 
-The next required proof is the 2 September **normal scheduled-day** package, including actual workflow start/package-ready/Zoho-accepted timestamps and delivery before 08:00 Europe/Dublin. Gmail is not part of the editorial path.
+The current quality branch implements two permanent repairs before the next bounded recovery:
+
+- preserve complete sentence boundaries when clipping over-limit standfirst/SEO metadata after Publication Review;
+- enforce >=2 valid source notes from >=2 distinct publishers on retained same-day production drafts.
+
+**3 September Zoho status: not sent.** Run `33706956178` entered with `acceptedEvidenceCount: 0` and later skipped delivery after the exact-five gate failed closed. Therefore the next successful verified package remains eligible for exactly one consolidated Zoho send.
+
+### Package diversity
+
+The maximum-two same-matchup gate is production-established. PR #351 adds a maximum-two recognised same-team limit independent of matchup. PR #385 reuses the same canonical diversity component again after visual eviction and before replacement model spend so visual recovery cannot introduce a third same-team/same-matchup position.
+
+AUTO-004-P16 is production-verified by run `33706956178`.
 
 ### Resilience / AUTO-005
 
-- Same-day recovery preserves valid accepted drafts and fills only missing or evicted slots.
-- Evidence insufficiency, package concentration and image impossibility are rejected before avoidable model spend where possible.
-- Metadata/mechanical presentation failures are repaired deterministically where safe.
+- Preserve valid same-day drafts; regenerate only missing/evicted slots.
+- Revalidate retained drafts against current evidence integrity rather than blindly trusting prior eligibility.
+- Evidence insufficiency, freshness collisions, package concentration and image impossibility fail closed before avoidable model spend where possible.
+- Deterministic presentation repairs are preferred for mechanical problems.
 - Publication Review corrections are re-normalized through the same hard Draft Ready/originality boundaries.
 - Production generation remains GPT-5; retries remain bounded.
-- PR #346 raised only the bounded generation stage to 135 seconds; behavioural proof waits for the next genuine missing-slot generation.
 
 ### Rejection / replacement / AUTO-002
 
-The application can emit a replacement request and the replacement endpoint requires a genuinely different source/angle and normal quality gates. End-to-end rejection replacement remains blocked because `EDITORIAL_REPLACEMENT_WEBHOOK_URL` is absent in production. Do not reject a live draft merely to reproduce that known infrastructure gap.
+The application rejection/replacement endpoint requires a genuinely different source/angle and normal quality gates. End-to-end human rejection replacement remains blocked because `EDITORIAL_REPLACEMENT_WEBHOOK_URL` is absent in production. Do not reject a live draft merely to reproduce that known infrastructure gap. The autonomous current-source same-day recovery is a separate bounded path.
 
 ## Image contract and certified media state
 
-Automatic image assignment is relevance-first and fail closed. Prefer current exact-subject photography, then useful relevant recent team/event/venue material, then relevant historical/context, then an approved relevant logo where appropriate; otherwise no image. Never substitute an unrelated named person, conflicting primary team or generic filler.
+Automatic image assignment is relevance-first and fail closed. Prefer current exact-subject photography, then useful recent team/event/venue material, then relevant historical/context, then an approved relevant logo where appropriate; otherwise no image.
 
 Third-party assets require rights metadata and local Sanity storage. External URLs do not count toward the usable library.
 
-- 28 August baseline: 241 strict publication-ready local Sanity Editorial Images.
-- 1 September recovery imported 21 additional rights-triaged local assets.
-- **Current measured strict publication-ready local Editorial Image baseline: 262.**
-- Production run `33568855778` revalidated and repaired the exact five after the owner-reported wrong-team image defect.
-- Current exact-five image depth after that run is hero+2 inline for WXV, Ryan Caldwell, Erasmus and Frankie Sheahan; hero+1 inline for Kolbe.
-- The visual repair made no GPT calls and did not resend Zoho.
+Hard image-context rules include:
 
-MEDIA-009 remains open for long-term future-package proof, but the specific 1 September wrong-team association is closed by measured production evidence. MEDIA-011 remains an operating coverage-depth target, not a mandate to force image count.
+- explicit named people in the image must be present in the article;
+- recognised image teams must not introduce a conflicting extra team context;
+- canonical aliases are equivalent: All Blacks/New Zealand, Springboks/South Africa, Wallabies/Australia, Pumas/Argentina;
+- women/men context conflicts fail closed;
+- package/body asset dedupe remains mandatory.
+
+The image planner and final verifier must enforce the same hard person/team/event semantics. PR #385 is merged and production READY at Vercel deployment `dpl_8WQfBPeSGGjf5K1FJkLMXLTJnr9G`; run `33706956178` production-exercised the repaired planner and visual-refill diversity path.
+
+**Current measured strict publication-ready local Editorial Image baseline: 354** after run `33706956178`.
+
+MEDIA-011 remains an operating coverage-depth target (three strong local candidates per article where possible), not a mandate to force image placement. Final exact-five 3 September hero/inline verification is still pending.
 
 ## Brand Asset state
 
-Brand marks are separately governed from Editorial Images. Public components may use only approved local Brand Assets and must fall back to text when a defensible mark is unavailable.
+Brand marks are governed separately from Editorial Images. Public components may use only approved local Brand Assets and must fall back to text when a defensible mark is unavailable.
 
-PR #357 allowed already-reviewed official marks served through an organisation's normal CDN to be localized without relaxing approval or local-storage requirements. Production workflow `33565257032` succeeded:
+Latest measured localization remains 24 approved Brand Assets, 17 local-ready, with 7 manual-source gaps. South Africa/New Zealand, Leinster, Munster and EPCR have approved local assets. Connacht remains a text-fallback case until a proper reviewed source exists. These remaining brand gaps are not the current morning-package P0.
 
-- 24 approved Brand Assets;
-- 17 now local-ready;
-- 5 newly localized in that run;
-- 0 localization failures;
-- 7 records still need manual source resolution.
+## Morning delivery / exact-one contract
 
-Newly localized: Leinster Rugby, Munster Rugby, European Rugby Champions Cup, EPCR Challenge Cup and European Professional Club Rugby.
+Zoho is a delivery boundary, not an editorial selector. It may send only when there are exactly five current-date production-eligible drafts with five unique article IDs, five unique editorial input IDs and verified hero boundaries.
 
-South Africa/Springboks and New Zealand/All Blacks have approved local assets and are supported by PR #358 aliases. Remaining missing-local approved records are Connacht Rugby, Fiji Rugby Union, Japan Rugby Football Union, Men's Rugby World Cup 2027, Rugby Australia, Rugby World Cup and World Rugby. Connacht currently has only an official-domain favicon candidate explicitly marked unsuitable as a public logo; retain text fallback until a proper reviewed source exists.
+A Sanity lock keyed to operational date + exact package fingerprint prevents duplicate SMTP delivery.
 
-PR #358 added reusable approved-local brand resolution and article brand-mark rendering. Vercel production deployment `dpl_9TV5ck9V7EGHJPyV3QizAVFtKFYt` is READY. The code is deployed; public brand-mark rendering still requires representative human-published content to verify without violating the publication boundary.
+Production proof from 1 September remains valid: exact five accepted by Zoho with SMTP `250 Message received`, exact IDs recorded, and immediate rerun duplicate-suppressed.
 
-## Article visual enrichment / CMS
+For 3 September, **no Zoho acceptance exists yet**. The latest recovery deliberately failed closed before delivery after quality problems were found in retained drafts.
 
-- #229 content-led article treatments: merged/deployed.
-- #230 homepage editorial hierarchy: merged/deployed.
-- #241 contextual data-card schema/model/public renderer: merged/deployed.
-- #276 deterministic contextual-card population plus inline images: merged/deployed.
-- #278 responsive mobile Editorial Review: merged/deployed.
-- #279 safer paragraph-level image depth: merged/deployed and production-Sanity verified.
-- #348 public metadata title composition: merged/deployed/production verified.
-- #350 contextual-card duplicate-label/value suppression: merged/deployed.
-- #351 same-team package concentration cap: merged; next normal-day behavioural proof pending.
-- #352 Editorial Review exact-current-package default: merged; Sanity Studio workflow `33556586157` succeeded; authenticated desktop verification showed `Today's package (5)` and a current package selection.
-- #355 production hero provenance repair: merged/deployed.
-- #356 production launch content audit: merged/deployed.
-- #357 Brand Asset CDN localization: merged/deployed/production workflow verified.
-- #358 strict image context + approved local article branding: merged, Vercel production READY, exact-five Sanity repair production verified.
+## Editorial Review / human publication boundary
 
-Authenticated owner-phone interaction and representative public article/homepage rendering remain verification boundaries; do not publish solely to manufacture evidence.
+Sanity Studio defaults Editorial Review to `Today's package` and keeps historical drafts under `Other drafts`. Generated/acquired material remains draft-only. Do not publish content merely to manufacture evidence.
 
-## Social distribution / SOCIAL-001
+## Public presentation
 
-The controlled publication event contract is deployed, but the downstream production social webhook/orchestrator remains absent. Social is explicitly excluded from the 2 September website go-live gate while Meta developer authorization remains externally blocked. No Facebook/Instagram provider post has been claimed.
+Content-led article variants, homepage hierarchy, contextual cards, responsive mobile Editorial Review and approved local brand rendering are deployed foundations. Representative public article/homepage verification still requires genuinely human-approved published content. Final authenticated phone interaction remains separately tracked.
 
-## Remaining launch P0 priorities
+## Social distribution
 
-1. Prove the 2 September normal scheduled morning path with five genuinely new positions and one Zoho package delivered before 08:00 Europe/Dublin.
-2. Verify final authenticated owner-phone Editorial Review interaction and representative public article/homepage rendering after normal human publication.
-3. Continue Brand Asset source resolution, with Connacht the highest-priority core-province gap; use text fallback until a proper approved source exists.
-4. Observe #358 image-context safeguards on subsequent normal packages; do not weaken them to manufacture image depth.
-5. Revisit social only when Meta authorization is available.
+Social is explicitly excluded from the current launch recovery. Only a successful controlled human publish action may eventually emit a downstream social event, and Meta provider authorization remains externally blocked. No Meta/social work should be performed while the morning-package P0 is open.
 
-Secondary paths remain AUTO-002 rejection E2E, NEWS-001, secure phone-first upload, security/backup/recovery and accreditation/provider checks.
+## Current launch gate — 3 September 2026
 
-## Owner-help boundary
+The next bounded recovery must prove all of the following before LAUNCH-001 can be declared successful:
 
-Routine implementation, merges, deterministic audits and clear image decisions should not require owner help. Escalate only genuinely ambiguous rights/relevance cases, unavailable external credentials/account authorization, authenticated owner-only verification, final editorial judgement and final go-live acceptance.
-
-## Completion rule
-
-Always distinguish implemented, committed, PR opened, merged, deployed, production verified, authenticated Sanity verified, orchestration verified, Meta verified and documentation updated. A feature is not complete until its relevant verification passes.
+1. the post-review complete-sentence clipping repair is merged, deployed and exercised by fresh generation;
+2. retained one-source legacy content cannot count toward the package;
+3. the deliberately excluded weak/truncated legacy slots are refilled only from current fresh evidence-sufficient candidates;
+4. exactly five current drafts pass Publication Review, deterministic gates and max-two team/matchup diversity;
+5. all five receive final-verifier-safe relevant heroes/inline images;
+6. exactly one consolidated Zoho package is accepted for those exact five IDs;
+7. no article is automatically published;
+8. Meta/social remains untouched.
