@@ -156,6 +156,7 @@ jobs:
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
           REQUIRE_ALL_SELECTED_CREATED: "1"
+          MAX_REPLACEMENT_CANDIDATES: "3"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
       - name: Build replacement-package image plan
         id: replacement_plan
@@ -225,6 +226,7 @@ jobs:
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
           REQUIRE_ALL_SELECTED_CREATED: "1"
+          MAX_REPLACEMENT_CANDIDATES: "3"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
       - name: Build second-pass replacement image plan
         id: second_replacement_plan

@@ -1,6 +1,6 @@
 {
   "schemaVersion": "1.0",
-  "updatedAt": "2026-08-28T07:25:00Z",
+  "updatedAt": "2026-09-03T01:55:00Z",
   "policy": {
     "notes": "Discovery and evidence are separate concerns. Primary/authoritative sources should be preferred for official facts. Trusted editorial sources should provide independent corroboration, analysis and context. Supplementary sources may surface leads but rumours must not be promoted to fact without corroboration.",
     "minimumIndependentEvidence": 2,
@@ -13,6 +13,7 @@
     {"name":"Ulster Rugby","domain":"ulsterrugby.com","homepageUrl":"https://ulster.rugby/","tier":"primary","ownerPriority":100,"defaultEvidenceRole":"primary-evidence","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"reject","specialisms":["Ulster squad news","team announcements","injuries","academy","fixtures"],"teams":["Ulster"],"regions":["Ulster"]},
     {"name":"Connacht Rugby","domain":"connachtrugby.ie","homepageUrl":"https://www.connachtrugby.ie/","tier":"primary","ownerPriority":100,"defaultEvidenceRole":"primary-evidence","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"reject","specialisms":["Connacht squad news","team announcements","injuries","academy","fixtures"],"teams":["Connacht"],"regions":["Connacht"]},
     {"name":"RFU / England Rugby","domain":"englandrugby.com","homepageUrl":"https://www.englandrugby.com/","tier":"primary","ownerPriority":95,"defaultEvidenceRole":"primary-evidence","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"reject","specialisms":["England teams","RFU announcements","discipline","fixtures"],"teams":["England Men","England Women"],"regions":["England"]},
+    {"name":"Exeter Chiefs","domain":"exeterchiefs.co.uk","homepageUrl":"https://www.exeterchiefs.co.uk/","tier":"primary","ownerPriority":90,"defaultEvidenceRole":"primary-evidence","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"reject","specialisms":["Exeter Chiefs squad news","signings","injuries","team announcements","Premiership fixtures","European fixtures"],"teams":["Exeter Chiefs"],"regions":["England"]},
     {"name":"United Rugby Championship","domain":"unitedrugby.com","homepageUrl":"https://www.unitedrugby.com/","tier":"primary","ownerPriority":95,"defaultEvidenceRole":"primary-evidence","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"reject","specialisms":["URC fixtures","results","discipline","competition announcements"],"competitions":["URC"]},
     {"name":"EPCR","domain":"epcrugby.com","homepageUrl":"https://www.epcrugby.com/","tier":"primary","ownerPriority":95,"defaultEvidenceRole":"primary-evidence","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"reject","specialisms":["Champions Cup","Challenge Cup","fixtures","discipline"],"competitions":["Champions Cup","Challenge Cup"]},
     {"name":"Six Nations Rugby","domain":"sixnationsrugby.com","homepageUrl":"https://www.sixnationsrugby.com/","tier":"primary","ownerPriority":95,"defaultEvidenceRole":"primary-evidence","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"reject","specialisms":["Six Nations","international fixtures","competition announcements"],"competitions":["Six Nations"]},
