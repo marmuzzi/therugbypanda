@@ -7,23 +7,52 @@ const outputPath = process.env.CURRENT_ACQUISITION_BATCH_PATH || "data/editorial
 const discovery = JSON.parse(await fs.readFile(path.resolve(inputPath), "utf8"));
 if (discovery?.schemaVersion !== "1.0" || !Array.isArray(discovery.leads)) throw new Error("Current acquisition bridge fail-closed: invalid discovery evidence.");
 
-const stop = new Set(["rugby","the","a","an","and","or","of","to","for","in","on","at","with","from","as","is","are","was","were","be","been","being","this","that","these","those","after","before","over","under","into","out","up","down","new","latest","says","say","united","championship","match","live","stats"]);
+const stop = new Set(["rugby","the","a","an","and","or","of","to","for","in","on","at","with","from","as","is","are","was","were","be","been","being","this","that","these","those","after","before","over","under","into","out","up","down","new","latest","says","say","united","championship","match","live","stats","sport","sports","news","report","ireland","irish","england","bbc","planet","rugbypass"]);
 const rugbySignals = /\b(rugby|union|irfu|rfu|urc|united rugby championship|six nations|champions cup|challenge cup|epcr|leinster|munster|ulster|connacht|springboks?|all blacks?|wallabies|pumas|lions tour|test match|test series|rugby championship|fly[- ]?half|out[- ]?half|scrum[- ]?half|scrum|lineout|line-out|try|tries|conversion|prop|hooker|lock|flanker|back[- ]?row|centre|winger|full[- ]?back|rugby squad|rugby club|rugby internationals?)\b/i;
 const explicitNonRugby = /\b(boxing|boxer|fight week|ringwalk|golf|superbike|motorbike|cycling|cyclist|5k|athletics|hurling|camogie|gaa|gaelic football|soccer|premier league|dundee united|kilmarnock|goal drought|architecture|cost[- ]of[- ]living|chemtrails?|migrants? protest|manchester united|man united|ipswich|sailing|ilca)\b/i;
 const genericTitlePatterns = [
   /^the\s*42(?:\s*-\s*the\s*42)?$/i,
   /^[-\s]*auth\.englandrugby\.com$/i,
-  /^[-\s]*united rugby championship$/i,
+  /^[-\s]*united rugby championship(?:\s*-\s*united rugby championship)?$/i,
   /^untitled design\b/i,
   /^(?:jon newcombe|josh raisey)\s*-\s*rugbypass\.com$/i,
   /^(?:urc|rugby|news|home)\s*-\s*[^-]+$/i,
   /\bnews, squad & players\b/i,
+  /^discipline\s*-\s*irish rugby$/i,
+  /^resource library\s*-\s*irish rugby$/i,
+  /^inside sport\s*-\s*\d{1,2}\s+\w+\s+\d{4}/i,
+  /^the greatest rivalry\s*-\s*united rugby championship/i,
+  /^england rugby\s*-\s*rugby football union$/i,
+  /^-\s*rugby football union$/i,
 ];
+const genericProperTokens = new Set(["the","rugby","irish","ireland","england","new","south","north","united","championship","bbc","planet","business","post","times","independent","sport","sports","news","all","blacks","springboks","wallabies","leinster","munster","ulster","connacht"]);
 
 function tokenList(value="") { return value.toLowerCase().replace(/[^a-z0-9\s'-]/g," ").split(/\s+/).filter((v)=>v.length>2&&!stop.has(v)); }
 function tokens(value="") { return new Set(tokenList(value)); }
 function similarity(a,b) { const A=tokens(a), B=tokens(b); if(!A.size||!B.size) return 0; const shared=[...A].filter((x)=>B.has(x)).length; return shared/Math.min(A.size,B.size); }
 function sharedTokenCount(a,b) { const A=tokens(a), B=tokens(b); return [...A].filter((x)=>B.has(x)).length; }
+function capitalisedTokens(value="") {
+  return new Set((String(value).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{3,}\b/g) ?? [])
+    .map((v)=>v.toLowerCase().replace(/[’']/g,"'"))
+    .filter((v)=>!genericProperTokens.has(v)));
+}
+function surnameTokens(value="") {
+  const surnames = new Set();
+  const matches = String(value).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g) ?? [];
+  for (const name of matches) {
+    const parts=name.split(/\s+/);
+    const first=parts[0].toLowerCase();
+    const last=parts[parts.length-1].toLowerCase();
+    if (genericProperTokens.has(first) || genericProperTokens.has(last)) continue;
+    surnames.add(last.replace(/[’']/g,"'"));
+  }
+  return surnames;
+}
+function sharedPersonAnchor(a,b) {
+  const surnamesA=surnameTokens(a), surnamesB=surnameTokens(b);
+  const capsA=capitalisedTokens(a), capsB=capitalisedTokens(b);
+  return [...surnamesA].some((surname)=>capsB.has(surname)) || [...surnamesB].some((surname)=>capsA.has(surname));
+}
 function canonicalUrl(value="") { try { const u=new URL(value); ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","gclid","fbclid"].forEach((k)=>u.searchParams.delete(k)); return u.toString(); } catch { return value; } }
 function clean(value="") { return String(value ?? "").replace(/\s+/g," ").trim(); }
 function normaliseIdentity(value="") { return clean(value).toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g," ").trim(); }
@@ -70,7 +99,7 @@ function sourceRecord(lead,index) {
     publishedAt:lead.publishedAt,
     excerpt:description || undefined,
     bodyText:description || undefined,
-    isPrimarySource:lead.source?.defaultEvidenceRole === "primary"
+    isPrimarySource:lead.source?.defaultEvidenceRole === "primary" || lead.source?.defaultEvidenceRole === "primary-evidence"
   };
 }
 function suggestedCategoryFor(value="") {
@@ -85,21 +114,27 @@ function suggestedCategoryFor(value="") {
 }
 function hoursApart(a,b) { const delta=Math.abs(Date.parse(a)-Date.parse(b)); return Number.isFinite(delta)?delta/3600000:Number.POSITIVE_INFINITY; }
 function sameStory(seed,candidate) {
+  if (isGenericLead(seed) || isGenericLead(candidate)) return false;
   const titleScore=similarity(seed.title,candidate.title);
   const developmentScore=similarity(seed.editorialPosition?.development||seed.description||"",candidate.editorialPosition?.development||candidate.description||"");
   const sharedTitle=sharedTokenCount(seed.title,candidate.title);
+  const sharedPerson=sharedPersonAnchor(seed.title,candidate.title);
   const nearInTime=hoursApart(seed.publishedAt,candidate.publishedAt)<=36;
-  return Math.max(titleScore,developmentScore)>=0.42 || (nearInTime && sharedTitle>=2 && Math.max(titleScore,developmentScore)>=0.30);
+  if (!nearInTime) return false;
+  if (sharedPerson && sharedTitle >= 1) return true;
+  if (sharedTitle >= 4 && titleScore >= 0.60) return true;
+  if (sharedTitle >= 4 && developmentScore >= 0.65) return true;
+  return false;
 }
 function isSafeContextCorroboration(seed,lead) {
   if(isGenericLead(lead) || explicitNonRugby.test(relevanceText(lead))) return false;
-  const sharedTitle=sharedTokenCount(seed.title,lead.title);
-  return sharedTitle>=2 && sameStory(seed,lead) && (similarity(seed.title,lead.title)>=0.38 || sharedTitle>=3);
+  return sameStory(seed,lead);
 }
 function sourcePriority(lead) {
-  const tier = Number(lead.source?.tier ?? 99);
+  const tierValue = String(lead.source?.tier ?? "").toLowerCase();
+  const tierScore = tierValue === "primary" ? 3 : tierValue === "trusted" ? 2 : tierValue === "supplementary" ? 1 : Number(lead.source?.tier ?? 0) || 0;
   const ownerPriority = Number(lead.source?.ownerPriority ?? 0);
-  return (100 - Math.min(tier,99)) * 100 + ownerPriority;
+  return tierScore * 1000 + ownerPriority;
 }
 
 const leads = discovery.leads.filter((lead)=>lead.title&&lead.link&&lead.publishedAt);
@@ -164,8 +199,8 @@ const candidates=deduped.map((candidate)=>({
   facts:candidate.facts
 }));
 
-if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} corroborated rugby candidates after rejecting ${rejectedNonRugby} non-rugby/generic leads; recovery requires a broad candidate pool before freshness.`);
-const output={ schemaVersion:"1.0", batchId:`current-${packageDate}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), packageDate, provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"rugby-relevance+independent-seed-cross-domain-corroboration-v7-ambiguity-safe", preDedupedClusters:clusters.length }, candidates };
+if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} coherent corroborated rugby candidates after rejecting ${rejectedNonRugby} non-rugby/generic leads; recovery requires five genuinely cross-source stories before model spend.`);
+const output={ schemaVersion:"1.0", batchId:`current-${packageDate}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), packageDate, provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, initialLeadCount:discovery.initialLeadCount, corroborationLeadCount:discovery.corroborationLeadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"entity-coherent+independent-cross-domain-corroboration-v8", preDedupedClusters:clusters.length }, candidates };
 await fs.mkdir(path.dirname(path.resolve(outputPath)),{recursive:true});
 await fs.writeFile(path.resolve(outputPath),`${JSON.stringify(output,null,2)}\n`);
-console.log(JSON.stringify({currentAcquisitionBridge:"passed",packageDate,rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,stableCandidateIds:true,outputPath},null,2));
+console.log(JSON.stringify({currentAcquisitionBridge:"passed",packageDate,rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,stableCandidateIds:true,clustering:output.provenance.clustering,outputPath},null,2));
