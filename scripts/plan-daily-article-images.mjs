@@ -61,8 +61,17 @@ function namedPhrases(value = "") {
   return [...new Set(matches.map(text).filter((x) => !TEAMS.includes(x)))];
 }
 function storyWomenSpecific(value = "") { return /\bwomen(?:'s)?\b|\bwomens\b|\bfemale\b|\bgirls\b/i.test(value); }
-function imageText(image) { return [image.title,image.altText,image.caption,image.subject,image.team,image.event].filter(Boolean).join(" "); }
+function canonicalTeam(team = "") {
+  const value = lower(team);
+  if (value === "all blacks") return "new zealand";
+  if (value === "springboks") return "south africa";
+  if (value === "wallabies") return "australia";
+  if (value === "pumas") return "argentina";
+  return value;
+}
+function imageText(image) { return [image.title,image.altText,image.caption,image.subject,image.team,image.event,image.competitionEvent].filter(Boolean).join(" "); }
 function namedPersonPhrasesFromImage(image) {
+  if (Array.isArray(image.people) && image.people.length) return [...new Set(image.people.filter(Boolean).map(String))];
   const matches = imageText(image).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+(?:\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’.-]+){1,3}\b/g) ?? [];
   return [...new Set(matches.map(text).filter((match) => {
     if (NON_PERSON_TERMS.has(match)) return false;
@@ -94,18 +103,18 @@ function baseRelevance(article, image) {
   if (contextConflict(titleLower, storyLower, meta)) return Number.NEGATIVE_INFINITY;
   const imagePeople = namedPersonPhrasesFromImage(image);
   if (imagePeople.some((person) => !storyLower.includes(person.toLowerCase()))) return Number.NEGATIVE_INFINITY;
-  const titleTeams = TEAMS.filter((team) => titleLower.includes(team.toLowerCase()));
-  const primaryTeams = TEAMS.filter((team) => headerLower.includes(team.toLowerCase()));
-  const imageTeams = TEAMS.filter((team) => meta.includes(team.toLowerCase()));
-  if (titleTeams.length && imageTeams.length && imageTeams.some((team) => !titleTeams.includes(team))) return Number.NEGATIVE_INFINITY;
-  if (!titleTeams.length && primaryTeams.length && imageTeams.length && !primaryTeams.some((team) => imageTeams.includes(team))) return Number.NEGATIVE_INFINITY;
+  const titleTeams = [...new Set(TEAMS.filter((team) => titleLower.includes(team.toLowerCase())).map(canonicalTeam))];
+  const primaryTeams = [...new Set(TEAMS.filter((team) => headerLower.includes(team.toLowerCase())).map(canonicalTeam))];
+  const imageTeams = [...new Set(TEAMS.filter((team) => meta.includes(team.toLowerCase())).map(canonicalTeam))];
+  if (titleTeams.length && imageTeams.some((team) => !titleTeams.includes(team))) return Number.NEGATIVE_INFINITY;
+  if (!titleTeams.length && imageTeams.length && imageTeams.some((team) => !primaryTeams.includes(team))) return Number.NEGATIVE_INFINITY;
   const storyIsWomen = storyWomenSpecific(header);
   const imageIsWomen = storyWomenSpecific(meta);
   if (storyIsWomen !== imageIsWomen) return Number.NEGATIVE_INFINITY;
   const people = namedPhrases(story);
   const exactPeople = people.filter((person) => meta.includes(person.toLowerCase()));
   const shared = tokens(story).filter((term) => meta.includes(term));
-  const teamMatch = (titleTeams.length ? titleTeams : primaryTeams).some((team) => meta.includes(team.toLowerCase()));
+  const teamMatch = (titleTeams.length ? titleTeams : primaryTeams).some((team) => imageTeams.includes(team));
   if (!exactPeople.length && !teamMatch && shared.length < 2) return Number.NEGATIVE_INFINITY;
   return exactPeople.length * 100 + (teamMatch ? 35 : 0) + Math.min(shared.length, 8) * 5;
 }
@@ -116,8 +125,9 @@ function inlineRelevance(article, image) {
   let best = Number.NEGATIVE_INFINITY;
   for (const paragraph of paragraphs) {
     const paragraphLower = lower(paragraph);
-    const paragraphTeams = TEAMS.filter((team) => paragraphLower.includes(team.toLowerCase()));
-    const teamMatch = paragraphTeams.some((team) => meta.includes(team.toLowerCase()));
+    const paragraphTeams = [...new Set(TEAMS.filter((team) => paragraphLower.includes(team.toLowerCase())).map(canonicalTeam))];
+    const imageTeams = [...new Set(TEAMS.filter((team) => meta.includes(team.toLowerCase())).map(canonicalTeam))];
+    const teamMatch = paragraphTeams.some((team) => imageTeams.includes(team));
     const shared = inlineTerms(paragraph).filter((term) => meta.includes(term));
     const people = namedPhrases(paragraph);
     const personMatch = people.some((person) => meta.includes(person.toLowerCase()));
@@ -137,7 +147,7 @@ function scoreCandidate(article, image) {
 function candidateShape(image, score, sourceRole = "library") {
   return {
     imageId:image._id, assetRef:image.assetRef, title:image.title ?? null, score, sourceRole,
-    subject:image.subject ?? null, team:image.team ?? null, event:image.event ?? null,
+    subject:image.subject ?? null, team:image.team ?? null, event:image.event ?? image.competitionEvent ?? null,
     captureDate:image.captureDate ?? null, source:image.source ?? image.sourceName ?? null,
     rights:image.rightsNotes ?? null, credit:image.publicCredit ?? image.creditLine ?? null,
   };
@@ -171,7 +181,7 @@ if (articles.length !== 5) throw new Error(`Expected exactly five current-packag
 if (new Set(articles.map((x) => x.editorialInputId).filter(Boolean)).size !== 5) throw new Error("Current-package drafts do not have five distinct editorialInputId values. Fail closed.");
 
 const images = await query(`*[_type == "editorialImage" && !(_id in path("drafts.**")) && usageApproved == true && lifecycleStatus in ["approved","published"] && defined(image.asset._ref)] | order(_updatedAt desc)[0...1000]{
-  _id,title,altText,caption,subject,team,event,captureDate,source,sourceName,rightsNotes,publicCredit,creditLine,
+  _id,title,altText,caption,subject,team,people,event,competitionEvent,captureDate,source,sourceName,rightsNotes,publicCredit,creditLine,
   "assetRef":image.asset._ref,
   "assetUrl":image.asset->url
 }`);
