@@ -33,6 +33,12 @@ type DraftRequest = {
   styleProfileId?: ArticleStyleProfileId;
 };
 
+type FinalSourceNote = {
+  sourceId?: string;
+  publisher?: string;
+  url?: string;
+};
+
 function jsonResponse(body: unknown, init?: ResponseInit) {
   return NextResponse.json(body, {
     ...init,
@@ -44,6 +50,30 @@ function isAuthorized(request: NextRequest): boolean {
   const secret = process.env.EDITORIAL_AUTOMATION_SECRET;
   if (!secret) return false;
   return request.headers.get("authorization") === `Bearer ${secret}`;
+}
+
+function assertFinalSourceIntegrity(article: { sourceNotes?: FinalSourceNote[] }, story: RawStoryInput) {
+  const notes = Array.isArray(article.sourceNotes) ? article.sourceNotes : [];
+  const sourceById = new Map(story.sourceRecords.map((source) => [source.id, source]));
+  const validNotes = notes.filter((note) => {
+    const sourceId = String(note.sourceId ?? "").trim();
+    const publisher = String(note.publisher ?? "").trim();
+    const url = String(note.url ?? "").trim();
+    const source = sourceById.get(sourceId);
+    return Boolean(
+      source
+      && publisher
+      && /^https?:\/\//i.test(url)
+      && String(source.publisher ?? "").trim().toLowerCase() === publisher.toLowerCase(),
+    );
+  });
+  const publishers = new Set(validNotes.map((note) => String(note.publisher).trim().toLowerCase()));
+
+  if (notes.length < 2 || validNotes.length !== notes.length || publishers.size < 2) {
+    throw new Error(
+      `Final source-integrity gate failed: ${notes.length} source notes, ${validNotes.length} mapped to supplied evidence, ${publishers.size} distinct publishers; minimum is 2 valid notes from 2 publishers.`,
+    );
+  }
 }
 
 export async function OPTIONS() {
@@ -122,6 +152,7 @@ export async function POST(request: NextRequest) {
     console.info("Publication review cycle starting", { requestId, inputId: body.story.id });
     const publicationReview = await runPublicationReviewCycle(generatedArticle, editorial, body.story);
     const article = publicationReview.article;
+    assertFinalSourceIntegrity(article, body.story);
     const pkg = { editorial, article };
 
     if (body.createSanityDraft === false) {
