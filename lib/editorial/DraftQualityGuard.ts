@@ -3,6 +3,7 @@ import type { GeneratedArticleDraft } from "./ArticleDraftTypes";
 export type DraftQualityIssue = {
   code:
     | "headline-length"
+    | "headline-fragment"
     | "standfirst-length"
     | "seo-title-length"
     | "seo-description-length"
@@ -31,6 +32,7 @@ export const DRAFT_READY_LIMITS = {
 } as const;
 
 const FILLER_WORDS = ["just", "simply", "really", "clearly", "obviously", "basically", "actually"] as const;
+const DANGLING_HEADLINE_ENDINGS = /\b(?:a|an|and|as|at|but|by|for|from|how|in|into|it|of|on|or|the|to|what|why|with)$/i;
 const BANNED_GENERIC_HEADINGS = new Set([
   "why this matters now",
   "why this matters",
@@ -80,6 +82,11 @@ function containsMarkdownSyntax(value: string): boolean {
     || /`{1,3}[^`]+`{1,3}/.test(value);
 }
 
+function hasDanglingHeadlineEnding(value: string): boolean {
+  const headline = value.trim().replace(/[,:;\-–—\s]+$/u, "");
+  return DANGLING_HEADLINE_ENDINGS.test(headline);
+}
+
 export function isFormulaicHeading(value: string): boolean {
   const heading = value.trim();
   const normalised = heading.toLowerCase();
@@ -92,6 +99,9 @@ export function assessDraftQuality(article: GeneratedArticleDraft): DraftQuality
 
   if (article.title.length > DRAFT_READY_LIMITS.headlineCharacters) {
     issues.push({ code: "headline-length", message: "Headline exceeds the Draft Ready character limit.", value: article.title.length, limit: DRAFT_READY_LIMITS.headlineCharacters, excerpt: article.title });
+  }
+  if (hasDanglingHeadlineEnding(article.title)) {
+    issues.push({ code: "headline-fragment", message: "Headline ends with a dangling connector or pronoun and is not independently readable.", value: 1, limit: 0, excerpt: article.title });
   }
   if (article.standfirst.length > DRAFT_READY_LIMITS.standfirstCharacters) {
     issues.push({ code: "standfirst-length", message: "Standfirst exceeds the Draft Ready character limit.", value: article.standfirst.length, limit: DRAFT_READY_LIMITS.standfirstCharacters, excerpt: article.standfirst });
