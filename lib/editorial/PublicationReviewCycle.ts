@@ -94,8 +94,12 @@ function clipAtNaturalBoundary(value: string, max: number) {
   if (trimmed.length <= max) return trimmed;
   const candidate = trimmed.slice(0, max + 1);
   const floor = Math.floor(max * 0.6);
+  const sentenceFloor = Math.floor(max * 0.35);
   const sentenceBoundary = Math.max(candidate.lastIndexOf("."), candidate.lastIndexOf("?"), candidate.lastIndexOf("!"));
-  if (sentenceBoundary >= floor) return candidate.slice(0, sentenceBoundary + 1).trim();
+  // Prefer a genuinely complete sentence even when it is shorter than the previous 60% target.
+  // Production evidence showed that forcing a longer arbitrary word-boundary clip can turn a
+  // reviewed standfirst into grammatically incomplete copy such as "the margins around.".
+  if (sentenceBoundary >= sentenceFloor) return candidate.slice(0, sentenceBoundary + 1).trim();
 
   const clauseMarkers = [", before ", ", while ", ", as ", ", with ", ", but ", "; ", ": "];
   let clauseBoundary = -1;
