@@ -1,6 +1,8 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { createClient } from "next-sanity";
 
+const PACKAGE_SIZE = 5;
 const batchPath = process.env.CURRENT_ACQUISITION_BATCH_PATH || "data/editorial-acquisition/current-editorial-acquisition-batch.json";
 const reportPath = process.env.CURRENT_EVIDENCE_SUFFICIENCY_REPORT || "data/editorial-acquisition/current-evidence-sufficiency.json";
 const raw = JSON.parse(await fs.readFile(path.resolve(batchPath), "utf8"));
@@ -33,6 +35,7 @@ const QUOTED = /[“”"'‘’][^“”"'‘’]{5,}[“”"'‘’]/;
 const NON_NEWS_EVIDENCE = /\b(?:replica\s+(?:shirt|jersey)|away\s+replica|home\s+replica|kids(?:'|’)?\s+(?:shirt|jersey)|merchandise|gift\s*card|buy\s+now|add\s+to\s+cart|product\s+page)\b/i;
 const GENERIC_TEAM_INDEX = /\brugby\s+team\s*\|.*\bnews,?\s+players\s*&\s*stats\b/i;
 const GENERIC_FIXTURE_INDEX = /(?:\brugby fixtures? for\b|\brugb?y fixtures? today\b|\blive rugby union fixtures\b|\btables?,\s*fixtures?,\s*results?\b)/i;
+const RETAINED_NON_EDITORIAL_USAGE = /\b(?:fixture listing|live match page|placeholder live|tables?,?\s*fixtures?,?\s*results?|replica|product page|merchandise)\b/i;
 
 function clean(value = "") {
   return String(value ?? "").replace(/&nbsp;/g, " ").replace(/\s+/g, " ").trim();
@@ -40,6 +43,15 @@ function clean(value = "") {
 
 function normalise(value = "") {
   return clean(value).toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
+}
+
+function operationalDate() {
+  return new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Europe/Dublin",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).format(new Date());
 }
 
 function personNames(value = "") {
@@ -64,6 +76,43 @@ function sourceMentionsPerson(source, person) {
   if (text.includes(fullName)) return true;
   const surname = personParts.at(-1);
   return surname.length >= 4 && new RegExp(`\\b${surname.replace(/[.*+?^${}()|[\\]\\]/g, "\\$&")}\\b`, "i").test(text);
+}
+
+function retainedDraftHasCurrentEvidence(draft) {
+  const notes = Array.isArray(draft?.sourceNotes) ? draft.sourceNotes : [];
+  if (notes.length < 2) return false;
+  const valid = notes.filter((note) => {
+    const publisher = clean(note?.publisher);
+    const url = clean(note?.url);
+    const usage = clean(note?.usage);
+    return publisher && /^https?:\/\//i.test(url) && usage && !RETAINED_NON_EDITORIAL_USAGE.test(usage) && !NON_NEWS_EVIDENCE.test(usage) && !GENERIC_FIXTURE_INDEX.test(usage);
+  });
+  if (valid.length !== notes.length) return false;
+  return new Set(valid.map((note) => clean(note.publisher).toLowerCase())).size >= 2;
+}
+
+async function countStrictRetainedDrafts() {
+  const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID?.trim();
+  const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET?.trim() || "production";
+  const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION?.trim() || "2025-01-01";
+  const token = process.env.SANITY_API_TOKEN?.trim();
+  if (!projectId || !token) return { count: 0, ids: [], reason: "sanity-credentials-unavailable-default-to-five-fresh" };
+
+  const packageDate = raw.packageDate || operationalDate();
+  const prefix = `current-${packageDate}-*`;
+  const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
+  const drafts = await client.fetch(`*[
+    _type == "article" &&
+    _id in path("drafts.**") &&
+    morningPackageEligible == true &&
+    coalesce(automationContentClass, "production") == "production" &&
+    editorialInputId match $prefix &&
+    (!defined(workflowStatus) || workflowStatus in ["draft", "submitted", "in-review", "review", "under-review", "approved"])
+  ] | order(coalesce(editorialGeneratedAt, _createdAt) asc) {
+    _id, editorialInputId, sourceNotes
+  }`, { prefix });
+  const strict = (Array.isArray(drafts) ? drafts : []).filter(retainedDraftHasCurrentEvidence).slice(0, PACKAGE_SIZE);
+  return { count: strict.length, ids: strict.map((draft) => draft.editorialInputId || draft._id), reason: "strict-retained-current-package-evidence" };
 }
 
 function assess(candidate) {
@@ -122,6 +171,8 @@ const acceptedAssessments = assessed
   .sort((a, b) => b.assessment.evidenceScore - a.assessment.evidenceScore || a.index - b.index);
 const accepted = acceptedAssessments.map(({ candidate }) => candidate);
 const rejected = assessed.filter(({ assessment }) => !assessment.passed).map(({ candidate, assessment }) => ({ id: candidate.id, title: candidate.title, ...assessment }));
+const retained = await countStrictRetainedDrafts();
+const requiredFreshCandidates = Math.max(1, PACKAGE_SIZE - Math.min(PACKAGE_SIZE, retained.count));
 
 const report = {
   generatedAt: new Date().toISOString(),
@@ -129,18 +180,22 @@ const report = {
   inputCandidates: raw.candidates.length,
   acceptedCandidates: accepted.length,
   rejectedCandidates: rejected.length,
+  retainedEligibleCount: retained.count,
+  retainedEligibleIds: retained.ids,
+  requiredFreshCandidates,
+  retainedEvidenceReason: retained.reason,
   acceptedPriority: acceptedAssessments.map(({ candidate, assessment }) => ({ id: candidate.id, title: candidate.title, evidenceScore: assessment.evidenceScore, directNamedPeople: assessment.directNamedPeople, corroboratedPeople: assessment.corroboratedPeople, distinctPublisherCount: assessment.distinctPublisherCount, distinctFactCount: assessment.distinctFactCount })),
   rejected,
-  contract: "P0 concrete coherent editorial-news evidence before OpenAI generation",
+  contract: "P0 concrete coherent editorial-news evidence before OpenAI generation, volume-aware of strict retained same-day package slots",
   failClosed: true,
 };
 
 await fs.mkdir(path.dirname(path.resolve(reportPath)), { recursive: true });
 await fs.writeFile(path.resolve(reportPath), `${JSON.stringify(report, null, 2)}\n`);
 
-if (accepted.length < 5) {
+if (accepted.length < requiredFreshCandidates) {
   console.error(JSON.stringify(report, null, 2));
-  throw new Error(`Concrete evidence gate fail-closed before model spend: only ${accepted.length}/5 candidates have named, concrete, cross-source coherent rugby news evidence.`);
+  throw new Error(`Concrete evidence gate fail-closed before model spend: ${retained.count} strict retained + ${accepted.length} fresh coherent candidates is insufficient for ${PACKAGE_SIZE}; ${requiredFreshCandidates} fresh candidates are required.`);
 }
 
 raw.candidates = accepted;
@@ -150,10 +205,13 @@ raw.provenance = {
     inputCandidates: assessed.length,
     acceptedCandidates: accepted.length,
     rejectedCandidates: rejected.length,
+    retainedEligibleCount: retained.count,
+    retainedEligibleIds: retained.ids,
+    requiredFreshCandidates,
     reportPath,
     priority: "evidence-strength-desc",
     sourceBoundary: "news-editorial-not-catalog-generic-team-or-fixture-index-and-person-identity-corroborated",
   },
 };
 await fs.writeFile(path.resolve(batchPath), `${JSON.stringify(raw, null, 2)}\n`);
-console.log(JSON.stringify({ concreteEvidenceGate: "passed", inputCandidates: assessed.length, acceptedCandidates: accepted.length, rejectedCandidates: rejected.length, priority: "evidence-strength-desc", batchPath, reportPath }, null, 2));
+console.log(JSON.stringify({ concreteEvidenceGate: "passed", inputCandidates: assessed.length, acceptedCandidates: accepted.length, rejectedCandidates: rejected.length, retainedEligibleCount: retained.count, requiredFreshCandidates, priority: "evidence-strength-desc", batchPath, reportPath }, null, 2));
