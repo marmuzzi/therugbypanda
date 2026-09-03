@@ -23,7 +23,7 @@ permissions:
 jobs:
   discover:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
     environment: production
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
@@ -198,6 +198,75 @@ jobs:
           npm run media:audit-readiness | tee data/editorial-images/daily-deficit-replacement-readiness.log
           cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/daily-deficit-replacement-readiness.json
       - name: Build final exact current-package image plan
+        id: final_plan
+        if: steps.package_state.outputs.skip != 'true'
+        run: |
+          node scripts/plan-daily-article-images.mjs
+          cp daily-article-image-plan.json daily-article-image-plan-after-acquisition.json
+          node -e 'const p=require("./daily-article-image-plan-after-acquisition.json"); const unsafe=(p.plans||[]).filter(x=>Number(x.localCandidateCount||0)<2); console.log(`assignment_unsafe=${unsafe.length}`); console.log(`assignment_unsafe_count=${unsafe.length}`)' >> "$GITHUB_OUTPUT"
+
+      # A first visual replacement can itself prove image-impossible after targeted acquisition.
+      # Allow exactly one additional bounded substitution. This is not a depth=3 loop: it runs
+      # only when an article has fewer than the two assignment-safe local images required for
+      # hero + meaningful inline, and the existing eviction script re-applies diversity first.
+      - name: Evict one second-pass image-unfulfillable replacement
+        id: second_visual_substitution
+        if: steps.package_state.outputs.skip != 'true' && steps.final_plan.outputs.assignment_unsafe_count != '0'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan-after-acquisition.json
+          VISUAL_EVICTION_OUTPUT: data/editorial-images/current-visual-deficit-eviction-second-pass.json
+        run: |
+          node scripts/evict-current-visual-deficit-draft.mjs
+          node -e 'const p=require("./data/editorial-images/current-visual-deficit-eviction-second-pass.json"); console.log(`evicted=${p.status==="evicted-one-image-unfulfillable-draft"?"true":"false"}`)' >> "$GITHUB_OUTPUT"
+      - name: Refill second visual-deficit slot from fresh evidence
+        if: steps.package_state.outputs.skip != 'true' && steps.second_visual_substitution.outputs.evicted == 'true'
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+          EDITORIAL_API_BASE_URL: https://therugbypanda.ie
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+          REQUIRE_ALL_SELECTED_CREATED: "1"
+        run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
+      - name: Build second-pass replacement image plan
+        id: second_replacement_plan
+        if: steps.package_state.outputs.skip != 'true' && steps.second_visual_substitution.outputs.evicted == 'true'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan-second-replacement.json
+        run: |
+          node scripts/plan-daily-article-images.mjs
+          cp daily-article-image-plan.json daily-article-image-plan-second-replacement.json
+          node -e 'const p=require("./daily-article-image-plan-second-replacement.json"); console.log(`total_deficit=${p.totalDeficit}`)' >> "$GITHUB_OUTPUT"
+      - name: Discover second-pass replacement image deficits
+        id: second_replacement_discovery
+        if: steps.package_state.outputs.skip != 'true' && steps.second_visual_substitution.outputs.evicted == 'true' && steps.second_replacement_plan.outputs.total_deficit != '0'
+        env:
+          IMAGE_PLAN_PATH: daily-article-image-plan-second-replacement.json
+          WIKIMEDIA_OUTPUT: data/editorial-images/daily-deficit-second-replacement-candidates.json
+        run: |
+          node scripts/discover-daily-article-image-deficits.mjs
+          node -e 'const p=require("./data/editorial-images/daily-deficit-second-replacement-candidates.json"); console.log(`approve_candidates=${p.counts?.["approve-candidate"]||0}`)' >> "$GITHUB_OUTPUT"
+      - name: Strict triage for second-pass replacement image deficits
+        id: second_replacement_triage
+        continue-on-error: true
+        if: steps.package_state.outputs.skip != 'true' && steps.second_replacement_discovery.outputs.approve_candidates != '0'
+        env:
+          WIKIMEDIA_CANDIDATE_FILE: data/editorial-images/daily-deficit-second-replacement-candidates.json
+          WIKIMEDIA_REVIEW_FILE: data/editorial-images/daily-deficit-second-replacement-reviewed.json
+          WIKIMEDIA_TRIAGE_REPORT: data/editorial-images/daily-deficit-second-replacement-triage.json
+        run: node scripts/triage-wikimedia-candidates.mjs
+      - name: Import approved second-pass replacement deficit images
+        if: steps.package_state.outputs.skip != 'true' && steps.second_replacement_triage.outcome == 'success'
+        env:
+          WIKIMEDIA_REVIEW_FILE: data/editorial-images/daily-deficit-second-replacement-reviewed.json
+        run: node scripts/import-reviewed-wikimedia-images.mjs | tee data/editorial-images/daily-deficit-second-replacement-import.log
+      - name: Reconcile second-pass replacement image readiness
+        if: steps.package_state.outputs.skip != 'true' && steps.second_replacement_triage.outcome == 'success'
+        run: node scripts/reconcile-approved-editorial-readiness.mjs | tee data/editorial-images/daily-deficit-second-replacement-reconcile.log
+      - name: Audit second-pass replacement strict local readiness
+        if: steps.package_state.outputs.skip != 'true' && steps.second_replacement_triage.outcome == 'success'
+        run: |
+          npm run media:audit-readiness | tee data/editorial-images/daily-deficit-second-replacement-readiness.log
+          cp artifacts/editorial-image-audit/editorial-image-readiness.json data/editorial-images/daily-deficit-second-replacement-readiness.json
+      - name: Build post-recovery exact current-package image plan
         if: steps.package_state.outputs.skip != 'true'
         run: |
           node scripts/plan-daily-article-images.mjs
@@ -248,6 +317,6 @@ jobs:
             visual-enrichment-summary.json
             data/editorial-images/daily-deficit-*.json
             data/editorial-images/daily-deficit-*.log
-            data/editorial-images/current-visual-deficit-eviction.json
+            data/editorial-images/current-visual-deficit-eviction*.json
           if-no-files-found: warn
           retention-days: 14
