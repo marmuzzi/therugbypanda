@@ -85,7 +85,15 @@ function evidenceAssessment(candidate) {
 }
 
 function retainedDraftIntegrity(draft) {
-  const sourceText = (Array.isArray(draft?.sourceNotes) ? draft.sourceNotes : [])
+  const sourceNotes = Array.isArray(draft?.sourceNotes) ? draft.sourceNotes : [];
+  const validSourceNotes = sourceNotes.filter((note) => {
+    const publisher = String(note?.publisher || "").trim();
+    const url = String(note?.url || "").trim();
+    return publisher.length > 0 && /^https?:\/\//i.test(url);
+  });
+  const publishers = new Set(validSourceNotes.map((note) => String(note.publisher).trim().toLowerCase()).filter(Boolean));
+  const multiPublisherEvidence = sourceNotes.length >= 2 && validSourceNotes.length === sourceNotes.length && publishers.size >= 2;
+  const sourceText = sourceNotes
     .map((note) => [note?.publisher, note?.usage].filter(Boolean).join(" "))
     .join(" ");
   const cardText = [
@@ -95,9 +103,12 @@ function retainedDraftIntegrity(draft) {
   ].filter(Boolean).join(" ");
   const combined = [draft?.title, sourceText, cardText].filter(Boolean).join(" ").replace(/&nbsp;/g, " ");
   const contaminated = NON_RUGBY_EVIDENCE.test(combined);
+  const reasons = [];
+  if (!multiPublisherEvidence) reasons.push(`retained draft has ${validSourceNotes.length} valid source notes from ${publishers.size} distinct publishers; minimum is 2/2`);
+  if (contaminated) reasons.push("retained draft contains non-rugby source/card provenance");
   return {
-    passed: !contaminated,
-    reason: contaminated ? "retained draft contains non-rugby source/card provenance" : null,
+    passed: reasons.length === 0,
+    reason: reasons.length ? reasons.join("; ") : null,
   };
 }
 
