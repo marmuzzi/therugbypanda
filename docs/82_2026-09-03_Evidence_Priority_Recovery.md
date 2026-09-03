@@ -2,7 +2,7 @@
 
 ## Status
 
-Implemented on branch `fix/sep3-evidence-priority`; production verification is required after merge.
+PR #374 is merged on `main`. PR #375 is also merged and triggered bounded production Actions run `33698101024` against the repaired evidence-priority path. Production verification is in progress; the feature is not closed until the run proves the exact-five/image/Zoho contract.
 
 ## Measured trigger
 
@@ -16,7 +16,7 @@ Zoho was not called because the exact-five draft gate failed, so all image and d
 
 The concrete-evidence pre-generation gate treated broad personnel words such as `coach`, `captain`, `return` and `contract` as if they always described a match/selection event. That incorrectly rejected useful non-match rugby stories unless they also contained a date, score, venue or Test ordinal. At the same time, accepted candidates retained source order rather than prioritising the strongest evidence packs first, so title-level/weakly corroborated candidates could consume the bounded generation budget ahead of richer candidates.
 
-## Fix
+## PR #374 — fix
 
 The evidence gate now:
 
@@ -29,6 +29,10 @@ The evidence gate now:
 
 No freshness, originality, Publication Review, package diversity, image relevance/rights, exact-five, exact-one Zoho or human publication boundary is relaxed.
 
+## PR #375 — bounded production trigger
+
+PR #375 updates only the versioned recovery trigger and started Actions run `33698101024` against merged `main`. This is the production verification run for #374. It does not change editorial or delivery behaviour.
+
 ## Verification required
 
-Production verification must show that the next bounded recovery selects stronger evidence first, produces exactly five review-ready current drafts, passes strict image verification and results in exactly one Zoho package (`sent` or idempotent `already-sent`). If another measured P0 appears, that becomes the next recovery target.
+Production verification must show that run `33698101024` (or a directly subsequent bounded recovery if it exposes a new measured P0) selects stronger evidence first, produces exactly five review-ready current drafts, passes strict image verification and results in exactly one Zoho package (`sent` or idempotent `already-sent`). If another measured P0 appears, that becomes the next recovery target.
