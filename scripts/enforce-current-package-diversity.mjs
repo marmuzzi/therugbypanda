@@ -5,6 +5,7 @@ import { createClient } from "next-sanity";
 const packageSize = 5;
 const maxPerMatchup = Math.max(1, Number.parseInt(process.env.MAX_PACKAGE_MATCHUP_STORIES ?? "2", 10) || 2);
 const maxPerTeam = Math.max(1, Number.parseInt(process.env.MAX_PACKAGE_TEAM_STORIES ?? "2", 10) || 2);
+const recoveryReserve = Math.max(0, Number.parseInt(process.env.PACKAGE_RECOVERY_CANDIDATE_RESERVE ?? "2", 10) || 0);
 const batchPath = path.resolve(process.env.BATCH_PATH ?? "data/editorial-acquisition/current-editorial-acquisition-batch.json");
 const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
 const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET ?? "production";
@@ -195,6 +196,7 @@ batch.packageDiversity = {
   packageDate,
   maxPerMatchup,
   maxPerTeam,
+  recoveryReserve,
   retainedCount: retained.length,
   evictedDrafts: evicted,
   rejectedCandidates,
@@ -203,8 +205,12 @@ await fs.writeFile(batchPath, `${JSON.stringify(batch, null, 2)}\n`, "utf8");
 
 const missingSlots = Math.max(0, packageSize - retained.length);
 const availableReplacementCandidates = keptCandidates.filter((candidate) => !retainedInputIds.has(candidate?.id)).length;
-if (availableReplacementCandidates < missingSlots) {
-  throw new Error(`Package diversity fail-closed before model spend: only ${availableReplacementCandidates}/${missingSlots} candidates remain after concentration filtering.`);
+// A recovery with exactly N candidates for N missing slots has no ability to survive a
+// legitimate Publication Review rejection. Require a small evidence-sufficient reserve
+// before model spend; this changes capacity, not any quality/freshness/diversity threshold.
+const requiredReplacementCandidates = missingSlots === 0 ? 0 : missingSlots + recoveryReserve;
+if (availableReplacementCandidates < requiredReplacementCandidates) {
+  throw new Error(`Package recovery reserve fail-closed before model spend: only ${availableReplacementCandidates}/${requiredReplacementCandidates} candidates remain for ${missingSlots} missing slots plus reserve ${recoveryReserve}.`);
 }
 
 console.log(JSON.stringify({
@@ -212,8 +218,11 @@ console.log(JSON.stringify({
   packageDate,
   maxPerMatchup,
   maxPerTeam,
+  recoveryReserve,
   retainedCount: retained.length,
   missingSlots,
+  requiredReplacementCandidates,
+  availableReplacementCandidates,
   evictedDrafts: evicted,
   rejectedCandidateCount: rejectedCandidates.length,
   rejectedCandidates,

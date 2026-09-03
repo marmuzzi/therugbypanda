@@ -4,9 +4,11 @@ import path from "node:path";
 const registryPath = process.env.EDITORIAL_SOURCE_REGISTRY || "data/editorial-sources/source-registry.json";
 const outputPath = process.env.CURRENT_SOURCE_DISCOVERY_PATH || "data/editorial-acquisition/current-source-discovery.json";
 const maxAgeHours = Number(process.env.DISCOVERY_MAX_AGE_HOURS || 36);
-const perSourceLimit = Number(process.env.DISCOVERY_PER_SOURCE_LIMIT || 8);
-const corroborationSeedLimit = Number(process.env.DISCOVERY_CORROBORATION_SEED_LIMIT || 24);
-const corroborationPerSeedLimit = Number(process.env.DISCOVERY_CORROBORATION_PER_SEED_LIMIT || 5);
+// The morning package must survive Publication Review rejection without weakening review.
+// Use a wider but still bounded no-model discovery pass so same-day recovery has reserve stories.
+const perSourceLimit = Number(process.env.DISCOVERY_PER_SOURCE_LIMIT || 12);
+const corroborationSeedLimit = Number(process.env.DISCOVERY_CORROBORATION_SEED_LIMIT || 48);
+const corroborationPerSeedLimit = Number(process.env.DISCOVERY_CORROBORATION_PER_SEED_LIMIT || 8);
 const now = new Date();
 const googleWindowDays = maxAgeHours > 24 ? 2 : 1;
 
@@ -178,10 +180,11 @@ const output = {
   initialLeadCount: initialLeads.length,
   corroborationLeadCount: corroborationLeads.length,
   corroborationSeedCount: corroborationSeeds.length,
+  discoveryLimits: { perSourceLimit, corroborationSeedLimit, corroborationPerSeedLimit },
   leads,
   sourceRuns: results,
   corroborationRuns,
 };
 await fs.mkdir(path.dirname(path.resolve(outputPath)), { recursive: true });
 await fs.writeFile(path.resolve(outputPath), `${JSON.stringify(output, null, 2)}\n`);
-console.log(JSON.stringify({ currentSourceDiscovery: "passed", successfulSources, failedSources: output.failedSources, leadCount: leads.length, initialLeadCount: initialLeads.length, corroborationLeadCount: corroborationLeads.length, corroborationSeedCount: corroborationSeeds.length, maxAgeHours, googleWindowDays, outputPath }, null, 2));
+console.log(JSON.stringify({ currentSourceDiscovery: "passed", successfulSources, failedSources: output.failedSources, leadCount: leads.length, initialLeadCount: initialLeads.length, corroborationLeadCount: corroborationLeads.length, corroborationSeedCount: corroborationSeeds.length, discoveryLimits: output.discoveryLimits, maxAgeHours, googleWindowDays, outputPath }, null, 2));
