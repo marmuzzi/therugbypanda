@@ -5,7 +5,7 @@ const registryPath = process.env.EDITORIAL_SOURCE_REGISTRY || "data/editorial-so
 const outputPath = process.env.CURRENT_SOURCE_DISCOVERY_PATH || "data/editorial-acquisition/current-source-discovery.json";
 const maxAgeHours = Number(process.env.DISCOVERY_MAX_AGE_HOURS || 36);
 const perSourceLimit = Number(process.env.DISCOVERY_PER_SOURCE_LIMIT || 8);
-const corroborationSeedLimit = Number(process.env.DISCOVERY_CORROBORATION_SEED_LIMIT || 16);
+const corroborationSeedLimit = Number(process.env.DISCOVERY_CORROBORATION_SEED_LIMIT || 24);
 const corroborationPerSeedLimit = Number(process.env.DISCOVERY_CORROBORATION_PER_SEED_LIMIT || 5);
 const now = new Date();
 const googleWindowDays = maxAgeHours > 24 ? 2 : 1;
@@ -13,6 +13,19 @@ const googleWindowDays = maxAgeHours > 24 ? 2 : 1;
 const registry = JSON.parse(await fs.readFile(path.resolve(registryPath), "utf8"));
 const sources = (registry.sources || []).filter((source) => source.allowDiscovery === true);
 if (!sources.length) throw new Error("Current-source discovery fail-closed: source registry has no discovery-enabled sources.");
+
+const rugbySignals = /\b(rugby|union|irfu|rfu|urc|united rugby championship|six nations|champions cup|challenge cup|epcr|leinster|munster|ulster|connacht|springboks?|all blacks?|wallabies|pumas|test match|test series|rugby championship|fly[- ]?half|out[- ]?half|scrum[- ]?half|scrum|lineout|try|conversion|prop|hooker|lock|flanker|back[- ]?row|centre|winger|full[- ]?back|squad|captain|coach)\b/i;
+const explicitNonRugby = /\b(boxing|boxer|fight week|ringwalk|golf|superbike|motorbike|cycling|cyclist|5k|athletics|hurling|camogie|gaa|gaelic football|soccer|premier league|formula one|f1|katie taylor|loi|league of ireland|solheim|vuelta)\b/i;
+const genericSeedPatterns = [
+  /^the\s*42(?:\s*-\s*the\s*42)?$/i,
+  /^[-\s]*rugby football union$/i,
+  /^[-\s]*united rugby championship(?:\s*-\s*united rugby championship)?$/i,
+  /^resource library\s*-\s*irish rugby$/i,
+  /^discipline\s*-\s*irish rugby$/i,
+  /^inside sport\b/i,
+  /\bnews, squad & players\b/i,
+];
+const queryStop = new Set(["the","rugby","irish","ireland","england","new","south","north","united","championship","bbc","planet","business","post","times","independent","sport","sports","news","all","blacks","springboks","wallabies","leinster","munster","ulster","connacht","global","series"]);
 
 function decodeXml(value = "") {
   return value.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
@@ -55,13 +68,30 @@ function sourceSnapshot(source) {
 function dedupeKey(item, source) {
   return `${canonicalDomain(source?.domain)}|${cleanTitle(item.title).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()}`;
 }
+function isRugbySeed(lead) {
+  const title = cleanTitle(lead.title);
+  const text = `${title} ${lead.description || ""}`;
+  if (title.length < 24 || genericSeedPatterns.some((pattern) => pattern.test(title))) return false;
+  if (explicitNonRugby.test(text)) return false;
+  return rugbySignals.test(text);
+}
+function queryTitle(title = "") {
+  return cleanTitle(title).replace(/^[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}:\s*/, "");
+}
 function seedQuery(title = "") {
-  return cleanTitle(title)
-    .replace(/[“”"'‘’]/g, " ")
-    .replace(/\b(?:rugby|news|live|report|analysis|exclusive)\b/gi, " ")
-    .replace(/\s+/g, " ")
-    .trim()
-    .slice(0, 180);
+  const cleaned = queryTitle(title).replace(/[“”"'‘’]/g, " ").replace(/\s+/g, " ").trim();
+  const fullNames = cleaned.match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g) ?? [];
+  for (const name of fullNames) {
+    const parts = name.toLowerCase().split(/\s+/);
+    if (parts.some((part) => queryStop.has(part))) continue;
+    return `"${name}"`;
+  }
+  const proper = (cleaned.match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{3,}\b/g) ?? [])
+    .filter((token) => !queryStop.has(token.toLowerCase()))
+    .slice(0, 3);
+  if (proper.length) return proper.join(" ");
+  const words = cleaned.toLowerCase().replace(/[^a-z0-9\s-]/g, " ").split(/\s+/).filter((word) => word.length >= 5 && !queryStop.has(word)).slice(0, 4);
+  return words.join(" ");
 }
 
 const results = [];
@@ -78,15 +108,29 @@ for (const source of sources.sort((a, b) => (b.ownerPriority || 0) - (a.ownerPri
   }
 }
 
-const initialLeads = results.flatMap((result) => result.items.map((item) => ({ ...item, source: result.source }))).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+const rawInitialLeads = results.flatMap((result) => result.items.map((item) => ({ ...item, source: result.source }))).sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+const initialSeen = new Set();
+const initialLeads = rawInitialLeads.filter((lead) => {
+  const key = dedupeKey(lead, lead.source);
+  if (initialSeen.has(key)) return false;
+  initialSeen.add(key);
+  return true;
+});
 const seen = new Set(initialLeads.map((lead) => dedupeKey(lead, lead.source)));
-const corroborationSeeds = initialLeads
-  .filter((lead) => cleanTitle(lead.title).length >= 28 && !/^[-\s]*(?:rugby football union|united rugby championship|the 42|rugby|news|home)[-\s]*$/i.test(cleanTitle(lead.title)))
-  .slice(0, corroborationSeedLimit);
+const querySeen = new Set();
+const corroborationSeeds = [];
+for (const lead of initialLeads) {
+  if (!isRugbySeed(lead)) continue;
+  const q = seedQuery(lead.title);
+  const key = q.toLowerCase();
+  if (!q || querySeen.has(key)) continue;
+  querySeen.add(key);
+  corroborationSeeds.push({ ...lead, corroborationQuery: q });
+  if (corroborationSeeds.length >= corroborationSeedLimit) break;
+}
 
 const corroborationRuns = await Promise.all(corroborationSeeds.map(async (seed, seedIndex) => {
-  const q = seedQuery(seed.title);
-  if (!q) return { seedId: seed.id, status: "skipped", items: [] };
+  const q = seed.corroborationQuery;
   const feedUrl = `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} rugby when:${googleWindowDays}d`)}&hl=en-IE&gl=IE&ceid=IE:en`;
   try {
     const response = await fetch(feedUrl, { headers: { "user-agent": "TheRugbyPanda/1.0 current-source-corroboration" }, signal: AbortSignal.timeout(12000) });
@@ -112,9 +156,9 @@ const corroborationRuns = await Promise.all(corroborationSeeds.map(async (seed, 
       });
       if (items.length >= corroborationPerSeedLimit) break;
     }
-    return { seedId: seed.id, status: "ok", feedUrl, items };
+    return { seedId: seed.id, query: q, status: "ok", feedUrl, items };
   } catch (error) {
-    return { seedId: seed.id, status: "fetch-failed", feedUrl, error: error instanceof Error ? error.message : String(error), items: [] };
+    return { seedId: seed.id, query: q, status: "fetch-failed", feedUrl, error: error instanceof Error ? error.message : String(error), items: [] };
   }
 }));
 
