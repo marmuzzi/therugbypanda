@@ -30,10 +30,19 @@ async function excludeEvictedCandidateFromRecoveryBatch(editorialInputId, packag
   }
 
   const before = batch.candidates.length;
+  const matchingCount = batch.candidates.filter((candidate) => candidate?.id === editorialInputId).length;
+  if (matchingCount > 1) {
+    throw new Error(`Visual recovery found duplicate candidate ${editorialInputId} in the acquisition batch; refusing ambiguous recovery.`);
+  }
+
   batch.candidates = batch.candidates.filter((candidate) => candidate?.id !== editorialInputId);
   const removed = before - batch.candidates.length;
-  if (removed !== 1) {
-    throw new Error(`Visual recovery expected to exclude exactly one candidate ${editorialInputId}, removed ${removed}.`);
+
+  // A retained same-day draft can originate from an earlier recovery batch. In that case
+  // the current acquisition batch may already omit its editorialInputId. That is already
+  // a safe exclusion state and must not abort after the Sanity draft has been evicted.
+  if (removed !== 0 && removed !== 1) {
+    throw new Error(`Visual recovery expected to exclude at most one candidate ${editorialInputId}, removed ${removed}.`);
   }
 
   batch.provenance = {
@@ -43,7 +52,12 @@ async function excludeEvictedCandidateFromRecoveryBatch(editorialInputId, packag
     ],
   };
   await fs.writeFile(resolved, `${JSON.stringify(batch, null, 2)}\n`);
-  return { batchPath: acquisitionBatchPath, candidateCountBefore: before, candidateCountAfter: batch.candidates.length };
+  return {
+    batchPath: acquisitionBatchPath,
+    candidateCountBefore: before,
+    candidateCountAfter: batch.candidates.length,
+    candidateWasPresent: matchingCount === 1,
+  };
 }
 
 const plan = JSON.parse(await fs.readFile(path.resolve(planPath), "utf8"));
