@@ -1,0 +1,48 @@
+name: Non-Wikimedia editorial image acquisition
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/non-wikimedia-editorial-image-acquisition.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: non-wikimedia-editorial-image-acquisition-production
+  cancel-in-progress: false
+
+jobs:
+  acquire:
+    runs-on: ubuntu-latest
+    timeout-minutes: 180
+    environment: production
+    env:
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
+      UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
+      FLICKR_API_KEY: ${{ secrets.FLICKR_API_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify provider credentials and select runnable providers
+        shell: bash
+        run: |
+          set -euo pipefail
+          providers=0
+          for item in PEXELS_API_KEY PIXABAY_API_KEY UNSPLASH_ACCESS_KEY FLICKR_API_KEY; do
+            if [ -n "${!item:-}" ]; then
+              echo "$item configured"
+              providers=$((providers+1))
+            else
+              echo "$item missing"
+            fi
+          done
+          if [ "$providers" -eq 0 ]; then
+            echo 'No non-Wikimedia provider API credentials are configured in the production GitHub environment.'
+            exit 2
+          fi
+          echo "Runnable providers: $providers"
+      - name: Acquisition implementation gate
+        run: |
+          echo 'Provider credentials verified. No paid OpenAI calls are permitted in this workflow.'
+          echo 'The provider adapters must be merged before image import can execute.'
+          exit 3
