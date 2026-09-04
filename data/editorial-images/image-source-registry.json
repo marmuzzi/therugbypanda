@@ -1,0 +1,126 @@
+{
+  "version": 1,
+  "updatedAt": "2026-09-04T13:20:00Z",
+  "policy": {
+    "openAiRequired": false,
+    "localizeToSanityBeforeUse": true,
+    "failClosedOnUnknownRights": true,
+    "failClosedOnSubjectConflict": true
+  },
+  "sources": [
+    {
+      "id": "wikimedia",
+      "name": "Wikimedia Commons",
+      "priority": 1,
+      "mode": "api",
+      "endpoint": "https://commons.wikimedia.org/w/api.php",
+      "apiKeyEnv": null,
+      "enabled": true,
+      "commercialUse": "license-dependent",
+      "attribution": "license-dependent",
+      "notes": "Primary exact-subject, historical, international and stadium source."
+    },
+    {
+      "id": "pexels",
+      "name": "Pexels",
+      "priority": 2,
+      "mode": "api",
+      "endpoint": "https://api.pexels.com/v1/search",
+      "apiKeyEnv": "PEXELS_API_KEY",
+      "enabled": true,
+      "commercialUse": "allowed-subject-to-license",
+      "attribution": "not-generally-required-but-retain-credit",
+      "notes": "Strong generic rugby/action/training fallback; exact named-player coverage is not assumed."
+    },
+    {
+      "id": "pixabay",
+      "name": "Pixabay",
+      "priority": 3,
+      "mode": "api",
+      "endpoint": "https://pixabay.com/api/",
+      "apiKeyEnv": "PIXABAY_API_KEY",
+      "enabled": true,
+      "commercialUse": "allowed-subject-to-license",
+      "attribution": "not-generally-required-but-retain-credit",
+      "notes": "Useful generic rugby, stadium, ball and illustration fallback."
+    },
+    {
+      "id": "unsplash",
+      "name": "Unsplash",
+      "priority": 4,
+      "mode": "api",
+      "endpoint": "https://api.unsplash.com/search/photos",
+      "apiKeyEnv": "UNSPLASH_ACCESS_KEY",
+      "enabled": true,
+      "commercialUse": "allowed-subject-to-license",
+      "attribution": "api-integration-requires-credit-and-download-tracking",
+      "notes": "Generic mood/venue/gear fallback. Respect API hotlinking/download-event requirements."
+    },
+    {
+      "id": "flickr-cc",
+      "name": "Flickr Creative Commons",
+      "priority": 5,
+      "mode": "api",
+      "endpoint": "https://www.flickr.com/services/rest/",
+      "apiKeyEnv": "FLICKR_API_KEY",
+      "enabled": true,
+      "commercialUse": "commercial-cc-only",
+      "attribution": "required-by-license",
+      "notes": "High-value exact-player, local-club and match photography. Restrict to licences allowing commercial use."
+    },
+    {
+      "id": "pixnio",
+      "name": "Pixnio",
+      "priority": 6,
+      "mode": "manual-web",
+      "searchUrl": "https://pixnio.com/tag/rugby",
+      "enabled": true,
+      "commercialUse": "public-domain-or-cc0-per-asset",
+      "attribution": "retain-source-metadata",
+      "notes": "Small public-domain fallback pool."
+    },
+    {
+      "id": "pikwizard",
+      "name": "Pikwizard",
+      "priority": 7,
+      "mode": "manual-web",
+      "searchUrl": "https://pikwizard.com/s/photo/rugby/",
+      "enabled": true,
+      "commercialUse": "verify-per-asset",
+      "attribution": "retain-source-metadata",
+      "notes": "Natural-looking generic stock fallback."
+    },
+    {
+      "id": "stockvault",
+      "name": "Stockvault",
+      "priority": 8,
+      "mode": "manual-web",
+      "searchUrl": "https://www.stockvault.net/",
+      "enabled": true,
+      "commercialUse": "mixed-verify-per-asset",
+      "attribution": "license-dependent",
+      "notes": "Conditional fallback only when exact asset licence is verified."
+    },
+    {
+      "id": "freepik-magnific",
+      "name": "Freepik / Magnific",
+      "priority": 9,
+      "mode": "conditional",
+      "searchUrl": "https://www.magnific.com/photos/rugby",
+      "enabled": true,
+      "commercialUse": "license-dependent",
+      "attribution": "free-tier-attribution-required",
+      "notes": "Conditional design/stock source; never auto-approve without licence metadata."
+    },
+    {
+      "id": "canva-free",
+      "name": "Canva Free",
+      "priority": 10,
+      "mode": "conditional",
+      "enabled": true,
+      "commercialUse": "design-use-subject-to-canva-license",
+      "attribution": "retain-source-and-license-record",
+      "notes": "Use for graphics/design elements, not as an automated raw-photo crawler."
+    }
+  ]
+}
