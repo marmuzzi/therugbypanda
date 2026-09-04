@@ -70,21 +70,39 @@ The human-publication boundary is unchanged:
 
 Draft generation, Publication Review, image acquisition, morning email delivery and scheduled discovery must never post to social media. A social delivery attempt must be idempotent per published article/platform and must not republish an article on retry.
 
+## Agreed controlled production test
+
+The owner-approved test is to use the already-published **The Rugby Panda presentation/introduction article**, not a synthetic draft.
+
+Test sequence:
+
+1. confirm the presentation article has a valid public URL, suitable hero image and social copy/metadata;
+2. unpublish that existing presentation article in Sanity;
+3. confirm no social post is emitted merely by unpublishing;
+4. republish the same article through the normal controlled human Publish action;
+5. confirm the publish action emits exactly one fresh `editorial.article.published` event for that publication transition;
+6. verify Facebook receives one post/snippet containing the article copy, public link and picture;
+7. verify Instagram receives one image post containing the approved picture plus caption/hashtags and article reference/link treatment supported by the integration;
+8. capture the Facebook post ID and Instagram media/post ID and write both outcomes back to Sanity;
+9. replay/retry the same publication event and prove no duplicate platform posts are created.
+
+The expected visible result is a Rugby Panda presentation snippet with the article picture on both Facebook and Instagram. This test is deliberately using existing approved public content so it preserves the human-publication boundary and does not require OpenAI generation.
+
+Before executing the unpublish/re-publish action, verify the downstream social dispatcher and provider credentials are actually ready. Do not unpublish the article until that path is ready to observe, otherwise the test would change production content without producing useful provider evidence.
+
 ## Current status
 
-Status: **Meta configuration recovered; provider end-to-end verification pending.**
+Status: **Meta configuration recovered; controlled presentation-article republish test agreed; provider end-to-end verification pending.**
 
 This is materially ahead of the older `externally blocked` state, but it is not yet evidence of a working production social publisher.
 
 ## Next verification
 
-Without publishing a draft merely for testing:
-
 1. verify the intended Facebook Page and linked Instagram professional account via Meta API using existing configured credentials;
 2. verify the production credential has the minimum required Page/Instagram publishing permissions;
 3. inspect the repository/runtime for the existing downstream `editorial.article.published` social dispatcher and its configured provider variables;
-4. when there is a genuine owner-approved published article, perform a controlled Facebook + Instagram post and capture provider IDs/responses;
-5. verify duplicate suppression by replaying the same publication event without creating a second post;
+4. once the path is observable, perform the agreed unpublish/re-publish test on the existing Rugby Panda presentation article;
+5. capture provider IDs/responses, Sanity writeback and duplicate suppression evidence;
 6. only then move `SOCIAL-001` to Closed.
 
 ## Security
