@@ -6,6 +6,7 @@ on:
     paths:
       - '.github/workflows/non-wikimedia-editorial-image-acquisition.yml'
       - 'scripts/import-pexels-rugby-library.mjs'
+      - 'scripts/import-pixabay-rugby-library.mjs'
   workflow_dispatch:
 
 concurrency:
@@ -23,28 +24,38 @@ jobs:
       NEXT_PUBLIC_SANITY_API_VERSION: '2025-01-01'
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
       PEXELS_IMPORT_LIMIT: '1500'
       PEXELS_PER_QUERY: '80'
       PEXELS_CONCURRENCY: '4'
+      PIXABAY_IMPORT_LIMIT: '1500'
+      PIXABAY_PER_QUERY: '100'
+      PIXABAY_CONCURRENCY: '4'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: npm
       - name: Install dependencies
-        run: npm ci
-      - name: Verify Pexels and Sanity credentials
+        run: npm install --no-audit --no-fund
+      - name: Verify provider and Sanity credentials
+        id: providers
         shell: bash
         run: |
           set -euo pipefail
-          test -n "${PEXELS_API_KEY:-}" || { echo 'PEXELS_API_KEY missing'; exit 2; }
           test -n "${SANITY_API_TOKEN:-}" || { echo 'SANITY_API_TOKEN missing'; exit 2; }
-          echo 'PEXELS_API_KEY configured'
-          echo 'SANITY_API_TOKEN configured'
+          providers=0
+          if [ -n "${PEXELS_API_KEY:-}" ]; then echo 'pexels=true' >> "$GITHUB_OUTPUT"; echo 'PEXELS_API_KEY configured'; providers=$((providers+1)); else echo 'pexels=false' >> "$GITHUB_OUTPUT"; echo 'PEXELS_API_KEY missing'; fi
+          if [ -n "${PIXABAY_API_KEY:-}" ]; then echo 'pixabay=true' >> "$GITHUB_OUTPUT"; echo 'PIXABAY_API_KEY configured'; providers=$((providers+1)); else echo 'pixabay=false' >> "$GITHUB_OUTPUT"; echo 'PIXABAY_API_KEY missing'; fi
+          [ "$providers" -gt 0 ] || { echo 'No runnable provider credentials configured'; exit 2; }
+          echo "Runnable providers: $providers"
           echo 'OpenAI is intentionally unused by this workflow.'
       - name: Import safe generic rugby images from Pexels
+        if: steps.providers.outputs.pexels == 'true'
         run: node scripts/import-pexels-rugby-library.mjs
+      - name: Import safe generic rugby images from Pixabay
+        if: steps.providers.outputs.pixabay == 'true'
+        run: node scripts/import-pixabay-rugby-library.mjs
       - name: Reconcile approved editorial readiness
         run: node scripts/reconcile-approved-editorial-readiness.mjs
       - name: Audit editorial image library
