@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - '.github/workflows/non-wikimedia-editorial-image-acquisition.yml'
+      - 'scripts/import-pexels-rugby-library.mjs'
   workflow_dispatch:
 
 concurrency:
@@ -17,32 +18,37 @@ jobs:
     timeout-minutes: 180
     environment: production
     env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: '2025-01-01'
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
       PIXABAY_API_KEY: ${{ secrets.PIXABAY_API_KEY }}
       UNSPLASH_ACCESS_KEY: ${{ secrets.UNSPLASH_ACCESS_KEY }}
       FLICKR_API_KEY: ${{ secrets.FLICKR_API_KEY }}
+      PEXELS_IMPORT_LIMIT: '1500'
+      PEXELS_PER_QUERY: '80'
+      PEXELS_CONCURRENCY: '4'
     steps:
       - uses: actions/checkout@v4
-      - name: Verify provider credentials and select runnable providers
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install dependencies
+        run: npm ci
+      - name: Verify Pexels and Sanity credentials
         shell: bash
         run: |
           set -euo pipefail
-          providers=0
-          for item in PEXELS_API_KEY PIXABAY_API_KEY UNSPLASH_ACCESS_KEY FLICKR_API_KEY; do
-            if [ -n "${!item:-}" ]; then
-              echo "$item configured"
-              providers=$((providers+1))
-            else
-              echo "$item missing"
-            fi
-          done
-          if [ "$providers" -eq 0 ]; then
-            echo 'No non-Wikimedia provider API credentials are configured in the production GitHub environment.'
-            exit 2
-          fi
-          echo "Runnable providers: $providers"
-      - name: Acquisition implementation gate
-        run: |
-          echo 'Provider credentials verified. No paid OpenAI calls are permitted in this workflow.'
-          echo 'The provider adapters must be merged before image import can execute.'
-          exit 3
+          test -n "${PEXELS_API_KEY:-}" || { echo 'PEXELS_API_KEY missing'; exit 2; }
+          test -n "${SANITY_API_TOKEN:-}" || { echo 'SANITY_API_TOKEN missing'; exit 2; }
+          echo 'PEXELS_API_KEY configured'
+          echo 'SANITY_API_TOKEN configured'
+          echo 'OpenAI is intentionally unused by this workflow.'
+      - name: Import safe generic rugby images from Pexels
+        run: node scripts/import-pexels-rugby-library.mjs
+      - name: Reconcile approved editorial readiness
+        run: node scripts/reconcile-approved-editorial-readiness.mjs
+      - name: Audit editorial image library
+        run: npm run media:audit-readiness
