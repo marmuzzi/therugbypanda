@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { PortableText, type PortableTextComponents } from "@portabletext/react";
 
+import SocialEmbed from "@/components/SocialEmbed";
 import { urlForImage } from "@/lib/sanity";
 
 type PortableSpan = {
@@ -28,6 +29,16 @@ type PortableImage = {
   photographer?: string;
   source?: string;
   rights?: string;
+};
+
+type PortableSocialEmbed = {
+  _type?: "socialEmbed";
+  _key?: string;
+  platform?: "youtube" | "instagram" | "x" | "facebook";
+  url?: string;
+  caption?: string;
+  sourceLabel?: string;
+  isOfficialSource?: boolean;
 };
 
 function normalizeLegacyMarkdownText(value: string): string {
@@ -171,6 +182,11 @@ const components: PortableTextComponents = {
           ) : null}
         </figure>
       );
+    },
+    socialEmbed: ({ value }) => {
+      const embed = value as PortableSocialEmbed;
+      if (!embed?.isOfficialSource || !embed.platform || !embed.url) return null;
+      return <SocialEmbed platform={embed.platform} url={embed.url} caption={embed.caption} sourceLabel={embed.sourceLabel} />;
     },
   },
   marks: {

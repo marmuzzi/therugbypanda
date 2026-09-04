@@ -8,6 +8,31 @@ const imageFields = [
   defineField({ name: "rights", title: "Rights notes", type: "text", rows: 3 }),
 ];
 
+const socialEmbedMember = defineArrayMember({
+  name: "socialEmbed",
+  title: "Official social / video embed",
+  type: "object",
+  fields: [
+    defineField({
+      name: "platform",
+      title: "Platform",
+      type: "string",
+      options: { list: [
+        { title: "YouTube", value: "youtube" },
+        { title: "Instagram", value: "instagram" },
+        { title: "X / Twitter", value: "x" },
+        { title: "Facebook", value: "facebook" },
+      ] },
+      validation: (rule) => rule.required(),
+    }),
+    defineField({ name: "url", title: "Official post/video URL", type: "url", validation: (rule) => rule.required() }),
+    defineField({ name: "caption", title: "Editorial caption", type: "string" }),
+    defineField({ name: "sourceLabel", title: "Source label", type: "string", description: "For example: Leinster Rugby, IRFU, URC, player official account." }),
+    defineField({ name: "isOfficialSource", title: "Official account/source verified", type: "boolean", initialValue: false, validation: (rule) => rule.required().custom((value) => value === true ? true : "Only verified official-account embeds are allowed in the article body.") }),
+  ],
+  preview: { select: { title: "sourceLabel", subtitle: "url" }, prepare: ({ title, subtitle }) => ({ title: title || "Official social embed", subtitle }) },
+});
+
 export const editorialArticleType = defineType({
   name: "article",
   title: "Articles",
@@ -48,7 +73,7 @@ export const editorialArticleType = defineType({
       title: "Body",
       type: "array",
       group: "content",
-      of: [defineArrayMember({ type: "block" }), defineArrayMember({ type: "image", options: { hotspot: true }, fields: imageFields })],
+      of: [defineArrayMember({ type: "block" }), defineArrayMember({ type: "image", options: { hotspot: true }, fields: imageFields }), socialEmbedMember],
     }),
     defineField({ name: "seoTitle", title: "SEO title", type: "string", group: "seo" }),
     defineField({ name: "seoDescription", title: "SEO description", type: "text", rows: 3, group: "seo" }),
