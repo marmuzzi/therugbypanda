@@ -42,6 +42,9 @@ export async function POST(request: NextRequest) {
     }
     const generatedArticle = await generateArticleDraft(body.story, editorial, { targetLengthWords: body.qaMode === true ? "250-400" : "700-1100", timeoutMs: EDITORIAL_GENERATION_TIMEOUT_MS, styleProfileId: body.styleProfileId });
     const publicationReview = await runPublicationReviewCycle(generatedArticle, editorial, body.story);
+    if (publicationReview.review2.verdict !== "pass") {
+      throw new Error(`Publication Review #2 did not pass: ${publicationReview.review2.issues.map((issue) => `${issue.severity}/${issue.category}: ${issue.message}`).join(" ") || "review verdict was revise"}`);
+    }
     const article = publicationReview.article; assertFinalSourceIntegrity(article, body.story); const pkg = { editorial, article };
     if (body.createSanityDraft === false) return jsonResponse({ status: "generated", ...pkg, publicationReview, requestId });
     const sanityDraft = await createSanityArticleDraft(pkg, { editorialImageId: body.editorialImageId, story: body.story, automationContentClass: body.qaMode === true ? "qa" : "production", morningPackageEligible: body.qaMode !== true });
