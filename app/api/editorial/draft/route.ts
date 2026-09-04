@@ -47,11 +47,11 @@ export async function POST(request: NextRequest) {
     const sanityDraft = await createSanityArticleDraft(pkg, { editorialImageId: body.editorialImageId, story: body.story, automationContentClass: body.qaMode === true ? "qa" : "production", morningPackageEligible: body.qaMode !== true });
     let contextualCard: Awaited<ReturnType<typeof enrichSanityDraftWithContextualCard>> | { status: "failed"; error: string };
     try { contextualCard = await enrichSanityDraftWithContextualCard(sanityDraft.id, pkg); } catch (error) { contextualCard = { status: "failed", error: error instanceof Error ? error.message : "Contextual card enrichment failed" }; console.warn("Contextual card enrichment failed", { requestId, inputId: body.story.id, error: contextualCard.error }); }
-    // The old package mode is intentionally ignored for production drafts. Five remains the daily target,
-    // not a delivery prerequisite: each newly created review-ready draft is emailed immediately.
     const notification = body.qaMode === true
       ? { status: "suppressed" as const, eventId: null, reason: "qa-draft" }
-      : await notifyDraftCreated({ articleId: sanityDraft.id, articleTitle: article.title, actor: "editorial-automation", occurredAt: new Date().toISOString(), submissionNote: "A new draft is ready for editorial review. Daily production continues until five new drafts are ready." });
+      : body.notificationMode === "package"
+        ? { status: "suppressed" as const, eventId: null, reason: "package-mode" }
+        : await notifyDraftCreated({ articleId: sanityDraft.id, articleTitle: article.title, actor: "editorial-automation", occurredAt: new Date().toISOString(), submissionNote: "A new draft is ready for editorial review." });
     console.info("Editorial pipeline completed", { requestId, inputId: body.story.id, sanityDraftId: sanityDraft.id, notificationStatus: notification.status, notificationEventId: notification.eventId, morningPackageEligible: sanityDraft.morningPackageEligible, contextualCardStatus: contextualCard.status, publicationReviewCorrected: publicationReview.corrected, review1Issues: publicationReview.review1.issues.length, review2Issues: publicationReview.review2.issues.length, durationMs: Date.now() - startedAt });
     return jsonResponse({ status: "draft-created", editorial, article, publicationReview, sanityDraft, contextualCard, notification, requestId });
   } catch (error) {
