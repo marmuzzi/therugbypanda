@@ -1,0 +1,68 @@
+name: Bulk editorial image library
+
+on:
+  workflow_dispatch:
+    inputs:
+      import_limit:
+        description: Maximum new images to localize into Sanity
+        required: false
+        default: "2000"
+  push:
+    branches:
+      - main
+    paths:
+      - "scripts/bulk-import-wikimedia-rugby-library.mjs"
+      - ".github/workflows/bulk-editorial-image-library.yml"
+      - "data/editorial-images/image-source-registry.json"
+
+concurrency:
+  group: bulk-editorial-image-library-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  import:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    environment: production
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      BULK_IMAGE_IMPORT_LIMIT: ${{ inputs.import_limit || '2000' }}
+      BULK_IMAGE_PER_SCOPE: "70"
+      BULK_IMAGE_CONCURRENCY: "4"
+      EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify Sanity secret only
+        run: |
+          if [ -z "$SANITY_API_TOKEN" ]; then
+            echo "SANITY_API_TOKEN is not available to this workflow."
+            exit 1
+          fi
+          if [ -n "$OPENAI_API_KEY" ]; then
+            echo "OPENAI_API_KEY is intentionally not used by this workflow."
+          fi
+      - name: Import rights-safe relevant Wikimedia rugby images
+        run: node scripts/bulk-import-wikimedia-rugby-library.mjs
+      - name: Reconcile readiness metadata
+        run: node scripts/reconcile-approved-editorial-readiness.mjs
+      - name: Audit resulting library
+        run: npm run media:audit-readiness
+      - name: Upload audit evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: bulk-editorial-image-library-${{ github.run_id }}
+          path: artifacts/editorial-image-audit/
+          retention-days: 14
