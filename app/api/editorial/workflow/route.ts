@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 
 import { authenticateEditorialRequest } from "@/lib/editorial/EditorialApiAuth";
 import { requestEditorialReplacement } from "@/lib/editorial/EditorialReplacementTrigger";
-import { notifyArticlePublishedToInstagram } from "@/lib/editorial/InstagramSocialDistribution";
+import { notifyArticlePublishedToSocial } from "@/lib/editorial/SocialDistributionCoordinator";
 import { applyEditorialAction, type EditorialAction } from "@/lib/editorial/EditorialWorkflow";
 
 export const runtime = "nodejs";
@@ -70,11 +70,10 @@ export async function POST(request: NextRequest) {
     revalidatePath("/", "layout");
 
     // Social distribution is downstream of the controlled human publish action only.
-    // The Instagram provider has a separate production safety switch and remains disabled
-    // until the owner explicitly approves the first live post.
+    // Each provider has its own production safety switch and duplicate lock.
     const socialDistribution =
       body.action === "publish"
-        ? await notifyArticlePublishedToInstagram(result.articleId)
+        ? await notifyArticlePublishedToSocial(result.articleId)
         : undefined;
 
     // A rejection must immediately request fresh acquisition. The orchestrator is responsible
