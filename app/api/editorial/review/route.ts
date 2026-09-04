@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 const ALLOWED_STUDIO_ORIGIN = "https://therugbypanda.sanity.studio";
-const DEFAULT_REVIEW_MODEL = "gpt-5-mini";
+const DEFAULT_REVIEW_MODEL = "gpt-5.6-luna";
 const corsHeaders = {
   "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN,
   "Access-Control-Allow-Methods": "POST, OPTIONS",
@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
       return jsonResponse({ error: "A structured editorial review input is required." }, { status: 400 });
     }
 
-    // The publication gate is a well-defined structured classification task. Use the
-    // dedicated faster model unless Vercel explicitly configures another review model.
+    // Publication Review is a structured classification task. Keep it on the
+    // cost-sensitive GPT-5.6 Luna tier unless production explicitly overrides it.
     process.env.OPENAI_EDITORIAL_REVIEW_MODEL ??= DEFAULT_REVIEW_MODEL;
 
     return jsonResponse(await runAiEditorialReview(input));
