@@ -6,7 +6,7 @@ on:
       import_limit:
         description: Maximum new images to localize into Sanity
         required: false
-        default: "2000"
+        default: "10000"
   push:
     branches:
       - main
@@ -14,6 +14,7 @@ on:
       - "scripts/bulk-import-wikimedia-rugby-library.mjs"
       - ".github/workflows/bulk-editorial-image-library.yml"
       - "data/editorial-images/image-source-registry.json"
+      - "data/editorial-images/acquisition-targets-2026-27.json"
 
 concurrency:
   group: bulk-editorial-image-library-production
@@ -25,16 +26,18 @@ permissions:
 jobs:
   import:
     runs-on: ubuntu-latest
-    timeout-minutes: 90
+    timeout-minutes: 180
     environment: production
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
       NEXT_PUBLIC_SANITY_DATASET: production
       NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
       SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
-      BULK_IMAGE_IMPORT_LIMIT: ${{ inputs.import_limit || '2000' }}
-      BULK_IMAGE_PER_SCOPE: "70"
+      BULK_IMAGE_IMPORT_LIMIT: ${{ inputs.import_limit || '10000' }}
+      BULK_IMAGE_PER_SCOPE: "200"
       BULK_IMAGE_CONCURRENCY: "4"
+      BULK_IMAGE_TARGETED_ONLY: "1"
+      BULK_IMAGE_TARGETS_PATH: data/editorial-images/acquisition-targets-2026-27.json
       EDITORIAL_IMAGE_AUDIT_OUTPUT_DIR: artifacts/editorial-image-audit
     steps:
       - name: Checkout
@@ -54,7 +57,7 @@ jobs:
           if [ -n "$OPENAI_API_KEY" ]; then
             echo "OPENAI_API_KEY is intentionally not used by this workflow."
           fi
-      - name: Import rights-safe relevant Wikimedia rugby images
+      - name: Import targeted rights-safe Wikimedia rugby images
         run: node scripts/bulk-import-wikimedia-rugby-library.mjs
       - name: Reconcile readiness metadata
         run: node scripts/reconcile-approved-editorial-readiness.mjs
