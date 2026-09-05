@@ -110,7 +110,7 @@ for (const article of drafts) {
   record.action = apply ? "updated" : "would-update";
   record.inlineAssets = inlineCandidates.map(i=>i.assetRef);
   if (apply) {
-    await mutate([{ patch: { id: article._id, set: { featuredImage: imageBlock(best.image), body, "imageRefresh.lastRunAt": new Date().toISOString(), "imageRefresh.strategy": "full-library-deterministic" } } }]);
+    await mutate([{ patch: { id: article._id, set: { featuredImage: imageBlock(best.image), body } } }]);
     summary.updated++;
   }
   summary.drafts.push(record);
