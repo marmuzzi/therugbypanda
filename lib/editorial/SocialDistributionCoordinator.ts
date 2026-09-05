@@ -37,9 +37,13 @@ export async function notifyArticlePublishedToSocial(articleId: string) {
     error: instagram.error,
   }));
 
-  const instagramFirstComment = instagram.postId
+  const instagramFirstComment: {
+    status: "commented" | "skipped" | "failed";
+    id?: string;
+    error?: string;
+  } = instagram.postId
     ? await ensureInstagramFirstComment(articleId, instagram.postId)
-    : { status: "skipped" as const };
+    : { status: "skipped" };
   console.log(JSON.stringify({
     level: instagramFirstComment.status === "failed" ? "warning" : "info",
     message: "Instagram first-comment delivery completed",
