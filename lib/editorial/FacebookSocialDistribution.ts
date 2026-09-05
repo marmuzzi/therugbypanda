@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { createClient } from "next-sanity";
 
 import { apiVersion, dataset, projectId } from "@/sanity/env";
+import { relevantSocialHashtags } from "@/lib/editorial/SocialHashtags";
 
 export type FacebookDistributionDelivery = {
   status: "sent" | "skipped" | "failed";
@@ -18,6 +19,7 @@ type PublishedArticle = {
   slug?: string;
   doNotPublishToSocial?: boolean;
   socialFacebookTeaser?: string;
+  socialHashtags?: string[];
 };
 
 type Attempt = {
@@ -46,7 +48,9 @@ function facebookMessage(article: PublishedArticle) {
   const override = article.socialFacebookTeaser?.trim();
   const headline = article.title?.trim() || "New from The Rugby Panda";
   const teaser = article.standfirst?.trim();
-  return override || (teaser ? `${headline}\n\n${teaser}` : headline);
+  const body = override || (teaser ? `${headline}\n\n${teaser}` : headline);
+  const tags = relevantSocialHashtags({ title: article.title, standfirst: article.standfirst, hashtags: article.socialHashtags }, 4);
+  return `${body}\n\n${tags.join(" ")}`.trim();
 }
 
 function attemptId(eventId: string) {
@@ -98,7 +102,8 @@ export async function notifyArticlePublishedToFacebook(
       publishedAt,
       "slug": slug.current,
       doNotPublishToSocial,
-      "socialFacebookTeaser": socialDistribution.facebookTeaser
+      "socialFacebookTeaser": socialDistribution.facebookTeaser,
+      "socialHashtags": socialDistribution.hashtags
     }`,
     { articleId },
   );

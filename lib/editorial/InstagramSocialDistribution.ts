@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { createClient } from "next-sanity";
 
 import { apiVersion, dataset, projectId } from "@/sanity/env";
+import { relevantSocialHashtags } from "@/lib/editorial/SocialHashtags";
 
 export type InstagramDistributionDelivery = {
   status: "sent" | "skipped" | "failed";
@@ -45,20 +46,12 @@ function articleUrl(slug?: string) {
   return slug ? `${siteUrl}/articles/${slug}` : siteUrl;
 }
 
-function normalizeHashtags(values: string[] | undefined) {
-  return (values ?? [])
-    .map((value) => value.trim().replace(/^#+/, "").replace(/[^\p{L}\p{N}_]/gu, ""))
-    .filter(Boolean)
-    .slice(0, 20)
-    .map((value) => `#${value}`);
-}
-
 function instagramCaption(article: PublishedArticle) {
   const override = article.socialInstagramCaption?.trim();
   const headline = article.title?.trim() || "New from The Rugby Panda";
   const teaser = article.standfirst?.trim();
   const body = override || (teaser ? `${headline}\n\n${teaser}` : headline);
-  const tags = normalizeHashtags(article.socialHashtags);
+  const tags = relevantSocialHashtags({ title: article.title, standfirst: article.standfirst, hashtags: article.socialHashtags }, 8);
   const suffix = [`Read the full story: ${articleUrl(article.slug)}`, tags.join(" ")]
     .filter(Boolean)
     .join("\n\n");
