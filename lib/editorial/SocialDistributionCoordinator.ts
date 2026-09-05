@@ -3,6 +3,7 @@ import { createClient } from "next-sanity";
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 import { notifyArticlePublishedToFacebook } from "@/lib/editorial/FacebookSocialDistribution";
 import { notifyArticlePublishedToInstagram } from "@/lib/editorial/InstagramSocialDistribution";
+import { ensureInstagramFirstComment } from "@/lib/editorial/SocialPublicationLifecycle";
 
 function getClient() {
   const token = process.env.SANITY_API_TOKEN ?? process.env.SANITY_AUTH_TOKEN;
@@ -36,6 +37,22 @@ export async function notifyArticlePublishedToSocial(articleId: string) {
     error: instagram.error,
   }));
 
+  const instagramFirstComment: {
+    status: "commented" | "skipped" | "failed";
+    id?: string;
+    error?: string;
+  } = instagram.postId
+    ? await ensureInstagramFirstComment(articleId, instagram.postId)
+    : { status: "skipped" };
+  console.log(JSON.stringify({
+    level: instagramFirstComment.status === "failed" ? "warning" : "info",
+    message: "Instagram first-comment delivery completed",
+    articleId,
+    status: instagramFirstComment.status,
+    commentId: instagramFirstComment.id,
+    error: instagramFirstComment.error,
+  }));
+
   const facebook = await notifyArticlePublishedToFacebook(articleId);
   console.log(JSON.stringify({
     level: facebook.status === "failed" ? "error" : "info",
@@ -62,6 +79,9 @@ export async function notifyArticlePublishedToSocial(articleId: string) {
 
   const errors = [
     instagram.error ? `Instagram: ${instagram.error}` : null,
+    instagramFirstComment.status === "failed" && instagramFirstComment.error
+      ? `Instagram first comment: ${instagramFirstComment.error}`
+      : null,
     facebook.error ? `Facebook: ${facebook.error}` : null,
   ].filter(Boolean);
 
@@ -92,6 +112,7 @@ export async function notifyArticlePublishedToSocial(articleId: string) {
     failedCount,
     skippedCount,
     instagram,
+    instagramFirstComment,
     facebook,
   };
 }
