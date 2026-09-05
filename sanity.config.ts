@@ -1,6 +1,7 @@
 import { defineConfig, definePlugin } from "sanity";
 import { structureTool } from "sanity/structure";
 
+import { ControlledArticlePublishAction, ControlledArticleUnpublishAction } from "./sanity/actions/ControlledArticleWorkflowActions";
 import { BrandAssetReviewTool } from "./sanity/components/BrandAssetReviewTool";
 import { EditorialImageReviewTool } from "./sanity/components/EditorialImageReviewTool";
 import { EditorialQaTool } from "./sanity/components/EditorialQaTool";
@@ -167,6 +168,14 @@ export default defineConfig({
     ],
   },
   document: {
+    actions: (prev, context) => {
+      if (context.schemaType !== "article") return prev;
+      return prev.map((originalAction) => {
+        if (originalAction.action === "publish") return ControlledArticlePublishAction;
+        if (originalAction.action === "unpublish") return ControlledArticleUnpublishAction;
+        return originalAction;
+      });
+    },
     productionUrl: async (prev, context) => {
       const slug = (context.document?.slug as { current?: string } | undefined)?.current;
       if (context.document?._type === "article" && slug) {
