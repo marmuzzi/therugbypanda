@@ -26,13 +26,14 @@ jobs:
       APPLY_CHANGES: ${{ inputs.apply_changes }}
       MAX_DRAFTS: ${{ inputs.max_drafts }}
       MIN_SCORE_IMPROVEMENT: '15'
+      MIN_CANDIDATE_SCORE: '35'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - name: Refresh draft images from full approved library
-        run: node --experimental-strip-types scripts/refresh-unpublished-draft-images.mjs
+        run: node --experimental-strip-types scripts/refresh-unpublished-draft-images-v2.mjs
       - name: Upload evidence
         uses: actions/upload-artifact@v4
         with:
