@@ -86,7 +86,7 @@ function imageBlock(image) {
   };
 }
 
-const drafts = await query(`*[_type=="article" && _id in path("drafts.**") && coalesce(automationContentClass,"production") == "production" && coalesce(workflowStatus,"draft") != "published" && !defined(publishedAt)] | order(_updatedAt desc)[0...$limit]{_id,title,standfirst,body,workflowStatus,morningPackageEligible,_updatedAt,"featuredAsset":featuredImage.asset._ref}`, { limit: maxDrafts });
+const drafts = await query(`*[_type=="article" && _id in path("drafts.**") && coalesce(automationContentClass,"production") == "production" && coalesce(workflowStatus,"draft") in ["draft","under-review","approved","rejected","amendment-required"]] | order(workflowUpdatedAt desc, _updatedAt desc)[0...$limit]{_id,title,standfirst,body,workflowStatus,morningPackageEligible,_updatedAt,"featuredAsset":featuredImage.asset._ref}`, { limit: maxDrafts });
 const images = await query(`*[_type=="editorialImage" && !(_id in path("drafts.**")) && usageApproved==true && lifecycleStatus in ["approved","published"] && defined(image.asset._ref)]{_id,title,altText,caption,subject,team,people,competitionEvent,publicCredit,creditLine,photographer,copyrightLine,copyright,source,sourceName,rightsNotes,"assetRef":image.asset._ref}`);
 const byAsset = new Map(images.map(i=>[i.assetRef,i]));
 const summary = { apply, scannedDrafts: drafts.length, libraryImages: images.length, updated: 0, unchanged: 0, noSafeMatch: 0, drafts: [] };
