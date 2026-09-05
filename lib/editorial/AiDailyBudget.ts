@@ -2,7 +2,7 @@ import { createClient } from "next-sanity";
 
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 
-const DEFAULT_DAILY_LIMIT_USD = 0.30;
+const DEFAULT_DAILY_LIMIT_USD = 0.40;
 const MAX_RESERVATION_RETRIES = 4;
 
 type BudgetDocument = {
