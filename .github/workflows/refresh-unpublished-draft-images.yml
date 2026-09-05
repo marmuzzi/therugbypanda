@@ -26,7 +26,7 @@ jobs:
       APPLY_CHANGES: ${{ inputs.apply_changes }}
       MAX_DRAFTS: ${{ inputs.max_drafts }}
       MIN_SCORE_IMPROVEMENT: '15'
-      MIN_CANDIDATE_SCORE: '35'
+      MIN_CANDIDATE_SCORE: '100'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
