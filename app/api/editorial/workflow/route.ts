@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { authenticateEditorialRequest } from "@/lib/editorial/EditorialApiAuth";
 import { requestEditorialReplacement } from "@/lib/editorial/EditorialReplacementTrigger";
 import { notifyArticlePublishedToSocial } from "@/lib/editorial/SocialDistributionCoordinator";
+import { removeArticleFromSocial } from "@/lib/editorial/SocialPublicationLifecycle";
 import { applyEditorialAction, type EditorialAction } from "@/lib/editorial/EditorialWorkflow";
 
 export const runtime = "nodejs";
@@ -65,20 +66,21 @@ export async function POST(request: NextRequest) {
         : body.actor?.trim() || identity.actor;
     const result = await applyEditorialAction({ ...body, actor });
 
-    // Publishing, unpublishing, rejecting or removing an article must be reflected
-    // on the public website on the next request rather than waiting for the normal cache window.
     revalidatePath("/", "layout");
 
-    // Social distribution is downstream of the controlled human publish action only.
-    // Each provider has its own production safety switch and duplicate lock.
     const socialDistribution =
       body.action === "publish"
         ? await notifyArticlePublishedToSocial(result.articleId)
         : undefined;
 
-    // A rejection must immediately request fresh acquisition. The orchestrator is responsible
-    // for selecting a genuinely different angle/source set and then calling the protected
-    // /api/editorial/replacement endpoint. Do not recycle the rejected story here.
+    // Unpublishing the canonical website article also removes the exact provider posts
+    // created by Rugby Panda. Provider cleanup failure never rolls the website state back;
+    // it is returned and persisted so it can be retried safely.
+    const socialCleanup =
+      body.action === "unpublish"
+        ? await removeArticleFromSocial(result.articleId)
+        : undefined;
+
     const replacementTrigger =
       body.action === "reject"
         ? await requestEditorialReplacement({
@@ -100,7 +102,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return jsonResponse({ status: "ok", workflow: result, socialDistribution, replacementTrigger });
+    return jsonResponse({
+      status: "ok",
+      workflow: result,
+      socialDistribution,
+      socialCleanup,
+      replacementTrigger,
+    });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Editorial workflow failed";
     const status =
