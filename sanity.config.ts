@@ -167,6 +167,17 @@ export default defineConfig({
     ],
   },
   document: {
+    // Keep Sanity's standard document actions available. In particular, a
+    // published article must expose Unpublish so an editor can deliberately
+    // remove it and later republish it through the controlled human boundary.
+    // The filter is explicit to prevent future Studio customisation from
+    // accidentally hiding the action again.
+    actions: (prev, context) => {
+      if (context.schemaType === "article") {
+        return prev;
+      }
+      return prev;
+    },
     productionUrl: async (prev, context) => {
       const slug = (context.document?.slug as { current?: string } | undefined)?.current;
       if (context.document?._type === "article" && slug) {
