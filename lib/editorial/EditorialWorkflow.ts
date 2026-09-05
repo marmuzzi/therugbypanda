@@ -27,7 +27,6 @@ type ArticleState = {
 };
 
 const transitions: Record<EditorialAction, { from: string[]; to: string }> = {
-  // Legacy actions remain accepted so existing automations and records do not break.
   submit: { from: ["draft", "amendment-required"], to: "draft" },
   approve: { from: ["under-review", "approved"], to: "draft" },
   reject: {
@@ -143,7 +142,10 @@ export async function applyEditorialAction(input: WorkflowInput) {
       replacementRequired: false,
       workflowHistory: history,
     };
+    // A later republish is a new publication event. This produces fresh provider
+    // idempotency keys after the old social posts have been removed.
     delete (draft as { _rev?: string })._rev;
+    delete (draft as { publishedAt?: string }).publishedAt;
     await writeClient.transaction().createOrReplace(draft).delete(publishedId).commit();
   } else if (input.action === "discard") {
     const transaction = writeClient.transaction();
