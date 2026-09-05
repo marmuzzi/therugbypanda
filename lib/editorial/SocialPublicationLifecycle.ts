@@ -129,7 +129,10 @@ export async function removeArticleFromSocial(articleId: string): Promise<Social
       instagram = { status: "failed", id: article.instagramPostId, error: "Instagram production credentials are not configured." };
     } else {
       try {
-        await graphRequest(INSTAGRAM_GRAPH_BASE, article.instagramPostId, "DELETE", { access_token: instagramToken });
+        // instagram_manage_contents media deletion is a Facebook Login capability.
+        // Keep first-comment writes on graph.instagram.com, but delete published
+        // media through graph.facebook.com using the IG media object id.
+        await graphRequest(FACEBOOK_GRAPH_BASE, article.instagramPostId, "DELETE", { access_token: instagramToken });
         instagram = { status: "deleted", id: article.instagramPostId };
       } catch (error) {
         instagram = {
