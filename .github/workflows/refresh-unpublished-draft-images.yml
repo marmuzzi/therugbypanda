@@ -1,0 +1,42 @@
+name: Refresh Unpublished Draft Images
+
+on:
+  workflow_dispatch:
+    inputs:
+      apply_changes:
+        description: Apply image replacements to Sanity drafts
+        required: true
+        default: false
+        type: boolean
+      max_drafts:
+        description: Maximum unpublished drafts to inspect
+        required: true
+        default: '30'
+        type: string
+
+jobs:
+  refresh-unpublished-draft-images:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+      APPLY_CHANGES: ${{ inputs.apply_changes }}
+      MAX_DRAFTS: ${{ inputs.max_drafts }}
+      MIN_SCORE_IMPROVEMENT: '15'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Refresh draft images from full approved library
+        run: node --experimental-strip-types scripts/refresh-unpublished-draft-images.mjs
+      - name: Upload evidence
+        uses: actions/upload-artifact@v4
+        with:
+          name: draft-image-refresh-summary
+          path: draft-image-refresh-summary.json
+          if-no-files-found: error
+          retention-days: 14
