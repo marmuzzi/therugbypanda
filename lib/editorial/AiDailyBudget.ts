@@ -3,7 +3,8 @@ import { createClient } from "next-sanity";
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 
 const DEFAULT_DAILY_LIMIT_USD = 0.40;
-const MAX_RESERVATION_RETRIES = 4;
+const MAX_RESERVATION_RETRIES = 12;
+const BASE_RETRY_DELAY_MS = 35;
 
 type BudgetDocument = {
   _id: string;
@@ -46,7 +47,16 @@ function configuredLimit(): number {
 function writeClient() {
   const token = process.env.SANITY_API_TOKEN;
   if (!token) throw new Error("SANITY_API_TOKEN is required for the editorial AI budget guard.");
-  return createClient({ projectId, dataset, apiVersion, token, useCdn: false });
+  return createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
+}
+
+function isRevisionConflict(error: unknown): boolean {
+  const message = error instanceof Error ? error.message : String(error ?? "");
+  return /unexpected revision id|revision.*(?:mismatch|conflict)|conflict/i.test(message);
+}
+
+function delay(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 export async function reserveEditorialAiBudget(input: {
@@ -106,9 +116,13 @@ export async function reserveEditorialAiBudget(input: {
         amountUsd,
       };
     } catch (error) {
-      if (attempt === MAX_RESERVATION_RETRIES) throw error;
+      if (!isRevisionConflict(error) || attempt === MAX_RESERVATION_RETRIES) throw error;
+      // Two draft requests can reserve at the same time. Re-read the latest revision after
+      // a short jittered backoff instead of burning a generation slot on a Sanity conflict.
+      const jitter = Math.floor(Math.random() * BASE_RETRY_DELAY_MS);
+      await delay(Math.min(500, BASE_RETRY_DELAY_MS * attempt + jitter));
     }
   }
 
-  throw new Error("Editorial AI budget reservation failed.");
+  throw new Error("Editorial AI budget reservation failed after bounded revision-conflict retries.");
 }
