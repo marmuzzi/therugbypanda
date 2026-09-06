@@ -16,12 +16,26 @@ const EDITORIAL_GENERATION_TIMEOUT_MS = 135_000;
 const DEFAULT_GENERATION_MODEL = "gpt-5.6-terra";
 const DEFAULT_REVIEW_MODEL = "gpt-5.6-luna";
 const DRAFT_PIPELINE_BUDGET_RESERVATION_USD = 0.055;
+const MATCH_LIKE = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|trial|friendly|beat|defeat|win|won|loss|lost|draw|score|kick-?off)\b/i;
+const DATE_DETAIL = /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|april|may|june|july|august|september|october|november|december|today|tonight|yesterday|tomorrow)\b|\b\d{1,2}[\s/-](?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|\d{1,2})\b/i;
+const SCORE_DETAIL = /\b\d{1,3}\s*[-–:]\s*\d{1,3}\b/;
+const VENUE_DETAIL = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork|soweto)\b/i;
+const PLAYER_COACH_DETAIL = /\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/;
 const corsHeaders = { "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", Vary: "Origin" };
 
 type DraftRequest = { story: RawStoryInput; factLedger: FactLedger; createSanityDraft?: boolean; editorialImageId?: string; dryRun?: boolean; qaMode?: boolean; notificationMode?: "draft" | "package"; styleProfileId?: ArticleStyleProfileId; };
 type FinalSourceNote = { sourceId?: string; publisher?: string; url?: string; };
 function jsonResponse(body: unknown, init?: ResponseInit) { return NextResponse.json(body, { ...init, headers: { ...corsHeaders, ...(init?.headers ?? {}) } }); }
 function isAuthorized(request: NextRequest): boolean { const secret = process.env.EDITORIAL_AUTOMATION_SECRET; return Boolean(secret && request.headers.get("authorization") === `Bearer ${secret}`); }
+function assertPreGenerationEvidence(story: RawStoryInput, factLedger: FactLedger) {
+  const usableFacts = (Array.isArray(factLedger.facts) ? factLedger.facts : []).filter((fact) => fact.usableInDraft && fact.status !== "disputed" && String(fact.claim || "").trim().length >= 25);
+  const evidence = [story.title, story.summary, ...story.sourceRecords.flatMap((source) => [source.title, source.excerpt, source.bodyText]), ...usableFacts.map((fact) => fact.claim)].filter(Boolean).join(" ");
+  if (!MATCH_LIKE.test(`${story.title} ${story.summary ?? ""}`)) return;
+  const detailClasses = [DATE_DETAIL.test(evidence), SCORE_DETAIL.test(evidence), VENUE_DETAIL.test(evidence), PLAYER_COACH_DETAIL.test(evidence)].filter(Boolean).length;
+  if (usableFacts.length < 2 || detailClasses < 2) {
+    throw new Error(`Pre-generation evidence gate failed: match/trial story has ${usableFacts.length} usable substantive facts and ${detailClasses}/4 concrete match-detail classes; require at least 2 facts and 2 detail classes before OpenAI spend.`);
+  }
+}
 function assertFinalSourceIntegrity(article: { sourceNotes?: FinalSourceNote[] }, story: RawStoryInput) {
   const notes = Array.isArray(article.sourceNotes) ? article.sourceNotes : [];
   const sourceById = new Map(story.sourceRecords.map((source) => [source.id, source]));
@@ -37,6 +51,7 @@ export async function POST(request: NextRequest) {
     const body = (await request.json()) as DraftRequest;
     if (!body.story || !body.factLedger) return jsonResponse({ error: "story and factLedger are required" }, { status: 400 });
     console.info("Editorial pipeline started", { requestId, inputId: body.story.id, dryRun: body.dryRun === true, qaMode: body.qaMode === true, notificationMode: body.notificationMode ?? "draft", styleProfileId: body.styleProfileId ?? null });
+    assertPreGenerationEvidence(body.story, body.factLedger);
     const editorial = new EditorialBrain().evaluate(body.story, { factLedger: body.factLedger });
     console.info("Editorial Brain completed", { requestId, inputId: body.story.id, decision: editorial.decision, score: editorial.score.total, confidence: editorial.confidence, durationMs: Date.now() - startedAt });
     if (editorial.decision !== "draft") return jsonResponse({ status: editorial.decision, editorial, message: "No article was generated because the Editorial Brain did not approve this story for drafting." });
@@ -47,21 +62,15 @@ export async function POST(request: NextRequest) {
 
     if (body.dryRun === true) {
       const sanity = await validateSanityConnectivity(editorial.category);
-      return jsonResponse({ status: "dry-run-passed", editorial, checks: { authentication: true, requestShape: true, editorialBrain: true, editorialDecision: editorial.decision, openAiConfigured: Boolean(process.env.OPENAI_API_KEY), openAiModel: process.env.OPENAI_EDITORIAL_MODEL, reviewModel: process.env.OPENAI_EDITORIAL_REVIEW_MODEL, dailyAiBudgetUsd: 0.30, draftPipelineReservationUsd: DRAFT_PIPELINE_BUDGET_RESERVATION_USD, structuredSchemaConfigured: true, publicationReviewConfigured: true, contextualCardEnrichmentConfigured: true, sanity }, requestId });
+      return jsonResponse({ status: "dry-run-passed", editorial, checks: { authentication: true, requestShape: true, editorialBrain: true, editorialDecision: editorial.decision, preGenerationEvidence: true, openAiConfigured: Boolean(process.env.OPENAI_API_KEY), openAiModel: process.env.OPENAI_EDITORIAL_MODEL, reviewModel: process.env.OPENAI_EDITORIAL_REVIEW_MODEL, dailyAiBudgetUsd: 0.40, draftPipelineReservationUsd: DRAFT_PIPELINE_BUDGET_RESERVATION_USD, structuredSchemaConfigured: true, publicationReviewConfigured: true, contextualCardEnrichmentConfigured: true, sanity }, requestId });
     }
 
-    const budget = await reserveEditorialAiBudget({
-      requestId,
-      purpose: body.qaMode === true ? `qa-draft:${body.story.id}` : `production-draft:${body.story.id}`,
-      amountUsd: DRAFT_PIPELINE_BUDGET_RESERVATION_USD,
-    });
+    const budget = await reserveEditorialAiBudget({ requestId, purpose: body.qaMode === true ? `qa-draft:${body.story.id}` : `production-draft:${body.story.id}`, amountUsd: DRAFT_PIPELINE_BUDGET_RESERVATION_USD });
     console.info("Editorial AI budget reserved", { requestId, inputId: body.story.id, ...budget });
 
     const generatedArticle = await generateArticleDraft(body.story, editorial, { targetLengthWords: body.qaMode === true ? "250-400" : "700-1100", timeoutMs: EDITORIAL_GENERATION_TIMEOUT_MS, styleProfileId: body.styleProfileId });
     const publicationReview = await runPublicationReviewCycle(generatedArticle, editorial, body.story);
-    if (publicationReview.review2.verdict !== "pass") {
-      throw new Error(`Publication Review #2 did not pass: ${publicationReview.review2.issues.map((issue) => `${issue.severity}/${issue.category}: ${issue.message}`).join(" ") || "review verdict was revise"}`);
-    }
+    if (publicationReview.review2.verdict !== "pass") throw new Error(`Publication Review #2 did not pass: ${publicationReview.review2.issues.map((issue) => `${issue.severity}/${issue.category}: ${issue.message}`).join(" ") || "review verdict was revise"}`);
     const article = publicationReview.article; assertFinalSourceIntegrity(article, body.story); const pkg = { editorial, article };
     if (body.createSanityDraft === false) return jsonResponse({ status: "generated", ...pkg, publicationReview, budget, requestId });
     const sanityDraft = await createSanityArticleDraft(pkg, { editorialImageId: body.editorialImageId, story: body.story, automationContentClass: body.qaMode === true ? "qa" : "production", morningPackageEligible: body.qaMode !== true });
@@ -69,9 +78,7 @@ export async function POST(request: NextRequest) {
     try { contextualCard = await enrichSanityDraftWithContextualCard(sanityDraft.id, pkg); } catch (error) { contextualCard = { status: "failed", error: error instanceof Error ? error.message : "Contextual card enrichment failed" }; console.warn("Contextual card enrichment failed", { requestId, inputId: body.story.id, error: contextualCard.error }); }
     const notification = body.qaMode === true
       ? { status: "suppressed" as const, eventId: null, reason: "qa-draft" }
-      : body.notificationMode === "package"
-        ? { status: "suppressed" as const, eventId: null, reason: "package-mode" }
-        : await notifyDraftCreated({ articleId: sanityDraft.id, articleTitle: article.title, actor: "editorial-automation", occurredAt: new Date().toISOString(), submissionNote: "A new draft is ready for editorial review." });
+      : await notifyDraftCreated({ articleId: sanityDraft.id, articleTitle: article.title, actor: "editorial-automation", occurredAt: new Date().toISOString(), submissionNote: "A new draft is ready for editorial review." });
     console.info("Editorial pipeline completed", { requestId, inputId: body.story.id, sanityDraftId: sanityDraft.id, notificationStatus: notification.status, notificationEventId: notification.eventId, morningPackageEligible: sanityDraft.morningPackageEligible, contextualCardStatus: contextualCard.status, publicationReviewCorrected: publicationReview.corrected, review1Issues: publicationReview.review1.issues.length, review2Issues: publicationReview.review2.issues.length, budgetReservedAfterUsd: budget.reservedAfterUsd, durationMs: Date.now() - startedAt });
     return jsonResponse({ status: "draft-created", editorial, article, publicationReview, sanityDraft, contextualCard, notification, budget, requestId });
   } catch (error) {
