@@ -5,32 +5,26 @@ const route = fs.readFileSync("app/api/editorial/draft/route.ts", "utf8");
 const workflow = fs.readFileSync(".github/workflows/irish-current-recovery.yml", "utf8");
 const discovery = fs.readFileSync("scripts/discover-current-editorial-sources.mjs", "utf8");
 const slotPlanner = fs.readFileSync("scripts/prepare-slot-budget-batch.mjs", "utf8");
-
 assert.match(route, /completed-match story has no final score in the usable fact ledger/);
 assert.match(route, /squad\/selection story has only/);
 assert.match(route, /person-identity collision for surname/);
+assert.match(route, /red roses/);
 assert.doesNotMatch(route, /publicationReview\.review2\.verdict\s*!==\s*["']pass["']/);
 assert.match(discovery, /augment-irish-current-discovery\.mjs/);
 assert.match(workflow, /prepare-slot-budget-batch\.mjs/);
 assert.match(workflow, /EDITORIAL_GENERATION_CONCURRENCY:\s*["']1["']/);
 assert.match(slotPlanner, /paidAttemptLimit:\s*missingSlots/);
 assert.match(slotPlanner, /replacementPaidAttempts:\s*0/);
-
-const reservationPerSlotUsd = 0.055;
-const packageSize = 5;
-const dailyCeilingUsd = 0.40;
-assert.ok(reservationPerSlotUsd * packageSize <= dailyCeilingUsd, "Five reserved launch slots must fit below the daily ceiling.");
-
+const reservationPerSlotUsd = 0.055, packageSize = 5, dailyCeilingUsd = 0.40;
+assert.ok(reservationPerSlotUsd * packageSize <= dailyCeilingUsd);
 const completedMatchWithoutScore = "Mack Hansen leads the way in Connacht victory over Ealing";
-assert.match(completedMatchWithoutScore, /victory/i);
-assert.doesNotMatch(completedMatchWithoutScore, /\b\d{1,3}\s*[-–:]\s*\d{1,3}\b/);
+assert.match(completedMatchWithoutScore, /victory/i); assert.doesNotMatch(completedMatchWithoutScore, /\b\d{1,3}\s*[-–:]\s*\d{1,3}\b/);
 const squadFacts = "John Mitchell names highly experienced Red Roses squad. Three uncapped players named.";
-const people = squadFacts.match(/\b[A-Z][A-Za-z'’-]{2,}\s+[A-Z][A-Za-z'’-]{2,}\b/g) ?? [];
-assert.equal(new Set(people).size, 1, "The measured England fixture must remain below the named-person floor before spend.");
-
+const rawPeople = squadFacts.match(/\b[A-Z][A-Za-z'’-]{2,}\s+[A-Z][A-Za-z'’-]{2,}\b/g) ?? [];
+const filteredPeople = rawPeople.filter((name) => !/^red roses$/i.test(name));
+assert.equal(new Set(filteredPeople).size, 1, "Measured England fixture must remain below the named-person floor after team-name filtering.");
 const primary = "Mack Hansen leads the way in Connacht victory";
 const contaminatedFacts = "Mack Hansen shines on return. Sir Steve Hansen calls on All Blacks.";
 const names = contaminatedFacts.match(/\b[A-Z][A-Za-z'’-]{2,}\s+[A-Z][A-Za-z'’-]{2,}\b/g) ?? [];
-assert.ok(primary.includes("Mack Hansen") && names.some((name) => /Steve Hansen/i.test(name)), "Measured same-surname/different-person fixture must remain represented.");
-
-console.log(JSON.stringify({ launchRecoveryContract: "passed", checks: 13, maxFiveSlotReservationUsd: Number((reservationPerSlotUsd * packageSize).toFixed(3)), dailyCeilingUsd }, null, 2));
+assert.ok(primary.includes("Mack Hansen") && names.some((name) => /Steve Hansen/i.test(name)));
+console.log(JSON.stringify({ launchRecoveryContract: "passed", checks: 14, maxFiveSlotReservationUsd: Number((reservationPerSlotUsd * packageSize).toFixed(3)), dailyCeilingUsd }, null, 2));
