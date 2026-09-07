@@ -1,0 +1,40 @@
+import fs from "node:fs/promises";
+import path from "node:path";
+
+const discoveryPath = process.env.CURRENT_SOURCE_DISCOVERY_PATH || "data/editorial-acquisition/current-source-discovery.json";
+const registryPath = process.env.EDITORIAL_SOURCE_REGISTRY || "data/editorial-sources/source-registry.json";
+const maxAgeHours = Number(process.env.IRISH_DISCOVERY_MAX_AGE_HOURS || 72);
+const queries = ["Ireland rugby", "Leinster rugby", "Munster rugby", "Ulster rugby", "Connacht rugby"];
+const now = Date.now();
+const discovery = JSON.parse(await fs.readFile(path.resolve(discoveryPath), "utf8"));
+const registry = JSON.parse(await fs.readFile(path.resolve(registryPath), "utf8"));
+const sources = (registry.sources || []).filter((s) => s.allowDiscovery === true);
+
+const decode = (v = "") => v.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+const tag = (b, n) => decode(b.match(new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${n}>`, "i"))?.[1] || "");
+const sourceTag = (b) => { const m=b.match(/<source(?:\s+url="([^"]+)")?[^>]*>([\s\S]*?)<\/source>/i); return {name:decode(m?.[2]||""),url:decode(m?.[1]||"")}; };
+const items = (xml) => [...xml.matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)].map((m)=>({title:tag(m[1],"title"),link:tag(m[1],"link"),description:tag(m[1],"description"),publishedAt:tag(m[1],"pubDate"),googleSource:sourceTag(m[1])})).filter((x)=>x.title&&x.link);
+const domain = (v="") => { try{return new URL(v).hostname.toLowerCase().replace(/^www\./,"");}catch{return String(v).toLowerCase().replace(/^www\./,"");} };
+const sourceFor = (v) => { const d=domain(v); return sources.find((s)=>d===domain(s.domain)||d.endsWith(`.${domain(s.domain)}`)); };
+const fresh = (v) => { const t=Date.parse(v); return Number.isFinite(t)&&now-t>=0&&now-t<=maxAgeHours*3600000; };
+const cleanTitle = (t="") => t.replace(/\s+-\s+[^-]{2,80}$/,"").trim();
+const key = (title, source) => `${domain(source?.domain)}|${cleanTitle(title).toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}`;
+const seen = new Set((discovery.leads||[]).map((l)=>key(l.title,l.source)));
+const added=[];
+for (const q of queries) {
+  const feed=`https://news.google.com/rss/search?q=${encodeURIComponent(`${q} when:3d`)}&hl=en-IE&gl=IE&ceid=IE:en`;
+  const response=await fetch(feed,{headers:{"user-agent":"TheRugbyPanda/1.0 irish-current-discovery"},signal:AbortSignal.timeout(12000)});
+  if(!response.ok) continue;
+  for(const item of items(await response.text())) {
+    if(!fresh(item.publishedAt)) continue;
+    const source=sourceFor(item.googleSource.url); if(!source) continue;
+    const k=key(item.title,source); if(seen.has(k)) continue; seen.add(k);
+    const title=cleanTitle(item.title);
+    added.push({id:`irish-reserve-${Date.parse(item.publishedAt)}-${added.length+1}`,title:item.title,link:item.link,description:item.description,publishedAt:item.publishedAt,editorialPosition:{subject:title,development:item.description||title,angle:`Current Irish rugby development: ${title}`,occurredAt:new Date(item.publishedAt).toISOString()},source:{name:source.name,domain:source.domain,tier:source.tier,ownerPriority:source.ownerPriority,defaultEvidenceRole:source.defaultEvidenceRole},irishDiscoveryQuery:q});
+  }
+}
+discovery.leads=[...(discovery.leads||[]),...added].sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt));
+discovery.leadCount=discovery.leads.length;
+discovery.irishTargetedDiscovery={maxAgeHours,queries,addedCount:added.length};
+await fs.writeFile(path.resolve(discoveryPath),`${JSON.stringify(discovery,null,2)}\n`);
+console.log(JSON.stringify({irishTargetedDiscovery:"passed",maxAgeHours,addedCount:added.length,totalLeadCount:discovery.leadCount},null,2));
