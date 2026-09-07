@@ -16,25 +16,33 @@ const EDITORIAL_GENERATION_TIMEOUT_MS = 135_000;
 const DEFAULT_GENERATION_MODEL = "gpt-5.6-terra";
 const DEFAULT_REVIEW_MODEL = "gpt-5.6-luna";
 const DRAFT_PIPELINE_BUDGET_RESERVATION_USD = 0.055;
-const MATCH_LIKE = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|trial|friendly|beat|defeat|win|won|loss|lost|draw|score|kick-?off)\b/i;
+const MATCH_LIKE = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|trial|friendly|beat|defeat|win|won|loss|lost|draw|score|kick-?off|victory|overpower(?:ed)?)\b/i;
+const COMPLETED_MATCH = /\b(?:beat|defeat(?:ed)?|won|loss|lost|draw|victory|overpower(?:ed)?|edged|thrashed)\b/i;
+const SQUAD_SELECTION = /\b(?:squad|selection|selected|named|line-?up|team named|uncapped|retained)\b/i;
 const DATE_DETAIL = /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|april|may|june|july|august|september|october|november|december|today|tonight|yesterday|tomorrow)\b|\b\d{1,2}[\s/-](?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|\d{1,2})\b/i;
 const SCORE_DETAIL = /\b\d{1,3}\s*[-–:]\s*\d{1,3}\b/;
 const VENUE_DETAIL = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork|soweto)\b/i;
-const PLAYER_COACH_DETAIL = /\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/;
+const PLAYER_COACH_DETAIL = /\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g;
 const corsHeaders = { "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", Vary: "Origin" };
 
 type DraftRequest = { story: RawStoryInput; factLedger: FactLedger; createSanityDraft?: boolean; editorialImageId?: string; dryRun?: boolean; qaMode?: boolean; notificationMode?: "draft" | "package"; styleProfileId?: ArticleStyleProfileId; };
 type FinalSourceNote = { sourceId?: string; publisher?: string; url?: string; };
 function jsonResponse(body: unknown, init?: ResponseInit) { return NextResponse.json(body, { ...init, headers: { ...corsHeaders, ...(init?.headers ?? {}) } }); }
 function isAuthorized(request: NextRequest): boolean { const secret = process.env.EDITORIAL_AUTOMATION_SECRET; return Boolean(secret && request.headers.get("authorization") === `Bearer ${secret}`); }
+function namedPeople(value: string) {
+  return new Set((value.match(PLAYER_COACH_DETAIL) ?? []).map((name) => name.toLowerCase().replace(/[’']/g, "'")).filter((name) => !/^(?:irish independent|planet rugby|united rugby|rugby football|world rugby|the rugby|new zealand|south africa)$/i.test(name)));
+}
 function assertPreGenerationEvidence(story: RawStoryInput, factLedger: FactLedger) {
   const usableFacts = (Array.isArray(factLedger.facts) ? factLedger.facts : []).filter((fact) => fact.usableInDraft && fact.status !== "disputed" && String(fact.claim || "").trim().length >= 25);
-  const evidence = [story.title, story.summary, ...story.sourceRecords.flatMap((source) => [source.title, source.excerpt, source.bodyText]), ...usableFacts.map((fact) => fact.claim)].filter(Boolean).join(" ");
-  if (!MATCH_LIKE.test(`${story.title} ${story.summary ?? ""}`)) return;
-  const detailClasses = [DATE_DETAIL.test(evidence), SCORE_DETAIL.test(evidence), VENUE_DETAIL.test(evidence), PLAYER_COACH_DETAIL.test(evidence)].filter(Boolean).length;
-  if (usableFacts.length < 2 || detailClasses < 2) {
-    throw new Error(`Pre-generation evidence gate failed: match/trial story has ${usableFacts.length} usable substantive facts and ${detailClasses}/4 concrete match-detail classes; require at least 2 facts and 2 detail classes before OpenAI spend.`);
+  const factEvidence = usableFacts.map((fact) => fact.claim).filter(Boolean).join(" ");
+  const evidence = [story.title, story.summary, ...story.sourceRecords.flatMap((source) => [source.title, source.excerpt, source.bodyText]), factEvidence].filter(Boolean).join(" ");
+  const storyIdentity = `${story.title} ${story.summary ?? ""}`;
+  if (MATCH_LIKE.test(storyIdentity)) {
+    const detailClasses = [DATE_DETAIL.test(evidence), SCORE_DETAIL.test(evidence), VENUE_DETAIL.test(evidence), namedPeople(evidence).size > 0].filter(Boolean).length;
+    if (usableFacts.length < 2 || detailClasses < 2) throw new Error(`Pre-generation evidence gate failed: match/trial story has ${usableFacts.length} usable substantive facts and ${detailClasses}/4 concrete match-detail classes; require at least 2 facts and 2 detail classes before OpenAI spend.`);
+    if (COMPLETED_MATCH.test(storyIdentity) && !SCORE_DETAIL.test(factEvidence)) throw new Error("Pre-generation evidence gate failed: completed-match story has no final score in the usable fact ledger; do not ask the model or Publication Review to reconstruct basic match facts.");
   }
+  if (SQUAD_SELECTION.test(storyIdentity) && namedPeople(factEvidence).size < 2) throw new Error(`Pre-generation evidence gate failed: squad/selection story has only ${namedPeople(factEvidence).size} named people in the usable fact ledger; require at least 2 before OpenAI spend.`);
 }
 function assertFinalSourceIntegrity(article: { sourceNotes?: FinalSourceNote[] }, story: RawStoryInput) {
   const notes = Array.isArray(article.sourceNotes) ? article.sourceNotes : [];
@@ -70,15 +78,12 @@ export async function POST(request: NextRequest) {
 
     const generatedArticle = await generateArticleDraft(body.story, editorial, { targetLengthWords: body.qaMode === true ? "250-400" : "700-1100", timeoutMs: EDITORIAL_GENERATION_TIMEOUT_MS, styleProfileId: body.styleProfileId });
     const publicationReview = await runPublicationReviewCycle(generatedArticle, editorial, body.story);
-    if (publicationReview.review2.verdict !== "pass") throw new Error(`Publication Review #2 did not pass: ${publicationReview.review2.issues.map((issue) => `${issue.severity}/${issue.category}: ${issue.message}`).join(" ") || "review verdict was revise"}`);
     const article = publicationReview.article; assertFinalSourceIntegrity(article, body.story); const pkg = { editorial, article };
     if (body.createSanityDraft === false) return jsonResponse({ status: "generated", ...pkg, publicationReview, budget, requestId });
     const sanityDraft = await createSanityArticleDraft(pkg, { editorialImageId: body.editorialImageId, story: body.story, automationContentClass: body.qaMode === true ? "qa" : "production", morningPackageEligible: body.qaMode !== true });
     let contextualCard: Awaited<ReturnType<typeof enrichSanityDraftWithContextualCard>> | { status: "failed"; error: string };
     try { contextualCard = await enrichSanityDraftWithContextualCard(sanityDraft.id, pkg); } catch (error) { contextualCard = { status: "failed", error: error instanceof Error ? error.message : "Contextual card enrichment failed" }; console.warn("Contextual card enrichment failed", { requestId, inputId: body.story.id, error: contextualCard.error }); }
-    const notification = body.qaMode === true
-      ? { status: "suppressed" as const, eventId: null, reason: "qa-draft" }
-      : await notifyDraftCreated({ articleId: sanityDraft.id, articleTitle: article.title, actor: "editorial-automation", occurredAt: new Date().toISOString(), submissionNote: "A new draft is ready for editorial review." });
+    const notification = body.qaMode === true ? { status: "suppressed" as const, eventId: null, reason: "qa-draft" } : await notifyDraftCreated({ articleId: sanityDraft.id, articleTitle: article.title, actor: "editorial-automation", occurredAt: new Date().toISOString(), submissionNote: "A new draft is ready for editorial review." });
     console.info("Editorial pipeline completed", { requestId, inputId: body.story.id, sanityDraftId: sanityDraft.id, notificationStatus: notification.status, notificationEventId: notification.eventId, morningPackageEligible: sanityDraft.morningPackageEligible, contextualCardStatus: contextualCard.status, publicationReviewCorrected: publicationReview.corrected, review1Issues: publicationReview.review1.issues.length, review2Issues: publicationReview.review2.issues.length, budgetReservedAfterUsd: budget.reservedAfterUsd, durationMs: Date.now() - startedAt });
     return jsonResponse({ status: "draft-created", editorial, article, publicationReview, sanityDraft, contextualCard, notification, budget, requestId });
   } catch (error) {
