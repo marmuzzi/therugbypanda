@@ -5,6 +5,7 @@ on:
     paths:
       - "app/api/editorial/draft/route.ts"
       - "scripts/discover-current-editorial-sources.mjs"
+      - "scripts/filter-current-acquisition-evidence.mjs"
       - "scripts/prepare-slot-budget-batch.mjs"
       - "scripts/test-launch-recovery-contract.mjs"
       - ".github/workflows/irish-current-recovery.yml"
@@ -13,6 +14,7 @@ on:
     paths:
       - "app/api/editorial/draft/route.ts"
       - "scripts/discover-current-editorial-sources.mjs"
+      - "scripts/filter-current-acquisition-evidence.mjs"
       - "scripts/prepare-slot-budget-batch.mjs"
       - "scripts/test-launch-recovery-contract.mjs"
       - ".github/workflows/irish-current-recovery.yml"
