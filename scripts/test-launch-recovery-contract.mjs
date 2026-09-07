@@ -8,6 +8,7 @@ const slotPlanner = fs.readFileSync("scripts/prepare-slot-budget-batch.mjs", "ut
 
 assert.match(route, /completed-match story has no final score in the usable fact ledger/);
 assert.match(route, /squad\/selection story has only/);
+assert.match(route, /person-identity collision for surname/);
 assert.doesNotMatch(route, /publicationReview\.review2\.verdict\s*!==\s*["']pass["']/);
 assert.match(discovery, /augment-irish-current-discovery\.mjs/);
 assert.match(workflow, /prepare-slot-budget-batch\.mjs/);
@@ -27,4 +28,9 @@ const squadFacts = "John Mitchell names highly experienced Red Roses squad. Thre
 const people = squadFacts.match(/\b[A-Z][A-Za-z'’-]{2,}\s+[A-Z][A-Za-z'’-]{2,}\b/g) ?? [];
 assert.equal(new Set(people).size, 1, "The measured England fixture must remain below the named-person floor before spend.");
 
-console.log(JSON.stringify({ launchRecoveryContract: "passed", checks: 11, maxFiveSlotReservationUsd: Number((reservationPerSlotUsd * packageSize).toFixed(3)), dailyCeilingUsd }, null, 2));
+const primary = "Mack Hansen leads the way in Connacht victory";
+const contaminatedFacts = "Mack Hansen shines on return. Sir Steve Hansen calls on All Blacks.";
+const names = contaminatedFacts.match(/\b[A-Z][A-Za-z'’-]{2,}\s+[A-Z][A-Za-z'’-]{2,}\b/g) ?? [];
+assert.ok(primary.includes("Mack Hansen") && names.some((name) => /Steve Hansen/i.test(name)), "Measured same-surname/different-person fixture must remain represented.");
+
+console.log(JSON.stringify({ launchRecoveryContract: "passed", checks: 13, maxFiveSlotReservationUsd: Number((reservationPerSlotUsd * packageSize).toFixed(3)), dailyCeilingUsd }, null, 2));
