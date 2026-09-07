@@ -33,10 +33,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Discover standard current sources
+      - name: Discover standard and Irish-first current reserve
         run: node scripts/discover-current-editorial-sources.mjs
-      - name: Add targeted Irish current reserve
-        run: node scripts/augment-irish-current-discovery.mjs
       - name: Build corroborated evidence
         run: node scripts/build-current-editorial-acquisition-batch.mjs
       - name: Reject weak evidence before model spend
@@ -48,13 +46,14 @@ jobs:
         run: node scripts/enforce-current-package-diversity.mjs
       - name: Export recent production positions
         run: node scripts/export-recent-editorial-positions.mjs
-      - name: Import fresh review-ready drafts
+      - name: Import fresh review-ready drafts with one paid attempt per missing slot
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
           EDITORIAL_API_BASE_URL: https://therugbypanda.ie
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
           REQUIRE_ALL_SELECTED_CREATED: "0"
-          MAX_REPLACEMENT_CANDIDATES: "4"
+          MAX_REPLACEMENT_CANDIDATES: "0"
+          EDITORIAL_GENERATION_CONCURRENCY: "1"
         run: node scripts/import-editorial-acquisition-batch.mjs "$BATCH_PATH"
       - name: Upload recovery evidence
         if: always()
