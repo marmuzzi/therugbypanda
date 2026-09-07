@@ -46,6 +46,10 @@ jobs:
         run: node scripts/enforce-current-package-diversity.mjs
       - name: Export recent production positions
         run: node scripts/export-recent-editorial-positions.mjs
+      - name: Assign exactly one paid candidate to each missing slot
+        env:
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+        run: node scripts/prepare-slot-budget-batch.mjs
       - name: Import fresh review-ready drafts with one paid attempt per missing slot
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
