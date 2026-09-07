@@ -6,105 +6,63 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-7 September 2026, after measured production run `34135365500` and implementation of PR #442's finite 8 September launch-recovery contract.
+7 September 2026 after PRs #442–#447 and zero-model production proof runs through `34147169151`.
 
-## Source of truth
-
-Read in this order:
+## Read first
 
 1. `docs/07_Project_State.md`
 2. `docs/08_Issue_Log.md`
 3. `docs/09_Publishing_Workflow.md`
-4. `docs/100_2026-09-07_Launch_Recovery_Contract.md`
-5. `docs/99_2026-09-04_AI_Cost_Routing_And_Daily_Budget.md`
-6. older dated evidence documents for historical run-specific evidence.
+4. `docs/102_2026-09-07_Final_Launch_Recovery_Status.md`
+5. `docs/101_2026-09-07_Zero_Model_Reserve_Proof.md`
+6. `docs/100_2026-09-07_Launch_Recovery_Contract.md`
+7. `docs/99_2026-09-04_AI_Cost_Routing_And_Daily_Budget.md`
 
-Newer measured evidence supersedes older state statements where they conflict. Git history and dated evidence preserve historical decisions.
+Newer measured evidence supersedes older state statements where they conflict; Git history and dated evidence preserve historical decisions.
 
-## Operating targets
+## Launch contract
 
-- Timezone: Europe/Dublin.
-- Daily editorial target: five fresh review-ready drafts.
-- Ireland-first launch package: at least 3/5 direct Irish connections; at most 2 international-only stories.
-- Sanity is the canonical CMS and mandatory human publication boundary.
-- OpenAI application reservation ceiling: $0.40 per Dublin operational day.
-- Terra (`gpt-5.6-terra`) is default generation; Luna (`gpt-5.6-luna`) is default Publication Review/repair.
-- Free discovery/evidence/freshness/diversity/image work must happen before model spend.
-- Meta/social is excluded from the current launch gate.
-- Gmail and Google Drive are not part of the editorial path.
+- Europe/Dublin operational day.
+- Five fresh review-ready drafts.
+- At least 3/5 direct Irish connections; at most 2 international-only.
+- Sanity human publication boundary; never auto-publish.
+- OpenAI application reservation ceiling `$0.40/day`.
+- Terra generation, Luna review/repair.
+- Free discovery/evidence/freshness/diversity/slot planning before model spend.
+- Meta/social excluded from launch recovery.
 
-## Current measured production state — 7 September
+## Merged recovery state
 
-Run `34135365500` proved the Irish discovery repair worked but the package still failed downstream.
+PR #442 repaired the evidence→generation→Publication Review contract, removed duplicate medium/low Review #2 rejection, integrated Irish augmentation into normal discovery and added one-to-one slot planning. PR #443 added a zero-model production proof. PR #444 moved completed-match final-score, squad named-person and exact-person coherence requirements into the free evidence gate. PR #445 made the free proof retriggerable. PR #446 deepened Irish discovery to 12 evidence-oriented queries. PR #447 made slot planning preserve the Ireland-first quota after freshness or fail before spend.
 
-Measured free-stage evidence:
+Deterministic contract CI has passed for the relevant code changes, including PR #444 run `34146667441` and PR #447 run `34147139147`.
 
-- 28 standard discovery sources succeeded, 0 failed;
-- 160 standard leads;
-- targeted Irish reserve added 40 leads, total 200;
-- 17 corroborated candidates;
-- 14 passed the concrete evidence filter;
-- one same-day eligible draft retained;
-- Ireland-first diversity passed with exactly 3 available Irish-connected candidates and max 2 international-only;
-- eight candidates remained fresh after two known repeats were rejected.
+## Latest zero-model evidence
 
-The run created zero new drafts. Three paid candidates reached Publication Review before the daily guard became the dominant blocker; later calls were blocked at `$0.385 + $0.055 > $0.40`.
+- `34146444423`: free reserve path passed but exposed known weak candidates still entering paid slots.
+- `34146778688`: stricter #444 evidence gate worked, but only 2/3 required Irish candidates survived; failed before model spend.
+- `34146961971`: #446 deep discovery produced 219 leads, 21 corroborated, 7 strict accepted; diversity passed with exactly 3 Irish candidates; slot planning passed, but inspection exposed that freshness could drop the Irish quota.
+- `34147169151`: #447 code was present, but the live discovery snapshot again failed at Ireland-first diversity before slot planning because fewer than three evidence-ready Irish candidates were available.
 
-The measured failures exposed three launch-contract defects:
+No zero-model proof calls the draft API/OpenAI/image/Zoho path.
 
-1. completed-match evidence could reach generation without a final score in the usable fact ledger;
-2. squad evidence could reach generation with counts but insufficient actual player names;
-3. the API route rejected `review2.verdict != pass` even when Review #2 contained only medium/low observations, contradicting the established critical/high-only blocking rule.
+## Current P0 blocker
 
-Artifact inspection also found Mack Hansen / Sir Steve Hansen surname-only corroboration contamination in the failed Connacht candidate. The strengthened completed-match fact gate prevents that measured candidate from spending again, but the upstream person-identity clustering defect remains separately open until fixed and regression-proven.
+The remaining blocker is **volatile evidence-complete Irish candidate supply**. The system now correctly refuses to spend when the 3/5 Ireland-first package cannot be supported by fresh, concrete evidence. Do not solve this by weakening evidence, freshness, review severity or the Irish quota.
 
-## PR #442 launch recovery implementation
+Next engineering work must enrich deterministic Irish evidence acquisition (direct article/structured match/squad facts) so a free proof consistently reaches freshness-aware slot planning with `selectedIrishCount >= 3`.
 
-PR #442 implements the 8 September recovery contract:
+## Budget
 
-- standard discovery always includes the targeted Irish reserve;
-- completed-match stories require a final score in the usable fact ledger before budget reservation;
-- squad/selection stories require at least two named people in the usable fact ledger before budget reservation;
-- PublicationReviewCycle remains authoritative: only critical/high Review #2 issues block; the duplicate route-level verdict rejection is removed;
-- launch recovery performs deterministic one-to-one slot planning and allows one paid candidate per missing slot, serially, under the global $0.40 guard;
-- deterministic contract regression workflow added;
-- docs reconciled in the same PR.
+The 7 September paid ledger had already reached `$0.385` reserved before this recovery work. No further paid generation should run on 7 September. The next paid recovery belongs to the next Dublin operational day only after a green zero-model reserve proof.
 
-## Editorial contract
+## Images and notifications
 
-Articles are original multi-source Rugby Panda synthesis, not rewrites. Freshness identity remains **subject + event/development + editorial angle**. New candidates require coherent corroboration, at least two substantive publishers, concrete rugby evidence and a fact ledger sufficient for the specific story type before model spend.
+Image relevance remains fail closed. Owner-reported James O'Connor and Codie Taylor semantic-image defects remain unresolved. Per-draft notification is deployed; legacy consolidated-package completion semantics remain unreconciled with the owner's one-email-per-draft preference.
 
-Originality and Draft Ready remain deterministic and fail closed. Publication Review remains mandatory. Critical/high issues block; medium/low observations are advisory unless a deterministic hard gate independently fails.
+## Go-live states
 
-## Image contract
-
-Image relevance remains fail closed. Priority is correct person → correct team/event → genuinely relevant rugby context → approved relevant brand fallback → no image. Never use unrelated imagery merely to fill a slot. Existing planner/verifier parity work remains in force. The owner-reported James O'Connor and Codie Taylor semantic-image defects remain unresolved launch-quality work and must be rechecked before publishing affected content.
-
-## Delivery / Zoho
-
-Per-draft production notification is enabled; QA notification is suppressed. Run `34135365500` did not reach image or consolidated-package delivery. No new consolidated Zoho package was sent by that run. The older consolidated-package workflow remains a separate cleanup item because the owner's current operating preference is one notification per new review-ready draft; do not claim that conflict is resolved until the completion marker is decoupled and production-verified.
-
-## Scheduling
-
-A morning SLA watchdog exists, but scheduling is not considered launch-complete until a fresh Dublin-day run proves the repaired pipeline end to end. The 8 September launch attempt must use current main, not rerun an old failed SHA.
-
-## Go-live gate
-
-The finite launch states are:
-
-1. evidence-complete Ireland-first candidate reserve;
+1. green evidence-complete Ireland-first reserve proof;
 2. five fresh review-ready drafts;
-3. safe/relevant images verified (or explicit safe no-image fallback where appropriate);
+3. safe/relevant images verified;
 4. owner reviews and publishes in Sanity.
-
-The system never auto-publishes.
-
-## Current blockers
-
-- PR #442 must be merged and its deterministic workflow must pass.
-- Vercel production must be READY for the route change before paid generation.
-- The next Dublin-day run must production-prove the new evidence and slot boundaries.
-- Upstream surname-only person corroboration must be repaired rather than relying only on downstream rejection.
-- Image semantic defects and consolidated-vs-per-draft email contract still require final launch verification.
-
-See `docs/100_2026-09-07_Launch_Recovery_Contract.md` for the exact 8 September sequence and evidence.
