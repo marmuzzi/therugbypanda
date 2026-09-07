@@ -3,36 +3,27 @@ import path from "node:path";
 import { createClient } from "next-sanity";
 import { selectFreshPositions } from "../lib/editorial/StoryFreshness.ts";
 
-const PACKAGE_SIZE = 5;
-const batchPath = process.env.BATCH_PATH || "data/editorial-acquisition/current-editorial-acquisition-batch.json";
-const recentPath = process.env.RECENT_EDITORIAL_POSITIONS_PATH || "data/editorial-acquisition/recent-editorial-positions.json";
-const projectId = process.env.NEXT_PUBLIC_SANITY_PROJECT_ID;
-const dataset = process.env.NEXT_PUBLIC_SANITY_DATASET || "production";
-const apiVersion = process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2025-01-01";
-const token = process.env.SANITY_API_TOKEN;
-if (!projectId || !token) throw new Error("Slot-budget planning requires Sanity project ID and token.");
-
-const operationalDate = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Dublin", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
-const batch = JSON.parse(await fs.readFile(path.resolve(batchPath), "utf8"));
-const recentRaw = JSON.parse(await fs.readFile(path.resolve(recentPath), "utf8"));
-const recentPositions = Array.isArray(recentRaw) ? recentRaw : recentRaw.positions;
-if (!Array.isArray(batch?.candidates) || !Array.isArray(recentPositions)) throw new Error("Slot-budget planning fail-closed: batch or recent positions are invalid.");
-
-const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
-const prefix = `current-${operationalDate()}-*`;
-const retained = await client.fetch(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && coalesce(automationContentClass, "production") == "production" && editorialInputId match $prefix] {editorialInputId}`, { prefix });
-const retainedIds = new Set((Array.isArray(retained) ? retained : []).map((draft) => draft.editorialInputId).filter(Boolean));
-const retainedCount = Math.min(PACKAGE_SIZE, retainedIds.size);
-const missingSlots = Math.max(0, PACKAGE_SIZE - retainedCount);
-
-const available = batch.candidates.filter((candidate) => !retainedIds.has(candidate.id));
-const positions = available.map((candidate) => ({ id: candidate.id, subject: candidate.editorialPosition?.subject || candidate.title || "", development: candidate.editorialPosition?.development || candidate.summary || "", angle: candidate.editorialPosition?.angle || candidate.summary || "", occurredAt: candidate.editorialPosition?.occurredAt || candidate.primaryPublishedAt }));
-const freshness = selectFreshPositions(positions, recentPositions, missingSlots);
-const selectedIds = new Set(freshness.selected.map((position) => position.id));
-const selected = available.filter((candidate) => selectedIds.has(candidate.id));
-if (selected.length < missingSlots) throw new Error(`Slot-budget planning fail-closed before model spend: only ${selected.length}/${missingSlots} fresh candidates can be assigned one-to-one to missing slots.`);
-
-batch.slotBudgetPlan = { operationalDate: operationalDate(), dailyCeilingUsd: 0.40, reservationPerSlotUsd: 0.055, retainedCount, missingSlots, paidAttemptLimit: missingSlots, replacementPaidAttempts: 0, selectedIds: selected.map((candidate) => candidate.id), plannedAt: new Date().toISOString() };
-batch.candidates = selected;
-await fs.writeFile(path.resolve(batchPath), `${JSON.stringify(batch, null, 2)}\n`);
-console.log(JSON.stringify({ slotBudgetPlan: "passed", retainedCount, missingSlots, paidAttemptLimit: missingSlots, replacementPaidAttempts: 0, selectedIds: batch.slotBudgetPlan.selectedIds, rejectedByFreshness: freshness.rejected.length }, null, 2));
+const PACKAGE_SIZE=5, MIN_IRISH=3;
+const batchPath=process.env.BATCH_PATH||"data/editorial-acquisition/current-editorial-acquisition-batch.json";
+const recentPath=process.env.RECENT_EDITORIAL_POSITIONS_PATH||"data/editorial-acquisition/recent-editorial-positions.json";
+const projectId=process.env.NEXT_PUBLIC_SANITY_PROJECT_ID, dataset=process.env.NEXT_PUBLIC_SANITY_DATASET||"production", apiVersion=process.env.NEXT_PUBLIC_SANITY_API_VERSION||"2025-01-01", token=process.env.SANITY_API_TOKEN;
+if(!projectId||!token)throw new Error("Slot-budget planning requires Sanity project ID and token.");
+const IRISH_CATEGORY=new Set(["Ireland","Leinster","Munster","Ulster","Connacht"]); const IRISH_PRIMARY=/\b(?:ireland|irish|irfu|leinster|munster|ulster|connacht)\b/i;
+const candidateText=(c)=>[c?.title,c?.summary,c?.subject,c?.development,c?.editorialAngle,c?.editorialPosition?.subject,c?.editorialPosition?.development,c?.editorialPosition?.angle,...(Array.isArray(c?.sourceRecords)?c.sourceRecords.flatMap((s)=>[s?.title,s?.excerpt]):[])].filter(Boolean).join(" ");
+const isIrish=(c)=>IRISH_CATEGORY.has(c?.suggestedCategory)||IRISH_PRIMARY.test(candidateText(c));
+const operationalDate=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Dublin",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
+const batch=JSON.parse(await fs.readFile(path.resolve(batchPath),"utf8")); const recentRaw=JSON.parse(await fs.readFile(path.resolve(recentPath),"utf8")); const recentPositions=Array.isArray(recentRaw)?recentRaw:recentRaw.positions;
+if(!Array.isArray(batch?.candidates)||!Array.isArray(recentPositions))throw new Error("Slot-budget planning fail-closed: batch or recent positions are invalid.");
+const client=createClient({projectId,dataset,apiVersion,token,useCdn:false,perspective:"raw"}); const prefix=`current-${operationalDate()}-*`;
+const retained=await client.fetch(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && coalesce(automationContentClass, "production") == "production" && editorialInputId match $prefix] {editorialInputId}`,{prefix});
+const retainedIds=new Set((Array.isArray(retained)?retained:[]).map((d)=>d.editorialInputId).filter(Boolean)); const retainedCount=Math.min(PACKAGE_SIZE,retainedIds.size), missingSlots=Math.max(0,PACKAGE_SIZE-retainedCount);
+const retainedIrishCount=Math.max(0,Number(batch?.packageDiversity?.retainedIrishCount||0)); const irishNeeded=Math.max(0,MIN_IRISH-retainedIrishCount);
+const available=batch.candidates.filter((c)=>!retainedIds.has(c.id)); const positions=available.map((c)=>({id:c.id,subject:c.editorialPosition?.subject||c.title||"",development:c.editorialPosition?.development||c.summary||"",angle:c.editorialPosition?.angle||c.summary||"",occurredAt:c.editorialPosition?.occurredAt||c.primaryPublishedAt}));
+const freshness=selectFreshPositions(positions,recentPositions,available.length); const freshIds=new Set(freshness.selected.map((p)=>p.id)); const fresh=available.filter((c)=>freshIds.has(c.id)); const freshIrish=fresh.filter(isIrish);
+if(freshIrish.length<irishNeeded)throw new Error(`Slot-budget planning Ireland-first fail-closed before model spend: only ${freshIrish.length}/${irishNeeded} fresh Irish-connected candidates remain after production-history freshness.`);
+const selected=[]; const selectedIds=new Set();
+for(const c of freshIrish.slice(0,irishNeeded)){selected.push(c);selectedIds.add(c.id);} for(const c of fresh){if(selected.length>=missingSlots)break;if(selectedIds.has(c.id))continue;selected.push(c);selectedIds.add(c.id);}
+if(selected.length<missingSlots)throw new Error(`Slot-budget planning fail-closed before model spend: only ${selected.length}/${missingSlots} fresh candidates can be assigned one-to-one to missing slots.`);
+const selectedIrishCount=selected.filter(isIrish).length; if(selectedIrishCount<irishNeeded)throw new Error(`Slot-budget planning internal quota failure: selected ${selectedIrishCount}/${irishNeeded} required Irish-connected candidates.`);
+batch.slotBudgetPlan={operationalDate:operationalDate(),dailyCeilingUsd:0.40,reservationPerSlotUsd:0.055,retainedCount,retainedIrishCount,missingSlots,irishNeeded,selectedIrishCount,paidAttemptLimit:missingSlots,replacementPaidAttempts:0,selectedIds:selected.map((c)=>c.id),plannedAt:new Date().toISOString()}; batch.candidates=selected;
+await fs.writeFile(path.resolve(batchPath),`${JSON.stringify(batch,null,2)}\n`); console.log(JSON.stringify({slotBudgetPlan:"passed",retainedCount,retainedIrishCount,missingSlots,irishNeeded,selectedIrishCount,paidAttemptLimit:missingSlots,replacementPaidAttempts:0,selectedIds:batch.slotBudgetPlan.selectedIds,rejectedByFreshness:freshness.rejected.length},null,2));
