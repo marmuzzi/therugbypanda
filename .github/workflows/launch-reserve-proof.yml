@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - ".github/workflows/launch-reserve-proof.yml"
+      - ".github/launch-reserve-trigger"
   workflow_dispatch:
 
 concurrency:
