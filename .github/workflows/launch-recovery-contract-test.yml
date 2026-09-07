@@ -1,0 +1,33 @@
+name: Launch recovery contract test
+
+on:
+  pull_request:
+    paths:
+      - "app/api/editorial/draft/route.ts"
+      - "scripts/discover-current-editorial-sources.mjs"
+      - "scripts/prepare-slot-budget-batch.mjs"
+      - "scripts/test-launch-recovery-contract.mjs"
+      - ".github/workflows/irish-current-recovery.yml"
+  push:
+    branches: [main]
+    paths:
+      - "app/api/editorial/draft/route.ts"
+      - "scripts/discover-current-editorial-sources.mjs"
+      - "scripts/prepare-slot-budget-batch.mjs"
+      - "scripts/test-launch-recovery-contract.mjs"
+      - ".github/workflows/irish-current-recovery.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: node scripts/test-launch-recovery-contract.mjs
