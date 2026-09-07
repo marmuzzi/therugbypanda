@@ -3,7 +3,7 @@ import path from "node:path";
 const discoveryPath=process.env.CURRENT_SOURCE_DISCOVERY_PATH||"data/editorial-acquisition/current-source-discovery.json";
 const registryPath=process.env.EDITORIAL_SOURCE_REGISTRY||"data/editorial-sources/source-registry.json";
 const maxAgeHours=Number(process.env.IRISH_DISCOVERY_MAX_AGE_HOURS||72);
-const queries=["Ireland rugby","Ireland women rugby","Ireland rugby score","Ireland rugby squad","Leinster rugby","Leinster rugby team news","Munster rugby","Munster rugby team news","Ulster rugby","Ulster rugby team news","Connacht rugby","Connacht rugby team news"];
+const queries=["Ireland rugby","Ireland women rugby","Ireland rugby score","Ireland rugby squad","Ireland rugby results players","Ireland rugby team news players","Leinster rugby","Leinster rugby team news","Leinster rugby players","Munster rugby","Munster rugby team news","Munster rugby players","Ulster rugby","Ulster rugby team news","Ulster rugby players","Connacht rugby","Connacht rugby team news","Connacht rugby players","Mack Hansen Connacht Ealing score"];
 const now=Date.now(); const discovery=JSON.parse(await fs.readFile(path.resolve(discoveryPath),"utf8")); const registry=JSON.parse(await fs.readFile(path.resolve(registryPath),"utf8")); const sources=(registry.sources||[]).filter((s)=>s.allowDiscovery===true);
 const decode=(v="")=>v.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
 const tag=(b,n)=>decode(b.match(new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${n}>`,"i"))?.[1]||"");
