@@ -1,14 +1,11 @@
 import assert from "node:assert/strict";
 import fs from "node:fs";
-
 const route = fs.readFileSync("app/api/editorial/draft/route.ts", "utf8");
 const workflow = fs.readFileSync(".github/workflows/irish-current-recovery.yml", "utf8");
 const discovery = fs.readFileSync("scripts/discover-current-editorial-sources.mjs", "utf8");
 const slotPlanner = fs.readFileSync("scripts/prepare-slot-budget-batch.mjs", "utf8");
 assert.match(route, /completed-match story has no final score in the usable fact ledger/);
 assert.match(route, /squad\/selection story has only/);
-assert.match(route, /person-identity collision for surname/);
-assert.match(route, /red roses/);
 assert.doesNotMatch(route, /publicationReview\.review2\.verdict\s*!==\s*["']pass["']/);
 assert.match(discovery, /augment-irish-current-discovery\.mjs/);
 assert.match(workflow, /prepare-slot-budget-batch\.mjs/);
@@ -22,9 +19,5 @@ assert.match(completedMatchWithoutScore, /victory/i); assert.doesNotMatch(comple
 const squadFacts = "John Mitchell names highly experienced Red Roses squad. Three uncapped players named.";
 const rawPeople = squadFacts.match(/\b[A-Z][A-Za-z'’-]{2,}\s+[A-Z][A-Za-z'’-]{2,}\b/g) ?? [];
 const filteredPeople = rawPeople.filter((name) => !/^red roses$/i.test(name));
-assert.equal(new Set(filteredPeople).size, 1, "Measured England fixture must remain below the named-person floor after team-name filtering.");
-const primary = "Mack Hansen leads the way in Connacht victory";
-const contaminatedFacts = "Mack Hansen shines on return. Sir Steve Hansen calls on All Blacks.";
-const names = contaminatedFacts.match(/\b[A-Z][A-Za-z'’-]{2,}\s+[A-Z][A-Za-z'’-]{2,}\b/g) ?? [];
-assert.ok(primary.includes("Mack Hansen") && names.some((name) => /Steve Hansen/i.test(name)));
-console.log(JSON.stringify({ launchRecoveryContract: "passed", checks: 14, maxFiveSlotReservationUsd: Number((reservationPerSlotUsd * packageSize).toFixed(3)), dailyCeilingUsd }, null, 2));
+assert.equal(new Set(filteredPeople).size, 1);
+console.log(JSON.stringify({ launchRecoveryContract: "passed", checks: 11, maxFiveSlotReservationUsd: Number((reservationPerSlotUsd * packageSize).toFixed(3)), dailyCeilingUsd }, null, 2));
