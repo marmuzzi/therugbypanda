@@ -40,3 +40,4 @@ Thirty-ninth bounded recovery execution for 4 September after PR #412 restored p
 Fortieth bounded recovery execution for 4 September after PR #413 same-day contamination and Review #2 fail-closed repair deployed READY.
 Forty-first bounded normal production execution for 5 September 2026 morning package, forced early to protect the 08:00 Europe/Dublin delivery SLA from GitHub cron delay.
 Forty-second immediate production recovery execution for 7 September 2026 after PR #437 per-draft Zoho notification and pre-AI evidence repair; forced because GitHub scheduled workflow did not start before the 08:00 Europe/Dublin SLA.
+Forty-third immediate production execution for 7 September 2026 from current main after Ireland-first recovery repair; user explicitly requires today's articles now.
