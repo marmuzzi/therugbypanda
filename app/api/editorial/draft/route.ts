@@ -23,20 +23,32 @@ const DATE_DETAIL = /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sund
 const SCORE_DETAIL = /\b\d{1,3}\s*[-–:]\s*\d{1,3}\b/;
 const VENUE_DETAIL = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork|soweto)\b/i;
 const PLAYER_COACH_DETAIL = /\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g;
+const GENERIC_PERSON_NAMES = /^(?:irish independent|planet rugby|united rugby|rugby football|world rugby|the rugby|new zealand|south africa)$/i;
 const corsHeaders = { "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", Vary: "Origin" };
 
 type DraftRequest = { story: RawStoryInput; factLedger: FactLedger; createSanityDraft?: boolean; editorialImageId?: string; dryRun?: boolean; qaMode?: boolean; notificationMode?: "draft" | "package"; styleProfileId?: ArticleStyleProfileId; };
 type FinalSourceNote = { sourceId?: string; publisher?: string; url?: string; };
 function jsonResponse(body: unknown, init?: ResponseInit) { return NextResponse.json(body, { ...init, headers: { ...corsHeaders, ...(init?.headers ?? {}) } }); }
 function isAuthorized(request: NextRequest): boolean { const secret = process.env.EDITORIAL_AUTOMATION_SECRET; return Boolean(secret && request.headers.get("authorization") === `Bearer ${secret}`); }
-function namedPeople(value: string) {
-  return new Set((value.match(PLAYER_COACH_DETAIL) ?? []).map((name) => name.toLowerCase().replace(/[’']/g, "'")).filter((name) => !/^(?:irish independent|planet rugby|united rugby|rugby football|world rugby|the rugby|new zealand|south africa)$/i.test(name)));
+function personNames(value: string) { return (value.match(PLAYER_COACH_DETAIL) ?? []).map((name) => name.replace(/[’']/g, "'")).filter((name) => !GENERIC_PERSON_NAMES.test(name)); }
+function namedPeople(value: string) { return new Set(personNames(value).map((name) => name.toLowerCase())); }
+function assertPersonIdentityCoherence(story: RawStoryInput, factEvidence: string) {
+  const primary = personNames(story.title);
+  const evidenceNames = personNames(factEvidence);
+  for (const primaryName of primary) {
+    const [primaryFirst, ...primaryRest] = primaryName.toLowerCase().split(/\s+/);
+    const primaryLast = primaryRest.at(-1);
+    if (!primaryLast) continue;
+    const collision = evidenceNames.find((name) => { const [first, ...rest] = name.toLowerCase().split(/\s+/); return rest.at(-1) === primaryLast && first !== primaryFirst; });
+    if (collision) throw new Error(`Pre-generation evidence gate failed: person-identity collision for surname ${primaryLast}; story names ${primaryName} but usable facts also contain ${collision}. Require coherent same-person evidence before OpenAI spend.`);
+  }
 }
 function assertPreGenerationEvidence(story: RawStoryInput, factLedger: FactLedger) {
   const usableFacts = (Array.isArray(factLedger.facts) ? factLedger.facts : []).filter((fact) => fact.usableInDraft && fact.status !== "disputed" && String(fact.claim || "").trim().length >= 25);
   const factEvidence = usableFacts.map((fact) => fact.claim).filter(Boolean).join(" ");
   const evidence = [story.title, story.summary, ...story.sourceRecords.flatMap((source) => [source.title, source.excerpt, source.bodyText]), factEvidence].filter(Boolean).join(" ");
   const storyIdentity = `${story.title} ${story.summary ?? ""}`;
+  assertPersonIdentityCoherence(story, factEvidence);
   if (MATCH_LIKE.test(storyIdentity)) {
     const detailClasses = [DATE_DETAIL.test(evidence), SCORE_DETAIL.test(evidence), VENUE_DETAIL.test(evidence), namedPeople(evidence).size > 0].filter(Boolean).length;
     if (usableFacts.length < 2 || detailClasses < 2) throw new Error(`Pre-generation evidence gate failed: match/trial story has ${usableFacts.length} usable substantive facts and ${detailClasses}/4 concrete match-detail classes; require at least 2 facts and 2 detail classes before OpenAI spend.`);
@@ -63,19 +75,12 @@ export async function POST(request: NextRequest) {
     const editorial = new EditorialBrain().evaluate(body.story, { factLedger: body.factLedger });
     console.info("Editorial Brain completed", { requestId, inputId: body.story.id, decision: editorial.decision, score: editorial.score.total, confidence: editorial.confidence, durationMs: Date.now() - startedAt });
     if (editorial.decision !== "draft") return jsonResponse({ status: editorial.decision, editorial, message: "No article was generated because the Editorial Brain did not approve this story for drafting." });
-
     process.env.OPENAI_EDITORIAL_MODEL ??= DEFAULT_GENERATION_MODEL;
     process.env.OPENAI_EDITORIAL_REVIEW_MODEL ??= DEFAULT_REVIEW_MODEL;
     process.env.OPENAI_EDITORIAL_REPAIR_MODEL ??= DEFAULT_REVIEW_MODEL;
-
-    if (body.dryRun === true) {
-      const sanity = await validateSanityConnectivity(editorial.category);
-      return jsonResponse({ status: "dry-run-passed", editorial, checks: { authentication: true, requestShape: true, editorialBrain: true, editorialDecision: editorial.decision, preGenerationEvidence: true, openAiConfigured: Boolean(process.env.OPENAI_API_KEY), openAiModel: process.env.OPENAI_EDITORIAL_MODEL, reviewModel: process.env.OPENAI_EDITORIAL_REVIEW_MODEL, dailyAiBudgetUsd: 0.40, draftPipelineReservationUsd: DRAFT_PIPELINE_BUDGET_RESERVATION_USD, structuredSchemaConfigured: true, publicationReviewConfigured: true, contextualCardEnrichmentConfigured: true, sanity }, requestId });
-    }
-
+    if (body.dryRun === true) { const sanity = await validateSanityConnectivity(editorial.category); return jsonResponse({ status: "dry-run-passed", editorial, checks: { authentication: true, requestShape: true, editorialBrain: true, editorialDecision: editorial.decision, preGenerationEvidence: true, openAiConfigured: Boolean(process.env.OPENAI_API_KEY), openAiModel: process.env.OPENAI_EDITORIAL_MODEL, reviewModel: process.env.OPENAI_EDITORIAL_REVIEW_MODEL, dailyAiBudgetUsd: 0.40, draftPipelineReservationUsd: DRAFT_PIPELINE_BUDGET_RESERVATION_USD, structuredSchemaConfigured: true, publicationReviewConfigured: true, contextualCardEnrichmentConfigured: true, sanity }, requestId }); }
     const budget = await reserveEditorialAiBudget({ requestId, purpose: body.qaMode === true ? `qa-draft:${body.story.id}` : `production-draft:${body.story.id}`, amountUsd: DRAFT_PIPELINE_BUDGET_RESERVATION_USD });
     console.info("Editorial AI budget reserved", { requestId, inputId: body.story.id, ...budget });
-
     const generatedArticle = await generateArticleDraft(body.story, editorial, { targetLengthWords: body.qaMode === true ? "250-400" : "700-1100", timeoutMs: EDITORIAL_GENERATION_TIMEOUT_MS, styleProfileId: body.styleProfileId });
     const publicationReview = await runPublicationReviewCycle(generatedArticle, editorial, body.story);
     const article = publicationReview.article; assertFinalSourceIntegrity(article, body.story); const pkg = { editorial, article };
