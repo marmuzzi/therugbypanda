@@ -40,7 +40,10 @@ function draftPrimaryText(draft) { return [draft?.title,draft?.standfirst].filte
 function candidateText(candidate) { return [candidate?.title,candidate?.summary,candidate?.subject,candidate?.development,candidate?.editorialAngle,candidate?.editorialPosition?.subject,candidate?.editorialPosition?.development,candidate?.editorialPosition?.angle,...(Array.isArray(candidate?.sourceRecords)?candidate.sourceRecords.flatMap((source)=>[source?.title,source?.excerpt]):[])].filter(Boolean).join(" "); }
 function candidatePrimaryText(candidate) { return [candidate?.title,candidate?.summary,candidate?.subject,candidate?.development,candidate?.editorialAngle,candidate?.editorialPosition?.subject,candidate?.editorialPosition?.development,candidate?.editorialPosition?.angle].filter(Boolean).join(" "); }
 function isIrishDraft(draft) { return IRISH_PRIMARY.test(draftPrimaryText(draft)); }
-function isIrishCandidate(candidate) { return IRISH_CATEGORY.has(candidate?.suggestedCategory) || IRISH_PRIMARY.test(candidatePrimaryText(candidate)); }
+// A corroborated candidate is Irish-connected when the direct editorial position OR its validated
+// source evidence materially names Ireland/IRFU/a province. The previous primary-text-only check
+// discarded Irish connection whenever the highest-ranked source used a player/event headline.
+function isIrishCandidate(candidate) { return IRISH_CATEGORY.has(candidate?.suggestedCategory) || IRISH_PRIMARY.test(candidateText(candidate)); }
 function canAdd(pairs,teams,matchupCounts,teamCounts) { return pairs.every((pair)=>(matchupCounts.get(pair)??0)<maxPerMatchup) && teams.every((team)=>(teamCounts.get(team)??0)<maxPerTeam); }
 function addConcentration(pairs,teams,matchupCounts,teamCounts) { for (const pair of pairs) matchupCounts.set(pair,(matchupCounts.get(pair)??0)+1); for (const team of teams) teamCounts.set(team,(teamCounts.get(team)??0)+1); }
 function concentrationReason(pairs,teams,matchupCounts,teamCounts) { const bp=pairs.filter((p)=>(matchupCounts.get(p)??0)>=maxPerMatchup); const bt=teams.filter((t)=>(teamCounts.get(t)??0)>=maxPerTeam); if(bt.length&&bp.length)return `same-package team concentration exceeds ${maxPerTeam} and matchup concentration exceeds ${maxPerMatchup}`; if(bt.length)return `same-package team concentration exceeds ${maxPerTeam}`; return `same-package matchup concentration exceeds ${maxPerMatchup}`; }
@@ -61,7 +64,6 @@ const batch=JSON.parse(await fs.readFile(batchPath,"utf8")); if(!Array.isArray(b
 const retainedInputIds=new Set(retained.map((draft)=>draft.editorialInputId).filter(Boolean));
 const candidateMatchupCounts=new Map(matchupCounts); const candidateTeamCounts=new Map(teamCounts); const rejectedCandidates=[];
 const unretained=batch.candidates.filter((candidate)=>!retainedInputIds.has(candidate?.id));
-// Ireland-first is deterministic and happens before any model spend. Preserve source ranking inside each class.
 const ordered=[...unretained.filter(isIrishCandidate),...unretained.filter((candidate)=>!isIrishCandidate(candidate))];
 const keptUnretained=[];
 for(const candidate of ordered){ const pairs=matchupPairs(candidateText(candidate)); const teams=[...new Set(teamIds(candidatePrimaryText(candidate)))]; if(!canAdd(pairs,teams,candidateMatchupCounts,candidateTeamCounts)){ rejectedCandidates.push({id:candidate?.id,title:candidate?.title,pairs,teams,irishConnected:isIrishCandidate(candidate),reason:concentrationReason(pairs,teams,candidateMatchupCounts,candidateTeamCounts)}); continue;} keptUnretained.push(candidate); addConcentration(pairs,teams,candidateMatchupCounts,candidateTeamCounts); }
