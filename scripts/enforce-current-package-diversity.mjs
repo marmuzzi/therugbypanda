@@ -40,9 +40,6 @@ function draftPrimaryText(draft) { return [draft?.title,draft?.standfirst].filte
 function candidateText(candidate) { return [candidate?.title,candidate?.summary,candidate?.subject,candidate?.development,candidate?.editorialAngle,candidate?.editorialPosition?.subject,candidate?.editorialPosition?.development,candidate?.editorialPosition?.angle,...(Array.isArray(candidate?.sourceRecords)?candidate.sourceRecords.flatMap((source)=>[source?.title,source?.excerpt]):[])].filter(Boolean).join(" "); }
 function candidatePrimaryText(candidate) { return [candidate?.title,candidate?.summary,candidate?.subject,candidate?.development,candidate?.editorialAngle,candidate?.editorialPosition?.subject,candidate?.editorialPosition?.development,candidate?.editorialPosition?.angle].filter(Boolean).join(" "); }
 function isIrishDraft(draft) { return IRISH_PRIMARY.test(draftPrimaryText(draft)); }
-// A corroborated candidate is Irish-connected when the direct editorial position OR its validated
-// source evidence materially names Ireland/IRFU/a province. The previous primary-text-only check
-// discarded Irish connection whenever the highest-ranked source used a player/event headline.
 function isIrishCandidate(candidate) { return IRISH_CATEGORY.has(candidate?.suggestedCategory) || IRISH_PRIMARY.test(candidateText(candidate)); }
 function canAdd(pairs,teams,matchupCounts,teamCounts) { return pairs.every((pair)=>(matchupCounts.get(pair)??0)<maxPerMatchup) && teams.every((team)=>(teamCounts.get(team)??0)<maxPerTeam); }
 function addConcentration(pairs,teams,matchupCounts,teamCounts) { for (const pair of pairs) matchupCounts.set(pair,(matchupCounts.get(pair)??0)+1); for (const team of teams) teamCounts.set(team,(teamCounts.get(team)??0)+1); }
@@ -51,14 +48,29 @@ function concentrationReason(pairs,teams,matchupCounts,teamCounts) { const bp=pa
 const client=createClient({projectId,dataset,apiVersion,token,useCdn:false,perspective:"raw"});
 const packageDate=operationalDate(); const prefix=`current-${packageDate}-*`;
 const drafts=await client.fetch(`*[_type == "article" && _id in path("drafts.**") && morningPackageEligible == true && coalesce(automationContentClass, "production") == "production" && editorialInputId match $prefix] | order(coalesce(editorialGeneratedAt, _createdAt) asc) {_id,title,standfirst,editorialInputId,editorialGeneratedAt,_createdAt,sourceNotes}`,{prefix});
-const matchupCounts=new Map(); const teamCounts=new Map(); const retained=[]; const evicted=[];
-for(const draft of (Array.isArray(drafts)?drafts:[])){ const pairs=matchupPairs(draftText(draft)); const teams=[...new Set(teamIds(draftPrimaryText(draft)))]; if(!canAdd(pairs,teams,matchupCounts,teamCounts)){ await client.patch(draft._id).set({morningPackageEligible:false,automationContentClass:"production"}).commit(); evicted.push({articleId:draft._id,editorialInputId:draft.editorialInputId,title:draft.title,pairs,teams,reason:concentrationReason(pairs,teams,matchupCounts,teamCounts)}); continue;} retained.push(draft); addConcentration(pairs,teams,matchupCounts,teamCounts); }
+const retained=[]; const evicted=[];
+const provisionalMatchupCounts=new Map(); const provisionalTeamCounts=new Map();
+for(const draft of (Array.isArray(drafts)?drafts:[])){ const pairs=matchupPairs(draftText(draft)); const teams=[...new Set(teamIds(draftPrimaryText(draft)))]; if(!canAdd(pairs,teams,provisionalMatchupCounts,provisionalTeamCounts)){ await client.patch(draft._id).set({morningPackageEligible:false,automationContentClass:"production"}).commit(); evicted.push({articleId:draft._id,editorialInputId:draft.editorialInputId,title:draft.title,pairs,teams,reason:concentrationReason(pairs,teams,provisionalMatchupCounts,provisionalTeamCounts)}); continue;} retained.push(draft); addConcentration(pairs,teams,provisionalMatchupCounts,provisionalTeamCounts); }
 
+// Retained drafts are inputs, not entitlements. If yesterday/today's partial package contains too many
+// international-only drafts, evict the newest overflow deterministically and refill those slots from
+// the Irish reserve. Previously this condition aborted the entire morning workflow before generation.
+const internationalRetained=retained.filter((draft)=>!isIrishDraft(draft));
+const internationalOverflow=Math.max(0,internationalRetained.length-maxInternationalOnly);
+if(internationalOverflow>0){
+  const overflowIds=new Set(internationalRetained.slice(-internationalOverflow).map((draft)=>draft._id));
+  for(const draft of retained.filter((item)=>overflowIds.has(item._id))){
+    await client.patch(draft._id).set({morningPackageEligible:false,automationContentClass:"production"}).commit();
+    evicted.push({articleId:draft._id,editorialInputId:draft.editorialInputId,title:draft.title,pairs:matchupPairs(draftText(draft)),teams:[...new Set(teamIds(draftPrimaryText(draft)))],reason:`Ireland-first retained overflow: international-only drafts capped at ${maxInternationalOnly}`});
+  }
+  for(let index=retained.length-1;index>=0;index-=1) if(overflowIds.has(retained[index]._id)) retained.splice(index,1);
+}
+
+// Rebuild concentration state from the final retained set after all evictions.
+const matchupCounts=new Map(); const teamCounts=new Map();
+for(const draft of retained) addConcentration(matchupPairs(draftText(draft)),[...new Set(teamIds(draftPrimaryText(draft)))],matchupCounts,teamCounts);
 const retainedIrishCount=retained.filter(isIrishDraft).length;
 const retainedInternationalCount=retained.length-retainedIrishCount;
-if(retainedInternationalCount>maxInternationalOnly){
-  throw new Error(`Ireland-first fail-closed: ${retainedInternationalCount} retained international-only drafts exceed the ${maxInternationalOnly}-slot international ceiling.`);
-}
 const irishNeeded=Math.max(0,minIrishConnected-retainedIrishCount);
 const batch=JSON.parse(await fs.readFile(batchPath,"utf8")); if(!Array.isArray(batch?.candidates)) throw new Error("Current acquisition batch does not contain candidates.");
 const retainedInputIds=new Set(retained.map((draft)=>draft.editorialInputId).filter(Boolean));
