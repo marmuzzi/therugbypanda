@@ -40,6 +40,8 @@ jobs:
           node scripts/test-official-video-relevance.mjs
       - name: Apply curated exact-player official embeds first
         run: node scripts/apply-current-verified-story-embed-overrides.mjs
+      - name: Remove weak local media where an exact official embed is verified
+        run: node scripts/remove-current-local-media-for-exact-embeds.mjs
       - name: Acquire remaining story-specific official video embeds
         run: node scripts/apply-current-official-video-embeds.mjs
       - name: Deliver each embed-ready article individually
@@ -70,6 +72,7 @@ jobs:
           name: mandatory-official-media-${{ github.run_id }}
           path: |
             data/editorial-media/current-verified-story-embed-overrides.json
+            data/editorial-media/current-embed-first-local-media-removal.json
             data/editorial-media/current-official-video-embed-readiness.json
           if-no-files-found: warn
           retention-days: 14
