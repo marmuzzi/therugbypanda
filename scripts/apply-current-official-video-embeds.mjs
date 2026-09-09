@@ -11,6 +11,7 @@ const token = process.env.SANITY_API_TOKEN;
 const registryPath = path.resolve(process.env.OFFICIAL_VIDEO_SOURCE_REGISTRY ?? "data/editorial-media/official-video-sources.json");
 const outputPath = path.resolve(process.env.OFFICIAL_VIDEO_EMBED_REPORT ?? "data/editorial-media/current-official-video-embed-readiness.json");
 const MAX_VIDEO_AGE_DAYS = Math.max(1, Number.parseInt(process.env.OFFICIAL_VIDEO_MAX_AGE_DAYS ?? "30", 10) || 30);
+const PACKAGE_SIZE = 5;
 
 if (!projectId || !token) throw new Error("Official video acquisition requires Sanity project ID and token.");
 
@@ -70,13 +71,13 @@ const eligible = await client.fetch(`*[
   _type == "article" && _id in path("drafts.**") && morningPackageEligible == true &&
   coalesce(automationContentClass, "production") == "production" &&
   (!defined(workflowStatus) || workflowStatus in ["draft","submitted","in-review","review","under-review","approved"])
-] | order(coalesce(editorialGeneratedAt,_updatedAt) desc) {
+] | order(coalesce(editorialGeneratedAt,_updatedAt) asc) {
   _id,title,standfirst,editorialAngle,sourceStoryTitle,editorialInputId,workflowStatus,body,
   "socialEmbeds":body[_type=="socialEmbed"]{platform,url,sourceLabel,isOfficialSource}
 }`);
 const articles = (Array.isArray(eligible) ? eligible : []).filter((article) => isCurrentPackageEditorialInputId(article.editorialInputId, packageDate));
-if (articles.length !== 5 || new Set(articles.map((article) => article.editorialInputId)).size !== 5) {
-  throw new Error(`Mandatory embed acquisition requires exactly five unique ${packageDate} package drafts; found ${articles.length}.`);
+if (articles.length < 1 || articles.length > PACKAGE_SIZE || new Set(articles.map((article) => article.editorialInputId)).size !== articles.length) {
+  throw new Error(`Mandatory embed acquisition requires 1-${PACKAGE_SIZE} unique ${packageDate} current drafts; found ${articles.length}.`);
 }
 
 const feedCache = new Map();
@@ -131,8 +132,20 @@ for (const article of articles) {
 }
 
 const ready = report.filter((item) => ["existing-verified-official-embed", "applied-and-readback-verified"].includes(item.status));
-const result = { generatedAt: new Date().toISOString(), packageDate, required: 5, ready: ready.length, blocked: report.length - ready.length, maxVideoAgeDays: MAX_VIDEO_AGE_DAYS, articles: report, failClosed: true };
+const result = {
+  generatedAt: new Date().toISOString(),
+  packageDate,
+  requiredArticleCount: PACKAGE_SIZE,
+  currentArticleCount: articles.length,
+  ready: ready.length,
+  blocked: report.length - ready.length,
+  fullPackageMediaReady: articles.length === PACKAGE_SIZE && ready.length === PACKAGE_SIZE,
+  maxVideoAgeDays: MAX_VIDEO_AGE_DAYS,
+  articles: report,
+  failClosedPerArticle: true,
+};
 await fs.mkdir(path.dirname(outputPath), { recursive: true });
 await fs.writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`);
 console.log(JSON.stringify(result, null, 2));
-if (ready.length !== 5) throw new Error(`Mandatory official video gate fail-closed: only ${ready.length}/5 current articles have verified story-specific official embeds.`);
+// Progressive delivery is allowed to continue for any individually verified article.
+// Daily completion remains fail-closed in the progressive-ready endpoint until five accepted deliveries exist.
