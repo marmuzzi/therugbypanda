@@ -38,9 +38,11 @@ jobs:
         run: |
           node scripts/test-current-package-identity.mjs
           node scripts/test-official-video-relevance.mjs
-      - name: Acquire and read-back mandatory official video embeds
+      - name: Apply curated exact-player official embeds first
+        run: node scripts/apply-current-verified-story-embed-overrides.mjs
+      - name: Acquire remaining story-specific official video embeds
         run: node scripts/apply-current-official-video-embeds.mjs
-      - name: Deliver each media-ready article individually
+      - name: Deliver each embed-ready article individually
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
         run: |
@@ -66,6 +68,8 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mandatory-official-media-${{ github.run_id }}
-          path: data/editorial-media/current-official-video-embed-readiness.json
+          path: |
+            data/editorial-media/current-verified-story-embed-overrides.json
+            data/editorial-media/current-official-video-embed-readiness.json
           if-no-files-found: warn
           retention-days: 14
