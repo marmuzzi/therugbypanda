@@ -1,0 +1,71 @@
+name: Mandatory official media recovery
+
+on:
+  workflow_dispatch:
+  workflow_run:
+    workflows: ["Current editorial source discovery"]
+    types: [completed]
+
+concurrency:
+  group: mandatory-official-media-production
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  enrich-and-deliver:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: production
+    env:
+      NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
+      NEXT_PUBLIC_SANITY_DATASET: production
+      NEXT_PUBLIC_SANITY_API_VERSION: 2025-01-01
+      SANITY_API_TOKEN: ${{ secrets.SANITY_API_TOKEN }}
+    steps:
+      - name: Checkout current main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Install dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify exact-package and relevance regressions
+        run: |
+          node scripts/test-current-package-identity.mjs
+          node scripts/test-official-video-relevance.mjs
+      - name: Acquire and read-back mandatory official video embeds
+        run: node scripts/apply-current-official-video-embeds.mjs
+      - name: Deliver only after mandatory media is verified
+        env:
+          EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
+        run: |
+          response_file=$(mktemp)
+          status=$(curl --silent --show-error \
+            --output "$response_file" \
+            --write-out '%{http_code}' \
+            --request POST \
+            --header "Authorization: Bearer $EDITORIAL_AUTOMATION_SECRET" \
+            https://therugbypanda.ie/api/editorial/daily-package)
+          cat "$response_file"
+          echo
+          if [ "$status" != "200" ]; then
+            echo "Mandatory-media delivery returned HTTP $status."
+            exit 1
+          fi
+          if ! grep -Eq '"status":"(sent|already-sent)"' "$response_file"; then
+            echo "Mandatory-media delivery did not confirm sent/already-sent."
+            exit 1
+          fi
+      - name: Upload mandatory-media evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mandatory-official-media-${{ github.run_id }}
+          path: data/editorial-media/current-official-video-embed-readiness.json
+          if-no-files-found: warn
+          retention-days: 14
