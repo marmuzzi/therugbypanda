@@ -1,0 +1,25 @@
+{
+  "schemaVersion": "1.0",
+  "rules": [
+    {
+      "id": "munster-tom-wood-academy-interview",
+      "matchAll": ["tom wood", "munster"],
+      "platform": "youtube",
+      "url": "https://www.youtube.com/watch?v=7xey2oAJnE4",
+      "sourceLabel": "Munster Rugby",
+      "caption": "Official Munster Rugby interview with Tom Wood.",
+      "publishedAt": "2026-05-22T00:00:00Z",
+      "reason": "Exact-player official club video; preferred over generic or weakly matched local imagery."
+    },
+    {
+      "id": "leinster-fintan-gunne-interview",
+      "matchAll": ["fintan gunne", "leinster"],
+      "platform": "youtube",
+      "url": "https://www.youtube.com/watch?v=QllYXewsTns",
+      "sourceLabel": "Leinster Rugby TV",
+      "caption": "Official Leinster Rugby TV interview with Fintan Gunne.",
+      "publishedAt": "2023-11-18T00:00:00Z",
+      "reason": "Exact-player official club interview; acceptable evergreen player context when no newer exact official embed is available."
+    }
+  ]
+}
