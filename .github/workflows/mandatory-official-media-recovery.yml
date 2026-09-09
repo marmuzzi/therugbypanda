@@ -2,6 +2,10 @@ name: Mandatory official media recovery
 
 on:
   workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - ".github/media-recovery-trigger"
   workflow_run:
     workflows: ["Current editorial source discovery"]
     types: [completed]
@@ -49,22 +53,11 @@ jobs:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
         run: |
           response_file=$(mktemp)
-          status=$(curl --silent --show-error \
-            --output "$response_file" \
-            --write-out '%{http_code}' \
-            --request POST \
-            --header "Authorization: Bearer $EDITORIAL_AUTOMATION_SECRET" \
-            https://therugbypanda.ie/api/editorial/progressive-ready)
+          status=$(curl --silent --show-error --output "$response_file" --write-out '%{http_code}' --request POST --header "Authorization: Bearer $EDITORIAL_AUTOMATION_SECRET" https://therugbypanda.ie/api/editorial/progressive-ready)
           cat "$response_file"
           echo
-          if [ "$status" != "200" ]; then
-            echo "Progressive mandatory-media delivery returned HTTP $status."
-            exit 1
-          fi
-          if ! grep -Eq '"status":"(complete|progressive)"' "$response_file"; then
-            echo "Progressive delivery did not confirm a valid delivery state."
-            exit 1
-          fi
+          test "$status" = "200"
+          grep -Eq '"status":"(complete|progressive)"' "$response_file"
       - name: Upload mandatory-media evidence
         if: always()
         uses: actions/upload-artifact@v4

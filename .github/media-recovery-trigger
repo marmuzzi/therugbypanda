@@ -1,0 +1,2 @@
+Media-only production recovery trigger.
+2026-09-09: verify embed-first local-image cleanup after PR #459 without invoking article generation.
