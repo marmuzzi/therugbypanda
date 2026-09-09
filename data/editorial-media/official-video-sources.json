@@ -1,0 +1,14 @@
+{
+  "schemaVersion": "1.0",
+  "sources": [
+    {"id":"irish-rugby","sourceLabel":"Irish Rugby","channelId":"UCn64VUStxkPK06ApqvV_MPA","terms":["ireland","irish","irfu"]},
+    {"id":"leinster-rugby","sourceLabel":"Leinster Rugby","channelId":"UCGHjF23GPeIy1eyyBL8Ow2w","terms":["leinster"]},
+    {"id":"munster-rugby","sourceLabel":"Munster Rugby","channelId":"UC7991AZNku42o3Y36kUZOJA","terms":["munster"]},
+    {"id":"ulster-rugby","sourceLabel":"Ulster Rugby","channelId":"UC4EvohuiwgkUV1v03DDD4eQ","terms":["ulster"]},
+    {"id":"urc","sourceLabel":"United Rugby Championship","channelId":"UC-S6cXyil4qbIPfb2hrcH4w","terms":["urc","united rugby championship","connacht","leinster","munster","ulster"]},
+    {"id":"springboks","sourceLabel":"Springboks","channelId":"UCVI5iqtQOsWZwtAg1o3SIAQ","terms":["south africa","springboks","boks"]},
+    {"id":"all-blacks","sourceLabel":"All Blacks","channelId":"UCsAPiUMyBjtKamxYGbSUnLA","terms":["new zealand","all blacks"]},
+    {"id":"six-nations","sourceLabel":"Six Nations Rugby","channelId":"UCL5bAcVfbxSAs-UM5f5ncWg","terms":["six nations"]},
+    {"id":"epcr","sourceLabel":"EPCR","channelId":"UCqn9RhigXvnvVUkKm5iAjxg","terms":["champions cup","challenge cup","epcr"]}
+  ]
+}
