@@ -100,24 +100,30 @@ if (unfulfillable.length === 0) {
   process.exit(0);
 }
 
-const target = unfulfillable[0];
-if (!String(target.editorialInputId || "").startsWith(`current-${packageDate}-`)) {
-  throw new Error("Refusing to evict a draft outside the exact current package.");
-}
-
 const client = createClient({ projectId, dataset, apiVersion, token, useCdn: false, perspective: "raw" });
-const draft = await client.fetch(`*[
-  _type == "article" &&
-  _id == $id &&
-  _id in path("drafts.**") &&
-  morningPackageEligible == true &&
-  automationContentClass == "production" &&
-  editorialInputId == $editorialInputId
-][0]{_id,title,editorialInputId,morningPackageEligible}`, {
-  id: target.articleId,
-  editorialInputId: target.editorialInputId,
-});
-if (!draft) throw new Error(`Current visual-deficit draft ${target.editorialInputId} is not eligible in Sanity; refusing ambiguous recovery.`);
+let target = null;
+let draft = null;
+for (const candidate of unfulfillable) {
+  const found = await client.fetch(`*[
+    _type == "article" &&
+    _id == $id &&
+    _id in path("drafts.**") &&
+    morningPackageEligible == true &&
+    automationContentClass == "production" &&
+    editorialInputId == $editorialInputId
+  ][0]{_id,title,editorialInputId,morningPackageEligible}`, {
+    id: candidate.articleId,
+    editorialInputId: candidate.editorialInputId,
+  });
+  if (found) {
+    target = candidate;
+    draft = found;
+    break;
+  }
+}
+if (!target || !draft) {
+  throw new Error("No image-unfulfillable draft in the exact current five-article package is eligible for bounded recovery.");
+}
 
 await client.patch(draft._id).set({ morningPackageEligible: false, automationContentClass: "production" }).commit();
 const batchExclusion = await excludeEvictedCandidateFromRecoveryBatch(draft.editorialInputId, packageDate);
