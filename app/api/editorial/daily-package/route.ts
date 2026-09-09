@@ -3,6 +3,7 @@ import { createHash } from "node:crypto";
 import { createClient } from "next-sanity";
 import { NextRequest, NextResponse } from "next/server";
 
+import { isCurrentPackageEditorialInputId } from "@/lib/editorial/CurrentPackageIdentity";
 import { sendZohoMail } from "@/lib/email/ZohoSmtp";
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 
@@ -12,6 +13,20 @@ export const dynamic = "force-dynamic";
 const PACKAGE_SIZE = 5;
 const destination = "editor@therugbypanda.ie";
 const studioBaseUrl = "https://therugbypanda.sanity.studio";
+const EMBED_HOSTS = new Set([
+  "www.instagram.com", "instagram.com",
+  "www.youtube.com", "youtube.com", "youtu.be",
+  "x.com", "www.x.com", "twitter.com", "www.twitter.com",
+  "facebook.com", "www.facebook.com",
+]);
+
+type SocialEmbed = {
+  platform?: string;
+  url?: string;
+  sourceLabel?: string;
+  caption?: string;
+  isOfficialSource?: boolean;
+};
 
 type PackageArticle = {
   _id: string;
@@ -25,6 +40,7 @@ type PackageArticle = {
   competition?: string;
   needsHumanFactCheck?: boolean;
   featuredImageUrl?: string;
+  socialEmbeds?: SocialEmbed[];
 };
 
 type DeliveryEvidence = {
@@ -38,8 +54,7 @@ type DeliveryEvidence = {
 function authorised(request: NextRequest) {
   const expected = process.env.EDITORIAL_AUTOMATION_SECRET?.trim();
   if (!expected) return false;
-  const supplied = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim();
-  return supplied === expected;
+  return request.headers.get("authorization")?.replace(/^Bearer\s+/i, "").trim() === expected;
 }
 
 function getClient() {
@@ -50,102 +65,73 @@ function getClient() {
 
 function operationalDate() {
   return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Dublin",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
+    timeZone: "Europe/Dublin", year: "numeric", month: "2-digit", day: "2-digit",
   }).format(new Date());
 }
 
 function reviewUrl(articleId: string) {
-  const id = articleId.replace(/^drafts\./, "");
-  return `${studioBaseUrl}/intent/edit/id=${encodeURIComponent(id)};type=article`;
+  return `${studioBaseUrl}/intent/edit/id=${encodeURIComponent(articleId.replace(/^drafts\./, ""))};type=article`;
+}
+
+function verifiedOfficialEmbed(embed: SocialEmbed | undefined) {
+  if (!embed?.isOfficialSource || !embed.url || !embed.sourceLabel?.trim()) return false;
+  try {
+    const url = new URL(embed.url);
+    return url.protocol === "https:" && EMBED_HOSTS.has(url.hostname.toLowerCase());
+  } catch {
+    return false;
+  }
+}
+
+function articleHasMandatoryEmbed(article: PackageArticle) {
+  return (article.socialEmbeds ?? []).some(verifiedOfficialEmbed);
 }
 
 function packageFingerprint(articles: PackageArticle[]) {
   const canonicalPackage = articles
     .map((article) => `${article._id.replace(/^drafts\./, "")}|${article.updatedAt ?? ""}`)
-    .sort()
-    .join("\n");
+    .sort().join("\n");
   return createHash("sha256").update(canonicalPackage).digest("hex").slice(0, 12);
 }
 
-function packageEventId(packageDate: string, articles: PackageArticle[]) {
+function eventIdFor(packageDate: string, articles: PackageArticle[]) {
   return `editorial-daily-package:${packageDate}:${packageFingerprint(articles)}`;
 }
 
-function packageLockId(packageDate: string, articles: PackageArticle[]) {
-  const safeDate = packageDate.replace(/[^0-9]/g, "");
-  return `editorial-daily-package-${safeDate}-${packageFingerprint(articles)}`;
-}
-
-function emailSubject(packageDate: string) {
-  return `The Rugby Panda — ${PACKAGE_SIZE} articles ready for review — ${packageDate}`;
-}
-
-function emailText(packageDate: string, articles: PackageArticle[]) {
-  const articleSections = articles.flatMap((article, index) => [
-    `${index + 1}. ${article.title ?? "Untitled article"}`,
-    [article.category, article.competition].filter(Boolean).join(" · "),
-    article.standfirst ?? "",
-    `Review: ${reviewUrl(article._id)}`,
-    `Status: ${article.workflowStatus ?? "draft"}${article.needsHumanFactCheck ? " · human fact-check flagged" : ""}`,
-    article.featuredImageUrl ? "Image: assigned" : "Image: no relevant image assigned",
-    "",
-  ]);
-  return [
-    `The Rugby Panda morning editorial package for ${packageDate}.`,
-    "",
-    "Five production-eligible articles from today's protected exact package are ready for review in Sanity.",
-    "",
-    ...articleSections,
-    "Open each Review link to edit, approve or reject the article.",
-  ].join("\n");
+function lockIdFor(packageDate: string, articles: PackageArticle[]) {
+  return `editorial-daily-package-${packageDate.replace(/[^0-9]/g, "")}-${packageFingerprint(articles)}`;
 }
 
 function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (character) => ({
-    "&": "&amp;",
-    "<": "&lt;",
-    ">": "&gt;",
-    '"': "&quot;",
-    "'": "&#39;",
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;",
   })[character] ?? character);
 }
 
-function emailHtml(packageDate: string, articles: PackageArticle[]) {
-  const cards = articles.map((article, index) => {
-    const title = escapeHtml(article.title ?? "Untitled article");
-    const metadata = escapeHtml([article.category, article.competition].filter(Boolean).join(" · "));
-    const standfirst = escapeHtml(article.standfirst ?? "");
-    const status = escapeHtml(`${article.workflowStatus ?? "draft"}${article.needsHumanFactCheck ? " · human fact-check flagged" : ""}`);
-    const imageStatus = article.featuredImageUrl ? "Image assigned" : "No relevant image assigned";
-    const url = escapeHtml(reviewUrl(article._id));
-    return `
-      <tr><td style="padding:0 0 16px 0;">
-        <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:separate;border:1px solid #d1d5db;border-radius:14px;background:#ffffff;color:#111827;">
-          <tr><td style="padding:18px 18px 6px 18px;font-family:Arial,Helvetica,sans-serif;font-size:12px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#2e7d32;">Article ${index + 1}${metadata ? ` · ${metadata}` : ""}</td></tr>
-          <tr><td style="padding:0 18px 8px 18px;font-family:Arial,Helvetica,sans-serif;font-size:22px;line-height:1.25;font-weight:700;color:#111827;">${title}</td></tr>
-          ${standfirst ? `<tr><td style="padding:0 18px 12px 18px;font-family:Arial,Helvetica,sans-serif;font-size:16px;line-height:1.55;color:#374151;">${standfirst}</td></tr>` : ""}
-          <tr><td style="padding:0 18px 16px 18px;font-family:Arial,Helvetica,sans-serif;font-size:13px;line-height:1.5;color:#4b5563;">Status: ${status}<br>${imageStatus}</td></tr>
-          <tr><td style="padding:0 18px 18px 18px;"><a href="${url}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-family:Arial,Helvetica,sans-serif;font-size:15px;font-weight:700;padding:12px 18px;border-radius:10px;">Open in Sanity</a></td></tr>
-        </table>
-      </td></tr>`;
-  }).join("");
+function emailText(packageDate: string, articles: PackageArticle[]) {
+  return [
+    `The Rugby Panda morning editorial package for ${packageDate}.`, "",
+    ...articles.flatMap((article, index) => [
+      `${index + 1}. ${article.title ?? "Untitled article"}`,
+      article.standfirst ?? "",
+      `Review: ${reviewUrl(article._id)}`,
+      "Image: verified",
+      "Embedded media: verified official source",
+      "",
+    ]),
+  ].join("\n");
+}
 
-  return `<!doctype html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="supported-color-schemes" content="light"></head>
-<body style="margin:0;padding:0;background:#f3f4f6;color:#111827;color-scheme:light only;">
-  <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;background:#f3f4f6;"><tr><td align="center" style="padding:20px 12px;">
-    <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:680px;border-collapse:collapse;background:#ffffff;color:#111827;border-radius:16px;">
-      <tr><td style="padding:24px 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:#2e7d32;">The Rugby Panda</td></tr>
-      <tr><td style="padding:0 22px 8px 22px;font-family:Arial,Helvetica,sans-serif;font-size:28px;line-height:1.2;font-weight:700;color:#111827;">Five articles ready for review</td></tr>
-      <tr><td style="padding:0 22px 22px 22px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:#4b5563;">Protected editorial package for ${escapeHtml(packageDate)}. Open each article in Sanity to review, edit, approve or reject it.</td></tr>
-      <tr><td style="padding:0 22px 8px 22px;"><table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;">${cards}</table></td></tr>
-      <tr><td style="padding:4px 22px 24px 22px;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.5;color:#6b7280;">This message also contains a plain-text fallback for mail clients that do not render HTML.</td></tr>
-    </table>
-  </td></tr></table>
-</body></html>`;
+function emailHtml(packageDate: string, articles: PackageArticle[]) {
+  const cards = articles.map((article, index) => `
+    <div style="border:1px solid #d1d5db;border-radius:12px;padding:16px;margin:0 0 14px 0;background:#fff">
+      <div style="font:700 12px Arial;color:#2e7d32;text-transform:uppercase">Article ${index + 1}</div>
+      <h2 style="font:700 21px Arial;color:#111827;margin:6px 0">${escapeHtml(article.title ?? "Untitled article")}</h2>
+      <p style="font:15px/1.5 Arial;color:#374151">${escapeHtml(article.standfirst ?? "")}</p>
+      <p style="font:13px Arial;color:#4b5563">Image verified · Official embedded media verified</p>
+      <a href="${escapeHtml(reviewUrl(article._id))}" style="display:inline-block;background:#111827;color:#fff;text-decoration:none;font:700 14px Arial;padding:11px 16px;border-radius:9px">Open in Sanity</a>
+    </div>`).join("");
+  return `<!doctype html><html><body style="margin:0;background:#f3f4f6;padding:20px"><main style="max-width:680px;margin:auto;background:#fff;padding:22px;border-radius:16px"><div style="font:700 13px Arial;color:#2e7d32">THE RUGBY PANDA</div><h1 style="font:700 28px Arial;color:#111827">Five articles ready for review</h1><p style="font:15px Arial;color:#4b5563">Exact Dublin-day package for ${escapeHtml(packageDate)}. Every article passed the image and mandatory official-embed delivery boundary.</p>${cards}</main></body></html>`;
 }
 
 async function sendTechnicalAlert(failureCode: string, message: string, details: Record<string, unknown>) {
@@ -157,8 +143,7 @@ async function sendTechnicalAlert(failureCode: string, message: string, details:
       headers: {
         "content-type": "application/json",
         ...(process.env.EDITORIAL_TECHNICAL_ALERT_WEBHOOK_SECRET?.trim()
-          ? { authorization: `Bearer ${process.env.EDITORIAL_TECHNICAL_ALERT_WEBHOOK_SECRET.trim()}` }
-          : {}),
+          ? { authorization: `Bearer ${process.env.EDITORIAL_TECHNICAL_ALERT_WEBHOOK_SECRET.trim()}` } : {}),
       },
       body: JSON.stringify({
         event: "editorial.daily_package.delivery_failed",
@@ -170,7 +155,7 @@ async function sendTechnicalAlert(failureCode: string, message: string, details:
       }),
       cache: "no-store",
     });
-    return response.ok ? ("accepted" as const) : ("failed" as const);
+    return response.ok ? "accepted" as const : "failed" as const;
   } catch {
     return "failed" as const;
   }
@@ -182,6 +167,7 @@ export async function GET() {
     deliveryMode: "direct-zoho-smtp",
     requiredArticleCount: PACKAGE_SIZE,
     packageIdentity: "exact-current-dublin-operational-date",
+    mandatoryMedia: "verified-hero-plus-official-social-video-embed",
     destination,
   });
 }
@@ -192,49 +178,52 @@ export async function POST(request: NextRequest) {
   try {
     const client = getClient();
     const packageDate = operationalDate();
-    const packageInputPrefix = `current-${packageDate}-*`;
-    const articles = await client.fetch<PackageArticle[]>(
-      `*[
-        _type == "article" &&
-        _id in path("drafts.**") &&
-        morningPackageEligible == true &&
-        automationContentClass == "production" &&
-        editorialInputId match $packageInputPrefix &&
-        (!defined(workflowStatus) || workflowStatus in ["draft", "submitted", "in-review", "review", "under-review", "approved"])
-      ] | order(coalesce(editorialGeneratedAt, _updatedAt) desc) {
-        _id,title,standfirst,workflowStatus,editorialInputId,editorialGeneratedAt,"updatedAt":_updatedAt,
-        "category":category->title,"competition":competition->title,needsHumanFactCheck,
-        "featuredImageUrl":featuredImage.asset->url
-      }`,
-      { packageInputPrefix },
-    );
+    const packageInputPrefix = `current-${packageDate}-`;
+
+    // Fetch eligible production drafts without GROQ `match`; exact Dublin-day identity is
+    // enforced in application code to prevent historical IDs leaking into today's package.
+    const eligible = await client.fetch<PackageArticle[]>(`*[
+      _type == "article" &&
+      _id in path("drafts.**") &&
+      morningPackageEligible == true &&
+      automationContentClass == "production" &&
+      (!defined(workflowStatus) || workflowStatus in ["draft", "submitted", "in-review", "review", "under-review", "approved"])
+    ] | order(coalesce(editorialGeneratedAt, _updatedAt) desc) {
+      _id,title,standfirst,workflowStatus,editorialInputId,editorialGeneratedAt,"updatedAt":_updatedAt,
+      "category":category->title,"competition":competition->title,needsHumanFactCheck,
+      "featuredImageUrl":featuredImage.asset->url,
+      "socialEmbeds":body[_type == "socialEmbed"]{platform,url,sourceLabel,caption,isOfficialSource}
+    }`);
+    const articles = (Array.isArray(eligible) ? eligible : [])
+      .filter((article) => isCurrentPackageEditorialInputId(article.editorialInputId, packageDate));
 
     const incompleteEventId = `editorial-daily-package:${packageDate}`;
     const uniqueArticleIds = new Set(articles.map((article) => article._id.replace(/^drafts\./, "")));
     const inputIds = articles.map((article) => article.editorialInputId?.trim()).filter((value): value is string => Boolean(value));
     const uniqueInputIds = new Set(inputIds);
-    const allHaveVerifiedHeroBoundary = articles.every((article) => Boolean(article.featuredImageUrl));
+    const imageReadyArticles = articles.filter((article) => Boolean(article.featuredImageUrl));
+    const embedReadyArticles = articles.filter(articleHasMandatoryEmbed);
     const exactPackage = articles.length === PACKAGE_SIZE
       && uniqueArticleIds.size === PACKAGE_SIZE
       && inputIds.length === PACKAGE_SIZE
       && uniqueInputIds.size === PACKAGE_SIZE
-      && allHaveVerifiedHeroBoundary;
+      && imageReadyArticles.length === PACKAGE_SIZE
+      && embedReadyArticles.length === PACKAGE_SIZE;
 
     if (!exactPackage) {
       const technicalAlertStatus = await sendTechnicalAlert(
-        "invalid-current-package-cardinality",
-        `Current package is not exactly ${PACKAGE_SIZE} unique image-ready production-eligible drafts.`,
+        "invalid-current-package-media-readiness",
+        `Current package is not exactly ${PACKAGE_SIZE} unique exact-day image-and-embed-ready drafts.`,
         {
           eventId: incompleteEventId,
           packageDate,
           packageInputPrefix,
           eligibleArticles: articles.length,
           uniqueArticleIds: uniqueArticleIds.size,
-          editorialInputIds: inputIds.length,
           uniqueEditorialInputIds: uniqueInputIds.size,
-          imageReadyArticles: articles.filter((article) => Boolean(article.featuredImageUrl)).length,
+          imageReadyArticles: imageReadyArticles.length,
+          mandatoryEmbedReadyArticles: embedReadyArticles.length,
           requiredArticles: PACKAGE_SIZE,
-          eligibilityRule: "exact current Dublin editorialInputId + morningPackageEligible=true + automationContentClass=production; diversity/freshness/review resolved upstream",
         },
       );
       return NextResponse.json({
@@ -243,15 +232,16 @@ export async function POST(request: NextRequest) {
         packageDate,
         packageInputPrefix,
         articleCount: articles.length,
-        eligibleCandidateCount: articles.length,
         requiredArticleCount: PACKAGE_SIZE,
-        reason: "invalid-current-package-cardinality",
+        imageReadyArticleCount: imageReadyArticles.length,
+        mandatoryEmbedReadyArticleCount: embedReadyArticles.length,
+        reason: "invalid-current-package-media-readiness",
         technicalAlertStatus,
       }, { status: 409 });
     }
 
-    const eventId = packageEventId(packageDate, articles);
-    const lockId = packageLockId(packageDate, articles);
+    const eventId = eventIdFor(packageDate, articles);
+    const lockId = lockIdFor(packageDate, articles);
     try {
       await client.create({
         _id: lockId,
@@ -264,6 +254,7 @@ export async function POST(request: NextRequest) {
         destination,
         articleIds: articles.map((article) => article._id.replace(/^drafts\./, "")),
         editorialInputIds: inputIds,
+        mandatoryEmbedVerified: true,
         createdAt: new Date().toISOString(),
       });
     } catch (error) {
@@ -275,12 +266,8 @@ export async function POST(request: NextRequest) {
         );
         return NextResponse.json({
           status: evidence?.status === "accepted" ? "already-sent" : "delivery-in-progress",
-          eventId,
-          articleCount: articles.length,
-          destination,
-          accepted: evidence?.accepted,
-          smtpResponse: evidence?.smtpResponse,
-          completedAt: evidence?.completedAt,
+          eventId, articleCount: articles.length, destination,
+          accepted: evidence?.accepted, smtpResponse: evidence?.smtpResponse, completedAt: evidence?.completedAt,
         }, { status: evidence?.status === "accepted" ? 200 : 409 });
       }
       throw error;
@@ -290,7 +277,7 @@ export async function POST(request: NextRequest) {
     try {
       smtpResult = await sendZohoMail({
         to: destination,
-        subject: emailSubject(packageDate),
+        subject: `The Rugby Panda — ${PACKAGE_SIZE} articles ready for review — ${packageDate}`,
         text: emailText(packageDate, articles),
         html: emailHtml(packageDate, articles),
       });
@@ -298,9 +285,7 @@ export async function POST(request: NextRequest) {
       await client.delete(lockId).catch(() => undefined);
       const message = error instanceof Error ? error.message : "Direct Zoho SMTP delivery failed.";
       const technicalAlertStatus = await sendTechnicalAlert(
-        "direct-zoho-smtp-failed",
-        message,
-        { eventId, packageDate, articleCount: articles.length },
+        "direct-zoho-smtp-failed", message, { eventId, packageDate, articleCount: articles.length },
       );
       return NextResponse.json({ status: "failed", eventId, error: message, technicalAlertStatus }, { status: 502 });
     }
@@ -319,18 +304,12 @@ export async function POST(request: NextRequest) {
     }
 
     return NextResponse.json({
-      status: "sent",
-      eventId,
-      packageDate,
-      packageInputPrefix,
+      status: "sent", eventId, packageDate, packageInputPrefix,
       articleCount: articles.length,
-      eligibleCandidateCount: articles.length,
       articleIds: articles.map((article) => article._id.replace(/^drafts\./, "")),
       editorialInputIds: inputIds,
-      destination,
-      accepted: smtpResult.accepted,
-      smtpResponse: smtpResult.response,
-      evidenceStatus,
+      mandatoryEmbedVerified: true,
+      destination, accepted: smtpResult.accepted, smtpResponse: smtpResult.response, evidenceStatus,
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : "Daily editorial package failed.";
