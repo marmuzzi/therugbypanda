@@ -40,7 +40,7 @@ jobs:
           node scripts/test-official-video-relevance.mjs
       - name: Acquire and read-back mandatory official video embeds
         run: node scripts/apply-current-official-video-embeds.mjs
-      - name: Deliver only after mandatory media is verified
+      - name: Deliver each media-ready article individually
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
         run: |
@@ -50,15 +50,15 @@ jobs:
             --write-out '%{http_code}' \
             --request POST \
             --header "Authorization: Bearer $EDITORIAL_AUTOMATION_SECRET" \
-            https://therugbypanda.ie/api/editorial/daily-package)
+            https://therugbypanda.ie/api/editorial/progressive-ready)
           cat "$response_file"
           echo
           if [ "$status" != "200" ]; then
-            echo "Mandatory-media delivery returned HTTP $status."
+            echo "Progressive mandatory-media delivery returned HTTP $status."
             exit 1
           fi
-          if ! grep -Eq '"status":"(sent|already-sent)"' "$response_file"; then
-            echo "Mandatory-media delivery did not confirm sent/already-sent."
+          if ! grep -Eq '"status":"(complete|progressive)"' "$response_file"; then
+            echo "Progressive delivery did not confirm a valid delivery state."
             exit 1
           fi
       - name: Upload mandatory-media evidence
