@@ -55,8 +55,11 @@ function verifiedOfficialEmbed(embed: SocialEmbed | undefined) {
   }
 }
 
+// Embed-first contract: a verified, story-specific official social/video embed is the
+// required visual boundary. A local featured image is additive only when it is independently
+// relevant; we do not force a weak library image merely to satisfy delivery readiness.
 function mediaReady(article: ReadyArticle) {
-  return Boolean(article.featuredImageUrl) && (article.socialEmbeds ?? []).some(verifiedOfficialEmbed);
+  return (article.socialEmbeds ?? []).some(verifiedOfficialEmbed);
 }
 
 function evidenceId(articleId: string) {
@@ -71,7 +74,8 @@ export async function GET() {
   return NextResponse.json({
     status: "ready",
     deliveryMode: "progressive-one-by-one",
-    requiredMedia: "verified-featured-image-plus-official-social-video-embed",
+    requiredMedia: "verified-official-story-specific-social-or-video-embed",
+    localImagePolicy: "optional-only-when-independently-relevant",
     packageSize: PACKAGE_SIZE,
   });
 }
@@ -99,6 +103,7 @@ export async function POST(request: NextRequest) {
   const results: Array<Record<string, unknown>> = [];
 
   for (const article of ready) {
+    const verifiedEmbeds = (article.socialEmbeds ?? []).filter(verifiedOfficialEmbed);
     const lockId = evidenceId(article._id);
     const existing = await client.fetch<{status?: string} | null>(`*[_id == $id][0]{status}`, { id: lockId });
     if (existing?.status === "accepted") {
@@ -116,6 +121,9 @@ export async function POST(request: NextRequest) {
         articleId: article._id.replace(/^drafts\./, ""),
         editorialInputId: article.editorialInputId,
         mediaVerified: true,
+        embedVerified: true,
+        verifiedEmbedCount: verifiedEmbeds.length,
+        localFeaturedImagePresent: Boolean(article.featuredImageUrl),
         createdAt: new Date().toISOString(),
       });
     }
@@ -125,7 +133,7 @@ export async function POST(request: NextRequest) {
       articleTitle: article.title ?? "Untitled article",
       actor: "editorial-media-gate",
       occurredAt: new Date().toISOString(),
-      submissionNote: "This draft passed editorial review, relevant image verification and mandatory official embedded-media verification.",
+      submissionNote: "This draft passed editorial review and mandatory story-specific official embedded-media verification. A local image is included only when independently relevant.",
     });
     if (delivery.status !== "sent") {
       await client.delete(lockId).catch(() => undefined);
@@ -138,7 +146,7 @@ export async function POST(request: NextRequest) {
       eventId: delivery.eventId,
       completedAt: new Date().toISOString(),
     }).commit();
-    results.push({ articleId: article._id, title: article.title, status: "sent", eventId: delivery.eventId });
+    results.push({ articleId: article._id, title: article.title, status: "sent", eventId: delivery.eventId, verifiedEmbedCount: verifiedEmbeds.length, localFeaturedImagePresent: Boolean(article.featuredImageUrl) });
   }
 
   const acceptedDeliveries = await client.fetch<number>(`count(*[
@@ -169,6 +177,8 @@ export async function POST(request: NextRequest) {
     mediaReadyArticleCount: ready.length,
     acceptedDeliveryCount: acceptedDeliveries,
     requiredArticleCount: PACKAGE_SIZE,
+    requiredMedia: "verified-official-story-specific-social-or-video-embed",
+    localImagePolicy: "optional-only-when-independently-relevant",
     results,
   }, { status: failed > 0 ? 502 : 200 });
 }
