@@ -33,12 +33,18 @@ jobs:
         with:
           node-version: 22
       - run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Evict materially duplicate retained current-day drafts
+        run: node scripts/evict-current-source-duplicate-drafts.mjs
       - name: Discover standard and Irish-first current reserve
         run: node scripts/discover-current-editorial-sources.mjs
       - name: Build corroborated evidence
         run: node scripts/build-current-editorial-acquisition-batch.mjs
       - name: Reject weak evidence before model spend
         run: node scripts/filter-current-acquisition-evidence.mjs
+      - name: Align match-detail evidence with generation API before spend
+        env:
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+        run: node scripts/filter-preai-match-detail-parity.mjs
       - name: Enforce Ireland-first diversity before model spend
         env:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
@@ -68,4 +74,5 @@ jobs:
             data/editorial-acquisition/current-source-discovery.json
             data/editorial-acquisition/current-editorial-acquisition-batch.json
             data/editorial-acquisition/current-evidence-sufficiency.json
+            data/editorial-acquisition/preai-match-detail-parity.json
           retention-days: 14
