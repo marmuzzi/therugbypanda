@@ -5,8 +5,9 @@ import { selectFreshPositions } from "../lib/editorial/StoryFreshness.ts";
 const batchPath = path.resolve(process.env.BATCH_PATH || "data/editorial-acquisition/current-editorial-acquisition-batch.json");
 const recentPath = path.resolve(process.env.RECENT_EDITORIAL_POSITIONS_PATH || "data/editorial-acquisition/recent-editorial-positions.json");
 const reportPath = path.resolve(process.env.EDITORIAL_POOL_REPORT_PATH || "data/editorial-acquisition/current-editorial-pool.json");
-const targetPool = Math.max(5, Number.parseInt(process.env.EDITORIAL_POOL_TARGET || "8", 10) || 8);
-const minPackage = 5;
+const packageSize = 5;
+const reserveTarget = Math.max(0, Number.parseInt(process.env.EDITORIAL_POOL_RESERVE || "3", 10) || 0);
+const strict = process.env.EDITORIAL_POOL_STRICT === "1";
 
 const batch = JSON.parse(await fs.readFile(batchPath, "utf8"));
 const recentRaw = JSON.parse(await fs.readFile(recentPath, "utf8"));
@@ -15,6 +16,9 @@ if (!Array.isArray(batch?.candidates) || !Array.isArray(recentPositions)) {
   throw new Error("Canonical editorial pool fail-closed: invalid acquisition batch or recent positions.");
 }
 
+const retainedCount = Math.min(packageSize, Math.max(0, Number(batch?.provenance?.concreteEvidenceGate?.retainedEligibleCount || 0)));
+const missingSlots = Math.max(0, packageSize - retainedCount);
+const requiredEligible = missingSlots === 0 ? 0 : missingSlots + reserveTarget;
 const positions = batch.candidates.map((candidate) => ({
   id: candidate.id,
   subject: candidate.editorialPosition?.subject || candidate.title || "",
@@ -30,22 +34,29 @@ const rejected = batch.candidates.filter((candidate) => !freshIds.has(candidate.
   title: candidate.title,
   status: "duplicate-or-stale",
 }));
+const sufficient = eligible.length >= requiredEligible;
 
 batch.candidates = eligible;
 batch.editorialPool = {
   checkedAt: new Date().toISOString(),
-  targetPool,
-  minimumPackage: minPackage,
+  packageSize,
+  retainedCount,
+  missingSlots,
+  reserveTarget,
+  requiredEligible,
   inputCount: positions.length,
   eligibleCount: eligible.length,
-  reserveCount: Math.max(0, eligible.length - minPackage),
-  status: eligible.length >= targetPool ? "target-met" : eligible.length >= minPackage ? "package-met-reserve-thin" : "insufficient",
+  reserveCount: Math.max(0, eligible.length - missingSlots),
+  sufficient,
+  status: sufficient ? "target-met" : "refill-required",
   rejected,
 };
 await fs.writeFile(batchPath, `${JSON.stringify(batch, null, 2)}\n`, "utf8");
 await fs.writeFile(reportPath, `${JSON.stringify(batch.editorialPool, null, 2)}\n`, "utf8");
-
-if (eligible.length < minPackage) {
-  throw new Error(`Canonical editorial pool fail-closed: only ${eligible.length}/${minPackage} eligible positions; free discovery must expand before paid generation.`);
+if (process.env.GITHUB_OUTPUT) {
+  await fs.appendFile(process.env.GITHUB_OUTPUT, `sufficient=${sufficient}\neligible_count=${eligible.length}\nrequired_eligible=${requiredEligible}\nmissing_slots=${missingSlots}\n`);
 }
-console.log(JSON.stringify({ canonicalEditorialPool: "passed", ...batch.editorialPool }, null, 2));
+if (!sufficient && strict) {
+  throw new Error(`Canonical editorial pool fail-closed after free refill: retained ${retainedCount}, missing ${missingSlots}, eligible ${eligible.length}/${requiredEligible} including reserve ${reserveTarget}.`);
+}
+console.log(JSON.stringify({ canonicalEditorialPool: sufficient ? "passed" : "refill-required", ...batch.editorialPool }, null, 2));

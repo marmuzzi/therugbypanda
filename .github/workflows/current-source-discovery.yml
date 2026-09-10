@@ -31,7 +31,7 @@ jobs:
       RECENT_EDITORIAL_POSITIONS_PATH: data/editorial-acquisition/recent-editorial-positions.json
       DISCOVERY_MAX_AGE_HOURS: "36"
       IRISH_DISCOVERY_MAX_AGE_HOURS: "72"
-      EDITORIAL_POOL_TARGET: "8"
+      EDITORIAL_POOL_RESERVE: "3"
     steps:
       - name: Checkout current source
         uses: actions/checkout@v4
@@ -57,6 +57,10 @@ jobs:
         run: node scripts/evict-current-source-duplicate-drafts.mjs
       - name: Discover standard and Irish-first current reserve
         if: steps.package_state.outputs.skip != 'true'
+        env:
+          DISCOVERY_PER_SOURCE_LIMIT: "16"
+          DISCOVERY_CORROBORATION_SEED_LIMIT: "72"
+          DISCOVERY_CORROBORATION_PER_SEED_LIMIT: "10"
         run: node scripts/discover-current-editorial-sources.mjs
       - name: Build corroborated evidence
         if: steps.package_state.outputs.skip != 'true'
@@ -72,11 +76,38 @@ jobs:
       - name: Export recent production positions
         if: steps.package_state.outputs.skip != 'true'
         run: node scripts/export-recent-editorial-positions.mjs
-      - name: Build canonical eligible editorial pool once
+      - name: Qualify canonical editorial pool
+        id: pool
         if: steps.package_state.outputs.skip != 'true'
         env:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
-          EDITORIAL_POOL_TARGET: "8"
+          EDITORIAL_POOL_RESERVE: "3"
+          EDITORIAL_POOL_STRICT: "0"
+        run: node scripts/qualify-current-editorial-pool.mjs
+      - name: Expand free discovery when canonical pool is short
+        if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
+        env:
+          DISCOVERY_PER_SOURCE_LIMIT: "24"
+          DISCOVERY_CORROBORATION_SEED_LIMIT: "120"
+          DISCOVERY_CORROBORATION_PER_SEED_LIMIT: "12"
+        run: node scripts/discover-current-editorial-sources.mjs
+      - name: Rebuild corroborated evidence after free refill
+        if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
+        run: node scripts/build-current-editorial-acquisition-batch.mjs
+      - name: Re-run evidence gate after free refill
+        if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
+        run: node scripts/filter-current-acquisition-evidence.mjs
+      - name: Re-run match-detail parity after free refill
+        if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
+        env:
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+        run: node scripts/filter-preai-match-detail-parity.mjs
+      - name: Final canonical editorial pool gate
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+          EDITORIAL_POOL_RESERVE: "3"
+          EDITORIAL_POOL_STRICT: "1"
         run: node scripts/qualify-current-editorial-pool.mjs
       - name: Enforce Ireland-first and same-package diversity from canonical pool
         if: steps.package_state.outputs.skip != 'true'
