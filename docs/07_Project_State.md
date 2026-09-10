@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-10 September 2026 after source expansion, freshness-order repair and reciprocal source-cluster deduplication through PR #466.
+10 September 2026 after progressive match-day freshness, Irish source expansion and evidence-parser repair through PR #471.
 
 ## Read first
 
@@ -23,6 +23,8 @@ Newer measured evidence supersedes older state statements where they conflict; G
 - Europe/Dublin operational day.
 - Five fresh, genuinely distinct review-ready drafts, delivered individually as each becomes ready.
 - At least 3/5 direct Irish connections; at most 2 international-only.
+- A genuine follow-up or new match phase is fresh even when it concerns the same match; same-phase rewrites remain duplicates.
+- Up to three distinct stories may concern the same canonical matchup/team when each has a materially different development.
 - Mandatory verified official story-specific social/video embed before review delivery.
 - Local Sanity imagery is optional and must be omitted when it is not independently relevant.
 - Sanity remains the human publication boundary; never auto-publish.
@@ -32,28 +34,30 @@ Newer measured evidence supersedes older state statements where they conflict; G
 
 ## 10 September measured production state
 
-PRs #461-#463 expanded Irish discovery and corrected rugby/non-rugby qualification. PR #464 added person-team coherent current-story clustering. PR #465 restored the required execution order so 14-day production-history freshness runs before Ireland-first/team diversity. Zero-model proof `34462078361` then mechanically produced five assignable slots with three Irish-connected positions, but inspection found reciprocal source clusters could still create duplicate story candidates.
+PRs #461-#466 expanded Irish discovery, repaired rugby/non-rugby qualification, added person-team coherent clustering, restored freshness-before-diversity and removed reciprocal source-cluster duplicates. The stricter #466 proof correctly exposed a real supply shortage at four fresh positions rather than manufacturing a five-story package from duplicates.
 
-PR #466 removes reciprocal source-cluster duplicates before evidence qualification and excludes generic team names such as `Chiefs` from distinctive person anchors. Production deployment `dpl_GvpyBkZgZeb6cFMVQC9E2xQKakMx` is READY on merged SHA `36979dbf03dd3b73ea3a56a1d867c699c982df0b`.
+PR #468 implements progressive match-day freshness and raises same-match/team concentration from two to three only for genuinely distinct developments. It also expands the targeted Irish reserve from 5 to 10 supplementary sources and from 40 to 61 targeted searches. The freshness regression explicitly proves preview → team selection → result as acceptable progression while same-phase selection rewrites remain duplicates.
 
-Zero-model production-data proof `34479627476` verified the new clustering regressions and removed 18 reciprocal source-cluster duplicates. After evidence and 14-day history freshness, only four genuinely fresh candidates remained, so the workflow correctly failed closed before diversity and model spend. This is the current launch blocker: insufficient fresh distinct supply, not duplicate leakage.
+PR #469 repaired the zero-model test harness. PR #470 corrected false person-phrase parsing in the evidence gate without weakening the exact-person corroboration requirement. Zero-model production-data proof `34481546309` then passed the full pre-AI path: 10 evidence-qualified candidates, 6 surviving 14-day production-history freshness, 2 retained Irish drafts, 6 available replacement candidates for 3 missing slots plus reserve, and 2 Irish-connected replacements selected for the three missing slots. The existing Sanity daily ledger reported `$0.275` reserved; the zero-model proof itself made no model calls.
+
+PR #471 made the freshness regression Vercel-build-safe. Exact-SHA proof `34481959318` passed all substantive and cleanup steps on merged SHA `af95bb0cb01a63e4e5ba69def758ff0f7811eae6`. Vercel production deployment `dpl_BgygQPzGA15iVBvncV5VpUyBfmB4` is READY on that exact SHA.
 
 ## Budget
 
-The hard ceiling remains `$0.40` per Europe/Dublin operational day. The 10 September recovery and reserve proofs through PR #466 used zero model generation; the failing #466 proof stopped before any paid reservation.
+The hard ceiling remains `$0.40` per Europe/Dublin operational day and the normal target remains at or below `$0.30`. The zero-model recovery/proof runs introduced no model spend. The latest measured Sanity ledger during proof `34481546309` reported `$0.275` already reserved from earlier 10 September production attempts. Three additional `$0.055` paid slots would require `$0.165` and therefore cannot all be generated today without exceeding the hard ceiling. Do not bypass the Sanity guard or use paid replacement loops.
 
 ## Current launch blockers
 
-1. Expand the fresh distinct evidence reserve until at least five candidates survive source-cluster deduplication and 14-day production-history freshness, with capacity for at least three Irish-connected stories.
+1. Complete a normal paid package on a Dublin day where budget is available, using the now-proven fresh/distinct reserve path.
 2. Production proof of PR #459 local-image cleanup on exact-embed drafts.
 3. Story-specific official embed coverage for every selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
-4. Five genuinely distinct articles in one Dublin-day package under the `$0.40` ceiling.
-5. Continued proof that the simplified scheduled workflow does not retry paid failures or force irrelevant images.
+4. Five genuinely distinct review-ready articles in one Dublin-day package under the `$0.40` ceiling.
+5. Continued proof that the scheduled workflow does not retry paid failures or force irrelevant images.
 
 ## Go-live states
 
 1. evidence-complete Ireland-first reserve;
-2. five distinct fresh positions with recent-position repetition protection;
+2. five distinct fresh positions with recent-position repetition protection and progressive match-day follow-ups allowed;
 3. verified official story-specific embed for every article;
 4. local image only when exact/relevant, otherwise omit it;
 5. individual review delivery after editorial and embed gates;
