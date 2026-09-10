@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-9 September 2026 after embed-first media production proof through PRs #458 and #459.
+10 September 2026 after source expansion, freshness-order repair and reciprocal source-cluster deduplication through PR #466.
 
 ## Read first
 
@@ -30,31 +30,25 @@ Newer measured evidence supersedes older state statements where they conflict; G
 - Free discovery, evidence, freshness, diversity, media qualification and slot planning before model spend.
 - One paid candidate per missing slot; no paid replacement loop.
 
-## 9 September measured production state
+## 10 September measured production state
 
-PRs #451-#457 repaired exact-day identity, stale retention, duplicate source clusters, pre-AI evidence parity, package-mode notification suppression, mandatory official-video acquisition and progressive one-by-one delivery.
+PRs #461-#463 expanded Irish discovery and corrected rugby/non-rugby qualification. PR #464 added person-team coherent current-story clustering. PR #465 restored the required execution order so 14-day production-history freshness runs before Ireland-first/team diversity. Zero-model proof `34462078361` then mechanically produced five assignable slots with three Irish-connected positions, but inspection found reciprocal source clusters could still create duplicate story candidates.
 
-PR #458 changed media policy to embed-first and replaced the legacy scheduled image/replacement workflow with the bounded slot pipeline. Production deployment `67b56df7362dc43b65465ba675a42c4f4bf6954f` is READY. The live progressive endpoint reports `verified-official-story-specific-social-or-video-embed` as required media and `optional-only-when-independently-relevant` for local images.
+PR #466 removes reciprocal source-cluster duplicates before evidence qualification and excludes generic team names such as `Chiefs` from distinctive person anchors. Production deployment `dpl_GvpyBkZgZeb6cFMVQC9E2xQKakMx` is READY on merged SHA `36979dbf03dd3b73ea3a56a1d867c699c982df0b`.
 
-Production media run `34327661508` passed identity/relevance regressions, exact embed insertion/readback, generic official-video fallback and progressive delivery. Three current drafts were inspected. Two were media-ready and delivered individually:
-
-- Tom Wood / Munster: exact official Munster Rugby video applied and read back.
-- Fintan Gunne / Leinster: exact official Leinster Rugby TV video applied and read back.
-
-The Waratahs/Brumbies draft remained blocked because no story-specific official video was verified. This is the desired fail-closed behavior.
-
-PR #459 adds cleanup of existing featured and inline local images after an exact official embed is verified, so a correct embed can replace questionable local imagery instead of appearing beside it.
+Zero-model production-data proof `34479627476` verified the new clustering regressions and removed 18 reciprocal source-cluster duplicates. After evidence and 14-day history freshness, only four genuinely fresh candidates remained, so the workflow correctly failed closed before diversity and model spend. This is the current launch blocker: insufficient fresh distinct supply, not duplicate leakage.
 
 ## Budget
 
-The hard ceiling remains `$0.40` per Europe/Dublin operational day. On 9 September the ledger reached `$0.385` after the legacy workflow retried a failed candidate. No further `$0.055` generation is permitted today. The replacement legacy path has been removed from the normal scheduled workflow.
+The hard ceiling remains `$0.40` per Europe/Dublin operational day. The 10 September recovery and reserve proofs through PR #466 used zero model generation; the failing #466 proof stopped before any paid reservation.
 
 ## Current launch blockers
 
-1. Production proof of PR #459 local-image cleanup on the two exact-embed drafts.
-2. Story-specific official embed coverage for every future selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
-3. Five genuinely distinct articles in one Dublin-day package under the `$0.40` ceiling.
-4. Continued proof that the simplified scheduled workflow does not retry paid failures or force irrelevant images.
+1. Expand the fresh distinct evidence reserve until at least five candidates survive source-cluster deduplication and 14-day production-history freshness, with capacity for at least three Irish-connected stories.
+2. Production proof of PR #459 local-image cleanup on exact-embed drafts.
+3. Story-specific official embed coverage for every selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
+4. Five genuinely distinct articles in one Dublin-day package under the `$0.40` ceiling.
+5. Continued proof that the simplified scheduled workflow does not retry paid failures or force irrelevant images.
 
 ## Go-live states
 
