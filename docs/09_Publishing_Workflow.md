@@ -17,6 +17,8 @@ free standard + targeted Irish source discovery
 → coherent corroboration and story-type concrete evidence
 → retained exact-day integrity + source-cluster duplicate eviction
 → recent-position freshness and multi-day repetition rejection
+→ canonical eligible pool = missing paid slots + 3 reserve
+→ if pool short: one expanded free discovery/corroboration refill, then re-run deterministic evidence/freshness gates
 → Ireland-first + team/matchup diversity
 → free story-specific official embed qualification wherever possible
 → exactly one fresh candidate per missing paid slot
@@ -46,6 +48,14 @@ Retained same-day drafts are inputs, not entitlements. Invalid or materially dup
 Require at least two substantive sources from at least two publishers, coherent same-development corroboration, concrete rugby facts, and no non-rugby contamination. Completed-match stories require the final score; squad/selection stories require actual named people; exact-person coherence rejects surname collisions. Match-like stories must satisfy the same concrete-detail classes before model spend that the generation API enforces.
 
 A candidate that already consumed a paid reservation on the current Dublin day is excluded from another paid slot.
+
+## Canonical editorial pool and free refill
+
+The canonical pool is the single pre-AI decision boundary for recent-position freshness. Downstream package selection must consume that pool rather than reinterpret freshness independently.
+
+For an incomplete daily package, the required pre-AI pool is **the number of missing paid slots plus three qualified reserve candidates**. Valid retained current-day drafts reduce the missing-slot count; they are not counted as new generation candidates.
+
+If the first canonical qualification is short, the workflow performs one bounded **free** refill pass with expanded per-source and corroboration limits, rebuilds the acquisition batch, re-runs concrete evidence and match-detail parity, and then re-runs the strict canonical freshness gate. Terra/Luna generation remains unreachable until this final deterministic gate passes. A failed refill must fail closed rather than weaken evidence, freshness, Irish connection or diversity rules.
 
 ## Freshness and diversity
 
@@ -97,14 +107,17 @@ Review-ready drafts are never automatically published. The owner reviews/edits i
 ## Morning sequence
 
 1. sanitize exact-day retained state and evict source-cluster duplicates;
-2. run free discovery/evidence/freshness/diversity and verify >=3 Irish-connected package capacity;
-3. qualify official embed availability wherever possible;
-4. assign one candidate to each missing paid slot, excluding already-paid IDs;
-5. reserve/generate serially with a normal target <=`$0.40/day` and absolute `$0.75/day` guard, with no paid replacement loop;
-6. apply exact curated embeds first, then official-source fallback discovery;
-7. read back the embed in Sanity and remove doubtful local imagery when an exact embed exists;
-8. notify each article immediately after its complete gate passes;
-9. continue until five distinct review-ready articles are delivered;
-10. owner reviews and publishes in Sanity.
+2. run free discovery/evidence/match-detail qualification and export recent production positions;
+3. build the canonical pool for missing slots + three reserve candidates;
+4. if short, run one expanded free discovery/corroboration refill and repeat deterministic qualification;
+5. enforce the final strict canonical freshness gate, then Ireland-first and same-package diversity;
+6. qualify official embed availability wherever possible;
+7. assign one candidate to each missing paid slot, excluding already-paid IDs;
+8. reserve/generate serially with a normal target <=`$0.40/day` and absolute `$0.75/day` guard, with no paid replacement loop;
+9. apply exact curated embeds first, then official-source fallback discovery;
+10. read back the embed in Sanity and remove doubtful local imagery when an exact embed exists;
+11. notify each article immediately after its complete gate passes;
+12. continue until five distinct review-ready articles are delivered;
+13. owner reviews and publishes in Sanity.
 
 Do not rerun an old failed workflow SHA after code changes.
