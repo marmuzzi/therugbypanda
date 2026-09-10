@@ -78,7 +78,7 @@ Media availability should be established before paid generation wherever possibl
 
 ## Launch slot budget
 
-The application-wide OpenAI reservation ceiling is `$0.40` per Europe/Dublin operational day. A production draft reservation is `$0.055`. Discovery, evidence, freshness, diversity and media qualification run before paid reservation. Generation is serial, one selected candidate per missing slot, with zero paid replacement candidates in the normal scheduled workflow. The Sanity daily guard remains authoritative.
+The application-wide OpenAI reservation **hard ceiling is `$0.75` per Europe/Dublin operational day**. The normal operating target is **at or below `$0.40/day`**; the additional headroom is recovery capacity, not a spending target. A production draft reservation is `$0.055`. Discovery, evidence, freshness, diversity and media qualification run before paid reservation. Generation is serial, one selected candidate per missing slot, with zero paid replacement candidates in the normal scheduled workflow. The Sanity daily guard remains authoritative.
 
 ## Draft Ready and Publication Review
 
@@ -100,7 +100,7 @@ Review-ready drafts are never automatically published. The owner reviews/edits i
 2. run free discovery/evidence/freshness/diversity and verify >=3 Irish-connected package capacity;
 3. qualify official embed availability wherever possible;
 4. assign one candidate to each missing paid slot, excluding already-paid IDs;
-5. reserve/generate serially under `$0.40/day`, with no paid replacement loop;
+5. reserve/generate serially with a normal target <=`$0.40/day` and absolute `$0.75/day` guard, with no paid replacement loop;
 6. apply exact curated embeds first, then official-source fallback discovery;
 7. read back the embed in Sanity and remove doubtful local imagery when an exact embed exists;
 8. notify each article immediately after its complete gate passes;
