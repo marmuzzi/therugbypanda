@@ -51,7 +51,9 @@ A candidate that already consumed a paid reservation on the current Dublin day i
 
 Freshness identity is **subject + event/development + editorial angle** and is checked against recent production positions. Headline rewriting does not make a repeated position fresh. Source-cluster overlap with a retained article is also a duplicate signal.
 
-Package limits remain max two same canonical matchup, max two same recognised team, min three Irish-connected and max two international-only.
+For a developing match or event, a genuine new phase is a fresh editorial position even when the subject or matchup is unchanged. Recognised match phases include preview/build-up, team selection, late injury or personnel change, live-match development, confirmed result and post-match reaction. A preview may therefore be followed by a team-announcement story and later by a result/reaction story. Rewording the same phase or repeating the same underlying development remains a duplicate and must be rejected.
+
+Package limits are max three same canonical matchup, max three same recognised team, min three Irish-connected and max two international-only. The three-story allowance never overrides freshness, evidence, media relevance or story distinctness.
 
 ## Mandatory embed-first media gate
 
