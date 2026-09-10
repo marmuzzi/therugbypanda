@@ -6,6 +6,7 @@ on:
     branches: [main]
     paths:
       - ".github/recovery-trigger-2026-08-31"
+      - ".github/current-source-production-trigger"
   schedule:
     # GitHub cron is UTC. 04:30 UTC is 05:30 Dublin during Irish summer time.
     # 05:30 UTC is the serialized safety retry and becomes a no-op after five accepted individual deliveries.
