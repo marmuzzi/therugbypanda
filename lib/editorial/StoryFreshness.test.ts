@@ -1,5 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
+// @ts-ignore -- Node's stripped-TypeScript test runner requires the explicit .ts extension.
 import { assessPositionFreshness, selectFreshPositions, type EditorialPosition } from "./StoryFreshness.ts";
 
 const previous: EditorialPosition = {
