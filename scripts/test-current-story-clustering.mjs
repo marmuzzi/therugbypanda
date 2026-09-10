@@ -29,6 +29,12 @@ const cases = [
     right: lead("All eyes on No 9 as Leinster look to Fintan Gunne to fill void left by Luke McGrath"),
     expected: true,
   },
+  {
+    name: "do not treat Exeter Chiefs team name as a person anchor",
+    left: lead("Exeter Chiefs confirm academy changes ahead of new season"),
+    right: lead("Chiefs winger signs new deal after breakthrough campaign"),
+    expected: false,
+  },
 ];
 
 for (const testCase of cases) {
