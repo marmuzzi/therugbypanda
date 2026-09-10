@@ -35,6 +35,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify story freshness including progressive match phases
+        run: node --test --experimental-strip-types lib/editorial/StoryFreshness.test.ts
       - name: Verify Irish rugby discovery qualification
         run: node scripts/test-irish-discovery-qualification.mjs
       - name: Verify current story clustering
@@ -53,8 +55,8 @@ jobs:
         run: node scripts/filter-current-production-history-freshness.mjs
       - name: Enforce Ireland-first diversity
         env:
-          MAX_PACKAGE_MATCHUP_STORIES: "2"
-          MAX_PACKAGE_TEAM_STORIES: "2"
+          MAX_PACKAGE_MATCHUP_STORIES: "3"
+          MAX_PACKAGE_TEAM_STORIES: "3"
         run: node scripts/enforce-current-package-diversity.mjs
       - name: Build one-to-one slot plan without model calls
         run: node scripts/prepare-slot-budget-batch.mjs

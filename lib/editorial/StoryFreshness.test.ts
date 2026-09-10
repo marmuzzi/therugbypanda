@@ -29,6 +29,45 @@ test("allows the same subject when there is a genuinely different development", 
   assert.equal(assessPositionFreshness(candidate, [previous]).fresh, true);
 });
 
+test("allows progressive coverage of the same match across distinct phases", () => {
+  const preview: EditorialPosition = {
+    id: "leinster-zebre-preview",
+    subject: "Leinster v Zebre",
+    development: "Leinster v Zebre match preview and build-up ahead of Saturday",
+    angle: "Pre-match questions and what to expect",
+  };
+  const selection: EditorialPosition = {
+    id: "leinster-zebre-selection",
+    subject: "Leinster v Zebre",
+    development: "Leinster name the starting XV and matchday 23 for Zebre",
+    angle: "What the team selection tells us",
+  };
+  const result: EditorialPosition = {
+    id: "leinster-zebre-result",
+    subject: "Leinster v Zebre",
+    development: "Leinster beat Zebre at full-time with the final score confirmed",
+    angle: "How the match was won",
+  };
+  assert.equal(assessPositionFreshness(selection, [preview]).fresh, true);
+  assert.equal(assessPositionFreshness(result, [preview, selection]).fresh, true);
+});
+
+test("still rejects rewrites within the same match phase", () => {
+  const first: EditorialPosition = {
+    id: "leinster-zebre-selection-a",
+    subject: "Leinster v Zebre",
+    development: "Leinster name the starting XV and matchday 23 for Zebre",
+    angle: "Selection calls for Saturday",
+  };
+  const rewrite: EditorialPosition = {
+    id: "leinster-zebre-selection-b",
+    subject: "Leinster v Zebre",
+    development: "Leinster starting XV and matchday 23 named for Zebre",
+    angle: "Saturday selection calls",
+  };
+  assert.equal(assessPositionFreshness(rewrite, [first]).fresh, false);
+});
+
 test("selects exactly five distinct positions and rejects within-package duplicates", () => {
   const candidates: EditorialPosition[] = [
     previous,
