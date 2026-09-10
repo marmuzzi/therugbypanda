@@ -1,15 +1,15 @@
 import { createHash } from "node:crypto";
 import fs from "node:fs/promises";
 import path from "node:path";
+import { sameCurrentRugbyStory, similarity } from "../lib/editorial/CurrentStoryClustering.mjs";
 
 const inputPath = process.env.CURRENT_SOURCE_DISCOVERY_PATH || "data/editorial-acquisition/current-source-discovery.json";
 const outputPath = process.env.CURRENT_ACQUISITION_BATCH_PATH || "data/editorial-acquisition/current-editorial-acquisition-batch.json";
 const discovery = JSON.parse(await fs.readFile(path.resolve(inputPath), "utf8"));
 if (discovery?.schemaVersion !== "1.0" || !Array.isArray(discovery.leads)) throw new Error("Current acquisition bridge fail-closed: invalid discovery evidence.");
 
-const stop = new Set(["rugby","the","a","an","and","or","of","to","for","in","on","at","with","from","as","is","are","was","were","be","been","being","this","that","these","those","after","before","over","under","into","out","up","down","new","latest","says","say","united","championship","match","live","stats","sport","sports","news","report","ireland","irish","england","bbc","planet","rugbypass","super","league"]);
 const rugbySignals = /\b(rugby|union|irfu|rfu|urc|united rugby championship|six nations|champions cup|challenge cup|epcr|leinster|munster|ulster|connacht|springboks?|all blacks?|wallabies|pumas|lions tour|test match|test series|rugby championship|fly[- ]?half|out[- ]?half|scrum[- ]?half|scrum|lineout|line-out|try|tries|conversion|prop|hooker|lock|flanker|back[- ]?row|centre|winger|full[- ]?back|rugby squad|rugby club|rugby internationals?)\b/i;
-const explicitNonRugby = /\b(boxing|boxer|fight week|ringwalk|golf|superbike|motorbike|cycling|cyclist|5k|athletics|hurling|camogie|gaa|gaelic football|soccer|premier league|dundee united|kilmarnock|goal drought|architecture|cost[- ]of[- ]living|chemtrails?|migrants? protest|manchester united|man united|ipswich|sailing|ilca)\b/i;
+const explicitNonRugbyIdentity = /\b(boxing|boxer|fight week|ringwalk|golf|superbike|motorbike|cycling|cyclist|5k|athletics|hurling|camogie|gaa|gaelic football|soccer|football association|fai cup|league of ireland|shelbourne|bohemians|shamrock rovers|premier league|champions league|dundee united|kilmarnock|goal drought|architecture|cost[- ]of[- ]living|chemtrails?|migrants? protest|manchester united|man united|ipswich|sailing|ilca)\b/i;
 const genericTitlePatterns = [
   /^the\s*42(?:\s*-\s*the\s*42)?$/i,
   /^[-\s]*auth\.englandrugby\.com$/i,
@@ -25,82 +25,38 @@ const genericTitlePatterns = [
   /^england rugby\s*-\s*rugby football union$/i,
   /^-\s*rugby football union$/i,
 ];
-const genericProperTokens = new Set(["the","rugby","irish","ireland","england","new","south","north","united","championship","bbc","planet","business","post","times","independent","sport","sports","news","all","blacks","springboks","wallabies","leinster","munster","ulster","connacht"]);
 
-function tokenList(value="") { return value.toLowerCase().replace(/[^a-z0-9\s'-]/g," ").split(/\s+/).filter((v)=>v.length>2&&!stop.has(v)); }
-function tokens(value="") { return new Set(tokenList(value)); }
-function similarity(a,b) { const A=tokens(a), B=tokens(b); if(!A.size||!B.size) return 0; const shared=[...A].filter((x)=>B.has(x)).length; return shared/Math.min(A.size,B.size); }
-function sharedTokenCount(a,b) { const A=tokens(a), B=tokens(b); return [...A].filter((x)=>B.has(x)).length; }
-function capitalisedTokens(value="") {
-  return new Set((String(value).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{3,}\b/g) ?? [])
-    .map((v)=>v.toLowerCase().replace(/[’']/g,"'"))
-    .filter((v)=>!genericProperTokens.has(v)));
-}
-function surnameTokens(value="") {
-  const surnames = new Set();
-  const matches = String(value).match(/\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g) ?? [];
-  for (const name of matches) {
-    const parts=name.split(/\s+/);
-    const first=parts[0].toLowerCase();
-    const last=parts[parts.length-1].toLowerCase();
-    if (genericProperTokens.has(first) || genericProperTokens.has(last)) continue;
-    surnames.add(last.replace(/[’']/g,"'"));
-  }
-  return surnames;
-}
-function sharedPersonAnchor(a,b) {
-  const surnamesA=surnameTokens(a), surnamesB=surnameTokens(b);
-  const capsA=capitalisedTokens(a), capsB=capitalisedTokens(b);
-  return [...surnamesA].some((surname)=>capsB.has(surname)) || [...surnamesB].some((surname)=>capsA.has(surname));
-}
 function canonicalUrl(value="") { try { const u=new URL(value); ["utm_source","utm_medium","utm_campaign","utm_term","utm_content","gclid","fbclid"].forEach((k)=>u.searchParams.delete(k)); return u.toString(); } catch { return value; } }
 function clean(value="") { return String(value ?? "").replace(/\s+/g," ").trim(); }
 function normaliseIdentity(value="") { return clean(value).toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g," ").trim(); }
 function operationalDate() {
-  return new Intl.DateTimeFormat("en-CA", {
-    timeZone: "Europe/Dublin",
-    year: "numeric",
-    month: "2-digit",
-    day: "2-digit",
-  }).format(new Date());
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Dublin", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date());
 }
 const packageDate = operationalDate();
 function stableCandidateId(candidate) {
-  const material = [candidate.editorialPosition.subject, candidate.editorialPosition.development]
-    .map(normaliseIdentity)
-    .join("|");
+  const material = [candidate.editorialPosition.subject, candidate.editorialPosition.development].map(normaliseIdentity).join("|");
   const fingerprint = createHash("sha256").update(material).digest("hex").slice(0,12);
   return `current-${packageDate}-${fingerprint}`;
 }
 function isGenericLead(lead) {
-  const title=clean(lead.title);
-  const link=clean(lead.link);
+  const title=clean(lead.title), link=clean(lead.link);
   if(title.length<18 || link.includes("/auth")) return true;
   return genericTitlePatterns.some((pattern)=>pattern.test(title));
 }
-function relevanceText(lead) {
-  return `${clean(lead.title)} ${clean(lead.description)}`.replace(/\bRugby Park\b/gi," ");
-}
+function relevanceText(lead) { return `${clean(lead.title)} ${clean(lead.description)}`.replace(/\bRugby Park\b/gi," "); }
+function hasExplicitNonRugbyIdentity(lead) { return explicitNonRugbyIdentity.test(clean(lead.title)); }
 function isRugbyRelevant(lead) {
-  if(isGenericLead(lead)) return false;
-  const text=relevanceText(lead);
-  if(explicitNonRugby.test(text)) return false;
-  return rugbySignals.test(text);
+  if(isGenericLead(lead) || hasExplicitNonRugbyIdentity(lead)) return false;
+  return rugbySignals.test(relevanceText(lead));
+}
+function isSafeContextCorroboration(seed, lead) {
+  if(isGenericLead(lead) || hasExplicitNonRugbyIdentity(lead)) return false;
+  return sameCurrentRugbyStory(seed, lead);
 }
 function sourceRecord(lead,index) {
   const publisher = clean(lead.source?.name || lead.source?.domain || "Unknown source");
-  const title = clean(lead.title);
-  const description = clean(lead.description || "");
-  return {
-    id:`source-${index+1}`,
-    publisher,
-    url:canonicalUrl(lead.link),
-    title,
-    publishedAt:lead.publishedAt,
-    excerpt:description || undefined,
-    bodyText:description || undefined,
-    isPrimarySource:lead.source?.defaultEvidenceRole === "primary" || lead.source?.defaultEvidenceRole === "primary-evidence"
-  };
+  const title = clean(lead.title), description = clean(lead.description || "");
+  return { id:`source-${index+1}`, publisher, url:canonicalUrl(lead.link), title, publishedAt:lead.publishedAt, excerpt:description || undefined, bodyText:description || undefined, isPrimarySource:lead.source?.defaultEvidenceRole === "primary" || lead.source?.defaultEvidenceRole === "primary-evidence" };
 }
 function suggestedCategoryFor(value="") {
   if (/\bleinster\b/i.test(value)) return "Leinster";
@@ -112,42 +68,24 @@ function suggestedCategoryFor(value="") {
   if (/\b(champions cup|challenge cup|epcr|european rugby)\b/i.test(value)) return "Europe";
   return undefined;
 }
-function hoursApart(a,b) { const delta=Math.abs(Date.parse(a)-Date.parse(b)); return Number.isFinite(delta)?delta/3600000:Number.POSITIVE_INFINITY; }
-function sameStory(seed,candidate) {
-  if (isGenericLead(seed) || isGenericLead(candidate)) return false;
-  const titleScore=similarity(seed.title,candidate.title);
-  const developmentScore=similarity(seed.editorialPosition?.development||seed.description||"",candidate.editorialPosition?.development||candidate.description||"");
-  const sharedTitle=sharedTokenCount(seed.title,candidate.title);
-  const sharedPerson=sharedPersonAnchor(seed.title,candidate.title);
-  const nearInTime=hoursApart(seed.publishedAt,candidate.publishedAt)<=36;
-  if (!nearInTime) return false;
-  if (sharedPerson && sharedTitle >= 1) return true;
-  if (sharedTitle >= 4 && titleScore >= 0.60) return true;
-  if (sharedTitle >= 4 && developmentScore >= 0.65) return true;
-  return false;
-}
-function isSafeContextCorroboration(seed,lead) {
-  if(isGenericLead(lead) || explicitNonRugby.test(relevanceText(lead))) return false;
-  return sameStory(seed,lead);
-}
 function sourcePriority(lead) {
   const tierValue = String(lead.source?.tier ?? "").toLowerCase();
   const tierScore = tierValue === "primary" ? 3 : tierValue === "trusted" ? 2 : tierValue === "supplementary" ? 1 : Number(lead.source?.tier ?? 0) || 0;
-  const ownerPriority = Number(lead.source?.ownerPriority ?? 0);
-  return tierScore * 1000 + ownerPriority;
+  return tierScore * 1000 + Number(lead.source?.ownerPriority ?? 0);
 }
 
 const leads = discovery.leads.filter((lead)=>lead.title&&lead.link&&lead.publishedAt);
 const rugbySeeds = leads.filter(isRugbyRelevant);
 const rejectedNonRugby = leads.length-rugbySeeds.length;
-
 const clusters=[];
+
 for (const seed of rugbySeeds) {
   const corroborators = leads
     .filter((candidate) => {
       if ((candidate.id||candidate.link)===(seed.id||seed.link)) return false;
       if (seed.source?.domain && seed.source.domain===candidate.source?.domain) return false;
-      return sameStory(seed,candidate) && (isRugbyRelevant(candidate)||isSafeContextCorroboration(seed,candidate));
+      if (!sameCurrentRugbyStory(seed,candidate)) return false;
+      return isRugbyRelevant(candidate) || isSafeContextCorroboration(seed,candidate);
     })
     .sort((a,b) => sourcePriority(b)-sourcePriority(a));
 
@@ -169,38 +107,19 @@ const candidateDrafts=clusters.map((members)=>{
   const facts=[...new Set(members.flatMap((lead)=>[clean(lead.title),clean(lead.description||"")]).filter((v)=>v.length>=20))].slice(0,8);
   const subject=clean(primary.editorialPosition?.subject||primary.title);
   const development=clean(primary.editorialPosition?.development||primary.description||primary.title);
-  return {
-    primaryPublishedAt: primary.publishedAt,
-    title:clean(primary.title),
-    summary:development,
-    suggestedCategory:suggestedCategoryFor(`${subject} ${development} ${primary.title}`),
-    editorialPosition:{ subject, development, angle:`Independent multi-source rugby update on ${subject}`, occurredAt:primary.editorialPosition?.occurredAt||primary.publishedAt },
-    sourceRecords,
-    facts
-  };
+  return { primaryPublishedAt: primary.publishedAt, title:clean(primary.title), summary:development, suggestedCategory:suggestedCategoryFor(`${subject} ${development} ${primary.title}`), editorialPosition:{ subject, development, angle:`Independent multi-source rugby update on ${subject}`, occurredAt:primary.editorialPosition?.occurredAt||primary.publishedAt }, sourceRecords, facts };
 }).filter((candidate)=>candidate.sourceRecords.length>=2&&candidate.facts.length>=2);
 
 const deduped=[];
 for (const candidate of candidateDrafts) {
-  const duplicate=deduped.some((existing)=>
-    similarity(existing.editorialPosition.subject,candidate.editorialPosition.subject)>=0.90 &&
-    similarity(existing.editorialPosition.development,candidate.editorialPosition.development)>=0.90
-  );
+  const duplicate=deduped.some((existing)=> similarity(existing.editorialPosition.subject,candidate.editorialPosition.subject)>=0.90 && similarity(existing.editorialPosition.development,candidate.editorialPosition.development)>=0.90 );
   if(!duplicate) deduped.push(candidate);
 }
 
-const candidates=deduped.map((candidate)=>({
-  id:stableCandidateId(candidate),
-  title:candidate.title,
-  summary:candidate.summary,
-  suggestedCategory:candidate.suggestedCategory,
-  editorialPosition:candidate.editorialPosition,
-  sourceRecords:candidate.sourceRecords,
-  facts:candidate.facts
-}));
-
+const candidates=deduped.map((candidate)=>({ id:stableCandidateId(candidate), title:candidate.title, summary:candidate.summary, suggestedCategory:candidate.suggestedCategory, editorialPosition:candidate.editorialPosition, sourceRecords:candidate.sourceRecords, facts:candidate.facts }));
 if(candidates.length<5) throw new Error(`Current acquisition bridge fail-closed: only ${candidates.length} coherent corroborated rugby candidates after rejecting ${rejectedNonRugby} non-rugby/generic leads; recovery requires five genuinely cross-source stories before model spend.`);
-const output={ schemaVersion:"1.0", batchId:`current-${packageDate}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), packageDate, provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, initialLeadCount:discovery.initialLeadCount, corroborationLeadCount:discovery.corroborationLeadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"entity-coherent+independent-cross-domain-corroboration-v9", preDedupedClusters:clusters.length }, candidates };
+
+const output={ schemaVersion:"1.0", batchId:`current-${packageDate}`, acquiredAt:discovery.discoveredAt||new Date().toISOString(), packageDate, provenance:{ discoveryPath:inputPath, leadCount:discovery.leadCount, initialLeadCount:discovery.initialLeadCount, corroborationLeadCount:discovery.corroborationLeadCount, rugbySeedCount:rugbySeeds.length, rejectedNonRugby, successfulSources:discovery.successfulSources, clustering:"person-team-coherent+independent-cross-domain-corroboration-v10", preDedupedClusters:clusters.length }, candidates };
 await fs.mkdir(path.dirname(path.resolve(outputPath)),{recursive:true});
 await fs.writeFile(path.resolve(outputPath),`${JSON.stringify(output,null,2)}\n`);
 console.log(JSON.stringify({currentAcquisitionBridge:"passed",packageDate,rugbySeedCount:rugbySeeds.length,rejectedNonRugby,preDedupedClusters:clusters.length,corroboratedCandidates:candidates.length,stableCandidateIds:true,clustering:output.provenance.clustering,outputPath},null,2));
