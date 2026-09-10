@@ -10,7 +10,7 @@ if (raw?.schemaVersion !== "1.0" || !Array.isArray(raw.candidates)) throw new Er
 
 const TEAM_OR_COMPETITION = new Set(["All Blacks","New Zealand","Springboks","South Africa","Wallabies","Australia","Ireland","Ireland Women","Leinster","Munster","Ulster","Connacht","England","Scotland","Wales","France","Italy","Argentina","Pumas","Fiji","Japan","Samoa","Tonga","United Rugby Championship","Six Nations","Champions Cup","Challenge Cup","World Cup","Rugby Championship","Red Roses"]);
 const NON_PERSON_NAMES = new Set(["Planet Rugby","Irish Rugby","Rugby Pass","RugbyPass Ireland","Business Post","The Irish Times","United Rugby","Rugby Football","Football Union","United Rugby Championship","Irish Independent","Connacht Rugby","Munster Rugby","Leinster Rugby","Ulster Rugby","England Rugby","Red Roses"]);
-const GENERIC_PERSON_PARTS = new Set(["rugby","fixture","fixtures","news","world","nations","championship","live","union","super","first","captain","team","teams","table","tables","results","result","sport","sports"]);
+const GENERIC_PERSON_PARTS = new Set(["rugby","fixture","fixtures","news","world","nations","championship","live","union","super","first","captain","team","teams","table","tables","results","result","sport","sports","returning","former","current","latest","irish","ireland","times","independent","examiner","mirror","bbc","rte","connacht","munster","leinster","ulster","england","scotland","wales","france","australia","brumbies","waratahs","chiefs"]);
 const MONTH = /\b(?:january|february|march|april|may|june|july|august|september|october|november|december)\b/i;
 const MATCHISH = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|beat|defeat|win|won|loss|lost|draw|score|kick-?off|team named|selection|selected|bench|line-up|lineup|starting (?:xv|line-up|lineup)|starts? (?:at|in the (?:team|side|xv)|on the bench))\b/i;
 const COMPLETED_MATCH = /\b(?:beat|defeat(?:ed)?|won|loss|lost|draw|victory|overpower(?:ed)?|edged|thrashed)\b/i;
@@ -29,7 +29,14 @@ function normalise(value = "") { return clean(value).toLowerCase().normalize("NF
 function operationalDate() { return new Intl.DateTimeFormat("en-CA", { timeZone: "Europe/Dublin", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()); }
 function personNames(value = "") {
   const matches = clean(value).match(/\b(?:(?:Sir|Dame)\s+)?[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}(?:\s+(?:van|de|der|von|di|da))?\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g) ?? [];
-  return [...new Set(matches.map(clean).filter((name) => { if (TEAM_OR_COMPETITION.has(name) || NON_PERSON_NAMES.has(name)) return false; const parts = normalise(name).split(/\s+/).filter(Boolean); return parts.length >= 2 && !parts.some((part) => GENERIC_PERSON_PARTS.has(part)); }))];
+  return [...new Set(matches.map(clean).filter((name) => {
+    if (TEAM_OR_COMPETITION.has(name) || NON_PERSON_NAMES.has(name)) return false;
+    const parts = normalise(name).split(/\s+/).filter(Boolean);
+    if (parts.length < 2 || parts.some((part) => GENERIC_PERSON_PARTS.has(part))) return false;
+    // Possessive team constructions such as "Lancaster's Connacht" are not people.
+    if (/[’'][sS]\s+[A-Z]/.test(name)) return false;
+    return true;
+  }))];
 }
 function canonicalPerson(name="") { const parts=normalise(name).split(/\s+/).filter(Boolean); if (["sir","dame"].includes(parts[0])) parts.shift(); return { first:parts[0]||"", last:parts.at(-1)||"", full:parts.join(" ") }; }
 function hasPersonCollision(titleEvidence, factEvidence) { const primary=personNames(titleEvidence).map(canonicalPerson); const facts=personNames(factEvidence).map(canonicalPerson); return primary.some((p)=>p.last&&facts.some((f)=>f.last===p.last&&f.first&&p.first&&f.first!==p.first)); }
