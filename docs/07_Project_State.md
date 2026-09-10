@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-10 September 2026 after owner-approved `$0.75/day` hard ceiling and same-day production verification attempt through PR #474.
+10 September 2026 after canonical-pool production proof `34521048860` and overnight preflight refill correction.
 
 ## Read first
 
@@ -31,30 +31,34 @@ Newer measured evidence supersedes older state statements where they conflict; G
 - OpenAI application reservation hard ceiling `$0.75/day`; normal operating target `<= $0.40/day`.
 - Free discovery, evidence, freshness, diversity, media qualification and slot planning before model spend.
 - One paid candidate per missing slot; no paid replacement loop.
+- Canonical pre-AI pool target is **missing paid slots + three reserve candidates**. When the first qualification pass is short, the workflow performs one expanded free discovery/corroboration refill before the final fail-closed gate.
 
 ## 10 September measured production state
 
-PRs #461-#471 expanded Irish discovery, repaired qualification/clustering/freshness ordering, enabled progressive match-day freshness, expanded the targeted reserve to 10 supplementary sources / 61 searches, and produced a green zero-model reserve proof earlier in the day.
+PRs #461-#471 expanded Irish discovery, repaired qualification/clustering/freshness ordering, enabled progressive match-day freshness and expanded targeted Irish discovery.
 
-PR #473 raises the application hard ceiling from `$0.40` to `$0.75` while preserving the normal `<= $0.40` operating target and zero paid replacement loops. Launch recovery contract run `34519883794` passed on merged SHA `1c049e81ff01f128460bf911ecab371dc01f87dd`. Vercel production deployment `dpl_EYZNLVWUuLcmSaQyrBmAZ1got9yP` reached READY on that SHA.
+PR #473 raised the application hard ceiling from `$0.40` to `$0.75` while preserving the normal `<= $0.40` operating target and zero paid replacement loops. Contract run `34519883794` passed on merged SHA `1c049e81ff01f128460bf911ecab371dc01f87dd`.
 
-PR #474 adds a dedicated trigger for the canonical current-source production workflow so manual verification does not also invoke the legacy recovery workflow. Production verification run `34520032921` ran on current main and passed discovery, evidence and match-detail gates, but failed closed at production-history freshness: 233 leads → 12 distinct corroborated candidates → 5 evidence-qualified → 5 match-detail-qualified → only 2 fresh after 14-day history. Diversity, slot planning and paid generation were therefore correctly skipped. No Terra/Luna spend was added by this test.
+PR #474 added the dedicated canonical current-source production trigger. Run `34520032921` measured 233 leads → 12 distinct corroborated → 5 evidence-qualified → 5 match-detail-qualified → 2 fresh after 14-day history and stopped before spend.
 
-The latest production deployment `dpl_AKRNALao9Adng7xNPGAcxWTEBfD6` is READY on trigger commit `56b0339be2e05b3218850b86580dc1a54417bab8`, which contains the merged #473/#474 code.
+PR #476 introduced the canonical editorial pool. Production proof `34521048860` verified progressive freshness tests and the canonical gate, but exposed two deterministic defects: the pool threshold did not account for two valid retained current-day drafts, and the workflow aborted before the promised free refill. The run measured 228 leads → 12 corroborated → 5 evidence-qualified → 4 match-detail-qualified → 2 fresh and made no paid reservation.
+
+The overnight preflight correction makes the pool missing-slot-aware and adds a bounded second free discovery/corroboration pass using expanded deterministic limits before final qualification. Final package diversity still requires three reserve candidates and no paid retry loop is introduced.
 
 ## Budget
 
 The owner-approved hard ceiling is `$0.75` per Europe/Dublin operational day. The normal operating target is `<= $0.40/day`; extra headroom is bounded same-day recovery capacity, not a spending target. A production slot reserves `$0.055`. Deterministic qualification remains mandatory before reservation and paid retry loops remain disabled.
 
-The application contract and production deployment for the new ceiling are verified. The 10 September paid production test did not reach reservation because the current source set had only two fresh candidates after history, so runtime reservation above the old `$0.40` boundary has not yet been exercised by a legitimate article slot.
+Run `34521048860` stopped before diversity/slot planning/generation and therefore added no Terra/Luna spend.
 
 ## Current launch blockers
 
-1. Restore at least three fresh missing-slot candidates at the moment of a production run; the 19:24 UTC test had only two after 14-day history.
-2. Complete a legitimate paid package using the `$0.75` hard guard / `<= $0.40` normal target without paid retry loops.
-3. Production proof of PR #459 local-image cleanup on exact-embed drafts.
-4. Story-specific official embed coverage for every selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
-5. Five genuinely distinct review-ready articles in one Dublin-day package with progressive individual delivery.
+1. Production-verify the missing-slot-aware canonical pool plus automatic free refill on current production data.
+2. Demonstrate enough legitimate fresh supply for five daily positions with at least three direct Irish connections and three reserve candidates before paid generation.
+3. Complete a legitimate paid package using the `$0.75` hard guard / `<= $0.40` normal target without paid retry loops.
+4. Production proof of PR #459 local-image cleanup on exact-embed drafts.
+5. Story-specific official embed coverage for every selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
+6. Five genuinely distinct review-ready articles in one Dublin-day package with progressive individual delivery.
 
 ## Go-live states
 
