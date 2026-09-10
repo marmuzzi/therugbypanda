@@ -35,6 +35,8 @@ jobs:
         with:
           node-version: 22
       - run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify Irish rugby discovery qualification
+        run: node scripts/test-irish-discovery-qualification.mjs
       - name: Discover standard plus Irish reserve
         run: node scripts/discover-current-editorial-sources.mjs
       - name: Build corroborated evidence
