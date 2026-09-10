@@ -1,18 +1,106 @@
 import fs from "node:fs/promises";
 import path from "node:path";
-const discoveryPath=process.env.CURRENT_SOURCE_DISCOVERY_PATH||"data/editorial-acquisition/current-source-discovery.json";
-const registryPath=process.env.EDITORIAL_SOURCE_REGISTRY||"data/editorial-sources/source-registry.json";
-const maxAgeHours=Number(process.env.IRISH_DISCOVERY_MAX_AGE_HOURS||72);
-const queries=["Ireland rugby","Ireland women rugby","Ireland rugby score","Ireland rugby squad","Ireland rugby results players","Ireland rugby team news players","Leinster rugby","Leinster rugby team news","Leinster rugby players","Munster rugby","Munster rugby team news","Munster rugby players","Ulster rugby","Ulster rugby team news","Ulster rugby players","Connacht rugby","Connacht rugby team news","Connacht rugby players","Mack Hansen Connacht Ealing score"];
-const now=Date.now(); const discovery=JSON.parse(await fs.readFile(path.resolve(discoveryPath),"utf8")); const registry=JSON.parse(await fs.readFile(path.resolve(registryPath),"utf8")); const sources=(registry.sources||[]).filter((s)=>s.allowDiscovery===true);
-const decode=(v="")=>v.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g,"$1").replace(/&amp;/g,"&").replace(/&quot;/g,'"').replace(/&#39;|&apos;/g,"'").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/<[^>]+>/g," ").replace(/\s+/g," ").trim();
-const tag=(b,n)=>decode(b.match(new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${n}>`,"i"))?.[1]||"");
-const sourceTag=(b)=>{const m=b.match(/<source(?:\s+url="([^"]+)")?[^>]*>([\s\S]*?)<\/source>/i);return{name:decode(m?.[2]||""),url:decode(m?.[1]||"")};};
-const items=(xml)=>[...xml.matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)].map((m)=>({title:tag(m[1],"title"),link:tag(m[1],"link"),description:tag(m[1],"description"),publishedAt:tag(m[1],"pubDate"),googleSource:sourceTag(m[1])})).filter((x)=>x.title&&x.link);
-const domain=(v="")=>{try{return new URL(v).hostname.toLowerCase().replace(/^www\./,"");}catch{return String(v).toLowerCase().replace(/^www\./,"");}};
-const sourceFor=(v)=>{const d=domain(v);return sources.find((s)=>d===domain(s.domain)||d.endsWith(`.${domain(s.domain)}`));};
-const fresh=(v)=>{const t=Date.parse(v);return Number.isFinite(t)&&now-t>=0&&now-t<=maxAgeHours*3600000;}; const cleanTitle=(t="")=>t.replace(/\s+-\s+[^-]{2,80}$/,"").trim(); const key=(title,source)=>`${domain(source?.domain)}|${cleanTitle(title).toLowerCase().replace(/[^a-z0-9]+/g," ").trim()}`;
-const seen=new Set((discovery.leads||[]).map((l)=>key(l.title,l.source))); const added=[]; const queryRuns=[];
-for(const q of queries){const feed=`https://news.google.com/rss/search?q=${encodeURIComponent(`${q} when:3d`)}&hl=en-IE&gl=IE&ceid=IE:en`;let accepted=0;try{const response=await fetch(feed,{headers:{"user-agent":"TheRugbyPanda/1.0 irish-current-discovery"},signal:AbortSignal.timeout(12000)});if(!response.ok){queryRuns.push({query:q,status:`http-${response.status}`,accepted:0});continue;}for(const item of items(await response.text())){if(!fresh(item.publishedAt))continue;const source=sourceFor(item.googleSource.url);if(!source)continue;const k=key(item.title,source);if(seen.has(k))continue;seen.add(k);const title=cleanTitle(item.title);added.push({id:`irish-reserve-${Date.parse(item.publishedAt)}-${added.length+1}`,title:item.title,link:item.link,description:item.description,publishedAt:item.publishedAt,editorialPosition:{subject:title,development:item.description||title,angle:`Current Irish rugby development: ${title}`,occurredAt:new Date(item.publishedAt).toISOString()},source:{name:source.name,domain:source.domain,tier:source.tier,ownerPriority:source.ownerPriority,defaultEvidenceRole:source.defaultEvidenceRole},irishDiscoveryQuery:q});accepted++;}queryRuns.push({query:q,status:"ok",accepted});}catch(error){queryRuns.push({query:q,status:"fetch-failed",accepted:0,error:error instanceof Error?error.message:String(error)});}}
-discovery.leads=[...(discovery.leads||[]),...added].sort((a,b)=>Date.parse(b.publishedAt)-Date.parse(a.publishedAt)); discovery.leadCount=discovery.leads.length; discovery.irishTargetedDiscovery={maxAgeHours,queries,addedCount:added.length,queryRuns};
-await fs.writeFile(path.resolve(discoveryPath),`${JSON.stringify(discovery,null,2)}\n`); console.log(JSON.stringify({irishTargetedDiscovery:"passed",maxAgeHours,queryCount:queries.length,addedCount:added.length,totalLeadCount:discovery.leadCount,queryRuns},null,2));
+
+const discoveryPath = process.env.CURRENT_SOURCE_DISCOVERY_PATH || "data/editorial-acquisition/current-source-discovery.json";
+const registryPath = process.env.EDITORIAL_SOURCE_REGISTRY || "data/editorial-sources/source-registry.json";
+const expansionPath = process.env.IRISH_EXPANSION_SOURCE_REGISTRY || "data/editorial-sources/irish-expansion-sources.json";
+const maxAgeHours = Number(process.env.IRISH_DISCOVERY_MAX_AGE_HOURS || 72);
+
+const queries = [
+  "Ireland rugby",
+  "Ireland women rugby",
+  "Ireland rugby score",
+  "Ireland rugby squad",
+  "Ireland rugby results players",
+  "Ireland rugby team news players",
+  "Ireland rugby injuries",
+  "Ireland rugby academy",
+  "Irish players rugby Europe",
+  "Leinster rugby",
+  "Leinster rugby team news",
+  "Leinster rugby players",
+  "Leinster Zebre",
+  "Leinster Zebre Laya Arena",
+  "Leinster RDS rugby",
+  "Leinster pre-season rugby",
+  "Munster rugby",
+  "Munster rugby team news",
+  "Munster rugby players",
+  "Munster pre-season rugby",
+  "Ulster rugby",
+  "Ulster rugby team news",
+  "Ulster rugby players",
+  "Ulster pre-season rugby",
+  "Connacht rugby",
+  "Connacht rugby team news",
+  "Connacht rugby players",
+  "Connacht pre-season rugby",
+  "Irish rugby coaches Europe",
+  "Irish rugby transfers",
+  "Irish rugby URC",
+  "Irish rugby Champions Cup",
+  "Mack Hansen Connacht Ealing score"
+];
+
+const now = Date.now();
+const discovery = JSON.parse(await fs.readFile(path.resolve(discoveryPath), "utf8"));
+const registry = JSON.parse(await fs.readFile(path.resolve(registryPath), "utf8"));
+let expansion = { sources: [] };
+try {
+  expansion = JSON.parse(await fs.readFile(path.resolve(expansionPath), "utf8"));
+} catch (error) {
+  if (error?.code !== "ENOENT") throw error;
+}
+const sources = [...(registry.sources || []), ...(expansion.sources || [])].filter((s) => s.allowDiscovery === true);
+
+const decode = (v = "") => v.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
+const tag = (b, n) => decode(b.match(new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${n}>`, "i"))?.[1] || "");
+const sourceTag = (b) => { const m = b.match(/<source(?:\s+url="([^"]+)")?[^>]*>([\s\S]*?)<\/source>/i); return { name: decode(m?.[2] || ""), url: decode(m?.[1] || "") }; };
+const items = (xml) => [...xml.matchAll(/<item(?:\s[^>]*)?>([\s\S]*?)<\/item>/gi)].map((m) => ({ title: tag(m[1], "title"), link: tag(m[1], "link"), description: tag(m[1], "description"), publishedAt: tag(m[1], "pubDate"), googleSource: sourceTag(m[1]) })).filter((x) => x.title && x.link);
+const domain = (v = "") => { try { return new URL(v).hostname.toLowerCase().replace(/^www\./, ""); } catch { return String(v).toLowerCase().replace(/^www\./, ""); } };
+const sourceFor = (v) => { const d = domain(v); return sources.find((s) => d === domain(s.domain) || d.endsWith(`.${domain(s.domain)}`)); };
+const fresh = (v) => { const t = Date.parse(v); return Number.isFinite(t) && now - t >= 0 && now - t <= maxAgeHours * 3600000; };
+const cleanTitle = (t = "") => t.replace(/\s+-\s+[^-]{2,80}$/, "").trim();
+const key = (title, source) => `${domain(source?.domain)}|${cleanTitle(title).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()}`;
+
+const seen = new Set((discovery.leads || []).map((l) => key(l.title, l.source)));
+const added = [];
+const queryRuns = [];
+
+for (const q of queries) {
+  const feed = `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} when:3d`)}&hl=en-IE&gl=IE&ceid=IE:en`;
+  let accepted = 0;
+  try {
+    const response = await fetch(feed, { headers: { "user-agent": "TheRugbyPanda/1.0 irish-current-discovery" }, signal: AbortSignal.timeout(12000) });
+    if (!response.ok) { queryRuns.push({ query: q, status: `http-${response.status}`, accepted: 0 }); continue; }
+    for (const item of items(await response.text())) {
+      if (!fresh(item.publishedAt)) continue;
+      const source = sourceFor(item.googleSource.url);
+      if (!source) continue;
+      const k = key(item.title, source);
+      if (seen.has(k)) continue;
+      seen.add(k);
+      const title = cleanTitle(item.title);
+      added.push({
+        id: `irish-reserve-${Date.parse(item.publishedAt)}-${added.length + 1}`,
+        title: item.title,
+        link: item.link,
+        description: item.description,
+        publishedAt: item.publishedAt,
+        editorialPosition: { subject: title, development: item.description || title, angle: `Current Irish rugby development: ${title}`, occurredAt: new Date(item.publishedAt).toISOString() },
+        source: { name: source.name, domain: source.domain, tier: source.tier, ownerPriority: source.ownerPriority, defaultEvidenceRole: source.defaultEvidenceRole },
+        irishDiscoveryQuery: q
+      });
+      accepted++;
+    }
+    queryRuns.push({ query: q, status: "ok", accepted });
+  } catch (error) {
+    queryRuns.push({ query: q, status: "fetch-failed", accepted: 0, error: error instanceof Error ? error.message : String(error) });
+  }
+}
+
+discovery.leads = [...(discovery.leads || []), ...added].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
+discovery.leadCount = discovery.leads.length;
+discovery.irishTargetedDiscovery = { maxAgeHours, queries, addedCount: added.length, expansionSourceCount: expansion.sources?.length || 0, queryRuns };
+await fs.writeFile(path.resolve(discoveryPath), `${JSON.stringify(discovery, null, 2)}\n`);
+console.log(JSON.stringify({ irishTargetedDiscovery: "passed", maxAgeHours, queryCount: queries.length, expansionSourceCount: expansion.sources?.length || 0, addedCount: added.length, totalLeadCount: discovery.leadCount, queryRuns }, null, 2));
