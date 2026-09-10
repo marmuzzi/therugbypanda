@@ -2,7 +2,7 @@ import { createClient } from "next-sanity";
 
 import { apiVersion, dataset, projectId } from "@/sanity/env";
 
-const DEFAULT_DAILY_LIMIT_USD = 0.40;
+const DEFAULT_DAILY_LIMIT_USD = 0.75;
 const MAX_RESERVATION_RETRIES = 12;
 const BASE_RETRY_DELAY_MS = 35;
 
@@ -117,8 +117,6 @@ export async function reserveEditorialAiBudget(input: {
       };
     } catch (error) {
       if (!isRevisionConflict(error) || attempt === MAX_RESERVATION_RETRIES) throw error;
-      // Two draft requests can reserve at the same time. Re-read the latest revision after
-      // a short jittered backoff instead of burning a generation slot on a Sanity conflict.
       const jitter = Math.floor(Math.random() * BASE_RETRY_DELAY_MS);
       await delay(Math.min(500, BASE_RETRY_DELAY_MS * attempt + jitter));
     }
