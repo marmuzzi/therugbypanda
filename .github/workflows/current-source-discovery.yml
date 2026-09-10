@@ -67,6 +67,14 @@ jobs:
         env:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
         run: node scripts/filter-preai-match-detail-parity.mjs
+      - name: Export recent production positions before package selection
+        if: steps.package_state.outputs.skip != 'true'
+        run: node scripts/export-recent-editorial-positions.mjs
+      - name: Reject repeated production-history positions before diversity
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+        run: node scripts/filter-current-production-history-freshness.mjs
       - name: Enforce Ireland-first and same-package diversity before spend
         if: steps.package_state.outputs.skip != 'true'
         env:
@@ -74,9 +82,6 @@ jobs:
           MAX_PACKAGE_MATCHUP_STORIES: "2"
           MAX_PACKAGE_TEAM_STORIES: "2"
         run: node scripts/enforce-current-package-diversity.mjs
-      - name: Export recent production positions
-        if: steps.package_state.outputs.skip != 'true'
-        run: node scripts/export-recent-editorial-positions.mjs
       - name: Assign exactly one paid candidate to each missing slot
         if: steps.package_state.outputs.skip != 'true'
         env:
@@ -102,6 +107,7 @@ jobs:
             data/editorial-acquisition/current-editorial-acquisition-batch.json
             data/editorial-acquisition/current-evidence-sufficiency.json
             data/editorial-acquisition/preai-match-detail-parity.json
+            data/editorial-acquisition/current-production-history-freshness.json
             data/editorial-acquisition/recent-editorial-positions.json
           if-no-files-found: warn
           retention-days: 14
