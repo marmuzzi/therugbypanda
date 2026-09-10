@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { isIrishRugbyDiscoveryLead } from "../lib/editorial/IrishDiscoveryQualification.mjs";
 
 const discoveryPath = process.env.CURRENT_SOURCE_DISCOVERY_PATH || "data/editorial-acquisition/current-source-discovery.json";
 const registryPath = process.env.EDITORIAL_SOURCE_REGISTRY || "data/editorial-sources/source-registry.json";
@@ -60,8 +61,6 @@ try {
 }
 const sources = [...(registry.sources || []), ...(expansion.sources || [])].filter((s) => s.allowDiscovery === true);
 
-const rugbySignals = /\b(rugby|union|irfu|urc|united rugby championship|six nations|champions cup|challenge cup|epcr|leinster|munster|ulster|connacht|test match|test series|wxv|scrum|lineout|try|conversion|prop|hooker|lock|flanker|back[- ]?row|centre|winger|full[- ]?back|squad|captain|coach)\b/i;
-const explicitNonRugby = /\b(soccer|football association|fai cup|league of ireland|shelbourne|bohemians|shamrock rovers|premier league|champions league|gaa|gaelic football|hurling|camogie|boxing|golf|cycling|athletics|formula one|f1|motorbike|superbike|snooker)\b/i;
 const decode = (v = "") => v.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 const tag = (b, n) => decode(b.match(new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${n}>`, "i"))?.[1] || "");
 const sourceTag = (b) => { const m = b.match(/<source(?:\s+url="([^"]+)")?[^>]*>([\s\S]*?)<\/source>/i); return { name: decode(m?.[2] || ""), url: decode(m?.[1] || "") }; };
@@ -71,10 +70,6 @@ const sourceFor = (v) => { const d = domain(v); return sources.find((s) => d ===
 const fresh = (v) => { const t = Date.parse(v); return Number.isFinite(t) && now - t >= 0 && now - t <= maxAgeHours * 3600000; };
 const cleanTitle = (t = "") => t.replace(/\s+-\s+[^-]{2,80}$/, "").trim();
 const key = (title, source) => `${domain(source?.domain)}|${cleanTitle(title).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()}`;
-const isRugbyLead = (item) => {
-  const text = `${cleanTitle(item.title)} ${item.description || ""}`;
-  return rugbySignals.test(text) && !explicitNonRugby.test(text);
-};
 
 const seen = new Set((discovery.leads || []).map((l) => key(l.title, l.source)));
 const added = [];
@@ -92,7 +87,7 @@ for (const q of queries) {
       if (!fresh(item.publishedAt)) continue;
       const source = sourceFor(item.googleSource.url);
       if (!source) continue;
-      if (!isRugbyLead(item)) { rejectedNonRugby++; rejectedForSport++; continue; }
+      if (!isIrishRugbyDiscoveryLead(item)) { rejectedNonRugby++; rejectedForSport++; continue; }
       const k = key(item.title, source);
       if (seen.has(k)) continue;
       seen.add(k);

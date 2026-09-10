@@ -5,50 +5,32 @@
 **ID:** SOURCE-003  
 **Status:** In Progress  
 **Priority:** Critical  
-**Root cause:** The normal 10 September discovery run found sufficient raw Irish-connected material, but production-history freshness reduced the eligible Irish reserve to 1/3 required stories before model spend. The discovery universe and targeted Irish query set were too narrow, and targeted discovery could also admit non-rugby contamination into a rugby source cluster.  
-**Related PRs:** #461, #462  
-**Deployment status:** #461 merged and production READY on `eb228e7d564d9e488ddd03e7482d702da0195434`; #462 pending merge.  
-**Verification status:** Zero-model proof `34460186029` after #461 improved final fresh Irish capacity from 1/3 to 2/3 but still failed. Artifact inspection exposed a Shelbourne soccer lead paired with an Ulster rugby source, so #462 adds deterministic rugby-only filtering and more focused current Irish routes before another zero-model proof.  
+**Root cause:** The 10 September production-history freshness gate reduced the available Irish package below 3/5. Round-one source breadth was insufficient; artifact inspection then exposed non-rugby contamination, and round-two filtering proved over-broad because it rejected legitimate rugby features whose summaries mentioned other sports contextually.  
+**Related PRs:** #461, #462, #463  
+**Deployment status:** #461 and #462 merged; #462 production deployment pending final readiness check; #463 pending merge.  
+**Verification status:** Proof `34460186029` after #461 improved 1/3 to 2/3. Proof `34460764679` after #462 still returned 2/3; it correctly removed contamination and added production pre-AI parity, but exposed false rejection of legitimate WXV/Ulster rugby coverage due contextual boxing/soccer mentions. #463 narrows qualification to story identity/title and adds regression coverage.  
 **Resolution date:** Pending production verification
 
 ## Round 1 — PR #461
 
-PR #461 expanded the free discovery layer without weakening any editorial or cost gate.
-
-- Added an auxiliary rugby-source registry containing Zebre Parma (official), Rugby365, Balls.ie Rugby and Belfast Telegraph Sport.
-- Expanded the Irish targeted query set from 19 to 33 queries.
-- Added specific Leinster-Zebre, Laya Arena/RDS and pre-season searches, plus broader provincial, Irish-player, coach, transfer, URC and Champions Cup searches.
-- Existing evidence, freshness, diversity, Ireland-first, media and budget gates remained unchanged.
-
-### Round-1 measured result
-
-Zero-model launch-reserve proof `34460186029` ran on merged main SHA `eb228e7d564d9e488ddd03e7482d702da0195434`.
-
-- standard discovery: 28/28 successful registry sources;
-- Irish targeted discovery: 33 queries, 4 expansion sources, 118 added leads;
-- total discovered leads: 296;
-- corroborated candidates: 38;
-- concrete-evidence candidates: 13;
-- diversity gate: passed with 6 Irish-connected candidates and 10 replacement candidates;
-- production-history freshness: only 2/3 candidates classified Irish remained, so the final slot plan failed before model spend.
-
-No Terra or Luna call was made by the proof.
+Expanded the free discovery universe with Zebre Parma official, Rugby365, Balls.ie Rugby and Belfast Telegraph Sport and increased targeted Irish queries from 19 to 33. Zero-model proof `34460186029` found 296 leads, 38 corroborated candidates and 13 concrete-evidence candidates, but only 2/3 Irish-connected positions survived production-history freshness. No model spend occurred.
 
 ## Round 2 — PR #462
 
-Artifact inspection showed that one of the two apparently fresh Irish candidates was actually a Shelbourne soccer story clustered beside an Ulster rugby source. PR #462 therefore does not weaken freshness. It improves deterministic qualification and targeted supply:
+Added The Irish Sun Rugby as a supplementary discovery source, current Ireland Women/Connacht/Ulster search routes, explicit non-rugby rejection, and production-equivalent pre-AI match-detail filtering in the reserve proof. Proof `34460764679` rejected 217 non-rugby targeted results, produced 15 concrete-evidence candidates and 12 after match-detail parity, but still ended at 2/3 fresh Irish positions. Inspection showed the sport exclusion was incorrectly treating contextual mentions in summaries as story identity.
 
-- adds The Irish Sun Rugby as a supplementary discovery source for current Irish player/provincial reporting;
-- adds exact Fiona Tuite-O'Sullivan / Ireland Women WXV searches to join current RTÉ and The42 evidence around the same rugby development;
-- adds broader Mack Hansen / Connacht / Stuart Lancaster searches and more specific Ulster searches;
-- rejects soccer, GAA, boxing, golf and other explicit non-rugby results inside the Irish targeted augmentation before acquisition clustering;
-- records non-rugby rejection counts for evidence inspection;
-- makes `Launch reserve proof` run `filter-preai-match-detail-parity.mjs`, matching the normal production pre-AI sequence more faithfully.
+## Round 3 — PR #463
+
+PR #463 extracts Irish discovery qualification into `lib/editorial/IrishDiscoveryQualification.mjs` and changes the boundary so:
+
+- explicit non-rugby identity in the title is rejected;
+- rugby relevance may be established by title or summary;
+- contextual mentions of boxing, soccer or other sports in a legitimate rugby summary do not invalidate the story;
+- a deterministic regression verifies Shelbourne soccer is rejected, Ireland Women WXV is retained despite cross-sport context, Ulster/Fiona Tuite coverage is retained, Mack Hansen/Connacht is retained, and Irish Open golf is rejected;
+- the zero-model reserve proof runs this regression before discovery.
 
 ## Verification contract
 
-The `.github/launch-reserve-trigger` change causes `Launch reserve proof` to run after #462 reaches `main`. The workflow is zero-model: discovery, corroboration, concrete-evidence qualification, production-equivalent pre-AI match-detail filtering, Ireland-first diversity, recent-position export and one-to-one slot planning.
+The merge trigger runs `Launch reserve proof` on production data with no Terra or Luna calls. Success requires five one-to-one assignable missing slots with at least three fresh, genuine Irish-connected rugby positions after concrete evidence, match-detail parity, diversity and 14-day production-history freshness.
 
-Success requires the slot-planning stage to produce five valid missing-slot candidates with at least three fresh, genuinely rugby, Irish-connected positions after production-history freshness. A later normal production run remains responsible for Terra generation, Luna review, mandatory official media readback and progressive review delivery.
-
-The application-wide OpenAI ceiling remains `$0.40` per Europe/Dublin day, the normal target remains at or below `$0.30`, and no paid retry loop is permitted.
+The OpenAI application ceiling remains `$0.40` per Europe/Dublin day, normal target remains at or below `$0.30`, and no paid retry loop is permitted. Paid generation must remain blocked until the zero-model proof passes.
