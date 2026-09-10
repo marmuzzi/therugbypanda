@@ -15,6 +15,14 @@ export interface FreshnessDecision {
 }
 
 const STOP = new Set(["the", "and", "for", "with", "from", "into", "that", "this", "their", "after", "before", "over", "under", "rugby"]);
+const MATCH_PHASES = [
+  { id: "preview", pattern: /\b(?:preview|build[- ]?up|ahead of|pre[- ]?match|what to expect|test event|kick[- ]?off approaches)\b/i },
+  { id: "selection", pattern: /\b(?:team named|names? (?:the )?(?:team|side|squad)|starting xv|matchday 23|selection|selected|captain(?:cy)?|bench|line[- ]?up)\b/i },
+  { id: "late-change", pattern: /\b(?:late change|withdrawn|withdrawal|ruled out|injury update|replaced by|called in|added to the squad)\b/i },
+  { id: "live", pattern: /\b(?:kick[- ]?off|half[- ]?time|live update|at the break|during the match)\b/i },
+  { id: "result", pattern: /\b(?:full[- ]?time|final score|result|beat|defeated|win|won|loss|lost|drawn?|victory)\b/i },
+  { id: "reaction", pattern: /\b(?:post[- ]?match|reaction|after the match|after victory|after defeat|said afterwards|press conference)\b/i },
+] as const;
 
 function tokens(value: string): Set<string> {
   return new Set(
@@ -36,10 +44,19 @@ function overlap(left: string, right: string): number {
   return common / Math.min(a.size, b.size);
 }
 
+function matchPhase(position: EditorialPosition): string | undefined {
+  const text = `${position.development} ${position.angle}`;
+  return MATCH_PHASES.find((phase) => phase.pattern.test(text))?.id;
+}
+
 /**
  * Rejects same-story rewrites before any model generation. A position is a
  * three-part editorial identity: subject + news development/event + angle.
  * Headlines, publishers and prose are intentionally not considered identity.
+ *
+ * Match-day coverage is progressive: preview, selection, late change, live,
+ * result and reaction are distinct developments even when the matchup/subject
+ * is identical. Rewrites within the same phase remain duplicates.
  */
 export function assessPositionFreshness(
   candidate: EditorialPosition,
@@ -49,6 +66,12 @@ export function assessPositionFreshness(
     const subject = overlap(candidate.subject, previous.subject);
     const development = overlap(candidate.development, previous.development);
     const angle = overlap(candidate.angle, previous.angle);
+    const candidatePhase = matchPhase(candidate);
+    const previousPhase = matchPhase(previous);
+
+    if (subject >= 0.6 && candidatePhase && previousPhase && candidatePhase !== previousPhase) {
+      continue;
+    }
 
     // Same subject and same development is a replay even when the headline,
     // publisher or wording changes. A materially different angle only counts
