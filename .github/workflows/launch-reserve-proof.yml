@@ -47,13 +47,15 @@ jobs:
         run: node scripts/filter-current-acquisition-evidence.mjs
       - name: Align match-detail evidence with production pre-AI gate
         run: node scripts/filter-preai-match-detail-parity.mjs
+      - name: Export recent positions before package selection
+        run: node scripts/export-recent-editorial-positions.mjs
+      - name: Reject repeated production-history positions before diversity
+        run: node scripts/filter-current-production-history-freshness.mjs
       - name: Enforce Ireland-first diversity
         env:
           MAX_PACKAGE_MATCHUP_STORIES: "2"
           MAX_PACKAGE_TEAM_STORIES: "2"
         run: node scripts/enforce-current-package-diversity.mjs
-      - name: Export recent positions
-        run: node scripts/export-recent-editorial-positions.mjs
       - name: Build one-to-one slot plan without model calls
         run: node scripts/prepare-slot-budget-batch.mjs
       - name: Upload reserve evidence
@@ -66,5 +68,6 @@ jobs:
             data/editorial-acquisition/current-editorial-acquisition-batch.json
             data/editorial-acquisition/current-evidence-sufficiency.json
             data/editorial-acquisition/preai-match-detail-parity.json
+            data/editorial-acquisition/current-production-history-freshness.json
             data/editorial-acquisition/recent-editorial-positions.json
           retention-days: 14
