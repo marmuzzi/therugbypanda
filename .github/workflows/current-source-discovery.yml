@@ -62,29 +62,34 @@ jobs:
           DISCOVERY_CORROBORATION_SEED_LIMIT: "72"
           DISCOVERY_CORROBORATION_PER_SEED_LIMIT: "10"
         run: node scripts/discover-current-editorial-sources.mjs
-      - name: Build corroborated evidence
+      - name: Build first-pass corroborated evidence
+        id: first_build
         if: steps.package_state.outputs.skip != 'true'
+        continue-on-error: true
         run: node scripts/build-current-editorial-acquisition-batch.mjs
-      - name: Reject weak evidence before model spend
-        if: steps.package_state.outputs.skip != 'true'
+      - name: Assess first-pass evidence before model spend
+        id: first_evidence
+        if: steps.package_state.outputs.skip != 'true' && steps.first_build.outcome == 'success'
+        continue-on-error: true
         run: node scripts/filter-current-acquisition-evidence.mjs
-      - name: Align match-detail evidence with generation API before spend
-        if: steps.package_state.outputs.skip != 'true'
+      - name: Align first-pass match-detail evidence with generation API
+        id: first_match
+        if: steps.package_state.outputs.skip != 'true' && steps.first_evidence.outcome == 'success'
+        run: node scripts/filter-preai-match-detail-parity.mjs
         env:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
-        run: node scripts/filter-preai-match-detail-parity.mjs
       - name: Export recent production positions
         if: steps.package_state.outputs.skip != 'true'
         run: node scripts/export-recent-editorial-positions.mjs
-      - name: Qualify canonical editorial pool
+      - name: Qualify first canonical editorial pool
         id: pool
-        if: steps.package_state.outputs.skip != 'true'
+        if: steps.package_state.outputs.skip != 'true' && steps.first_evidence.outcome == 'success' && steps.first_match.outcome == 'success'
         env:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
           EDITORIAL_POOL_RESERVE: "3"
           EDITORIAL_POOL_STRICT: "0"
         run: node scripts/qualify-current-editorial-pool.mjs
-      - name: Expand free discovery when canonical pool is short
+      - name: Expand free discovery when first pass is thin
         if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
         env:
           DISCOVERY_PER_SOURCE_LIMIT: "24"
