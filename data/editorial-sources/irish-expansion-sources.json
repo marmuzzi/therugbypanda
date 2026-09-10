@@ -1,0 +1,10 @@
+{
+  "schemaVersion": "1.0",
+  "updatedAt": "2026-09-10T09:20:00Z",
+  "sources": [
+    {"name":"Zebre Parma","domain":"zebreparma.it","homepageUrl":"https://www.zebreparma.it/","tier":"primary","ownerPriority":95,"defaultEvidenceRole":"primary-evidence","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"reject","specialisms":["Leinster-Zebre","URC","team announcements","fixtures"],"teams":["Zebre Parma"]},
+    {"name":"Rugby365","domain":"rugby365.com","homepageUrl":"https://rugby365.com/","tier":"trusted","ownerPriority":75,"defaultEvidenceRole":"corroboration","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"labelled","specialisms":["international rugby","URC","European rugby","Ireland"]},
+    {"name":"Balls.ie Rugby","domain":"balls.ie","homepageUrl":"https://www.balls.ie/rugby","tier":"trusted","ownerPriority":75,"defaultEvidenceRole":"analysis-context","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"labelled","specialisms":["Ireland","Leinster","Munster","Ulster","Connacht"]},
+    {"name":"Belfast Telegraph Sport","domain":"belfasttelegraph.co.uk","homepageUrl":"https://www.belfasttelegraph.co.uk/sport/rugby/","tier":"trusted","ownerPriority":80,"defaultEvidenceRole":"corroboration","allowDiscovery":true,"allowEvidence":true,"rumourPolicy":"labelled","specialisms":["Ulster","Ireland","Northern Irish rugby"],"teams":["Ulster"]}
+  ]
+}
