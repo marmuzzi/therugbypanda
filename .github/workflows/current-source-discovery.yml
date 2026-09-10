@@ -41,6 +41,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
+      - name: Verify story freshness including progressive match phases
+        run: node --test --experimental-strip-types lib/editorial/StoryFreshness.test.ts
       - name: Verify production secrets
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
@@ -79,8 +81,8 @@ jobs:
         if: steps.package_state.outputs.skip != 'true'
         env:
           BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
-          MAX_PACKAGE_MATCHUP_STORIES: "2"
-          MAX_PACKAGE_TEAM_STORIES: "2"
+          MAX_PACKAGE_MATCHUP_STORIES: "3"
+          MAX_PACKAGE_TEAM_STORIES: "3"
         run: node scripts/enforce-current-package-diversity.mjs
       - name: Assign exactly one paid candidate to each missing slot
         if: steps.package_state.outputs.skip != 'true'
