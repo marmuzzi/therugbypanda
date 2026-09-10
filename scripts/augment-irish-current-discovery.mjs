@@ -9,6 +9,9 @@ const maxAgeHours = Number(process.env.IRISH_DISCOVERY_MAX_AGE_HOURS || 72);
 const queries = [
   "Ireland rugby",
   "Ireland women rugby",
+  "Ireland women WXV rugby",
+  "Fiona Tuite O'Sullivan rugby",
+  "Fiona Tuite O'Sullivan Ireland WXV",
   "Ireland rugby score",
   "Ireland rugby squad",
   "Ireland rugby results players",
@@ -30,16 +33,20 @@ const queries = [
   "Ulster rugby",
   "Ulster rugby team news",
   "Ulster rugby players",
+  "Ulster women rugby Fiona Tuite",
+  "Ulster Challenge Cup season ahead rugby",
   "Ulster pre-season rugby",
   "Connacht rugby",
   "Connacht rugby team news",
   "Connacht rugby players",
+  "Mack Hansen Connacht",
+  "Mack Hansen injury return Connacht",
+  "Stuart Lancaster Mack Hansen Connacht",
   "Connacht pre-season rugby",
   "Irish rugby coaches Europe",
   "Irish rugby transfers",
   "Irish rugby URC",
-  "Irish rugby Champions Cup",
-  "Mack Hansen Connacht Ealing score"
+  "Irish rugby Champions Cup"
 ];
 
 const now = Date.now();
@@ -53,6 +60,8 @@ try {
 }
 const sources = [...(registry.sources || []), ...(expansion.sources || [])].filter((s) => s.allowDiscovery === true);
 
+const rugbySignals = /\b(rugby|union|irfu|urc|united rugby championship|six nations|champions cup|challenge cup|epcr|leinster|munster|ulster|connacht|test match|test series|wxv|scrum|lineout|try|conversion|prop|hooker|lock|flanker|back[- ]?row|centre|winger|full[- ]?back|squad|captain|coach)\b/i;
+const explicitNonRugby = /\b(soccer|football association|fai cup|league of ireland|shelbourne|bohemians|shamrock rovers|premier league|champions league|gaa|gaelic football|hurling|camogie|boxing|golf|cycling|athletics|formula one|f1|motorbike|superbike|snooker)\b/i;
 const decode = (v = "") => v.replace(/<!\[CDATA\[([\s\S]*?)\]\]>/g, "$1").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#39;|&apos;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim();
 const tag = (b, n) => decode(b.match(new RegExp(`<${n}(?:\\s[^>]*)?>([\\s\\S]*?)<\\/${n}>`, "i"))?.[1] || "");
 const sourceTag = (b) => { const m = b.match(/<source(?:\s+url="([^"]+)")?[^>]*>([\s\S]*?)<\/source>/i); return { name: decode(m?.[2] || ""), url: decode(m?.[1] || "") }; };
@@ -62,21 +71,28 @@ const sourceFor = (v) => { const d = domain(v); return sources.find((s) => d ===
 const fresh = (v) => { const t = Date.parse(v); return Number.isFinite(t) && now - t >= 0 && now - t <= maxAgeHours * 3600000; };
 const cleanTitle = (t = "") => t.replace(/\s+-\s+[^-]{2,80}$/, "").trim();
 const key = (title, source) => `${domain(source?.domain)}|${cleanTitle(title).toLowerCase().replace(/[^a-z0-9]+/g, " ").trim()}`;
+const isRugbyLead = (item) => {
+  const text = `${cleanTitle(item.title)} ${item.description || ""}`;
+  return rugbySignals.test(text) && !explicitNonRugby.test(text);
+};
 
 const seen = new Set((discovery.leads || []).map((l) => key(l.title, l.source)));
 const added = [];
 const queryRuns = [];
+let rejectedNonRugby = 0;
 
 for (const q of queries) {
   const feed = `https://news.google.com/rss/search?q=${encodeURIComponent(`${q} when:3d`)}&hl=en-IE&gl=IE&ceid=IE:en`;
   let accepted = 0;
+  let rejectedForSport = 0;
   try {
     const response = await fetch(feed, { headers: { "user-agent": "TheRugbyPanda/1.0 irish-current-discovery" }, signal: AbortSignal.timeout(12000) });
-    if (!response.ok) { queryRuns.push({ query: q, status: `http-${response.status}`, accepted: 0 }); continue; }
+    if (!response.ok) { queryRuns.push({ query: q, status: `http-${response.status}`, accepted: 0, rejectedNonRugby: 0 }); continue; }
     for (const item of items(await response.text())) {
       if (!fresh(item.publishedAt)) continue;
       const source = sourceFor(item.googleSource.url);
       if (!source) continue;
+      if (!isRugbyLead(item)) { rejectedNonRugby++; rejectedForSport++; continue; }
       const k = key(item.title, source);
       if (seen.has(k)) continue;
       seen.add(k);
@@ -93,14 +109,14 @@ for (const q of queries) {
       });
       accepted++;
     }
-    queryRuns.push({ query: q, status: "ok", accepted });
+    queryRuns.push({ query: q, status: "ok", accepted, rejectedNonRugby: rejectedForSport });
   } catch (error) {
-    queryRuns.push({ query: q, status: "fetch-failed", accepted: 0, error: error instanceof Error ? error.message : String(error) });
+    queryRuns.push({ query: q, status: "fetch-failed", accepted: 0, rejectedNonRugby: rejectedForSport, error: error instanceof Error ? error.message : String(error) });
   }
 }
 
 discovery.leads = [...(discovery.leads || []), ...added].sort((a, b) => Date.parse(b.publishedAt) - Date.parse(a.publishedAt));
 discovery.leadCount = discovery.leads.length;
-discovery.irishTargetedDiscovery = { maxAgeHours, queries, addedCount: added.length, expansionSourceCount: expansion.sources?.length || 0, queryRuns };
+discovery.irishTargetedDiscovery = { maxAgeHours, queries, addedCount: added.length, expansionSourceCount: expansion.sources?.length || 0, rejectedNonRugby, queryRuns };
 await fs.writeFile(path.resolve(discoveryPath), `${JSON.stringify(discovery, null, 2)}\n`);
-console.log(JSON.stringify({ irishTargetedDiscovery: "passed", maxAgeHours, queryCount: queries.length, expansionSourceCount: expansion.sources?.length || 0, addedCount: added.length, totalLeadCount: discovery.leadCount, queryRuns }, null, 2));
+console.log(JSON.stringify({ irishTargetedDiscovery: "passed", maxAgeHours, queryCount: queries.length, expansionSourceCount: expansion.sources?.length || 0, addedCount: added.length, rejectedNonRugby, totalLeadCount: discovery.leadCount, queryRuns }, null, 2));
