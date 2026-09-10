@@ -1,8 +1,8 @@
-# AI cost routing and $0.40/day ceiling
+# AI cost routing and $0.75/day hard ceiling
 
 ## Current owner requirement
 
-As of 7 September 2026, The Rugby Panda must not intentionally reserve more than **$0.40 per Europe/Dublin operational day** for OpenAI-backed editorial work. This supersedes the earlier $0.30 ceiling recorded on 4 September.
+As of 10 September 2026, The Rugby Panda must not intentionally reserve more than **$0.75 per Europe/Dublin operational day** for OpenAI-backed editorial work. The **normal operating target remains at or below $0.40/day**. The extra headroom exists for bounded same-day recovery so editorial production is not forced to wait for the next Dublin day after earlier reservations.
 
 ## Architecture
 
@@ -25,41 +25,27 @@ No Sol/flagship model is part of the default production path.
 
 `lib/editorial/AiDailyBudget.ts` persists conservative reservations in Sanity under one `editorialAiBudget` document per Europe/Dublin operational date.
 
-- configured ceiling defaults to $0.40;
-- `EDITORIAL_AI_DAILY_BUDGET_USD` may lower the ceiling but cannot raise it above $0.40;
+- configured hard ceiling defaults to $0.75;
+- `EDITORIAL_AI_DAILY_BUDGET_USD` may lower the ceiling but cannot raise it above $0.75;
+- normal operating target is <=$0.40/day;
 - a normal production draft pipeline reserves $0.055 before its model-backed generation/review cycle;
 - a manual Studio Publication Review reservation remains separately bounded where used;
 - reservations use optimistic Sanity revision checks and bounded revision-conflict retries;
-- if a reservation would exceed the ceiling, the model call is blocked before reaching OpenAI.
+- if a reservation would exceed the hard ceiling, the model call is blocked before reaching OpenAI.
 
 Reservations are deliberately conservative and are not released after a failed/interrupted attempt. This prevents retry storms from reusing nominal budget.
 
-## Launch slot budget boundary — PR #442
+## Launch slot budget boundary
 
-The 7 September production evidence showed that a replacement queue could consume successive `$0.055` reservations after earlier candidates failed Publication Review. The ledger reached `$0.385`, leaving too little room for another production draft reservation.
+The recovery workflow reduces the fresh candidate queue to exactly one candidate per missing package slot before paid generation. It runs those slots serially and records retained count, missing slots, paid attempt limit = missing slots, replacement paid attempts = 0, and selected candidate IDs.
 
-For the launch recovery, `scripts/prepare-slot-budget-batch.mjs` now reduces the fresh candidate queue to exactly one candidate per missing package slot before paid generation. The recovery workflow runs those slots serially and records:
+With five empty slots, five reservations total `$0.275`, which remains below the normal `$0.40` target. The `$0.75` application guard provides bounded recovery headroom when earlier same-day reservations have already consumed part of the normal target. It does not authorize paid retry loops or discretionary spend simply because headroom exists.
 
-- retained count;
-- missing slots;
-- paid attempt limit = missing slots;
-- replacement paid attempts = 0;
-- selected candidate IDs.
-
-With five empty slots, five reservations total `$0.275`, leaving `$0.125` of the application ceiling unused rather than allowing replacement churn to consume it. The global `$0.40` Sanity guard remains the final application circuit breaker.
-
-This slot plan is intentionally conservative: if a selected candidate fails a genuine critical/high quality gate, the run does not buy repeated replacements. The corrective action is to improve the free evidence/reserve stage before the next paid attempt.
+If a selected candidate fails a genuine critical/high quality gate, the normal scheduled workflow does not buy repeated replacements. Corrective action remains deterministic/free evidence and reserve improvement before another explicitly justified paid attempt.
 
 ## Evidence-before-spend rule
 
-PR #442 strengthens the API pre-generation boundary for the exact failure classes measured on 7 September:
-
-- completed-match stories require a final score in the usable fact ledger;
-- squad/selection stories require at least two named people in the usable fact ledger;
-- the existing match/trial concrete-detail floor remains;
-- Publication Review continues to block critical/high issues, but medium/low-only observations no longer trigger a duplicate route-level hard rejection.
-
-These checks occur before budget reservation.
+Completed-match stories require a final score in the usable fact ledger; squad/selection stories require named people; the existing match/trial concrete-detail floor remains; Publication Review blocks critical/high issues. These checks occur before budget reservation.
 
 ## Important boundary
 
@@ -69,18 +55,6 @@ The application guard is a software circuit breaker, not a provider-side billing
 
 Image discovery, rights triage and deterministic relevance checks must not call OpenAI by default. A missing safe image must fail closed to no image / approved brand fallback rather than trigger paid generative retries.
 
-## 7 September measured state
+## 10 September owner-approved change
 
-Run `34135365500` reached `$0.385` reserved. After that point, further `$0.055` production reservations were correctly blocked. Do not trigger more paid 7 September article generation.
-
-## Verification required for the 8 September launch attempt
-
-1. PR #442 merged;
-2. deterministic launch-recovery contract workflow passes;
-3. Vercel production deployment is READY for the API route change;
-4. the next Dublin-day recovery proves standard discovery includes the Irish reserve;
-5. slot planning proves exactly one candidate per missing slot before model spend;
-6. pre-generation evidence rejects under-specified completed-match/squad candidates without a budget reservation;
-7. a medium/low-only Review #2 result is not rejected by a duplicate route-level verdict check;
-8. actual Sanity budget reservations remain <=$0.40;
-9. no automatic publication occurs.
+The hard ceiling changed from `$0.40` to `$0.75` after the production reserve proved that the previous ceiling could strand valid same-day slots after earlier conservative reservations. The normal target remains `<= $0.40`. Verification requires the application guard, slot-plan evidence, production deployment and a same-day production test to all report the new ceiling without bypassing deterministic qualification or introducing paid retry loops.
