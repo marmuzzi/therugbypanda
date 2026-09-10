@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import test from "node:test";
-import { assessPositionFreshness, selectFreshPositions, type EditorialPosition } from "./StoryFreshness";
+import { assessPositionFreshness, selectFreshPositions, type EditorialPosition } from "./StoryFreshness.ts";
 
 const previous: EditorialPosition = {
   id: "yesterday-crowley",
