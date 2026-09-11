@@ -1,1 +1,1 @@
-2026-09-11T15:40:00Z zero-model reserve proof after PR #502 clustering-coherence fix; validate unpaid Irish-connected capacity before any further paid attempt.
+2026-09-11T15:44:00Z zero-model reserve proof after PR #504 retained-aware production-history freshness fix; validate exactly three remaining slots before further paid generation.
