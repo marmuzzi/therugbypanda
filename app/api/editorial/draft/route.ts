@@ -6,7 +6,6 @@ import type { FactLedger, RawStoryInput } from "@/lib/editorial/EditorialTypes";
 import { EditorialBrain } from "@/lib/editorial/EditorialBrain";
 import { notifyDraftCreated } from "@/lib/editorial/EditorialNotifications";
 import { generateArticleDraft } from "@/lib/editorial/OpenAIArticleGenerator";
-import { runPublicationReviewCycle } from "@/lib/editorial/PublicationReviewCycle";
 import { createSanityArticleDraft, validateSanityConnectivity } from "@/lib/editorial/SanityDraftWriter";
 
 export const runtime = "nodejs";
@@ -63,6 +62,7 @@ export async function POST(request: NextRequest) {
     const budget = await reserveEditorialAiBudget({ requestId, purpose: body.qaMode === true ? `qa-draft:${body.story.id}` : `production-draft:${body.story.id}`, amountUsd: DRAFT_PIPELINE_BUDGET_RESERVATION_USD });
     console.info("Editorial AI budget reserved", { requestId, inputId: body.story.id, ...budget });
     const generatedArticle = await generateArticleDraft(body.story, editorial, { targetLengthWords: body.qaMode === true ? "250-400" : "700-1100", timeoutMs: EDITORIAL_GENERATION_TIMEOUT_MS, styleProfileId: body.styleProfileId });
+    const { runPublicationReviewCycle } = await import("@/lib/editorial/PublicationReviewCycle");
     const publicationReview = await runPublicationReviewCycle(generatedArticle, editorial, body.story);
     const article = publicationReview.article; assertFinalSourceIntegrity(article, body.story); const pkg = { editorial, article };
     if (body.createSanityDraft === false) return jsonResponse({ status: "generated", ...pkg, publicationReview, budget, requestId });
