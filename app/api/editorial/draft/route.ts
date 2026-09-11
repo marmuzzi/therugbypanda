@@ -18,19 +18,20 @@ const DEFAULT_REVIEW_MODEL = "gpt-5.6-luna";
 const DRAFT_PIPELINE_BUDGET_RESERVATION_USD = 0.055;
 const MATCH_LIKE = /\b(?:match|test|round|fixture|final|semi-final|quarter-final|trial|friendly|beat|defeat|win|won|loss|lost|draw|score|kick-?off|victory|overpower(?:ed)?)\b/i;
 const COMPLETED_MATCH = /\b(?:beat|defeat(?:ed)?|won|loss|lost|draw|victory|overpower(?:ed)?|edged|thrashed)\b/i;
-const SQUAD_SELECTION = /\b(?:squad|selection|selected|named|line-?up|team named|uncapped|retained)\b/i;
+const SQUAD_SELECTION = /\b(?:squad|selection|selected|named|line-?up|team named|uncapped|retained|roster)\b/i;
 const DATE_DETAIL = /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|april|may|june|july|august|september|october|november|december|today|tonight|yesterday|tomorrow)\b|\b\d{1,2}[\s/-](?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|\d{1,2})\b/i;
 const SCORE_DETAIL = /\b\d{1,3}\s*[-–:]\s*\d{1,3}\b/;
 const VENUE_DETAIL = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork|soweto)\b/i;
 const PLAYER_COACH_DETAIL = /\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g;
 const GENERIC_PERSON_NAMES = /^(?:irish independent|planet rugby|united rugby|rugby football|world rugby|the rugby|new zealand|south africa|red roses)$/i;
+const GENERIC_PERSON_PREFIXES = new Set(["returning", "former", "current", "latest", "uncapped", "injured", "fit-again", "two-time"]);
 const corsHeaders = { "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", Vary: "Origin" };
 
 type DraftRequest = { story: RawStoryInput; factLedger: FactLedger; createSanityDraft?: boolean; editorialImageId?: string; dryRun?: boolean; qaMode?: boolean; notificationMode?: "draft" | "package"; styleProfileId?: ArticleStyleProfileId; };
 type FinalSourceNote = { sourceId?: string; publisher?: string; url?: string; };
 function jsonResponse(body: unknown, init?: ResponseInit) { return NextResponse.json(body, { ...init, headers: { ...corsHeaders, ...(init?.headers ?? {}) } }); }
 function isAuthorized(request: NextRequest): boolean { const secret = process.env.EDITORIAL_AUTOMATION_SECRET; return Boolean(secret && request.headers.get("authorization") === `Bearer ${secret}`); }
-function personNames(value: string) { return (value.match(PLAYER_COACH_DETAIL) ?? []).map((name) => name.replace(/[’']/g, "'")).filter((name) => !GENERIC_PERSON_NAMES.test(name)); }
+function personNames(value: string) { return (value.match(PLAYER_COACH_DETAIL) ?? []).map((name) => name.replace(/[’']/g, "'")).filter((name) => { if (GENERIC_PERSON_NAMES.test(name)) return false; const [first] = name.toLowerCase().split(/\s+/); return !GENERIC_PERSON_PREFIXES.has(first); }); }
 function namedPeople(value: string) { return new Set(personNames(value).map((name) => name.toLowerCase())); }
 function assertPersonIdentityCoherence(story: RawStoryInput, factEvidence: string) {
   const primary = personNames(story.title); const evidenceNames = personNames(factEvidence);
