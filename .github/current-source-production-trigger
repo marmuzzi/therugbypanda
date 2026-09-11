@@ -1,1 +1,1 @@
-2026-09-11T06:55:00Z launch-day bounded recovery after PR #495; distinct unpaid candidates only; authoritative $0.75 Europe/Dublin ceiling
+2026-09-11T15:26:00Z final launch-day production recovery after PR #499; expanded Irish deterministic discovery; no paid retry loop; authoritative $0.75 Europe/Dublin ceiling
