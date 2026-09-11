@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-11 September 2026 during the final pre-run launch gate after production run `34561318903` and PRs #486-#489.
+11 September 2026 after morning production recovery run `34566787385` and PRs #491-#495.
 
 ## Read first
 
@@ -31,26 +31,41 @@ Newer measured evidence supersedes older state statements where they conflict; G
 - OpenAI application reservation hard ceiling `$0.75/day`; normal operating target `<= $0.40/day`.
 - Terra only for approved article generation; Luna for publication review/repair.
 - One paid candidate per missing slot; no paid replacement loop.
-- Canonical pool minimum is the number of missing package slots. Missing slots + three reserve is the preferred target and drives one bounded free refill, but reserve shortage alone must not block a legitimate five-story package.
+- Canonical pool minimum is the number of missing package slots. Missing slots + three reserve is preferred and drives one bounded free refill; reserve shortage alone must not block a fillable five-story package.
+- Same-day `production-draft:` reservations are authoritative eligibility state and must be excluded by canonical qualification before diversity/slot planning.
 
 ## Latest measured production state
 
-Production proof `34561318903` ran against current production data after PR #486. Free discovery fetched 31/31 configured sources and reached 275 leads after the targeted Irish augmentation. The acquisition bridge produced 13 corroborated candidates; 10 passed concrete evidence and all 10 passed match-detail parity. The canonical 14-day freshness pool then produced exactly **8 eligible positions: five required slots plus three reserve**. Package diversity passed with **4 Irish-connected positions available** and the slot planner selected five candidates including four Irish-connected positions. Progressive same-match freshness regressions passed 5/5, including distinct match phases and same-phase duplicate rejection.
+Morning recovery run `34566787385` ran on production after the canonical paid-eligibility and reserve fixes. Discovery fetched 31/31 configured sources. First pass reached 268 leads after Irish augmentation; the bounded free refill then reached 327 leads. Eight candidates passed concrete evidence and match-detail parity. Canonical qualification correctly excluded two already-paid candidates, leaving six genuinely unpaid fresh positions for four missing slots. The reserve target of seven was one short, but the package minimum was satisfied.
 
-The paid proof attempted the five selected positions serially. One candidate failed before reservation because the generation API incorrectly parsed the headline phrase `Returning Hansen` as a person. Three other paid attempts reached generation/review but failed closed during Publication Review; one article succeeded and was written to Sanity as `drafts.article-current-2026-09-11-ef6c895b53b9`. Total reservation reached **$0.220**. No article was auto-published and package notifications remained suppressed pending mandatory media.
+Package diversity passed with one retained Irish draft, two additional Irish positions required and exactly two Irish-connected candidates available. Six total replacement candidates remained for four missing slots. Slot planning then selected exactly four candidates, selected the two required Irish-connected positions, reported zero paid replacements and `rejectedByFreshness: 0`. This production-proves that freshness and same-day paid eligibility are now canonical decisions rather than being reinterpreted downstream.
 
-PR #487 fixes the false `Returning Hansen` API person collision and is merged/deployed on production. PR #488 fixes a runtime model-resolution defect where Terra generation was correct but Publication Review still used the module fallback `gpt-5-mini`; review/repair now resolves only after the route establishes `gpt-5.6-luna`. PR #489 makes individual official YouTube feed failures non-fatal to the wider media search while keeping every article fail-closed unless a story-specific verified official embed is found.
+The four selected candidates were attempted serially once. Two reached Terra generation and Luna Publication Review but were rejected by the final review gate because their evidence did not support sufficiently concrete, clearly identified rugby journalism. Two others failed before OpenAI reservation because the runtime route incorrectly parsed organisation/competition phrases containing `Connacht` and `Global` as person surnames. No draft was persisted from those four attempts. The retained current-day Sanity draft remains `drafts.article-current-2026-09-11-ef6c895b53b9`.
 
-Mandatory-media run `34561917763` showed the one current Sanity draft had no curated exact override and the automatic pass aborted because the configured Irish Rugby YouTube feed returned HTTP 404. PR #489 fixes the workflow-level abort condition; the story itself remains blocked until an exact official embed is actually verified.
+PR #491 moves same-day paid-attempt eligibility into canonical qualification and removes the slot planner's second freshness interpretation. PR #492 aligns the launch contract regression with that single canonical boundary. PR #493 fixes the regression-test TypeScript integration. PR #494 makes the +3 reserve advisory after the mandatory missing-slot minimum and Irish quota have passed. PR #495 centralises runtime person-name heuristics so team/competition/publisher phrases such as `Connacht` and `WXV Global` do not create false person collisions while real names remain protected.
 
-The pre-run budget policy is restored to the owner-approved **$0.75 hard ceiling / <=$0.40 normal target**. The earlier `$0.40` API ceiling was stricter than the slot planner and could strand same-day recovery after legitimate failed paid attempts. A production draft reservation remains `$0.055`; discovery and deterministic qualification remain free; paid replacement loops remain disabled.
+PR #495 is merged and production-deployed READY as Vercel deployment `dpl_495Y22SLQhPvKzvsQcsGKFYwmnc4` on merge SHA `9a13dd161ebd754d00dded959658d6f9aa2f86ec`.
 
 ## Current launch blockers
 
-1. Production-verify Luna review/repair on the next legitimate generated article; the preceding successful draft was reviewed before the #488 runtime fix.
-2. Complete the four missing review-ready positions; current same-day reservation is `$0.220` and recovery must remain within the `$0.75` hard ceiling / `<= $0.40` normal operating target where practical.
-3. Verify a story-specific official embed for every article. The current Tommy O'Brien draft has no verified embed yet; PR #489 only fixes feed resilience, not relevance.
-4. Five genuinely distinct review-ready articles must be present in Sanity for human review; never auto-publish.
+1. **Same-day five-story completion is blocked by the zero-paid-replacement contract.** Two candidates in run `34566787385` legitimately consumed their one paid attempt and were rejected by Luna Publication Review. They cannot be replaced with new paid candidates today without changing the approved contract.
+2. The two candidates that failed only on the now-fixed runtime person-identity false positive did not reach OpenAI reservation and remain technically recoverable, but even two successful recoveries plus the retained draft would not produce five review-ready drafts while blocker 1 remains.
+3. Mandatory verified official story-specific media is still required for every review-ready article. The retained Tommy O'Brien draft has not yet been production-proven with a qualifying exact official embed.
+4. Publication Review correctly exposed a remaining pre-AI quality gap: candidate selection needs stronger checks for explicit subject naming and enough story-specific rugby facts so paid Terra/Luna attempts are not spent on drafts that Luna will reject.
+5. Five genuinely distinct review-ready articles must be present in Sanity before go-live; no article is auto-published.
+
+## What is production-verified now
+
+- 31-source standard discovery plus Irish-targeted free discovery.
+- Canonical 14-day freshness including progressive same-match phases.
+- Same-day paid-attempt exclusion before canonical capacity counts.
+- Bounded free refill when the preferred reserve is thin.
+- Reserve shortage does not block when the missing-slot minimum is met.
+- Ireland-first diversity and same-package concentration gates.
+- Slot planning consumes the canonical pool without a second freshness decision.
+- Exactly one selected paid candidate per missing slot and no paid replacement loop inside the run.
+- Terra generation and Luna Publication Review routing on the paid attempts in `34566787385`.
+- Runtime person-identity false-positive fix is merged and deployed; production generation proof of the two previously blocked candidates remains optional because it cannot remove the same-day five-story blocker.
 
 ## Go-live states
 
