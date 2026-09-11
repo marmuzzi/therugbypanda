@@ -35,6 +35,18 @@ const cases = [
     right: lead("Chiefs winger signs new deal after breakthrough campaign"),
     expected: false,
   },
+  {
+    name: "do not mix Limerick All-Ireland hurling with Leinster rugby judo feature",
+    left: lead("Kiely commits to Limerick for All-Ireland title defence - RTE.ie"),
+    right: lead("Meet the All-Ireland judo champion Alex Usanov looking to grab front-row opportunity at Leinster with both hands - Irish Independent"),
+    expected: false,
+  },
+  {
+    name: "do not mix Mako Vunipola Leicester signing with Steve Borthwick England story",
+    left: lead("Mako Vunipola: Ex-England prop shelved retirement plans to join Leicester Tigers - BBC"),
+    right: lead("Ex-England star accuses RFU boss of having 'blinkers on' following Steve Borthwick backing - Planet Rugby"),
+    expected: false,
+  },
 ];
 
 for (const testCase of cases) {
