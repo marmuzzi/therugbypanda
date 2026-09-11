@@ -81,13 +81,22 @@ if (articles.length < 1 || articles.length > PACKAGE_SIZE || new Set(articles.ma
 }
 
 const feedCache = new Map();
+const feedFailures = [];
 async function videosFor(source) {
   if (feedCache.has(source.channelId)) return feedCache.get(source.channelId);
-  const response = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(source.channelId)}`, { headers: { "user-agent": "TheRugbyPanda/1.0 editorial-media" } });
-  if (!response.ok) throw new Error(`Official YouTube feed ${source.sourceLabel} failed (${response.status}).`);
-  const videos = parseYouTubeFeed(await response.text()).filter((video) => withinAge(video.publishedAt));
-  feedCache.set(source.channelId, videos);
-  return videos;
+  try {
+    const response = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(source.channelId)}`, { headers: { "user-agent": "TheRugbyPanda/1.0 editorial-media" } });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const videos = parseYouTubeFeed(await response.text()).filter((video) => withinAge(video.publishedAt));
+    feedCache.set(source.channelId, videos);
+    return videos;
+  } catch (error) {
+    const failure = { sourceLabel: source.sourceLabel, channelId: source.channelId, error: error instanceof Error ? error.message : String(error) };
+    feedFailures.push(failure);
+    console.warn("Official YouTube feed unavailable; continuing with remaining official sources", failure);
+    feedCache.set(source.channelId, []);
+    return [];
+  }
 }
 
 const report = [];
@@ -141,6 +150,7 @@ const result = {
   blocked: report.length - ready.length,
   fullPackageMediaReady: articles.length === PACKAGE_SIZE && ready.length === PACKAGE_SIZE,
   maxVideoAgeDays: MAX_VIDEO_AGE_DAYS,
+  feedFailures,
   articles: report,
   failClosedPerArticle: true,
 };
@@ -148,4 +158,3 @@ await fs.mkdir(path.dirname(outputPath), { recursive: true });
 await fs.writeFile(outputPath, `${JSON.stringify(result, null, 2)}\n`);
 console.log(JSON.stringify(result, null, 2));
 // Progressive delivery is allowed to continue for any individually verified article.
-// Daily completion remains fail-closed in the progressive-ready endpoint until five accepted deliveries exist.
