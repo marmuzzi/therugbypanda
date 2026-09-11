@@ -17,8 +17,8 @@ free standard + targeted Irish source discovery
 → coherent corroboration and story-type concrete evidence
 → retained exact-day integrity + source-cluster duplicate eviction
 → recent-position freshness and multi-day repetition rejection
-→ canonical eligible pool = missing paid slots + 3 reserve
-→ if pool short: one expanded free discovery/corroboration refill, then re-run deterministic evidence/freshness gates
+→ canonical eligible pool: minimum = missing slots; preferred target = missing slots + 3 reserve
+→ if reserve target short: one expanded free discovery/corroboration refill, then re-run deterministic evidence/freshness gates
 → Ireland-first + team/matchup diversity
 → free story-specific official embed qualification wherever possible
 → exactly one fresh candidate per missing paid slot
@@ -47,7 +47,9 @@ For the 12 September 2026 Leinster v Zebre pre-season test event, match build-up
 
 ## Evidence-before-spend contract
 
-Require at least two substantive sources from at least two publishers, coherent same-development corroboration, concrete rugby facts, and no non-rugby contamination. Completed-match stories require the final score; squad/selection stories require actual named people; exact-person coherence rejects surname collisions. Match-like stories must satisfy the same concrete-detail classes before model spend that the generation API enforces.
+Require at least two substantive sources from at least two publishers, coherent same-development corroboration, concrete rugby facts, and no non-rugby contamination. Completed-match stories require the final score; squad/selection stories require actual named people. Person identity must be coherent between the title/development and fact ledger, and surname collisions fail closed. Exact repetition of a full person name in two publisher snippets is useful corroboration but is not independently mandatory when the title/fact identity is coherent and the underlying development already has two independent publishers and two substantive facts. Match-like stories must satisfy the same concrete-detail classes before model spend that the generation API enforces.
+
+Explicit non-rugby title signals such as Nations League, soccer, GAA, hurling or camogie are rejected before generation even if noisy descriptions contain rugby terms.
 
 A candidate that already consumed a paid reservation on the current Dublin day is excluded from another paid slot.
 
@@ -55,15 +57,15 @@ A candidate that already consumed a paid reservation on the current Dublin day i
 
 The canonical pool is the single pre-AI decision boundary for recent-position freshness. Downstream package selection must consume that pool rather than reinterpret freshness independently.
 
-For an incomplete daily package, the required pre-AI pool is **the number of missing paid slots plus three qualified reserve candidates**. Valid retained current-day drafts reduce the missing-slot count; they are not counted as new generation candidates.
+For an incomplete daily package, the **strict minimum** is the number of missing paid slots. The **preferred target** is missing slots plus three qualified reserve candidates. Valid retained current-day drafts reduce the missing-slot count; they are not counted as new generation candidates.
 
-If the first canonical qualification is short, the workflow performs one bounded **free** refill pass with expanded per-source and corroboration limits, rebuilds the acquisition batch, re-runs concrete evidence and match-detail parity, and then re-runs the strict canonical freshness gate. Terra/Luna generation remains unreachable until this final deterministic gate passes. A failed refill must fail closed rather than weaken evidence, freshness, Irish connection or diversity rules.
+If the first canonical qualification does not meet the preferred reserve target, the workflow performs one bounded **free** refill pass with expanded per-source and corroboration limits, rebuilds the acquisition batch, re-runs concrete evidence and match-detail parity, and then re-runs canonical freshness. After that refill, Terra/Luna remains blocked unless the strict missing-slot minimum is satisfied. A thin reserve by itself must not block a legitimate five-story package.
 
 ## Freshness and diversity
 
 Freshness identity is **subject + event/development + editorial angle** and is checked against recent production positions. Headline rewriting does not make a repeated position fresh. Source-cluster overlap with a retained article is also a duplicate signal.
 
-For a developing match or event, a genuine new phase is a fresh editorial position even when the subject or matchup is unchanged. Recognised match phases include preview/build-up, team selection, late injury or personnel change, live-match development, confirmed result and post-match reaction. A preview may therefore be followed by a team-announcement story and later by a result/reaction story. Rewording the same phase or repeating the same underlying development remains a duplicate and must be rejected.
+For a developing match or event, a genuine new phase is a fresh editorial position even when the subject or matchup is unchanged. Recognised phases include preview/build-up, squad or team selection, late injury/personnel change, live-match development, confirmed result and post-match reaction. A new concrete squad/roster announcement may therefore supersede an older generic competition position with no concrete phase. Rewording the same phase or repeating the same underlying development remains a duplicate and must be rejected.
 
 Package limits are max three same canonical matchup, max three same recognised team, min three Irish-connected and max two international-only. The three-story allowance never overrides freshness, evidence, media relevance or story distinctness.
 
@@ -108,9 +110,9 @@ Review-ready drafts are never automatically published. The owner reviews/edits i
 
 1. sanitize exact-day retained state and evict source-cluster duplicates;
 2. run free discovery/evidence/match-detail qualification and export recent production positions;
-3. build the canonical pool for missing slots + three reserve candidates;
-4. if short, run one expanded free discovery/corroboration refill and repeat deterministic qualification;
-5. enforce the final strict canonical freshness gate, then Ireland-first and same-package diversity;
+3. build the canonical pool for the missing-slot minimum and preferred +3 reserve target;
+4. if the preferred reserve target is short, run one expanded free discovery/corroboration refill and repeat deterministic qualification;
+5. after refill, fail closed only if the missing-slot minimum is still short; then enforce Ireland-first and same-package diversity;
 6. qualify official embed availability wherever possible;
 7. assign one candidate to each missing paid slot, excluding already-paid IDs;
 8. reserve/generate serially within the `$0.40/day` hard ceiling and `<= $0.30/day` normal target, with no paid replacement loop;

@@ -17,7 +17,7 @@ export interface FreshnessDecision {
 const STOP = new Set(["the", "and", "for", "with", "from", "into", "that", "this", "their", "after", "before", "over", "under", "rugby"]);
 const MATCH_PHASES = [
   { id: "preview", pattern: /\b(?:preview|build[- ]?up|ahead of|pre[- ]?match|what to expect|test event|kick[- ]?off approaches)\b/i },
-  { id: "selection", pattern: /\b(?:team named|names? (?:the )?(?:team|side|squad)|starting xv|matchday 23|selection|selected|captain(?:cy)?|bench|line[- ]?up)\b/i },
+  { id: "selection", pattern: /\b(?:squads?|roster|team named|names? (?:the )?(?:team|side|squad)|starting xv|matchday 23|selection|selected|captain(?:cy)?|bench|line[- ]?up)\b/i },
   { id: "late-change", pattern: /\b(?:late change|withdrawn|withdrawal|ruled out|injury update|replaced by|called in|added to the squad)\b/i },
   { id: "live", pattern: /\b(?:kick[- ]?off|half[- ]?time|live update|at the break|during the match)\b/i },
   { id: "result", pattern: /\b(?:full[- ]?time|final score|result|beat|defeated|win|won|loss|lost|drawn?|victory)\b/i },
@@ -69,7 +69,10 @@ export function assessPositionFreshness(
     const candidatePhase = matchPhase(candidate);
     const previousPhase = matchPhase(previous);
 
-    if (subject >= 0.6 && candidatePhase && previousPhase && candidatePhase !== previousPhase) {
+    // A newly recognised concrete match/event phase is a materially new development.
+    // This also protects a fresh squad/team announcement from being suppressed by an
+    // older generic competition/index position that had no concrete phase at all.
+    if (subject >= 0.6 && candidatePhase && candidatePhase !== previousPhase) {
       continue;
     }
 

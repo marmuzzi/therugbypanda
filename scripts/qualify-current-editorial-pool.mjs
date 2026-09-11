@@ -18,7 +18,8 @@ if (!Array.isArray(batch?.candidates) || !Array.isArray(recentPositions)) {
 
 const retainedCount = Math.min(packageSize, Math.max(0, Number(batch?.provenance?.concreteEvidenceGate?.retainedEligibleCount || 0)));
 const missingSlots = Math.max(0, packageSize - retainedCount);
-const requiredEligible = missingSlots === 0 ? 0 : missingSlots + reserveTarget;
+const minimumEligible = missingSlots;
+const targetEligible = missingSlots === 0 ? 0 : missingSlots + reserveTarget;
 const positions = batch.candidates.map((candidate) => ({
   id: candidate.id,
   subject: candidate.editorialPosition?.subject || candidate.title || "",
@@ -34,7 +35,8 @@ const rejected = batch.candidates.filter((candidate) => !freshIds.has(candidate.
   title: candidate.title,
   status: "duplicate-or-stale",
 }));
-const sufficient = eligible.length >= requiredEligible;
+const packageSufficient = eligible.length >= minimumEligible;
+const targetMet = eligible.length >= targetEligible;
 
 batch.candidates = eligible;
 batch.editorialPool = {
@@ -43,20 +45,24 @@ batch.editorialPool = {
   retainedCount,
   missingSlots,
   reserveTarget,
-  requiredEligible,
+  minimumEligible,
+  targetEligible,
   inputCount: positions.length,
   eligibleCount: eligible.length,
   reserveCount: Math.max(0, eligible.length - missingSlots),
-  sufficient,
-  status: sufficient ? "target-met" : "refill-required",
+  packageSufficient,
+  targetMet,
+  status: targetMet ? "target-met" : packageSufficient ? "package-met-reserve-thin" : "refill-required",
   rejected,
 };
 await fs.writeFile(batchPath, `${JSON.stringify(batch, null, 2)}\n`, "utf8");
 await fs.writeFile(reportPath, `${JSON.stringify(batch.editorialPool, null, 2)}\n`, "utf8");
 if (process.env.GITHUB_OUTPUT) {
-  await fs.appendFile(process.env.GITHUB_OUTPUT, `sufficient=${sufficient}\neligible_count=${eligible.length}\nrequired_eligible=${requiredEligible}\nmissing_slots=${missingSlots}\n`);
+  // Refill is still encouraged until the reserve target is met, but the strict final
+  // launch gate is the five-position package minimum, not the optional reserve.
+  await fs.appendFile(process.env.GITHUB_OUTPUT, `sufficient=${targetMet}\npackage_sufficient=${packageSufficient}\neligible_count=${eligible.length}\ntarget_eligible=${targetEligible}\nminimum_eligible=${minimumEligible}\nmissing_slots=${missingSlots}\n`);
 }
-if (!sufficient && strict) {
-  throw new Error(`Canonical editorial pool fail-closed after free refill: retained ${retainedCount}, missing ${missingSlots}, eligible ${eligible.length}/${requiredEligible} including reserve ${reserveTarget}.`);
+if (!packageSufficient && strict) {
+  throw new Error(`Canonical editorial pool fail-closed after free refill: retained ${retainedCount}, missing ${missingSlots}, eligible ${eligible.length}/${minimumEligible} minimum; reserve target ${reserveTarget} (${targetEligible} total) was not treated as mandatory.`);
 }
-console.log(JSON.stringify({ canonicalEditorialPool: sufficient ? "passed" : "refill-required", ...batch.editorialPool }, null, 2));
+console.log(JSON.stringify({ canonicalEditorialPool: targetMet ? "target-met" : packageSufficient ? "package-met-reserve-thin" : "refill-required", ...batch.editorialPool }, null, 2));

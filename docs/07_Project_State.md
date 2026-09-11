@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-11 September 2026 during the pre-run launch gate after production run `34560120792`.
+11 September 2026 during the pre-run launch gate after production run `34560417839` and PR #486 implementation.
 
 ## Read first
 
@@ -23,42 +23,38 @@ Newer measured evidence supersedes older state statements where they conflict; G
 - Europe/Dublin operational day.
 - Five fresh, genuinely distinct review-ready drafts, delivered individually as each becomes ready.
 - At least 3/5 direct Irish connections; at most 2 international-only.
-- Leinster match build-up has editorial priority for the 12 September 2026 Leinster v Zebre pre-season test event, but repetitive same-phase angles remain duplicates.
-- A genuine follow-up or new match phase is fresh even when it concerns the same match; same-phase rewrites remain duplicates.
-- Up to three distinct stories may concern the same canonical matchup/team when each has a materially different development.
-- Mandatory verified official story-specific social/video embed before review delivery.
-- Local Sanity imagery is optional and must be omitted when it is not independently relevant.
-- Sanity remains the human publication boundary; never auto-publish.
-- OpenAI application reservation hard ceiling `$0.40/day`; normal operating target `<= $0.30/day`.
-- Free discovery, evidence, freshness, diversity, media qualification and slot planning before model spend.
-- Terra is used only for approved article generation; Luna is used for publication review/repair.
+- Genuine follow-ups/new match phases are fresh; same-phase rewrites remain duplicates.
+- Up to three distinct stories may concern the same canonical matchup/team when developments materially differ.
+- Verified official story-specific social/video embed is mandatory before review delivery.
+- Local Sanity imagery is optional and omitted when not independently relevant.
+- Sanity is the human publication boundary; never auto-publish.
+- OpenAI hard ceiling `$0.40/day`; normal operating target `<= $0.30/day`.
+- Terra only for approved article generation; Luna for publication review/repair.
 - One paid candidate per missing slot; no paid replacement loop.
-- Canonical pre-AI pool target is **missing paid slots + three reserve candidates**. When the first qualification pass is short, the workflow performs one expanded free discovery/corroboration refill before the final fail-closed gate.
+- Canonical pool **minimum is the number of missing package slots**. Missing slots + three reserve remains the preferred target and drives one bounded free refill, but reserve shortage alone must not block a legitimate five-story package.
 
 ## Latest measured production state
 
-PRs #476-#478 established the canonical missing-slot-aware pool and bounded free refill. PR #479 restored the application AI hard ceiling to `$0.40/day` and the normal operating target to `<= $0.30/day`. PR #480 fixed non-rugby/GAA contamination; run `34559157178` verified that repair.
+PRs #476-#478 established the canonical missing-slot-aware pool and bounded free refill. PR #479 restored the `$0.40/$0.30` budget policy. PR #480 fixed non-rugby/GAA contamination. PR #482 added World Rugby, Fiji Rugby Union and Rugby Canada. PR #483 fixed false person parsing. PR #484 aligned the launch-recovery test with the current budget. PR #485 allowed strong multi-publisher squad/roster evidence without requiring the same player name in two publisher snippets.
 
-PR #482 added World Rugby, Fiji Rugby Union and Rugby Canada to the canonical source registry. Vercel deployment `dpl_BcHTR7pHyCfuD7jpK7wfeYoAdDkD` reached READY on merge SHA `f0b8876a9ecc0b7d3ea881e225dffcacdeb08e45`. Production run `34559843720` verified all 31 configured sources fetched and expanded discovery reached 338 leads, but only four candidates passed strict evidence.
+Production run `34560417839` is the strongest pre-run proof so far. It fetched all 31 configured sources, expanded free discovery to 340 leads, accepted **5/12** candidates through concrete evidence, and passed pre-AI match-detail parity for all five. No AI reservation occurred.
 
-PR #483 fixed false person parsing for competition/team/editorial labels. Production verification run `34560120792` confirmed the false surname-collision defect was removed, but the World Rugby WXV squad story was still rejected solely because no individual player name appeared in two publisher snippets, despite four independent publishers, four substantive facts and two real named players in the fact ledger. The same run still had the three required Leinster-connected positions plus Steve Borthwick, and made no AI reservation.
+The run then exposed the remaining canonical-history mismatch. Of the five evidence-qualified positions, only Steve Borthwick and Alex Usanov survived the 14-day freshness history. Felipe Contepomi/Ian Madigan and Fintan Gunne/Luke McGrath were correctly identified as repeated developments from 8-10 September. The fresh 10 September WXV squad roundup was incorrectly suppressed by an older generic WXV competition position because `squads` was not recognised as a selection phase. The final gate also required eight eligible positions (five missing + three reserve), making the reserve a hard blocker despite the intended “aim for eight, publish five” contract.
 
-PR #484 aligns the launch recovery contract test with the already-deployed `$0.40/$0.30` budget policy. It changes test expectations only; production budget code remains unchanged.
-
-PR #485 narrows the remaining squad evidence mismatch: for squad/roster stories only, at least three independent publishers plus at least two named people in the fact ledger can satisfy identity support without requiring the same player name to appear in two publisher snippets. All other stories retain exact person corroboration. The two-publisher, two-fact, concrete rugby, collision and named-player safeguards remain mandatory.
+PR #486 corrects those deterministic mismatches. Squad/roster announcements are recognised as a progressive selection phase; a concrete new phase can supersede an older generic unphased competition position. The reserve is advisory once all missing slots are fresh. Evidence identity now accepts a fact-ledger person coherently named in the title with two independent publishers and two facts, while exact surname-collision rejection remains and explicit non-rugby titles such as Nations League/GAA/soccer are rejected before generation.
 
 ## Current launch blockers
 
-1. Production-verify PR #485 and confirm at least five legitimate generation-ready candidates reach the canonical pool path.
-2. Verify the canonical pool/diversity step can retain the required three Irish-connected positions and enough reserve after freshness/history checks.
-3. Complete a legitimate paid package within the `$0.40` hard guard / `<= $0.30` normal target without paid retry loops.
-4. Verify story-specific official embed coverage for every selected article before delivery.
+1. Production-verify PR #486 and measure the final fresh canonical pool; five fresh positions are still mandatory.
+2. Confirm at least three of the final five are Irish-connected after freshness/diversity, not merely before it.
+3. Complete a legitimate paid package inside the `$0.40` hard guard / `<= $0.30` normal target.
+4. Verify current story-specific official embed coverage for every selected article before delivery.
 5. Five genuinely distinct review-ready articles must be present in Sanity for human review; never auto-publish.
 
 ## Go-live states
 
 1. evidence-complete Ireland-first reserve;
-2. five distinct fresh positions with recent-position repetition protection and progressive match-day follow-ups allowed;
+2. five distinct fresh positions with progressive follow-ups allowed;
 3. verified official story-specific embed for every article;
 4. local image only when exact/relevant, otherwise omit it;
 5. individual review delivery after editorial and embed gates;
