@@ -6,6 +6,7 @@ import type { FactLedger, RawStoryInput } from "@/lib/editorial/EditorialTypes";
 import { EditorialBrain } from "@/lib/editorial/EditorialBrain";
 import { notifyDraftCreated } from "@/lib/editorial/EditorialNotifications";
 import { generateArticleDraft } from "@/lib/editorial/OpenAIArticleGenerator";
+import { extractPersonNames, namedPeopleSet } from "@/lib/editorial/PersonNameHeuristics";
 import { createSanityArticleDraft, validateSanityConnectivity } from "@/lib/editorial/SanityDraftWriter";
 
 export const runtime = "nodejs";
@@ -21,17 +22,14 @@ const SQUAD_SELECTION = /\b(?:squad|selection|selected|named|line-?up|team named
 const DATE_DETAIL = /\b(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|january|february|march|april|may|june|july|august|september|october|november|december|today|tonight|yesterday|tomorrow)\b|\b\d{1,2}[\s/-](?:jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|jun(?:e)?|jul(?:y)?|aug(?:ust)?|sep(?:tember)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?|\d{1,2})\b/i;
 const SCORE_DETAIL = /\b\d{1,3}\s*[-–:]\s*\d{1,3}\b/;
 const VENUE_DETAIL = /\b(?:stadium|park|ground|arena|sportsground|aviva|thomond|kingspan|dexcom|rds|croke park|eden park|cape town|auckland|dublin|limerick|belfast|galway|cork|soweto)\b/i;
-const PLAYER_COACH_DETAIL = /\b[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\s+[A-Z][A-Za-zÀ-ÖØ-öø-ÿ'’-]{2,}\b/g;
-const GENERIC_PERSON_NAMES = /^(?:irish independent|planet rugby|united rugby|rugby football|world rugby|the rugby|new zealand|south africa|red roses)$/i;
-const GENERIC_PERSON_PREFIXES = new Set(["returning", "former", "current", "latest", "uncapped", "injured", "fit-again", "two-time"]);
 const corsHeaders = { "Access-Control-Allow-Origin": ALLOWED_STUDIO_ORIGIN, "Access-Control-Allow-Methods": "POST, OPTIONS", "Access-Control-Allow-Headers": "Authorization, Content-Type", Vary: "Origin" };
 
 type DraftRequest = { story: RawStoryInput; factLedger: FactLedger; createSanityDraft?: boolean; editorialImageId?: string; dryRun?: boolean; qaMode?: boolean; notificationMode?: "draft" | "package"; styleProfileId?: ArticleStyleProfileId; };
 type FinalSourceNote = { sourceId?: string; publisher?: string; url?: string; };
 function jsonResponse(body: unknown, init?: ResponseInit) { return NextResponse.json(body, { ...init, headers: { ...corsHeaders, ...(init?.headers ?? {}) } }); }
 function isAuthorized(request: NextRequest): boolean { const secret = process.env.EDITORIAL_AUTOMATION_SECRET; return Boolean(secret && request.headers.get("authorization") === `Bearer ${secret}`); }
-function personNames(value: string) { return (value.match(PLAYER_COACH_DETAIL) ?? []).map((name) => name.replace(/[’']/g, "'")).filter((name) => { if (GENERIC_PERSON_NAMES.test(name)) return false; const [first] = name.toLowerCase().split(/\s+/); return !GENERIC_PERSON_PREFIXES.has(first); }); }
-function namedPeople(value: string) { return new Set(personNames(value).map((name) => name.toLowerCase())); }
+function personNames(value: string) { return extractPersonNames(value); }
+function namedPeople(value: string) { return namedPeopleSet(value); }
 function assertPersonIdentityCoherence(story: RawStoryInput, factEvidence: string) {
   const primary = personNames(story.title); const evidenceNames = personNames(factEvidence);
   for (const primaryName of primary) { const [primaryFirst, ...primaryRest] = primaryName.toLowerCase().split(/\s+/); const primaryLast = primaryRest.at(-1); if (!primaryLast) continue; const collision = evidenceNames.find((name) => { const [first, ...rest] = name.toLowerCase().split(/\s+/); return rest.at(-1) === primaryLast && first !== primaryFirst; }); if (collision) throw new Error(`Pre-generation evidence gate failed: person-identity collision for surname ${primaryLast}; story names ${primaryName} but usable facts also contain ${collision}. Require coherent same-person evidence before OpenAI spend.`); }
