@@ -52,9 +52,6 @@ const retained=[]; const evicted=[];
 const provisionalMatchupCounts=new Map(); const provisionalTeamCounts=new Map();
 for(const draft of (Array.isArray(drafts)?drafts:[])){ const pairs=matchupPairs(draftText(draft)); const teams=[...new Set(teamIds(draftPrimaryText(draft)))]; if(!canAdd(pairs,teams,provisionalMatchupCounts,provisionalTeamCounts)){ await client.patch(draft._id).set({morningPackageEligible:false,automationContentClass:"production"}).commit(); evicted.push({articleId:draft._id,editorialInputId:draft.editorialInputId,title:draft.title,pairs,teams,reason:concentrationReason(pairs,teams,provisionalMatchupCounts,provisionalTeamCounts)}); continue;} retained.push(draft); addConcentration(pairs,teams,provisionalMatchupCounts,provisionalTeamCounts); }
 
-// Retained drafts are inputs, not entitlements. If yesterday/today's partial package contains too many
-// international-only drafts, evict the newest overflow deterministically and refill those slots from
-// the Irish reserve. Previously this condition aborted the entire morning workflow before generation.
 const internationalRetained=retained.filter((draft)=>!isIrishDraft(draft));
 const internationalOverflow=Math.max(0,internationalRetained.length-maxInternationalOnly);
 if(internationalOverflow>0){
@@ -66,7 +63,6 @@ if(internationalOverflow>0){
   for(let index=retained.length-1;index>=0;index-=1) if(overflowIds.has(retained[index]._id)) retained.splice(index,1);
 }
 
-// Rebuild concentration state from the final retained set after all evictions.
 const matchupCounts=new Map(); const teamCounts=new Map();
 for(const draft of retained) addConcentration(matchupPairs(draftText(draft)),[...new Set(teamIds(draftPrimaryText(draft)))],matchupCounts,teamCounts);
 const retainedIrishCount=retained.filter(isIrishDraft).length;
@@ -84,9 +80,15 @@ const keptCandidates=[...retainedCandidates,...keptUnretained];
 const availableIrish=keptUnretained.filter(isIrishCandidate).length;
 if(availableIrish<irishNeeded){ throw new Error(`Ireland-first fail-closed before model spend: only ${availableIrish}/${irishNeeded} Irish-connected replacement candidates remain. Do not fill reserved Irish positions with international-only stories.`); }
 
+const missingSlots=Math.max(0,packageSize-retained.length);
+const availableReplacementCandidates=keptUnretained.length;
+const minimumReplacementCandidates=missingSlots;
+const preferredReplacementCandidates=missingSlots===0?0:missingSlots+recoveryReserve;
+const reserveTargetMet=availableReplacementCandidates>=preferredReplacementCandidates;
+const reserveShortfall=Math.max(0,preferredReplacementCandidates-availableReplacementCandidates);
+if(availableReplacementCandidates<minimumReplacementCandidates) throw new Error(`Package minimum fail-closed before model spend: only ${availableReplacementCandidates}/${minimumReplacementCandidates} candidates remain for ${missingSlots} missing slots. Recovery reserve ${recoveryReserve} is advisory and cannot substitute for the package minimum.`);
+
 batch.candidates=keptCandidates;
-batch.packageDiversity={checkedAt:new Date().toISOString(),packageDate,maxPerMatchup,maxPerTeam,recoveryReserve,minIrishConnected,maxInternationalOnly,retainedCount:retained.length,retainedIrishCount,retainedInternationalCount,irishNeeded,availableIrish,evictedDrafts:evicted,rejectedCandidates};
+batch.packageDiversity={checkedAt:new Date().toISOString(),packageDate,maxPerMatchup,maxPerTeam,recoveryReserve,minIrishConnected,maxInternationalOnly,retainedCount:retained.length,retainedIrishCount,retainedInternationalCount,irishNeeded,availableIrish,missingSlots,minimumReplacementCandidates,preferredReplacementCandidates,availableReplacementCandidates,reserveTargetMet,reserveShortfall,evictedDrafts:evicted,rejectedCandidates};
 await fs.writeFile(batchPath,`${JSON.stringify(batch,null,2)}\n`,"utf8");
-const missingSlots=Math.max(0,packageSize-retained.length); const availableReplacementCandidates=keptUnretained.length; const requiredReplacementCandidates=missingSlots===0?0:missingSlots+recoveryReserve;
-if(availableReplacementCandidates<requiredReplacementCandidates) throw new Error(`Package recovery reserve fail-closed before model spend: only ${availableReplacementCandidates}/${requiredReplacementCandidates} candidates remain for ${missingSlots} missing slots plus reserve ${recoveryReserve}.`);
-console.log(JSON.stringify({packageDiversityGate:"passed",packageDate,maxPerMatchup,maxPerTeam,recoveryReserve,minIrishConnected,maxInternationalOnly,retainedCount:retained.length,retainedIrishCount,retainedInternationalCount,irishNeeded,availableIrish,missingSlots,requiredReplacementCandidates,availableReplacementCandidates,evictedDrafts:evicted,rejectedCandidateCount:rejectedCandidates.length,rejectedCandidates,remainingCandidateCount:keptCandidates.length,orderedReplacementIds:keptUnretained.map((candidate)=>candidate.id),matchupCounts:Object.fromEntries(matchupCounts),teamCounts:Object.fromEntries(teamCounts)},null,2));
+console.log(JSON.stringify({packageDiversityGate:"passed",packageDate,maxPerMatchup,maxPerTeam,recoveryReserve,minIrishConnected,maxInternationalOnly,retainedCount:retained.length,retainedIrishCount,retainedInternationalCount,irishNeeded,availableIrish,missingSlots,minimumReplacementCandidates,preferredReplacementCandidates,availableReplacementCandidates,reserveTargetMet,reserveShortfall,evictedDrafts:evicted,rejectedCandidateCount:rejectedCandidates.length,rejectedCandidates,remainingCandidateCount:keptCandidates.length,orderedReplacementIds:keptUnretained.map((candidate)=>candidate.id),matchupCounts:Object.fromEntries(matchupCounts),teamCounts:Object.fromEntries(teamCounts)},null,2));
