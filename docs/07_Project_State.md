@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-11 September 2026 after Leinster/Zebre pre-match production runs `34558806733` and `34559157178`.
+11 September 2026 during the pre-run launch gate after production runs `34558806733` and `34559157178` and external primary-source verification.
 
 ## Read first
 
@@ -47,10 +47,18 @@ PR #480 added title-level GAA/TG4 All-Star rejection before rugby clustering. Ve
 
 Production verification run `34559157178` confirmed the contamination fix: the false GAA candidate disappeared and Alex Usanov returned as a legitimate Leinster candidate. The free refill expanded discovery to 325 leads but the strict evidence gate still produced only four generation-ready stories: Steve Borthwick; Felipe Contepomi/Ian Madigan; Fintan Gunne/Luke McGrath; and Alex Usanov. Three are directly Leinster-connected. Dedicated Leinster/Zebre searches returned no fresh qualifying match-specific leads in that run. The workflow therefore failed closed before match-detail, canonical pool, diversity, slot planning or Terra/Luna generation. **No AI reservation/spend occurred.**
 
+PR #481 reconciled those production findings into the living documentation. Vercel production deployment `dpl_BYV2oftgwR83cbNJFE16iW5eYSuJ` is READY on merge SHA `67f961a133f4cf01f2bbef2f7a2e9e0d66856f0f`.
+
+### Pre-run primary-source finding — 11 September
+
+The remaining 4/5 evidence shortage was not purely market supply. Fresh 10 September evidence exists for the Fiji v Canada Pacific Nations Cup semi-final/team-selection development across Fiji Rugby Union, Rugby Canada and World Rugby, with additional independent coverage from RugbyPass. These three authoritative publishers were absent from `data/editorial-sources/source-registry.json`, so normal discovery could not qualify that development even though it satisfied the editorial evidence concept.
+
+The pre-run recovery branch adds `world.rugby`, `fijirugby.com` and `rugby.ca` as primary discovery/evidence sources. This is a deterministic source-registry repair; evidence, freshness, Irish-floor, diversity and budget gates are unchanged. Production verification is required after merge.
+
 ## Current launch blockers
 
-1. Fresh evidence supply: at least one more legitimate generation-ready story is needed before the five-story package can proceed; the canonical reserve target remains missing slots + three.
-2. Leinster/Zebre match-specific supply: current official/public evidence confirms the fixture but no fresh qualifying squad/team-news/preview development was available in the production discovery window at the verification time.
+1. Verify the expanded primary-source registry in the current production workflow and confirm at least five legitimate generation-ready candidates reach the canonical pool path.
+2. Leinster/Zebre match-specific supply remains opportunistic: current official/public evidence confirms the fixture but no fresh qualifying squad/team-news/preview development was available in run `34559157178`.
 3. Complete a legitimate paid package within the `$0.40` hard guard / `<= $0.30` normal target without paid retry loops.
 4. Story-specific official embed coverage for every selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
 5. Production proof of local-image cleanup on exact-embed drafts.
