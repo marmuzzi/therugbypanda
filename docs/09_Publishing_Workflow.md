@@ -43,6 +43,8 @@ At least three of five stories must have a direct Irish connection: Ireland/IRFU
 
 Retained same-day drafts are inputs, not entitlements. Invalid or materially duplicate retained positions must be made package-ineligible and replaced from the evidence reserve. Never weaken the Irish floor or evidence floor to complete five slots.
 
+For the 12 September 2026 Leinster v Zebre pre-season test event, match build-up receives editorial priority, but each selected Leinster position must represent a materially different development or recognised match phase. Same-phase rewrites remain duplicates and cannot consume multiple package slots.
+
 ## Evidence-before-spend contract
 
 Require at least two substantive sources from at least two publishers, coherent same-development corroboration, concrete rugby facts, and no non-rugby contamination. Completed-match stories require the final score; squad/selection stories require actual named people; exact-person coherence rejects surname collisions. Match-like stories must satisfy the same concrete-detail classes before model spend that the generation API enforces.
@@ -82,13 +84,11 @@ Media priority is:
 
 A local Sanity image may be included only when it independently passes semantic relevance checks. A large image library is not evidence of relevance. If the local image is doubtful and an exact official embed exists, omit the local image. For curated exact embeds the media workflow removes existing featured and inline local images and verifies the resulting embed-only article in Sanity.
 
-The 9 September production run `34327661508` proves this path for Tom Wood/Munster and Fintan Gunne/Leinster. The Waratahs/Brumbies article remained blocked because no exact official media was verified; that is correct fail-closed behavior.
-
 Media availability should be established before paid generation wherever possible. Media-only recovery can be run independently of generation and does not require AI budget.
 
 ## Launch slot budget
 
-The application-wide OpenAI reservation **hard ceiling is `$0.75` per Europe/Dublin operational day**. The normal operating target is **at or below `$0.40/day`**; the additional headroom is recovery capacity, not a spending target. A production draft reservation is `$0.055`. Discovery, evidence, freshness, diversity and media qualification run before paid reservation. Generation is serial, one selected candidate per missing slot, with zero paid replacement candidates in the normal scheduled workflow. The Sanity daily guard remains authoritative.
+The application-wide OpenAI reservation **hard ceiling is `$0.40` per Europe/Dublin operational day**. The normal operating target is **at or below `$0.30/day`**. A production draft reservation is `$0.055`, so five empty slots reserve `$0.275` on the normal path. Discovery, evidence, freshness, diversity and media qualification run before paid reservation. Generation is serial, one selected candidate per missing slot, with zero paid replacement candidates in the normal scheduled workflow. The Sanity daily guard remains authoritative.
 
 ## Draft Ready and Publication Review
 
@@ -113,7 +113,7 @@ Review-ready drafts are never automatically published. The owner reviews/edits i
 5. enforce the final strict canonical freshness gate, then Ireland-first and same-package diversity;
 6. qualify official embed availability wherever possible;
 7. assign one candidate to each missing paid slot, excluding already-paid IDs;
-8. reserve/generate serially with a normal target <=`$0.40/day` and absolute `$0.75/day` guard, with no paid replacement loop;
+8. reserve/generate serially within the `$0.40/day` hard ceiling and `<= $0.30/day` normal target, with no paid replacement loop;
 9. apply exact curated embeds first, then official-source fallback discovery;
 10. read back the embed in Sanity and remove doubtful local imagery when an exact embed exists;
 11. notify each article immediately after its complete gate passes;
