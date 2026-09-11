@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-11 September 2026 before the Leinster/Zebre pre-match production check.
+11 September 2026 after Leinster/Zebre pre-match production runs `34558806733` and `34559157178`.
 
 ## Read first
 
@@ -37,23 +37,24 @@ Newer measured evidence supersedes older state statements where they conflict; G
 
 ## Latest measured production state
 
-PR #476 introduced the canonical editorial pool. Production proof `34521048860` verified progressive freshness tests and the canonical gate, but exposed two deterministic defects: the pool threshold did not account for two valid retained current-day drafts, and the workflow aborted before the promised free refill. The run measured 228 leads → 12 corroborated → 5 evidence-qualified → 4 match-detail-qualified → 2 fresh and made no paid reservation.
+PR #476 introduced the canonical editorial pool. PR #477 made it missing-slot-aware and added a bounded free refill. PR #478 removed the fail-early path so a thin first pass is advisory while the post-refill evidence, match-detail, freshness and diversity gates remain strict.
 
-PR #477 made the canonical pool missing-slot-aware and added a bounded second free discovery/corroboration pass. Vercel production deployment `dpl_HNzEqJD6vWPwC1fHVQtjYghwJ9Sg` reached READY on merge SHA `96daee709b11cf457cf9f28b5a18709c367cb238`.
+PR #479 restored the application AI hard ceiling to `$0.40/day` and the normal operating target to `<= $0.30/day`. Vercel production deployment `dpl_Fd7K2GH4oJq5m7euHoxnySfX2BC3` reached READY on merge SHA `1356912b0190f5651c0d5f13e28452561f7779e5`.
 
-PR #478 removed the remaining fail-early path so a thin first pass is advisory while the post-refill evidence, match-detail, freshness and diversity gates remain strict. Vercel production deployment `dpl_39t6UddKMyHKfaGpHsypY5sS5wQU` is READY on merge SHA `d5fe564ffd1fb52f38c0e86635dee33245c161c5`.
+Production run `34558806733` verified the bounded free-refill path but exposed `EVIDENCE-014`: a TG4/Galway All-Star GAA headline was incorrectly clustered with Alex Usanov because noisy discovery description text contained rugby context. The run failed closed before model spend.
 
-The 11 September pre-match readiness change lowers the application AI hard ceiling to `$0.40/day` and the normal operating target to `<= $0.30/day`. Production verification of this new ceiling is pending the current launch-readiness run.
+PR #480 added title-level GAA/TG4 All-Star rejection before rugby clustering. Vercel production deployment `dpl_83aFke55kHWPjDrNAuBLrch6qH52` reached READY on merge SHA `390173ba72eab4e1b9fb6ad6ad07f428942042e4`.
+
+Production verification run `34559157178` confirmed the contamination fix: the false GAA candidate disappeared and Alex Usanov returned as a legitimate Leinster candidate. The free refill expanded discovery to 325 leads but the strict evidence gate still produced only four generation-ready stories: Steve Borthwick; Felipe Contepomi/Ian Madigan; Fintan Gunne/Luke McGrath; and Alex Usanov. Three are directly Leinster-connected. Dedicated Leinster/Zebre searches returned no fresh qualifying match-specific leads in that run. The workflow therefore failed closed before match-detail, canonical pool, diversity, slot planning or Terra/Luna generation. **No AI reservation/spend occurred.**
 
 ## Current launch blockers
 
-1. Production-verify the #477/#478 free-refill path on current production data.
-2. Demonstrate enough legitimate fresh supply for five daily positions with at least three direct Irish connections and three reserve candidates before paid generation.
-3. Demonstrate Leinster/Zebre build-up can contribute strong distinct positions without repetitive same-phase coverage.
-4. Complete a legitimate paid package within the `$0.40` hard guard / `<= $0.30` normal target without paid retry loops.
+1. Fresh evidence supply: at least one more legitimate generation-ready story is needed before the five-story package can proceed; the canonical reserve target remains missing slots + three.
+2. Leinster/Zebre match-specific supply: current official/public evidence confirms the fixture but no fresh qualifying squad/team-news/preview development was available in the production discovery window at the verification time.
+3. Complete a legitimate paid package within the `$0.40` hard guard / `<= $0.30` normal target without paid retry loops.
+4. Story-specific official embed coverage for every selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
 5. Production proof of local-image cleanup on exact-embed drafts.
-6. Story-specific official embed coverage for every selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
-7. Five genuinely distinct review-ready articles in one Dublin-day package with progressive individual delivery.
+6. Five genuinely distinct review-ready articles in one Dublin-day package with progressive individual delivery.
 
 ## Go-live states
 
