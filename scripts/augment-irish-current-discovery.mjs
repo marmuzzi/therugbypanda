@@ -7,18 +7,23 @@ const registryPath = process.env.EDITORIAL_SOURCE_REGISTRY || "data/editorial-so
 const expansionPath = process.env.IRISH_EXPANSION_SOURCE_REGISTRY || "data/editorial-sources/irish-expansion-sources.json";
 const maxAgeHours = Number(process.env.IRISH_DISCOVERY_MAX_AGE_HOURS || 72);
 
+// Keep this list deliberately redundant at the query level: Google News often indexes the
+// same Irish development under a player, coach, province or competition rather than the
+// generic province query. Deduplication below keeps the resulting lead set bounded.
 const queries = [
-  "Ireland rugby", "Ireland women rugby", "Ireland women WXV rugby", "Ireland women team announcement", "Ireland women squad update",
-  "Ireland rugby score", "Ireland rugby squad", "Ireland rugby team news players", "Ireland rugby injuries", "Ireland rugby academy",
-  "Irish players rugby Europe", "Irish rugby coaches Europe", "Irish rugby transfers", "Irish rugby URC", "Irish rugby Champions Cup",
-  "Leinster rugby", "Leinster rugby team news", "Leinster rugby players", "Leinster injury update", "Leinster squad announcement",
-  "Leinster Zebre", "Leinster Zebre team", "Leinster Zebre squad", "Leinster Zebre preview", "Leinster Zebre Saturday",
+  "Ireland rugby", "Ireland men rugby", "Ireland women rugby", "Ireland women WXV rugby", "Ireland women team announcement", "Ireland women squad update",
+  "Ireland rugby score", "Ireland rugby squad", "Ireland rugby team news players", "Ireland rugby injuries", "Ireland rugby academy", "IRFU rugby announcement", "IRFU player news",
+  "Irish players rugby Europe", "Irish rugby coaches Europe", "Irish rugby transfers", "Irish rugby URC", "Irish rugby Champions Cup", "Irish rugby Challenge Cup",
+  "Irish player Premiership rugby", "Irish player Top 14 rugby", "Irish player injury rugby", "Irish coach rugby appointment",
+  "Leinster rugby", "Leinster rugby latest", "Leinster rugby team news", "Leinster rugby players", "Leinster injury update", "Leinster squad announcement", "Leinster academy rugby", "Leinster pre-season rugby",
+  "Leinster Zebre", "Leinster Zebre team", "Leinster Zebre squad", "Leinster Zebre preview", "Leinster Zebre Saturday", "Leinster Zebre team news", "Leinster Zebre player",
   "Leinster Zebre Laya Arena", "Leinster RDS rugby", "Leinster test event rugby", "Leinster matchday 23", "Leinster starting XV",
-  "Munster rugby", "Munster rugby team news", "Munster rugby players", "Munster injury update", "Munster squad announcement", "Munster academy rugby", "Munster pre-season rugby",
-  "Ulster rugby", "Ulster rugby team news", "Ulster rugby players", "Ulster injury update", "Ulster squad announcement", "Ulster academy rugby", "Ulster Challenge Cup season ahead rugby", "Ulster pre-season rugby",
-  "Connacht rugby", "Connacht rugby team news", "Connacht rugby players", "Connacht injury update", "Connacht squad announcement", "Connacht academy rugby", "Connacht pre-season rugby",
-  "Mack Hansen Connacht", "Mack Hansen injury return Connacht", "Stuart Lancaster Mack Hansen Connacht",
-  "Irish province rugby team announcement", "Irish province rugby injury update", "Irish province rugby academy", "Irish province rugby pre-season", "Irish player Premiership rugby", "Irish player Top 14 rugby"
+  "Munster rugby", "Munster rugby latest", "Munster rugby team news", "Munster rugby players", "Munster injury update", "Munster squad announcement", "Munster academy rugby", "Munster pre-season rugby", "Munster player interview rugby",
+  "Ulster rugby", "Ulster rugby latest", "Ulster rugby team news", "Ulster rugby players", "Ulster injury update", "Ulster squad announcement", "Ulster academy rugby", "Ulster Challenge Cup season ahead rugby", "Ulster pre-season rugby", "Ulster player interview rugby",
+  "Connacht rugby", "Connacht rugby latest", "Connacht rugby team news", "Connacht rugby players", "Connacht injury update", "Connacht squad announcement", "Connacht academy rugby", "Connacht pre-season rugby", "Connacht player interview rugby",
+  "Mack Hansen Connacht", "Mack Hansen injury return Connacht", "Stuart Lancaster Connacht", "Stuart Lancaster Mack Hansen Connacht",
+  "Irish province rugby team announcement", "Irish province rugby injury update", "Irish province rugby academy", "Irish province rugby pre-season",
+  "Leinster Munster Ulster Connacht rugby", "Ireland Leinster Munster Ulster Connacht rugby"
 ];
 
 const now = Date.now();
