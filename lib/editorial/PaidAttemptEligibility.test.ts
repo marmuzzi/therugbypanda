@@ -1,5 +1,6 @@
 import test from "node:test";
 import assert from "node:assert/strict";
+// @ts-ignore -- Node's stripped-TypeScript test runner requires the explicit .ts extension.
 import { excludePreviouslyPaidCandidates, productionDraftAttemptedIds } from "./PaidAttemptEligibility.ts";
 
 test("extracts only production draft reservations", () => {
