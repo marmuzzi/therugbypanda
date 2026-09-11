@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-11 September 2026 during the pre-run launch gate after production run `34559843720`.
+11 September 2026 during the pre-run launch gate after production run `34560120792`.
 
 ## Read first
 
@@ -37,30 +37,23 @@ Newer measured evidence supersedes older state statements where they conflict; G
 
 ## Latest measured production state
 
-PR #476 introduced the canonical editorial pool. PR #477 made it missing-slot-aware and added a bounded free refill. PR #478 removed the fail-early path so a thin first pass is advisory while the post-refill evidence, match-detail, freshness and diversity gates remain strict.
+PRs #476-#478 established the canonical missing-slot-aware pool and bounded free refill. PR #479 restored the application AI hard ceiling to `$0.40/day` and the normal operating target to `<= $0.30/day`. PR #480 fixed non-rugby/GAA contamination; run `34559157178` verified that repair.
 
-PR #479 restored the application AI hard ceiling to `$0.40/day` and the normal operating target to `<= $0.30/day`. Vercel production deployment `dpl_Fd7K2GH4oJq5m7euHoxnySfX2BC3` reached READY on merge SHA `1356912b0190f5651c0d5f13e28452561f7779e5`.
+PR #482 added World Rugby, Fiji Rugby Union and Rugby Canada to the canonical source registry. Vercel deployment `dpl_BcHTR7pHyCfuD7jpK7wfeYoAdDkD` reached READY on merge SHA `f0b8876a9ecc0b7d3ea881e225dffcacdeb08e45`. Production run `34559843720` verified all 31 configured sources fetched and expanded discovery reached 338 leads, but only four candidates passed strict evidence.
 
-Production run `34558806733` verified the bounded free-refill path but exposed `EVIDENCE-014`: a TG4/Galway All-Star GAA headline was incorrectly clustered with Alex Usanov because noisy discovery description text contained rugby context. PR #480 fixed that contamination and run `34559157178` verified it.
+PR #483 fixed false person parsing for competition/team/editorial labels. Production verification run `34560120792` confirmed the false surname-collision defect was removed, but the World Rugby WXV squad story was still rejected solely because no individual player name appeared in two publisher snippets, despite four independent publishers, four substantive facts and two real named players in the fact ledger. The same run still had the three required Leinster-connected positions plus Steve Borthwick, and made no AI reservation.
 
-Run `34559157178` still produced only four generation-ready stories: Steve Borthwick; Felipe Contepomi/Ian Madigan; Fintan Gunne/Luke McGrath; and Alex Usanov. Three are directly Leinster-connected. No AI reservation/spend occurred.
+PR #484 aligns the launch recovery contract test with the already-deployed `$0.40/$0.30` budget policy. It changes test expectations only; production budget code remains unchanged.
 
-PR #481 reconciled those findings. Vercel deployment `dpl_BYV2oftgwR83cbNJFE16iW5eYSuJ` reached READY on merge SHA `67f961a133f4cf01f2bbef2f7a2e9e0d66856f0f`.
-
-PR #482 added World Rugby, Fiji Rugby Union and Rugby Canada to the canonical source registry after external verification of fresh Fiji v Canada Pacific Nations Cup evidence. Vercel deployment `dpl_BcHTR7pHyCfuD7jpK7wfeYoAdDkD` reached READY on merge SHA `f0b8876a9ecc0b7d3ea881e225dffcacdeb08e45`.
-
-Production verification run `34559843720` confirmed the source expansion operationally: all 31 configured sources fetched successfully and the expanded free refill reached 338 leads. The evidence gate still accepted only four stories and failed closed before model spend. The new logs exposed a deterministic evidence-person parser defect: competition/team phrases such as `WXV Global`, `Global Series`, `Wallaroos Global`, `Western Force`, `ROSTER CONFIRMED` and similar labels were being interpreted as person names. That created false `same-surname-different-person-evidence-collision` and person-corroboration failures on otherwise strong squad/team stories, including an official World Rugby WXV squad story backed by four publishers. **No AI reservation/spend occurred.**
-
-The current pre-run repair hardens the person parser by excluding competition/team/editorial labels from person identity, recognises plural `squads`/`roster` as selection stories, and adds current international venues to concrete match context. Evidence still requires two independent editorial publishers, two substantive facts, concrete rugby context, and named-player support for squad stories; no evidence threshold is weakened.
+PR #485 narrows the remaining squad evidence mismatch: for squad/roster stories only, at least three independent publishers plus at least two named people in the fact ledger can satisfy identity support without requiring the same player name to appear in two publisher snippets. All other stories retain exact person corroboration. The two-publisher, two-fact, concrete rugby, collision and named-player safeguards remain mandatory.
 
 ## Current launch blockers
 
-1. Production-verify the evidence-person parser repair and confirm at least five legitimate generation-ready candidates reach the canonical pool path.
-2. Leinster/Zebre match-specific supply remains opportunistic: current official/public evidence confirms the fixture but no fresh qualifying squad/team-news/preview development was available in the latest runs.
+1. Production-verify PR #485 and confirm at least five legitimate generation-ready candidates reach the canonical pool path.
+2. Verify the canonical pool/diversity step can retain the required three Irish-connected positions and enough reserve after freshness/history checks.
 3. Complete a legitimate paid package within the `$0.40` hard guard / `<= $0.30` normal target without paid retry loops.
-4. Story-specific official embed coverage for every selected candidate; if media cannot be verified, replace the candidate before paid generation where possible.
-5. Production proof of local-image cleanup on exact-embed drafts.
-6. Five genuinely distinct review-ready articles in one Dublin-day package with progressive individual delivery.
+4. Verify story-specific official embed coverage for every selected article before delivery.
+5. Five genuinely distinct review-ready articles must be present in Sanity for human review; never auto-publish.
 
 ## Go-live states
 
