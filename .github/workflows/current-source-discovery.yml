@@ -41,8 +41,8 @@ jobs:
           node-version: 22
       - name: Install dependencies
         run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Verify story freshness including progressive match phases
-        run: node --test --experimental-strip-types lib/editorial/StoryFreshness.test.ts
+      - name: Verify canonical freshness and paid-attempt eligibility
+        run: node --test --experimental-strip-types lib/editorial/StoryFreshness.test.ts lib/editorial/PaidAttemptEligibility.test.ts
       - name: Verify production secrets
         env:
           EDITORIAL_AUTOMATION_SECRET: ${{ secrets.EDITORIAL_AUTOMATION_SECRET }}
