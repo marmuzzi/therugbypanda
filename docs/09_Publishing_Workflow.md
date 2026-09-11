@@ -49,9 +49,11 @@ For the 12 September 2026 Leinster v Zebre pre-season test event, match build-up
 
 Require at least two substantive sources from at least two publishers, coherent same-development corroboration, concrete rugby facts, and no non-rugby contamination. Completed-match stories require the final score; squad/selection stories require actual named people. Person identity must be coherent between the title/development and fact ledger, and surname collisions fail closed. Exact repetition of a full person name in two publisher snippets is useful corroboration but is not independently mandatory when the title/fact identity is coherent and the underlying development already has two independent publishers and two substantive facts. Match-like stories must satisfy the same concrete-detail classes before model spend that the generation API enforces.
 
+Editorial headline prefixes such as `Returning`, `Former`, `Current`, `Latest`, `Uncapped`, `Injured`, `Fit-again` and `Two-time` are not person first names. The pre-AI evidence gate and generation API must use equivalent person-identity semantics so a candidate cannot pass one deterministic boundary and fail the next because of parser drift.
+
 Explicit non-rugby title signals such as Nations League, soccer, GAA, hurling or camogie are rejected before generation even if noisy descriptions contain rugby terms.
 
-A candidate that already consumed a paid reservation on the current Dublin day is excluded from another paid slot.
+A candidate that already consumed a paid reservation on the current Dublin day is excluded from another paid slot. Failed reservations remain part of the daily ledger; they are never reset to create artificial headroom.
 
 ## Canonical editorial pool and free refill
 
@@ -86,15 +88,19 @@ Media priority is:
 
 A local Sanity image may be included only when it independently passes semantic relevance checks. A large image library is not evidence of relevance. If the local image is doubtful and an exact official embed exists, omit the local image. For curated exact embeds the media workflow removes existing featured and inline local images and verifies the resulting embed-only article in Sanity.
 
+An unavailable individual official feed must be recorded and skipped rather than aborting the entire official-source pass. This is resilience only: it never makes an article media-ready. The article remains blocked unless another configured official source produces a directly relevant verified embed.
+
 Media availability should be established before paid generation wherever possible. Media-only recovery can be run independently of generation and does not require AI budget.
 
 ## Launch slot budget
 
-The application-wide OpenAI reservation **hard ceiling is `$0.40` per Europe/Dublin operational day**. The normal operating target is **at or below `$0.30/day`**. A production draft reservation is `$0.055`, so five empty slots reserve `$0.275` on the normal path. Discovery, evidence, freshness, diversity and media qualification run before paid reservation. Generation is serial, one selected candidate per missing slot, with zero paid replacement candidates in the normal scheduled workflow. The Sanity daily guard remains authoritative.
+The application-wide OpenAI reservation **hard ceiling is `$0.75` per Europe/Dublin operational day**. The normal operating target is **at or below `$0.40/day`**. A production draft reservation is `$0.055`, so five empty slots reserve `$0.275` on the normal path. The extra headroom exists for bounded same-day recovery after legitimate failed paid attempts; it is not a spending target. Discovery, evidence, freshness, diversity and media qualification run before paid reservation. Generation is serial, one selected candidate per missing slot, with zero paid replacement candidates in the normal scheduled workflow. The Sanity daily ledger remains authoritative and previous reservations are never reset or bypassed.
 
 ## Draft Ready and Publication Review
 
 Hard limits remain headline <=70 characters, standfirst <=220, SEO title <=60, SEO description <=160 and paragraph <=120 words, plus filler/formulaic-writing/originality safeguards. Publication Review is mandatory. Critical/high issues block readiness; one bounded correction may use only the supplied fact ledger.
+
+Terra is the generation model. Luna is the Publication Review and bounded correction model. Runtime configuration must be resolved before Publication Review is imported or invoked; a module-level fallback must not silently replace Luna in production.
 
 ## Progressive notifications and Zoho
 
@@ -115,8 +121,8 @@ Review-ready drafts are never automatically published. The owner reviews/edits i
 5. after refill, fail closed only if the missing-slot minimum is still short; then enforce Ireland-first and same-package diversity;
 6. qualify official embed availability wherever possible;
 7. assign one candidate to each missing paid slot, excluding already-paid IDs;
-8. reserve/generate serially within the `$0.40/day` hard ceiling and `<= $0.30/day` normal target, with no paid replacement loop;
-9. apply exact curated embeds first, then official-source fallback discovery;
+8. reserve/generate serially within the `$0.75/day` hard ceiling and `<= $0.40/day` normal target, with no paid replacement loop and no ledger reset;
+9. apply exact curated embeds first, then official-source fallback discovery; skip dead individual feeds but never waive relevance;
 10. read back the embed in Sanity and remove doubtful local imagery when an exact embed exists;
 11. notify each article immediately after its complete gate passes;
 12. continue until five distinct review-ready articles are delivered;
