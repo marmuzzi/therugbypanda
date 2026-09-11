@@ -1,8 +1,8 @@
-# AI cost routing and $0.75/day hard ceiling
+# AI cost routing and $0.40/day hard ceiling
 
 ## Current owner requirement
 
-As of 10 September 2026, The Rugby Panda must not intentionally reserve more than **$0.75 per Europe/Dublin operational day** for OpenAI-backed editorial work. The **normal operating target remains at or below $0.40/day**. The extra headroom exists for bounded same-day recovery so editorial production is not forced to wait for the next Dublin day after earlier reservations.
+As of 11 September 2026, The Rugby Panda must not intentionally reserve more than **$0.40 per Europe/Dublin operational day** for OpenAI-backed editorial work. The **normal operating target is at or below $0.30/day**.
 
 ## Architecture
 
@@ -25,9 +25,9 @@ No Sol/flagship model is part of the default production path.
 
 `lib/editorial/AiDailyBudget.ts` persists conservative reservations in Sanity under one `editorialAiBudget` document per Europe/Dublin operational date.
 
-- configured hard ceiling defaults to $0.75;
-- `EDITORIAL_AI_DAILY_BUDGET_USD` may lower the ceiling but cannot raise it above $0.75;
-- normal operating target is <=$0.40/day;
+- configured hard ceiling defaults to $0.40;
+- `EDITORIAL_AI_DAILY_BUDGET_USD` may lower the ceiling but cannot raise it above $0.40;
+- normal operating target is <=$0.30/day;
 - a normal production draft pipeline reserves $0.055 before its model-backed generation/review cycle;
 - a manual Studio Publication Review reservation remains separately bounded where used;
 - reservations use optimistic Sanity revision checks and bounded revision-conflict retries;
@@ -39,7 +39,7 @@ Reservations are deliberately conservative and are not released after a failed/i
 
 The recovery workflow reduces the fresh candidate queue to exactly one candidate per missing package slot before paid generation. It runs those slots serially and records retained count, missing slots, paid attempt limit = missing slots, replacement paid attempts = 0, and selected candidate IDs.
 
-With five empty slots, five reservations total `$0.275`, which remains below the normal `$0.40` target. The `$0.75` application guard provides bounded recovery headroom when earlier same-day reservations have already consumed part of the normal target. It does not authorize paid retry loops or discretionary spend simply because headroom exists.
+With five empty slots, five reservations total `$0.275`, which remains below the normal `$0.30` target. The `$0.40` application guard is the absolute daily ceiling and does not authorize paid retry loops.
 
 If a selected candidate fails a genuine critical/high quality gate, the normal scheduled workflow does not buy repeated replacements. Corrective action remains deterministic/free evidence and reserve improvement before another explicitly justified paid attempt.
 
@@ -55,6 +55,6 @@ The application guard is a software circuit breaker, not a provider-side billing
 
 Image discovery, rights triage and deterministic relevance checks must not call OpenAI by default. A missing safe image must fail closed to no image / approved brand fallback rather than trigger paid generative retries.
 
-## 10 September owner-approved change
+## 11 September launch-run change
 
-The hard ceiling changed from `$0.40` to `$0.75` after the production reserve proved that the previous ceiling could strand valid same-day slots after earlier conservative reservations. The normal target remains `<= $0.40`. Verification requires the application guard, slot-plan evidence, production deployment and a same-day production test to all report the new ceiling without bypassing deterministic qualification or introducing paid retry loops.
+For the Leinster/Zebre launch-readiness run, the owner restored the hard ceiling to `$0.40/day` and set the normal operating target to `<= $0.30/day`. The application default is therefore lowered to `$0.40`; deterministic qualification, Terra generation, Luna review/repair and zero paid replacement loops remain unchanged.
