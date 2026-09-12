@@ -11,6 +11,7 @@ const token = process.env.SANITY_API_TOKEN;
 const registryPath = path.resolve(process.env.OFFICIAL_VIDEO_SOURCE_REGISTRY ?? "data/editorial-media/official-video-sources.json");
 const outputPath = path.resolve(process.env.OFFICIAL_VIDEO_EMBED_REPORT ?? "data/editorial-media/current-official-video-embed-readiness.json");
 const MAX_VIDEO_AGE_DAYS = Math.max(1, Number.parseInt(process.env.OFFICIAL_VIDEO_MAX_AGE_DAYS ?? "30", 10) || 30);
+const FEED_ATTEMPTS = Math.max(1, Math.min(4, Number.parseInt(process.env.OFFICIAL_VIDEO_FEED_ATTEMPTS ?? "3", 10) || 3));
 const PACKAGE_SIZE = 5;
 
 if (!projectId || !token) throw new Error("Official video acquisition requires Sanity project ID and token.");
@@ -62,6 +63,8 @@ function stableKey(articleId, videoId) {
   const seed = `${articleId}:${videoId}`.replace(/[^a-zA-Z0-9]/g, "");
   return `officialvideo${seed.slice(-20)}`;
 }
+function delay(ms) { return new Promise((resolve) => setTimeout(resolve, ms)); }
+function transientFeedStatus(status) { return status === 408 || status === 425 || status === 429 || status >= 500; }
 
 const registry = JSON.parse(await fs.readFile(registryPath, "utf8"));
 if (registry?.schemaVersion !== "1.0" || !Array.isArray(registry.sources) || registry.sources.length === 0) throw new Error("Official video source registry is invalid.");
@@ -84,19 +87,30 @@ const feedCache = new Map();
 const feedFailures = [];
 async function videosFor(source) {
   if (feedCache.has(source.channelId)) return feedCache.get(source.channelId);
-  try {
-    const response = await fetch(`https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(source.channelId)}`, { headers: { "user-agent": "TheRugbyPanda/1.0 editorial-media" } });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    const videos = parseYouTubeFeed(await response.text()).filter((video) => withinAge(video.publishedAt));
-    feedCache.set(source.channelId, videos);
-    return videos;
-  } catch (error) {
-    const failure = { sourceLabel: source.sourceLabel, channelId: source.channelId, error: error instanceof Error ? error.message : String(error) };
-    feedFailures.push(failure);
-    console.warn("Official YouTube feed unavailable; continuing with remaining official sources", failure);
-    feedCache.set(source.channelId, []);
-    return [];
+  const feedUrl = `https://www.youtube.com/feeds/videos.xml?channel_id=${encodeURIComponent(source.channelId)}`;
+  let lastError = "unknown error";
+  for (let attempt = 1; attempt <= FEED_ATTEMPTS; attempt += 1) {
+    try {
+      const response = await fetch(feedUrl, { headers: { "user-agent": "TheRugbyPanda/1.0 editorial-media" }, signal: AbortSignal.timeout(12_000) });
+      if (!response.ok) {
+        lastError = `HTTP ${response.status}`;
+        if (attempt < FEED_ATTEMPTS && transientFeedStatus(response.status)) { await delay(400 * attempt); continue; }
+        throw new Error(lastError);
+      }
+      const videos = parseYouTubeFeed(await response.text()).filter((video) => withinAge(video.publishedAt));
+      feedCache.set(source.channelId, videos);
+      return videos;
+    } catch (error) {
+      lastError = error instanceof Error ? error.message : String(error);
+      if (attempt < FEED_ATTEMPTS && /HTTP (?:408|425|429|5\d\d)|timeout|aborted/i.test(lastError)) { await delay(400 * attempt); continue; }
+      break;
+    }
   }
+  const failure = { sourceLabel: source.sourceLabel, channelId: source.channelId, error: lastError, attempts: FEED_ATTEMPTS };
+  feedFailures.push(failure);
+  console.warn("Official YouTube feed unavailable after bounded retries; continuing with remaining official sources", failure);
+  feedCache.set(source.channelId, []);
+  return [];
 }
 
 const report = [];
@@ -150,6 +164,7 @@ const result = {
   blocked: report.length - ready.length,
   fullPackageMediaReady: articles.length === PACKAGE_SIZE && ready.length === PACKAGE_SIZE,
   maxVideoAgeDays: MAX_VIDEO_AGE_DAYS,
+  feedAttempts: FEED_ATTEMPTS,
   feedFailures,
   articles: report,
   failClosedPerArticle: true,
