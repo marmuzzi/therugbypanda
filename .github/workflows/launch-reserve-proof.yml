@@ -18,7 +18,7 @@ permissions:
 jobs:
   reserve:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     environment: production
     env:
       NEXT_PUBLIC_SANITY_PROJECT_ID: hvg4b508
@@ -29,36 +29,87 @@ jobs:
       IRISH_DISCOVERY_MAX_AGE_HOURS: "72"
       RECENT_EDITORIAL_POSITIONS_PATH: data/editorial-acquisition/recent-editorial-positions.json
       BATCH_PATH: data/editorial-acquisition/current-editorial-acquisition-batch.json
+      EDITORIAL_POOL_RESERVE: "3"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: npm install --ignore-scripts --no-audit --no-fund
-      - name: Verify story freshness including progressive match phases
-        run: node --test --experimental-strip-types lib/editorial/StoryFreshness.test.ts
+      - name: Verify launch recovery contract
+        run: node scripts/test-launch-recovery-contract.mjs
+      - name: Verify canonical freshness and paid-attempt eligibility
+        run: node --test --experimental-strip-types lib/editorial/StoryFreshness.test.ts lib/editorial/PaidAttemptEligibility.test.ts lib/editorial/PersonNameHeuristics.test.ts
       - name: Verify Irish rugby discovery qualification
         run: node scripts/test-irish-discovery-qualification.mjs
       - name: Verify current story clustering
         run: node scripts/test-current-story-clustering.mjs
+      - name: Check current package state
+        id: package_state
+        run: node scripts/check-daily-package-complete.mjs
+      - name: Evict materially duplicate retained current-day drafts
+        if: steps.package_state.outputs.skip != 'true'
+        run: node scripts/evict-current-source-duplicate-drafts.mjs
       - name: Discover standard plus Irish reserve
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          DISCOVERY_PER_SOURCE_LIMIT: "16"
+          DISCOVERY_CORROBORATION_SEED_LIMIT: "72"
+          DISCOVERY_CORROBORATION_PER_SEED_LIMIT: "10"
         run: node scripts/discover-current-editorial-sources.mjs
-      - name: Build corroborated evidence
+      - name: Build first-pass corroborated evidence
+        id: first_build
+        if: steps.package_state.outputs.skip != 'true'
+        continue-on-error: true
         run: node scripts/build-current-editorial-acquisition-batch.mjs
-      - name: Reject weak evidence
+      - name: Reject weak first-pass evidence
+        id: first_evidence
+        if: steps.package_state.outputs.skip != 'true' && steps.first_build.outcome == 'success'
+        continue-on-error: true
         run: node scripts/filter-current-acquisition-evidence.mjs
-      - name: Align match-detail evidence with production pre-AI gate
+      - name: Align first-pass match-detail parity
+        id: first_match
+        if: steps.package_state.outputs.skip != 'true' && steps.first_evidence.outcome == 'success'
         run: node scripts/filter-preai-match-detail-parity.mjs
       - name: Export recent positions before package selection
+        if: steps.package_state.outputs.skip != 'true'
         run: node scripts/export-recent-editorial-positions.mjs
-      - name: Reject repeated production-history positions before diversity
-        run: node scripts/filter-current-production-history-freshness.mjs
+      - name: Qualify first canonical editorial pool
+        id: pool
+        if: steps.package_state.outputs.skip != 'true' && steps.first_evidence.outcome == 'success' && steps.first_match.outcome == 'success'
+        env:
+          EDITORIAL_POOL_STRICT: "0"
+        run: node scripts/qualify-current-editorial-pool.mjs
+      - name: Expand free discovery when first pass is thin
+        if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
+        env:
+          DISCOVERY_PER_SOURCE_LIMIT: "24"
+          DISCOVERY_CORROBORATION_SEED_LIMIT: "120"
+          DISCOVERY_CORROBORATION_PER_SEED_LIMIT: "12"
+        run: node scripts/discover-current-editorial-sources.mjs
+      - name: Rebuild corroborated evidence after free refill
+        if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
+        run: node scripts/build-current-editorial-acquisition-batch.mjs
+      - name: Re-run evidence gate after free refill
+        if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
+        run: node scripts/filter-current-acquisition-evidence.mjs
+      - name: Re-run match-detail parity after free refill
+        if: steps.package_state.outputs.skip != 'true' && steps.pool.outputs.sufficient != 'true'
+        run: node scripts/filter-preai-match-detail-parity.mjs
+      - name: Final canonical editorial pool gate
+        if: steps.package_state.outputs.skip != 'true'
+        env:
+          EDITORIAL_POOL_STRICT: "1"
+        run: node scripts/qualify-current-editorial-pool.mjs
       - name: Enforce Ireland-first diversity
+        if: steps.package_state.outputs.skip != 'true'
         env:
           MAX_PACKAGE_MATCHUP_STORIES: "3"
           MAX_PACKAGE_TEAM_STORIES: "3"
+          PACKAGE_RECOVERY_CANDIDATE_RESERVE: "3"
         run: node scripts/enforce-current-package-diversity.mjs
       - name: Build one-to-one slot plan without model calls
+        if: steps.package_state.outputs.skip != 'true'
         run: node scripts/prepare-slot-budget-batch.mjs
       - name: Upload reserve evidence
         if: always()
@@ -70,6 +121,6 @@ jobs:
             data/editorial-acquisition/current-editorial-acquisition-batch.json
             data/editorial-acquisition/current-evidence-sufficiency.json
             data/editorial-acquisition/preai-match-detail-parity.json
-            data/editorial-acquisition/current-production-history-freshness.json
+            data/editorial-acquisition/current-editorial-pool.json
             data/editorial-acquisition/recent-editorial-positions.json
           retention-days: 14
