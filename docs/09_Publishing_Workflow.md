@@ -4,24 +4,26 @@ Sanity Studio is the canonical CMS and mandatory human approval/publication boun
 
 ## Session startup
 
-Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, this file and newest relevant dated evidence. Check GitHub/Vercel/current integrations before asking the owner to configure anything. Use Europe/Dublin for schedules.
+Read `docs/07_Project_State.md`, `docs/08_Issue_Log.md`, this file and the newest relevant dated evidence. Check GitHub/Vercel/current integrations before asking the owner to configure anything. Use Europe/Dublin for operational dates and schedules.
 
 ## Completion discipline
 
-Always distinguish implemented, committed, PR opened, merged, deployed, production verified, authenticated Sanity verified and provider/delivery verified. A code merge is not production verification.
+Always distinguish implemented, committed, PR opened, merged, deployed, production verified, authenticated Sanity verified and provider/delivery verified. A merge is not production verification.
 
 ## Required editorial flow
 
 ```text
 free standard + targeted Irish source discovery
-→ coherent corroboration and story-type concrete evidence
+→ coherent corroboration and concrete story evidence
 → retained exact-day integrity + source-cluster duplicate eviction
-→ recent-position freshness and multi-day repetition rejection
-→ canonical eligible pool: minimum = missing slots; preferred target = missing slots + 3 reserve
-→ if reserve target short: one expanded free discovery/corroboration refill, then re-run deterministic evidence/freshness gates
+→ match-detail parity
+→ canonical freshness + same-day paid-attempt eligibility
+→ if preferred reserve is thin, one bounded free discovery/corroboration refill
+→ final canonical pool
 → Ireland-first + team/matchup diversity
-→ free story-specific official embed qualification wherever possible
+→ free story-specific official-media qualification wherever possible
 → exactly one fresh candidate per missing paid slot
+→ budget plan: <=$0.30 normal target and <=$0.40 hard ceiling
 → Editorial Brain / fact ledger
 → Terra generation
 → deterministic Draft Ready + originality
@@ -30,7 +32,7 @@ free standard + targeted Irish source discovery
 → exact curated official embed or verified official-source discovery
 → Sanity embed insertion and readback
 → remove weak local imagery when an exact official embed is present
-→ individual review notification immediately when that article is ready
+→ individual review delivery immediately when that article is ready
 → human review/edit/publish in Sanity
 → public website
 ```
@@ -41,91 +43,89 @@ Generated content and embedded media are never automatically published.
 
 At least three of five stories must have a direct Irish connection: Ireland/IRFU, Leinster, Munster, Ulster, Connacht, Irish women, Irish players/coaches abroad, or European competition materially involving Irish teams. International-only stories are capped at two.
 
-Retained same-day drafts are inputs, not entitlements. Invalid or materially duplicate retained positions must be made package-ineligible and replaced from the evidence reserve. Never weaken the Irish floor or evidence floor to complete five slots.
+Retained same-day drafts are inputs, not entitlements. Invalid or materially duplicate retained positions must be made package-ineligible and replaced from the evidence reserve. Never weaken the Irish or evidence floor to complete five slots.
 
-For the 12 September 2026 Leinster v Zebre pre-season test event, match build-up receives editorial priority, but each selected Leinster position must represent a materially different development or recognised match phase. Same-phase rewrites remain duplicates and cannot consume multiple package slots.
+For Leinster v Zebre Parma on 12 September 2026, match build-up receives priority, but each selected Leinster position must represent a materially different development or recognised match phase. The confirmed team-selection phase is newer than player-profile/build-up material. A later injury, venue/test-event operational development, result or reaction can be separate when independently evidenced. Same-phase rewrites remain duplicates.
 
 ## Evidence-before-spend contract
 
-Require at least two substantive sources from at least two publishers, coherent same-development corroboration, concrete rugby facts, and no non-rugby contamination. Completed-match stories require the final score; squad/selection stories require actual named people. Person identity must be coherent between the title/development and fact ledger, and surname collisions fail closed. Exact repetition of a full person name in two publisher snippets is useful corroboration but is not independently mandatory when the title/fact identity is coherent and the underlying development already has two independent publishers and two substantive facts. Match-like stories must satisfy the same concrete-detail classes before model spend that the generation API enforces.
+Require at least two substantive sources from at least two publishers, coherent same-development corroboration, concrete rugby facts and no non-rugby contamination. Completed-match stories require the final score. Squad/selection stories require named people and concrete selection detail. Person identity must be coherent between the title/development and fact ledger; surname collisions fail closed.
 
-Editorial headline prefixes such as `Returning`, `Former`, `Current`, `Latest`, `Uncapped`, `Injured`, `Fit-again` and `Two-time` are not person first names. The pre-AI evidence gate and generation API must use equivalent person-identity semantics so a candidate cannot pass one deterministic boundary and fail the next because of parser drift.
+Explicit non-rugby signals such as Nations League, soccer, GAA, hurling or camogie are rejected before generation even if noisy descriptions contain rugby terms.
 
-Explicit non-rugby title signals such as Nations League, soccer, GAA, hurling or camogie are rejected before generation even if noisy descriptions contain rugby terms.
-
-A candidate that already consumed a paid reservation on the current Dublin day is excluded from another paid slot. Failed reservations remain part of the daily ledger; they are never reset to create artificial headroom.
+A candidate that already consumed a `production-draft:` reservation on the current Dublin day is excluded before capacity/diversity decisions. Failed reservations remain in the authoritative Sanity ledger and are never reset to manufacture headroom.
 
 ## Canonical editorial pool and free refill
 
-The canonical pool is the single pre-AI decision boundary for recent-position freshness. Downstream package selection must consume that pool rather than reinterpret freshness independently.
+The canonical pool is the single pre-AI decision boundary for recent-position freshness and same-day paid-attempt eligibility. Downstream package selection consumes that pool and must not reinterpret freshness.
 
-For an incomplete daily package, the **strict minimum** is the number of missing paid slots. The **preferred target** is missing slots plus three qualified reserve candidates. Valid retained current-day drafts reduce the missing-slot count; they are not counted as new generation candidates.
+For an incomplete package, the strict minimum is the number of missing slots. Preferred capacity is missing slots plus three reserve candidates. If the preferred reserve is thin, run one bounded free refill, rebuild evidence, rerun match-detail parity and rerun canonical qualification. Reserve shortage alone must not block a fillable five-story package.
 
-If the first canonical qualification does not meet the preferred reserve target, the workflow performs one bounded **free** refill pass with expanded per-source and corroboration limits, rebuilds the acquisition batch, re-runs concrete evidence and match-detail parity, and then re-runs canonical freshness. After that refill, Terra/Luna remains blocked unless the strict missing-slot minimum is satisfied. A thin reserve by itself must not block a legitimate five-story package.
+The zero-model `launch-reserve-proof.yml` must mirror this canonical sequence. A proof harness that calls the legacy production-history script directly is invalid because `prepare-slot-budget-batch.mjs` requires a canonical-qualified batch.
 
 ## Freshness and diversity
 
-Freshness identity is **subject + event/development + editorial angle** and is checked against recent production positions. Headline rewriting does not make a repeated position fresh. Source-cluster overlap with a retained article is also a duplicate signal.
+Freshness identity is **subject + event/development + editorial angle**. Headline rewriting does not create freshness. Source-cluster overlap with a retained article is also a duplicate signal.
 
-For a developing match or event, a genuine new phase is a fresh editorial position even when the subject or matchup is unchanged. Recognised phases include preview/build-up, squad or team selection, late injury/personnel change, live-match development, confirmed result and post-match reaction. A new concrete squad/roster announcement may therefore supersede an older generic competition position with no concrete phase. Rewording the same phase or repeating the same underlying development remains a duplicate and must be rejected.
+For a developing match/event, a genuine new phase is fresh even when the matchup is unchanged. Recognised phases include preview/build-up, squad/team selection, late injury/personnel change, live development, confirmed result and post-match reaction. Rewording the same phase remains a duplicate.
 
-Package limits are max three same canonical matchup, max three same recognised team, min three Irish-connected and max two international-only. The three-story allowance never overrides freshness, evidence, media relevance or story distinctness.
+Package limits are max three same canonical matchup, max three same recognised team, min three Irish-connected and max two international-only. These limits never override freshness, evidence or media relevance.
 
 ## Mandatory embed-first media gate
 
 Embedded media is mandatory. Local imagery is not.
 
-An article is not review-ready and must not be notified unless it contains at least one verified official social/video embed directly relevant to the person, match, announcement, event or development in the article.
-
-The `socialEmbed` renderer supports allowlisted YouTube, Instagram, X/Twitter and Facebook HTTPS URLs. Official-source status is mandatory. Generic same-team posts, wrong people, wrong teams, unrelated events and decorative content fail the gate.
+An article is not review-ready and must not be delivered unless it contains at least one verified official social/video embed directly relevant to the person, match, announcement, event or development in the article.
 
 Media priority is:
 
 1. exact curated official person/event embed;
 2. exact official team/competition video or social post discovered automatically;
 3. another independently verified official embed with direct story relevance;
-4. block the article and select another candidate.
+4. block the article.
 
-A local Sanity image may be included only when it independently passes semantic relevance checks. A large image library is not evidence of relevance. If the local image is doubtful and an exact official embed exists, omit the local image. For curated exact embeds the media workflow removes existing featured and inline local images and verifies the resulting embed-only article in Sanity.
+Generic same-team posts, wrong people, unrelated events and decorative content fail. A local Sanity image may be included only when it independently passes semantic relevance checks. If doubtful, omit it; never use an irrelevant local image to satisfy readiness.
 
-An unavailable individual official feed must be recorded and skipped rather than aborting the entire official-source pass. This is resilience only: it never makes an article media-ready. The article remains blocked unless another configured official source produces a directly relevant verified embed.
-
-Media availability should be established before paid generation wherever possible. Media-only recovery can be run independently of generation and does not require AI budget.
+An unavailable individual official feed is skipped and recorded rather than aborting all media discovery. This resilience never waives the relevance requirement.
 
 ## Launch slot budget
 
-The application-wide OpenAI reservation **hard ceiling is `$0.75` per Europe/Dublin operational day**. The normal operating target is **at or below `$0.40/day`**. A production draft reservation is `$0.055`, so five empty slots reserve `$0.275` on the normal path. The extra headroom exists for bounded same-day recovery after legitimate failed paid attempts; it is not a spending target. Discovery, evidence, freshness, diversity and media qualification run before paid reservation. Generation is serial, one selected candidate per missing slot, with zero paid replacement candidates in the normal scheduled workflow. The Sanity daily ledger remains authoritative and previous reservations are never reset or bypassed.
+The application-wide OpenAI reservation hard ceiling is **`$0.40` per Europe/Dublin operational day**. `EDITORIAL_AI_DAILY_BUDGET_USD` may lower this limit but cannot raise it above `$0.40`.
+
+The normal production target is **`<= $0.30/day`**. A production draft reservation is `$0.055`; five empty slots therefore reserve `$0.275`, which is valid. Slot planning must fail closed before model calls if existing reservations plus the planned initial selections would exceed `$0.30`.
+
+The `$0.40` guard is an absolute safety boundary, not a recovery spending target. No paid retry/replacement loop is permitted. Discovery, evidence, freshness, diversity and media qualification remain free/pre-AI wherever possible.
 
 ## Draft Ready and Publication Review
 
 Hard limits remain headline <=70 characters, standfirst <=220, SEO title <=60, SEO description <=160 and paragraph <=120 words, plus filler/formulaic-writing/originality safeguards. Publication Review is mandatory. Critical/high issues block readiness; one bounded correction may use only the supplied fact ledger.
 
-Terra is the generation model. Luna is the Publication Review and bounded correction model. Runtime configuration must be resolved before Publication Review is imported or invoked; a module-level fallback must not silently replace Luna in production.
+Terra is the generation model. Luna is the Publication Review and bounded correction model. Runtime configuration must be resolved before Publication Review is imported or invoked.
 
-## Progressive notifications and Zoho
+## Progressive delivery
 
-Delivery is one article at a time. As soon as an article has passed editorial and mandatory embed gates, send its individual review notification; do not wait for the other four. Failure of a later slot must not suppress already-ready earlier articles.
+Delivery is one article at a time. As soon as an article passes editorial and mandatory-media gates, send its individual review notification; do not wait for the other four. A later slot failure must not suppress earlier ready articles.
 
-The daily package is complete only when five distinct articles have individually passed and been delivered. Package-mode generation notifications remain suppressed until media verification.
+The daily package is complete only when five distinct articles have individually passed and been delivered.
 
 ## Human publication boundary
 
-Review-ready drafts are never automatically published. The owner reviews/edits in Sanity and explicitly publishes. Meta/social auto-publishing is excluded from the launch gate; official social/video embeds inside article bodies are editorial media.
+Review-ready drafts are never automatically published. The owner reviews/edits in Sanity and explicitly publishes. Meta auto-sharing is excluded from this launch gate; official embeds inside article bodies are editorial media, not automatic social publishing.
 
 ## Morning sequence
 
 1. sanitize exact-day retained state and evict source-cluster duplicates;
-2. run free discovery/evidence/match-detail qualification and export recent production positions;
-3. build the canonical pool for the missing-slot minimum and preferred +3 reserve target;
-4. if the preferred reserve target is short, run one expanded free discovery/corroboration refill and repeat deterministic qualification;
-5. after refill, fail closed only if the missing-slot minimum is still short; then enforce Ireland-first and same-package diversity;
-6. qualify official embed availability wherever possible;
-7. assign one candidate to each missing paid slot, excluding already-paid IDs;
-8. reserve/generate serially within the `$0.75/day` hard ceiling and `<= $0.40/day` normal target, with no paid replacement loop and no ledger reset;
-9. apply exact curated embeds first, then official-source fallback discovery; skip dead individual feeds but never waive relevance;
-10. read back the embed in Sanity and remove doubtful local imagery when an exact embed exists;
-11. notify each article immediately after its complete gate passes;
-12. continue until five distinct review-ready articles are delivered;
-13. owner reviews and publishes in Sanity.
+2. run free discovery/evidence/match-detail qualification and export recent positions;
+3. build the canonical pool using freshness and same-day paid-attempt eligibility;
+4. if preferred reserve is thin, run one expanded free refill and repeat deterministic qualification;
+5. fail closed only if the strict missing-slot minimum is still short, then enforce Ireland-first/diversity;
+6. qualify official-media availability wherever possible;
+7. assign one unpaid candidate to each missing slot;
+8. verify projected reservations remain <=`$0.30` and the application hard cap is `$0.40`;
+9. generate serially with Terra and review/repair with Luna, with zero paid replacements;
+10. verify exact official media, read it back from Sanity and omit doubtful local imagery;
+11. deliver each article immediately after its complete gate passes;
+12. stop only at five delivered articles or a proven launch blocker;
+13. owner reviews and explicitly publishes in Sanity.
 
 Do not rerun an old failed workflow SHA after code changes.
