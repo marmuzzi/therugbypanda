@@ -21,9 +21,10 @@ free standard + targeted Irish source discovery
 → if preferred reserve is thin, one bounded free discovery/corroboration refill
 → final canonical pool
 → Ireland-first + team/matchup diversity
+→ match-day editorial priority inside the already-qualified pool
 → free story-specific official-media qualification wherever possible
-→ exactly one fresh candidate per missing paid slot
-→ budget plan: <=$0.30 normal target and <=$0.40 hard ceiling
+→ progressive slot budget inside <=$0.30 normal target and <=$0.40 hard ceiling
+→ exactly one fresh candidate per selected paid slot
 → Editorial Brain / fact ledger
 → Terra generation
 → deterministic Draft Ready + originality
@@ -45,7 +46,7 @@ At least three of five stories must have a direct Irish connection: Ireland/IRFU
 
 Retained same-day drafts are inputs, not entitlements. Invalid or materially duplicate retained positions must be made package-ineligible and replaced from the evidence reserve. Never weaken the Irish or evidence floor to complete five slots.
 
-For Leinster v Zebre Parma on 12 September 2026, match build-up receives priority, but each selected Leinster position must represent a materially different development or recognised match phase. The confirmed team-selection phase is newer than player-profile/build-up material. A later injury, venue/test-event operational development, result or reaction can be separate when independently evidenced. Same-phase rewrites remain duplicates.
+On an Irish match day, a current team/selection/squad/fixture development outranks an older Irish profile/interview candidate when both have already passed the same freshness, evidence, diversity and paid-eligibility gates. This is an ordering rule only; it never manufactures eligibility or weakens quality. For Leinster v Zebre Parma on 12 September 2026, the confirmed team-selection phase therefore outranks older profile/build-up material. A later injury, venue/test-event operational development, result or reaction can be separate when independently evidenced. Same-phase rewrites remain duplicates.
 
 ## Evidence-before-spend contract
 
@@ -92,9 +93,11 @@ An unavailable individual official feed is skipped and recorded rather than abor
 
 The application-wide OpenAI reservation hard ceiling is **`$0.40` per Europe/Dublin operational day**. `EDITORIAL_AI_DAILY_BUDGET_USD` may lower this limit but cannot raise it above `$0.40`.
 
-The normal production target is **`<= $0.30/day`**. A production draft reservation is `$0.055`; five empty slots therefore reserve `$0.275`, which is valid. Slot planning must fail closed before model calls if existing reservations plus the planned initial selections would exceed `$0.30`.
+The normal production target is **`<= $0.30/day`**. A production draft reservation is `$0.055`; five empty slots therefore reserve `$0.275`, which is valid.
 
-The `$0.40` guard is an absolute safety boundary, not a recovery spending target. No paid retry/replacement loop is permitted. Discovery, evidence, freshness, diversity and media qualification remain free/pre-AI wherever possible.
+For an incomplete package, calculate normal-target headroom before any model call. If all missing slots fit, select them normally. If only some fit, select only the fresh slots that fit and run them progressively; never abort an otherwise affordable slot merely because the whole remaining package cannot fit at once. If no `$0.055` slot fits inside the normal target, stop before model spend. The `$0.40` guard is an absolute safety boundary, not permission to exceed the normal target.
+
+No paid retry/replacement loop is permitted. Discovery, evidence, freshness, diversity and media qualification remain free/pre-AI wherever possible.
 
 ## Draft Ready and Publication Review
 
@@ -119,10 +122,10 @@ Review-ready drafts are never automatically published. The owner reviews/edits i
 3. build the canonical pool using freshness and same-day paid-attempt eligibility;
 4. if preferred reserve is thin, run one expanded free refill and repeat deterministic qualification;
 5. fail closed only if the strict missing-slot minimum is still short, then enforce Ireland-first/diversity;
-6. qualify official-media availability wherever possible;
-7. assign one unpaid candidate to each missing slot;
-8. verify projected reservations remain <=`$0.30` and the application hard cap is `$0.40`;
-9. generate serially with Terra and review/repair with Luna, with zero paid replacements;
+6. rank already-qualified candidates so current Irish match/team build-up outranks older Irish profile/interview material;
+7. qualify official-media availability wherever possible;
+8. calculate normal-target headroom and select only the fresh unpaid slots that fit, with the `$0.40` hard guard still active;
+9. generate those selected slots serially with Terra and review/repair with Luna, with zero paid replacements;
 10. verify exact official media, read it back from Sanity and omit doubtful local imagery;
 11. deliver each article immediately after its complete gate passes;
 12. stop only at five delivered articles or a proven launch blocker;
