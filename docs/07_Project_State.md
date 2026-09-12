@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-12 September 2026 during Saturday Leinster v Zebre pre-match readiness work in PR #506. This state includes merged PRs #499-#505, current production deployment evidence, and the corrected budget contract.
+12 September 2026 after PR #506 production deployment, zero-model reserve proof `34670697684`, and PR #507 Leinster team-selection clustering repair.
 
 ## Read first
 
@@ -24,52 +24,39 @@ Newer measured evidence supersedes older state statements where they conflict.
 - Five fresh, genuinely distinct review-ready drafts, delivered individually as each becomes ready.
 - At least 3/5 direct Irish connections; at most 2 international-only.
 - Genuine follow-ups/new match phases are fresh; same-phase rewrites remain duplicates.
-- Up to three distinct stories may concern the same canonical matchup/team when the developments materially differ.
-- Verified official story-specific social/video embed is mandatory before review delivery.
-- Local Sanity imagery is optional and must be omitted when it is not independently relevant.
+- Verified official story-specific social/video embed is mandatory before review delivery; irrelevant local imagery never substitutes.
 - Sanity is the human publication boundary; never auto-publish.
-- OpenAI application hard ceiling is `$0.40/day` in Europe/Dublin.
-- Normal production target is `<= $0.30/day`; five empty slots reserve `$0.275` at `$0.055` each.
-- Terra only generates an approved article; Luna performs Publication Review/bounded repair.
-- One paid candidate per missing slot; no paid retry/replacement loop.
-- Free discovery, evidence, canonical freshness, diversity and media qualification happen before paid generation.
+- OpenAI hard ceiling `$0.40/day`; normal production target `<= $0.30/day`.
+- Five empty slots reserve `$0.275` at `$0.055` each.
+- Terra generates only approved articles; Luna performs Publication Review/bounded repair.
+- One paid candidate per missing slot; no paid replacement loop.
 
 ## Current production architecture
 
-The canonical newsroom path is:
+`free discovery -> evidence -> match-detail parity -> canonical freshness/paid-attempt eligibility -> bounded free refill if thin -> Ireland-first/diversity -> slot budget -> Terra -> Luna -> mandatory official media -> progressive delivery -> human Sanity publication`.
 
-`discovery -> evidence -> match-detail parity -> canonical freshness/paid-attempt eligibility -> bounded free refill if thin -> Ireland-first/diversity -> slot budget -> Terra -> Luna -> mandatory official media -> progressive delivery -> human Sanity publication`.
+Canonical qualification is the only recent-position freshness decision. Same-day `production-draft:` reservation IDs are authoritative and excluded before capacity/diversity planning.
 
-Canonical qualification is the only recent-position freshness decision. Downstream slot planning must not reinterpret freshness. Same-day `production-draft:` reservation IDs are authoritative and excluded before capacity/diversity planning.
+## Saturday 12 September measured state
 
-## Changes merged after the previous reconciliation
+PR #506 is merged at SHA `066a592cd720fd4f5a9e1a74e2c4c5d5d80e215d`. Vercel production deployment `dpl_6XwZpDr5qmv2WK9JohDvUBXjKda8` is READY on that exact SHA. Launch recovery contract run `34670697723` passed.
 
-- PR #499 expanded Irish launch discovery coverage.
-- PRs #500/#501 performed the final 11 September launch recovery trigger sequence without weakening launch gates.
-- PR #502 tightened cross-source clustering and blocks cross-sport/cross-story contamination before spend.
-- PR #503 ran a zero-model reserve proof after the clustering fix.
-- PR #504 made production-history qualification retained-aware.
-- PR #505 ran the retained-aware zero-model proof. That proof reached slot planning after editorial gates but failed because the proof workflow still used the legacy production-history script instead of the canonical-pool script. This is a proof-harness drift defect, not evidence that production freshness should be weakened.
-- PR #506 repairs that proof-harness drift and restores the owner-approved `$0.40` hard / `<= $0.30` normal budget contract before Saturday production.
+Zero-model reserve proof `34670697684` passed every step on PR #506, including canonical qualification, bounded free refill, Ireland-first diversity and one-to-one slot planning. Measured output: 0 retained drafts, 5 missing slots, 6 fresh unpaid eligible positions, 3 Irish-connected candidates available, 5 selected candidates, `$0.000` reserved before, `$0.275` projected reservation, zero paid replacements. The preferred +3 reserve target was thin (1 reserve instead of 3) but the strict five-slot package minimum passed.
 
-## Latest measured deployment state
+The proof also exposed a quality gap: discovery contained two fresh independent Leinster-Zebre team-selection reports — The42 led with Max Deegan captaining, while the Irish Independent led with Ryan Baird returning — but the clustering algorithm required too much shared person/title identity and failed to combine them as the same selection development. PR #507 fixes this without weakening freshness: same matchup + explicit team-selection phase can corroborate across different player-led headlines, while a generic preview remains separate from the later selection phase.
 
-Before PR #506, Vercel production is READY on main SHA `e6a4f023159b3688eb774d51a0de918f84d195d8` from PR #505 (`dpl_AVn6LFuYfGxpzhR9rwf7FKWK6rZq`). PR #506 requires a new exact-SHA READY deployment and production proof before it can be considered complete.
+## Saturday Leinster priority
 
-## Saturday 12 September Leinster priority
+Leinster v Zebre Parma is at Laya Arena at 14:30 Dublin time. Fresh team-selection evidence includes Max Deegan as captain, Fintan Gunne at scrum-half, Caspar Gabriel at out-half, Alex Usanov at loosehead and Ryan Baird among the replacements. This is a materially newer phase than prior player-profile/build-up coverage and receives production priority if it passes the normal evidence, freshness, diversity and mandatory-media gates.
 
-Leinster v Zebre Parma is at Laya Arena at 14:30 Dublin time. Fresh team-selection evidence is now available: Max Deegan captains; Fintan Gunne starts at scrum-half; Caspar Gabriel at out-half; Alex Usanov at loosehead. This is a materially newer match phase than prior Leinster player-profile coverage and should receive package priority if it passes the normal two-publisher evidence, freshness, diversity and official-media gates.
+## Current launch blockers to verify
 
-Match build-up may produce more than one Leinster story only where each story is a genuinely distinct development or recognised phase. Team selection, venue/test-event context and a genuinely new late personnel development can be separate; rewrites of the same team announcement cannot.
-
-## Current launch blockers to verify today
-
-1. Prove the corrected zero-model reserve path on PR #506/main.
-2. Verify the current-day canonical pool can supply five distinct positions with at least three Irish-connected.
-3. Verify the newly available Leinster team-selection position is independently corroborated and fresh against recent production history.
-4. Keep the planned daily reservation at or below `$0.30`; the hard guard must block above `$0.40`.
-5. Verify every generated article passes Luna and has a directly relevant official embed before delivery.
+1. Run the canonical production workflow on code containing PR #507 and verify the Leinster selection reaches the qualified pool.
+2. Keep the five-slot planned reservation at or below `$0.30`; `$0.40` remains the absolute guard.
+3. Verify all generated drafts pass Luna; no paid retry loop is allowed.
+4. Verify every review-ready draft has directly relevant official embedded media and is delivered progressively.
+5. Five delivered review-ready articles, >=3 Irish-connected, remain the go-live proof.
 
 ## Go-live definition
 
-Go-live is verified only when five distinct fresh articles for the Dublin day have individually passed editorial review and mandatory official-media gates, at least three are Irish-connected, Vercel production is on the exact merged SHA, Sanity readback is correct, and publication remains human-controlled.
+Go-live is verified only when five distinct fresh articles for the Dublin day have individually passed editorial review and mandatory official-media gates, at least three are Irish-connected, Vercel production is on the exact merged code, Sanity readback is correct, and publication remains human-controlled.
