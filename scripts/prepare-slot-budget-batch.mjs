@@ -9,8 +9,11 @@ const batchPath=process.env.BATCH_PATH||"data/editorial-acquisition/current-edit
 const projectId=process.env.NEXT_PUBLIC_SANITY_PROJECT_ID, dataset=process.env.NEXT_PUBLIC_SANITY_DATASET||"production", apiVersion=process.env.NEXT_PUBLIC_SANITY_API_VERSION||"2025-01-01", token=process.env.SANITY_API_TOKEN;
 if(!projectId||!token)throw new Error("Slot-budget planning requires Sanity project ID and token.");
 const IRISH_CATEGORY=new Set(["Ireland","Leinster","Munster","Ulster","Connacht"]); const IRISH_PRIMARY=/\b(?:ireland|irish|irfu|leinster|munster|ulster|connacht)\b/i;
+const MATCHDAY_BUILDUP=/\b(?:captain|team(?:\s+news)?|squad|selection|starting\s+xv|matchday|line[- ]?up|fixture|friendly|test\s+match|against|versus|vs\.?|v\.)\b/i;
 const candidateText=(c)=>[c?.title,c?.summary,c?.subject,c?.development,c?.editorialAngle,c?.editorialPosition?.subject,c?.editorialPosition?.development,c?.editorialPosition?.angle,...(Array.isArray(c?.sourceRecords)?c.sourceRecords.flatMap((s)=>[s?.title,s?.excerpt]):[])].filter(Boolean).join(" ");
 const isIrish=(c)=>IRISH_CATEGORY.has(c?.suggestedCategory)||IRISH_PRIMARY.test(candidateText(c));
+const matchdayPriorityScore=(c)=>{const text=candidateText(c);let score=0;if(isIrish(c))score+=100;if(isIrish(c)&&MATCHDAY_BUILDUP.test(text))score+=100;if(IRISH_CATEGORY.has(c?.suggestedCategory))score+=20;return score;};
+const prioritizeMatchday=(items)=>items.map((item,index)=>({item,index,score:matchdayPriorityScore(item)})).sort((a,b)=>b.score-a.score||a.index-b.index).map(({item})=>item);
 const operationalDate=()=>new Intl.DateTimeFormat("en-CA",{timeZone:"Europe/Dublin",year:"numeric",month:"2-digit",day:"2-digit"}).format(new Date());
 const normaliseUrl=(value="")=>{try{const url=new URL(String(value));url.hash="";return url.toString();}catch{return String(value).trim();}};
 const candidateSourceUrls=(candidate)=>new Set((Array.isArray(candidate?.sourceRecords)?candidate.sourceRecords:[]).map((source)=>normaliseUrl(source?.url)).filter(Boolean));
@@ -41,7 +44,8 @@ const available=batch.candidates.filter((candidate)=>{
   return true;
 });
 if(unexpectedPaidCandidates.length)throw new Error(`Canonical pool integrity failure: previously paid candidate(s) reached slot planning: ${unexpectedPaidCandidates.join(", ")}.`);
-const availableIrish=available.filter(isIrish);
+const prioritizedAvailable=prioritizeMatchday(available);
+const availableIrish=prioritizedAvailable.filter(isIrish);
 if(availableIrish.length<irishNeeded)throw new Error(`Slot-budget planning Ireland-first fail-closed: canonical pool contains only ${availableIrish.length}/${irishNeeded} unpaid Irish-connected candidates.`);
 
 const normalTargetHeadroomUsd=Math.max(0,NORMAL_TARGET_USD-reservedUsd);
@@ -52,7 +56,7 @@ const irishNeededThisPass=Math.min(irishNeeded,slotsToPlan);
 
 const selected=[]; const selectedIds=new Set();
 for(const c of availableIrish.slice(0,irishNeededThisPass)){selected.push(c);selectedIds.add(c.id);}
-for(const c of available){if(selected.length>=slotsToPlan)break;if(selectedIds.has(c.id))continue;selected.push(c);selectedIds.add(c.id);}
+for(const c of prioritizedAvailable){if(selected.length>=slotsToPlan)break;if(selectedIds.has(c.id))continue;selected.push(c);selectedIds.add(c.id);}
 if(selected.length<slotsToPlan)throw new Error(`Slot-budget planning fail-closed: canonical pool can assign only ${selected.length}/${slotsToPlan} budget-eligible candidates for this progressive pass.`);
 const selectedIrishCount=selected.filter(isIrish).length;
 if(selectedIrishCount<irishNeededThisPass)throw new Error(`Slot-budget planning internal quota failure: selected ${selectedIrishCount}/${irishNeededThisPass} required Irish-connected candidates for this pass.`);
@@ -60,6 +64,6 @@ const projectedReservationUsd=Number((reservedUsd+selected.length*RESERVATION_PE
 if(projectedReservationUsd>NORMAL_TARGET_USD+1e-9)throw new Error(`Slot-budget planning normal-target integrity failure: projected $${projectedReservationUsd.toFixed(3)} exceeds $${NORMAL_TARGET_USD.toFixed(2)}.`);
 if(projectedReservationUsd>DAILY_CEILING_USD+1e-9)throw new Error(`Slot-budget planning hard-ceiling integrity failure: projected $${projectedReservationUsd.toFixed(3)} exceeds $${DAILY_CEILING_USD.toFixed(2)}.`);
 
-batch.slotBudgetPlan={operationalDate:packageDate,dailyCeilingUsd:DAILY_CEILING_USD,normalTargetUsd:NORMAL_TARGET_USD,reservationPerSlotUsd:RESERVATION_PER_SLOT_USD,reservedBeforeUsd:reservedUsd,normalTargetHeadroomUsd:Number(normalTargetHeadroomUsd.toFixed(6)),affordableSlots,projectedReservationUsd,retainedCount,retainedIrishCount,missingSlots,slotsToPlan,irishNeeded,irishNeededThisPass,selectedIrishCount,paidAttemptLimit:selected.length,replacementPaidAttempts:0,progressiveBudgetLimited:slotsToPlan<missingSlots,selectedIds:selected.map((c)=>c.id),excludedPreviouslyPaidIds:[...paidAttemptedIds],explicitExcludedIds:[...explicitExclusions],duplicateOfRetained,canonicalPoolCheckedAt:batch.editorialPool.checkedAt,plannedAt:new Date().toISOString()}; batch.candidates=selected;
+batch.slotBudgetPlan={operationalDate:packageDate,dailyCeilingUsd:DAILY_CEILING_USD,normalTargetUsd:NORMAL_TARGET_USD,reservationPerSlotUsd:RESERVATION_PER_SLOT_USD,reservedBeforeUsd:reservedUsd,normalTargetHeadroomUsd:Number(normalTargetHeadroomUsd.toFixed(6)),affordableSlots,projectedReservationUsd,retainedCount,retainedIrishCount,missingSlots,slotsToPlan,irishNeeded,irishNeededThisPass,selectedIrishCount,paidAttemptLimit:selected.length,replacementPaidAttempts:0,progressiveBudgetLimited:slotsToPlan<missingSlots,matchdayPriorityApplied:true,selectedIds:selected.map((c)=>c.id),selectedPriorityScores:selected.map((c)=>({id:c.id,score:matchdayPriorityScore(c)})),excludedPreviouslyPaidIds:[...paidAttemptedIds],explicitExcludedIds:[...explicitExclusions],duplicateOfRetained,canonicalPoolCheckedAt:batch.editorialPool.checkedAt,plannedAt:new Date().toISOString()}; batch.candidates=selected;
 await fs.writeFile(path.resolve(batchPath),`${JSON.stringify(batch,null,2)}\n`);
-console.log(JSON.stringify({slotBudgetPlan:"passed",retainedCount,retainedIrishCount,missingSlots,slotsToPlan,progressiveBudgetLimited:slotsToPlan<missingSlots,irishNeeded,irishNeededThisPass,selectedIrishCount,paidAttemptLimit:selected.length,replacementPaidAttempts:0,selectedIds:batch.slotBudgetPlan.selectedIds,excludedPreviouslyPaidIds:[...paidAttemptedIds],explicitExcludedIds:[...explicitExclusions],duplicateOfRetained,reservedUsd,normalTargetHeadroomUsd,affordableSlots,projectedReservationUsd,normalTargetUsd:NORMAL_TARGET_USD,dailyCeilingUsd:DAILY_CEILING_USD,canonicalPoolCheckedAt:batch.editorialPool.checkedAt,rejectedByFreshness:0},null,2));
+console.log(JSON.stringify({slotBudgetPlan:"passed",retainedCount,retainedIrishCount,missingSlots,slotsToPlan,progressiveBudgetLimited:slotsToPlan<missingSlots,matchdayPriorityApplied:true,irishNeeded,irishNeededThisPass,selectedIrishCount,paidAttemptLimit:selected.length,replacementPaidAttempts:0,selectedIds:batch.slotBudgetPlan.selectedIds,selectedPriorityScores:batch.slotBudgetPlan.selectedPriorityScores,excludedPreviouslyPaidIds:[...paidAttemptedIds],explicitExcludedIds:[...explicitExclusions],duplicateOfRetained,reservedUsd,normalTargetHeadroomUsd,affordableSlots,projectedReservationUsd,normalTargetUsd:NORMAL_TARGET_USD,dailyCeilingUsd:DAILY_CEILING_USD,canonicalPoolCheckedAt:batch.editorialPool.checkedAt,rejectedByFreshness:0},null,2));
