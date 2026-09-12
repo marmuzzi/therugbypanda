@@ -272,10 +272,19 @@ const evictedDrafts = retainedState.evicted;
 const retainedCount = retainedDrafts.length;
 const retainedInputIds = new Set(retainedDrafts.map((draft) => draft.editorialInputId).filter(Boolean));
 const missingSlots = Math.max(0, PACKAGE_SIZE - retainedCount);
-console.log(JSON.stringify({ sameDayRecovery: "loaded", packageDate: operationalDate(), retainedCount, retainedDrafts, evictedDrafts, missingSlots }, null, 2));
+const plannedPaidAttempts = Number(batch?.slotBudgetPlan?.paidAttemptLimit ?? missingSlots);
+if (!Number.isInteger(plannedPaidAttempts) || plannedPaidAttempts < 0 || plannedPaidAttempts > missingSlots) {
+  throw new Error(`Invalid progressive slot budget plan: paidAttemptLimit=${batch?.slotBudgetPlan?.paidAttemptLimit} for ${missingSlots} missing slots.`);
+}
+const generationSlots = Math.min(missingSlots, plannedPaidAttempts, batch.candidates.length);
+console.log(JSON.stringify({ sameDayRecovery: "loaded", packageDate: operationalDate(), retainedCount, retainedDrafts, evictedDrafts, missingSlots, generationSlots, progressiveBudgetLimited: generationSlots < missingSlots }, null, 2));
 
 if (retainedCount >= PACKAGE_SIZE) {
   console.log(JSON.stringify({ packageCreationGate: "passed", retainedCount, createdDrafts: 0, totalEligible: retainedCount, evictedDrafts, reason: "same-day-package-already-complete" }, null, 2));
+  process.exit(0);
+}
+if (generationSlots === 0) {
+  console.log(JSON.stringify({ packageCreationGate: "progressive-no-spend", retainedCount, createdDrafts: 0, totalEligible: retainedCount, missingSlots, generationSlots, evictedDrafts }, null, 2));
   process.exit(0);
 }
 
@@ -293,20 +302,20 @@ const eligibleCandidates = assessed.filter(({ assessment }) => assessment.passed
 console.log(JSON.stringify({ evidenceSufficiencyGate: "completed", eligible: eligibleCandidates.length, rejected: evidenceRejected, retainedIdConflicts }, null, 2));
 
 const candidatePositions = eligibleCandidates.map(positionForCandidate);
-const freshness = selectFreshPositions(candidatePositions, recentPositions, Math.min(candidatePositions.length, missingSlots + maxReplacementCandidates));
+const freshness = selectFreshPositions(candidatePositions, recentPositions, Math.min(candidatePositions.length, generationSlots + maxReplacementCandidates));
 const freshIds = new Set(freshness.selected.map((position) => position.id));
 const freshQueue = eligibleCandidates.filter((candidate) => freshIds.has(candidate.id));
-if (freshQueue.length < missingSlots) {
-  console.error(JSON.stringify({ freshnessGate: "failed", requiredMissing: missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected, retainedIdConflicts, evictedDrafts }, null, 2));
-  throw new Error(`Recovery fail-closed before model spend: only ${freshQueue.length}/${missingSlots} fresh evidence-sufficient candidates are available.`);
+if (freshQueue.length < generationSlots) {
+  console.error(JSON.stringify({ freshnessGate: "failed", requiredThisPass: generationSlots, missingSlots, freshCandidates: freshQueue.length, rejected: freshness.rejected, evidenceRejected, retainedIdConflicts, evictedDrafts }, null, 2));
+  throw new Error(`Recovery fail-closed before model spend: only ${freshQueue.length}/${generationSlots} fresh evidence-sufficient candidates are available for this progressive pass.`);
 }
-console.log(JSON.stringify({ freshnessGate: "passed", retainedCount, requiredMissing: missingSlots, freshCandidateIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected }, null, 2));
+console.log(JSON.stringify({ freshnessGate: "passed", retainedCount, requiredThisPass: generationSlots, missingSlots, freshCandidateIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected }, null, 2));
 
 const results = [];
 let createdDrafts = 0;
 let queueIndex = 0;
-while (createdDrafts < missingSlots && queueIndex < freshQueue.length) {
-  const remainingSlots = missingSlots - createdDrafts;
+while (createdDrafts < generationSlots && queueIndex < freshQueue.length) {
+  const remainingSlots = generationSlots - createdDrafts;
   const roundSize = Math.min(concurrency, remainingSlots, freshQueue.length - queueIndex);
   const round = freshQueue.slice(queueIndex, queueIndex + roundSize);
   queueIndex += roundSize;
@@ -317,22 +326,22 @@ while (createdDrafts < missingSlots && queueIndex < freshQueue.length) {
 
 const failed = results.filter((result) => result.ok !== true);
 const totalEligible = retainedCount + createdDrafts;
-if (!dryRun && requireAllSelectedCreated && totalEligible !== PACKAGE_SIZE) {
-  console.error(JSON.stringify({ packageCreationGate: "failed", retainedCount, createdDrafts, totalEligible, required: PACKAGE_SIZE, failed, attemptedCandidates: results.length, evictedDrafts }, null, 2));
-  throw new Error(`Package creation fail-closed: ${totalEligible}/${PACKAGE_SIZE} same-day eligible drafts available after bounded recovery.`);
+if (!dryRun && requireAllSelectedCreated && createdDrafts !== generationSlots) {
+  console.error(JSON.stringify({ packageCreationGate: "failed", retainedCount, createdDrafts, totalEligible, requiredThisPass: generationSlots, packageSize: PACKAGE_SIZE, failed, attemptedCandidates: results.length, evictedDrafts }, null, 2));
+  throw new Error(`Progressive creation fail-closed: ${createdDrafts}/${generationSlots} selected drafts created; ${totalEligible}/${PACKAGE_SIZE} same-day eligible drafts available.`);
 }
 
 console.log(JSON.stringify({
   batchId: batch.batchId,
-  sameDayRecovery: { retainedCount, missingSlots, retainedDraftIds: retainedDrafts.map((draft) => draft._id), evictedDrafts },
+  sameDayRecovery: { retainedCount, missingSlots, generationSlots, progressiveBudgetLimited: generationSlots < missingSlots, retainedDraftIds: retainedDrafts.map((draft) => draft._id), evictedDrafts },
   retainedIdCollisionGuard: { conflicts: retainedIdConflicts },
   evidenceSufficiencyGate: { eligible: eligibleCandidates.length, rejected: evidenceRejected },
   freshnessGate: { selectedIds: freshQueue.map((candidate) => candidate.id), rejected: freshness.rejected },
-  packageCreationGate: dryRun ? "dry-run" : "passed",
+  packageCreationGate: dryRun ? "dry-run" : (totalEligible >= PACKAGE_SIZE ? "passed" : "progressive"),
   createdDrafts,
   totalEligible,
   attemptedCandidates: results.length,
   results,
   failedCount: failed.length,
 }, null, 2));
-if (failed.length > 0 && totalEligible < PACKAGE_SIZE) process.exitCode = 2;
+if (failed.length > 0 && createdDrafts < generationSlots) process.exitCode = 2;
