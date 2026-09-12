@@ -23,6 +23,10 @@ function normalise(value: string) {
   return String(value ?? "").toLowerCase().normalize("NFKD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]+/g, " ").trim();
 }
 
+function removeHonorific(value: string) {
+  return value.replace(/^(?:Sir|Dame)\s+/i, "").trim();
+}
+
 export function extractPersonNames(value: string) {
   const matches = String(value ?? "").match(PERSON_NAME_PATTERN) ?? [];
   return [...new Set(matches.map((name) => name.replace(/[’']/g, "'").replace(/\s+/g, " ").trim()).filter((name) => {
@@ -32,7 +36,7 @@ export function extractPersonNames(value: string) {
     if (parts.length < 2) return false;
     if (["sir", "dame"].includes(parts[0])) parts.shift();
     return parts.length >= 2 && !parts.some((part) => GENERIC_PERSON_PARTS.has(part));
-  }))];
+  }).map(removeHonorific))];
 }
 
 export function namedPeopleSet(value: string) {
