@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { sameCurrentRugbyStory } from "../lib/editorial/CurrentStoryClustering.mjs";
 
-const at = "2026-09-10T05:30:00Z";
+const at = "2026-09-12T03:00:00Z";
 const lead = (title, description = title) => ({ title, description, publishedAt: at, editorialPosition: { development: description } });
 
 const cases = [
@@ -28,6 +28,18 @@ const cases = [
     left: lead("Scrumhalf Fintan Gunne ready to fill the void left by Luke McGrath at Leinster"),
     right: lead("All eyes on No 9 as Leinster look to Fintan Gunne to fill void left by Luke McGrath"),
     expected: true,
+  },
+  {
+    name: "cluster same Leinster-Zebre team announcement despite different player headline",
+    left: lead("Deegan to captain Leinster in pre-season friendly against Zebre at redeveloped Laya Arena"),
+    right: lead("Ryan Baird to make long-awaited return to action as Leinster name inexperienced side for RDS clash with Zebre"),
+    expected: true,
+  },
+  {
+    name: "do not merge a Leinster-Zebre preview with later team selection only because matchup matches",
+    left: lead("Leinster prepare for Zebre test at Laya Arena", "Leinster prepare for Saturday's Zebre test at Laya Arena after a week of pre-season training."),
+    right: lead("Deegan to captain Leinster as side named for Zebre", "Leinster named their team for Zebre with Max Deegan captain."),
+    expected: false,
   },
   {
     name: "do not treat Exeter Chiefs team name as a person anchor",
