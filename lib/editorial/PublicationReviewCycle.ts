@@ -6,11 +6,9 @@ import { RUGBY_PANDA_EDITORIAL_CHARTER } from "./PromptBuilder";
 
 const OPENAI_RESPONSES_URL = "https://api.openai.com/v1/responses";
 const REVIEW_MODEL = process.env.OPENAI_EDITORIAL_REVIEW_MODEL ?? "gpt-5-mini";
-// Production evidence on 31 Aug showed structurally valid drafts reaching Publication Review
-// after 70-80s generation, then aborting inside the previous 25/35s review budgets.
-// These remain bounded and still fit inside the 240s route ceiling with a normal generation.
 const REVIEW_TIMEOUT_MS = 40_000;
 const CORRECTION_TIMEOUT_MS = 50_000;
+const TITLE_LIMIT = 70;
 const STANDFIRST_LIMIT = 220;
 const SEO_TITLE_LIMIT = 60;
 const SEO_DESCRIPTION_LIMIT = 160;
@@ -83,7 +81,7 @@ function reviewInput(article: GeneratedArticleDraft, editorial: EditorialBrainRe
 }
 
 function correctionInput(article: GeneratedArticleDraft, review: PublicationReview, editorial: EditorialBrainResult) {
-  return JSON.stringify({ assignment: "Make one bounded publication-quality correction pass. Return the complete corrected article.", article, reviewIssues: review.issues, factLedger: editorial.factLedger, constraints: ["Fix every critical/high issue and worthwhile medium issue without turning the article into a different story.", "Use only supported facts in the fact ledger; introduce no new names, numbers, quotes or claims.", "Preserve originality and the article's assigned editorial identity.", "Prefer natural prose changes over adding headings, lists, bold markers or explanatory boilerplate.", "Generated strings are structured plain text, not Markdown.", "Do not add generic headings such as What happened, Why this matters now, Why it matters for..., What you need to know, The bigger picture, What to watch next, What to look for next or What happens next.", "Keep sourceNotes accurate. The disclosure field is reader-facing only: remove internal verification, sourcing, fact-check or publication instructions and return an empty disclosure when no genuine reader-facing disclosure is needed.", `Hard metadata limits: standfirst <=${STANDFIRST_LIMIT}, SEO title <=${SEO_TITLE_LIMIT}, SEO description <=${SEO_DESCRIPTION_LIMIT} characters.`, `Every body paragraph must remain <=${DRAFT_READY_LIMITS.paragraphWords} words.`] });
+  return JSON.stringify({ assignment: "Make one bounded publication-quality correction pass. Return the complete corrected article.", article, reviewIssues: review.issues, factLedger: editorial.factLedger, constraints: ["Fix every critical/high issue and worthwhile medium issue without turning the article into a different story.", "Use only supported facts in the fact ledger; introduce no new names, numbers, quotes or claims.", "Preserve originality and the article's assigned editorial identity.", "Prefer natural prose changes over adding headings, lists, bold markers or explanatory boilerplate.", "Generated strings are structured plain text, not Markdown.", "Do not add generic headings such as What happened, Why this matters now, Why it matters for..., What you need to know, The bigger picture, What to watch next, What to look for next or What happens next.", "Keep sourceNotes accurate. The disclosure field is reader-facing only: remove internal verification, sourcing, fact-check or publication instructions and return an empty disclosure when no genuine reader-facing disclosure is needed.", `Hard metadata limits: title <=${TITLE_LIMIT}, standfirst <=${STANDFIRST_LIMIT}, SEO title <=${SEO_TITLE_LIMIT}, SEO description <=${SEO_DESCRIPTION_LIMIT} characters.`, `Every body paragraph must remain <=${DRAFT_READY_LIMITS.paragraphWords} words.`] });
 }
 
 function blockingIssues(review: PublicationReview) { return review.issues.filter((issue) => issue.severity === "critical" || issue.severity === "high"); }
@@ -96,11 +94,6 @@ function clipAtNaturalBoundary(value: string, max: number) {
   const floor = Math.floor(max * 0.6);
   const sentenceFloor = Math.floor(max * 0.35);
   const sentenceBoundary = Math.max(candidate.lastIndexOf("."), candidate.lastIndexOf("?"), candidate.lastIndexOf("!"));
-  // Prefer a genuinely complete sentence even when it is shorter than the previous 60% target.
-  // Production evidence showed that forcing a longer arbitrary word-boundary clip can turn a
-  // reviewed standfirst into grammatically incomplete copy such as "the margins around.".
-  // Keep the inspection window within the hard limit: scanning max + 1 characters can return
-  // max + 1 when punctuation sits exactly at the first character beyond the allowed boundary.
   if (sentenceBoundary >= sentenceFloor) return candidate.slice(0, sentenceBoundary + 1).trim();
 
   const clauseMarkers = [", before ", ", while ", ", as ", ", with ", ", but ", "; ", ": "];
@@ -117,6 +110,16 @@ function clipAtNaturalBoundary(value: string, max: number) {
   const wordBoundary = candidate.lastIndexOf(" ");
   const clipped = candidate.slice(0, wordBoundary > Math.floor(max * 0.65) ? wordBoundary : max).replace(/[,:;\-–—\s]+$/u, "").trim();
   return /[.!?]$/.test(clipped) ? clipped : clipped.length < max ? `${clipped}.` : clipped;
+}
+
+function clipHeadline(value: string, max: number) {
+  const trimmed = value.trim();
+  if (trimmed.length <= max) return trimmed;
+  const candidate = trimmed.slice(0, max);
+  const strongBoundary = Math.max(candidate.lastIndexOf(":"), candidate.lastIndexOf(" — "), candidate.lastIndexOf(" – "));
+  if (strongBoundary >= Math.floor(max * 0.55)) return candidate.slice(0, strongBoundary).trim();
+  const wordBoundary = candidate.lastIndexOf(" ");
+  return candidate.slice(0, wordBoundary >= Math.floor(max * 0.65) ? wordBoundary : max).replace(/[,:;\-–—\s]+$/u, "").trim();
 }
 
 function wordCount(value: string) {
@@ -159,6 +162,7 @@ function isInternalDisclosure(value: string): boolean {
 function repairReviewPresentation(article: GeneratedArticleDraft): GeneratedArticleDraft {
   return {
     ...article,
+    title: clipHeadline(article.title, TITLE_LIMIT),
     standfirst: clipAtNaturalBoundary(article.standfirst, STANDFIRST_LIMIT),
     seoTitle: clipAtNaturalBoundary(article.seoTitle, SEO_TITLE_LIMIT),
     seoDescription: clipAtNaturalBoundary(article.seoDescription, SEO_DESCRIPTION_LIMIT),
