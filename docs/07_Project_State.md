@@ -6,7 +6,7 @@ v1.0 — Launch Experience and Digital Newsroom Foundation
 
 ## Last reconciled
 
-12 September 2026 after PR #506 production deployment, zero-model reserve proof `34670697684`, and PR #507 Leinster team-selection clustering repair.
+12 September 2026 after Saturday production run `34670946540`, mandatory-media run `34671229317`, and runtime-defect fixes prepared in the current PR.
 
 ## Read first
 
@@ -27,7 +27,6 @@ Newer measured evidence supersedes older state statements where they conflict.
 - Verified official story-specific social/video embed is mandatory before review delivery; irrelevant local imagery never substitutes.
 - Sanity is the human publication boundary; never auto-publish.
 - OpenAI hard ceiling `$0.40/day`; normal production target `<= $0.30/day`.
-- Five empty slots reserve `$0.275` at `$0.055` each.
 - Terra generates only approved articles; Luna performs Publication Review/bounded repair.
 - One paid candidate per missing slot; no paid replacement loop.
 
@@ -37,25 +36,36 @@ Newer measured evidence supersedes older state statements where they conflict.
 
 Canonical qualification is the only recent-position freshness decision. Same-day `production-draft:` reservation IDs are authoritative and excluded before capacity/diversity planning.
 
-## Saturday 12 September measured state
+## Saturday 12 September measured production result
 
-PR #506 is merged at SHA `066a592cd720fd4f5a9e1a74e2c4c5d5d80e215d`. Vercel production deployment `dpl_6XwZpDr5qmv2WK9JohDvUBXjKda8` is READY on that exact SHA. Launch recovery contract run `34670697723` passed.
+PR #508 is production READY on Vercel deployment `dpl_64kPZMCKUAn1AcZEaNwVCKNxHywk`, exact main SHA `5c97b976f56797d5c73ec22edcd9db291abfeb90`.
 
-Zero-model reserve proof `34670697684` passed every step on PR #506, including canonical qualification, bounded free refill, Ireland-first diversity and one-to-one slot planning. Measured output: 0 retained drafts, 5 missing slots, 6 fresh unpaid eligible positions, 3 Irish-connected candidates available, 5 selected candidates, `$0.000` reserved before, `$0.275` projected reservation, zero paid replacements. The preferred +3 reserve target was thin (1 reserve instead of 3) but the strict five-slot package minimum passed.
+Production run `34670946540` passed all free gates: discovery, evidence, match-detail parity, canonical freshness, bounded free refill, Ireland-first diversity and one-to-one slot planning. The final canonical pool contained 7 fresh unpaid positions, including 4 classified Irish-connected. Five initial candidates were selected with projected reservation `$0.275`, below the `$0.30` normal target. Paid replacements remained zero.
 
-The proof also exposed a quality gap: discovery contained two fresh independent Leinster-Zebre team-selection reports — The42 led with Max Deegan captaining, while the Irish Independent led with Ryan Baird returning — but the clustering algorithm required too much shared person/title identity and failed to combine them as the same selection development. PR #507 fixes this without weakening freshness: same matchup + explicit team-selection phase can corroborate across different player-led headlines, while a generic preview remains separate from the later selection phase.
+The Leinster-Zebre team-selection repair from PR #507 was production-proved: the Max Deegan/The42 and Ryan Baird/Irish Independent reports clustered into one current team-selection position and that story reached Terra generation. The package therefore prioritised the requested fresh Leinster match phase rather than a same-phase rewrite.
 
-## Saturday Leinster priority
+Paid outcomes were fail-closed:
 
-Leinster v Zebre Parma is at Laya Arena at 14:30 Dublin time. Fresh team-selection evidence includes Max Deegan as captain, Fintan Gunne at scrum-half, Caspar Gabriel at out-half, Alex Usanov at loosehead and Ryan Baird among the replacements. This is a materially newer phase than prior player-profile/build-up coverage and receives production priority if it passes the normal evidence, freshness, diversity and mandatory-media gates.
+- Steve Borthwick: reserved `$0.055`, Terra completed, Luna Publication Review #2 rejected insufficient concrete rugby value.
+- Mack Hansen/Connacht: reserved `$0.055`, Terra completed and initial Draft Ready passed, but the corrected copy exceeded the 70-character headline limit at the post-review deterministic gate.
+- Leinster v Zebre team selection: reserved `$0.055`, Terra completed, but Luna Publication Review #2 rejected the article because the generated copy used too little of the available selection detail.
+- Alex Usanov/Leinster: reserved `$0.055`, Terra generated, Luna corrected/reviewed successfully and a Sanity draft was created. No relevant local image was forced.
+- Steve Hansen: rejected before OpenAI spend because runtime treated `Steve Hansen` and `Sir Steve Hansen` as a surname collision. This was a false identity collision; no reservation was added for that slot.
 
-## Current launch blockers to verify
+Actual Saturday reservation after the one-to-one pass is therefore `$0.220`, within both the `$0.30` normal target and `$0.40` hard ceiling. No paid retry or replacement candidate was attempted.
 
-1. Run the canonical production workflow on code containing PR #507 and verify the Leinster selection reaches the qualified pool.
-2. Keep the five-slot planned reservation at or below `$0.30`; `$0.40` remains the absolute guard.
-3. Verify all generated drafts pass Luna; no paid retry loop is allowed.
-4. Verify every review-ready draft has directly relevant official embedded media and is delivered progressively.
-5. Five delivered review-ready articles, >=3 Irish-connected, remain the go-live proof.
+Mandatory-media run `34671229317` then inspected the single successful Alex Usanov draft. It correctly remained blocked because there was no exact curated override and the official Irish Rugby, Leinster Rugby and URC YouTube feeds all returned HTTP 500 during that run. The system did not substitute an irrelevant local image and did not deliver or auto-publish the article.
+
+## Runtime defects exposed and current repair
+
+1. Honorific parity: shared person extraction now normalizes `Sir`/`Dame`, so `Steve Hansen` and `Sir Steve Hansen` are the same identity for runtime evidence checks. A regression covers the exact failure.
+2. Official-feed resilience: story-specific YouTube feed acquisition now performs bounded retries for transient 408/425/429/5xx/timeouts before blocking. Relevance still fails closed; retries never manufacture a media match.
+3. Post-Luna headline normalization remains an open defect: the presentation repair clips standfirst/SEO fields/paragraphs but not the article title, allowing a correction to pass Luna and then fail the deterministic 70-character title gate.
+4. Evidence depth remains an open quality issue for selection stories: the acquisition fact ledger is often headline-shaped, so Terra/Luna can lack the concrete player/position detail needed for strong match-team analysis even when public sources contain it.
+
+## Current launch state
+
+The system is **not go-live verified** for 12 September. The deterministic pre-AI path and budget policy are production-proved, but today produced only one Sanity draft; that draft is still media-blocked. Under the explicit no-paid-retry rule, the failed paid positions are not retried today.
 
 ## Go-live definition
 
